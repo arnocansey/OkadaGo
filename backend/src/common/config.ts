@@ -3,6 +3,15 @@ import { z } from "zod";
 
 loadEnv();
 
+const emptyStringToUndefined = <T extends z.ZodTypeAny>(schema: T) =>
+  z.preprocess((value) => {
+    if (typeof value === "string" && value.trim() === "") {
+      return undefined;
+    }
+
+    return value;
+  }, schema.optional());
+
 const configSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().int().min(1).max(65535).default(4000),
@@ -14,14 +23,14 @@ const configSchema = z.object({
   CORS_ORIGIN: z.string().default("http://localhost:3000"),
   JWT_ISSUER: z.string().default("okadago"),
   JWT_AUDIENCE: z.string().default("okadago-clients"),
-  API_PUBLIC_URL: z.string().url().optional(),
-  APP_WEB_URL: z.string().url().optional(),
-  PAYSTACK_SECRET_KEY: z.string().min(1).optional(),
+  API_PUBLIC_URL: emptyStringToUndefined(z.string().url()),
+  APP_WEB_URL: emptyStringToUndefined(z.string().url()),
+  PAYSTACK_SECRET_KEY: emptyStringToUndefined(z.string().min(1)),
   PAYSTACK_BASE_URL: z.string().url().default("https://api.paystack.co"),
-  MAPBOX_ACCESS_TOKEN: z.string().min(1).optional(),
+  MAPBOX_ACCESS_TOKEN: emptyStringToUndefined(z.string().min(1)),
   GEOCODING_BASE_URL: z.string().url().default("https://nominatim.openstreetmap.org"),
-  GEOCODING_USER_AGENT: z.string().min(1).optional(),
-  GEOCODING_CONTACT_EMAIL: z.string().email().optional()
+  GEOCODING_USER_AGENT: emptyStringToUndefined(z.string().min(1)),
+  GEOCODING_CONTACT_EMAIL: emptyStringToUndefined(z.string().email())
 });
 
 const parsed = configSchema.parse(process.env);
