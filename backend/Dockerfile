@@ -1,5 +1,7 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
+ARG DATABASE_URL=postgresql://postgres:postgres@localhost:5432/okadago
+ENV DATABASE_URL=${DATABASE_URL}
 COPY package.json ./
 COPY prisma ./prisma
 COPY prisma.config.ts ./
@@ -8,6 +10,8 @@ RUN npx prisma generate
 
 FROM node:22-alpine AS build
 WORKDIR /app
+ARG DATABASE_URL=postgresql://postgres:postgres@localhost:5432/okadago
+ENV DATABASE_URL=${DATABASE_URL}
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json tsconfig.json prisma.config.ts ./
 COPY prisma ./prisma
