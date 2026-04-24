@@ -1,0 +1,817 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  PASSENGER
+  RIDER
+  ADMIN
+  DISPATCHER
+}
+
+enum AccountStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum RiderApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum DocumentType {
+  NATIONAL_ID
+  RIDER_LICENSE
+  VEHICLE_REGISTRATION
+  INSURANCE
+  PROFILE_PHOTO
+  OTHER
+}
+
+enum DocumentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+enum VehicleStatus {
+  ACTIVE
+  MAINTENANCE
+  SUSPENDED
+  ARCHIVED
+}
+
+enum RideStatus {
+  SEARCHING
+  ASSIGNED
+  ARRIVING
+  ARRIVED
+  STARTED
+  COMPLETED
+  CANCELLED
+}
+
+enum CancellationParty {
+  PASSENGER
+  RIDER
+  ADMIN
+  SYSTEM
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  WALLET
+  MOBILE_MONEY
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+enum WalletType {
+  PASSENGER_CASHLESS
+  RIDER_SETTLEMENT
+  RIDER_BONUS
+  PROMO_CREDIT
+}
+
+enum WalletTransactionType {
+  TOP_UP
+  DEBIT
+  CREDIT
+  REFUND
+  BONUS
+  COMMISSION
+  WITHDRAWAL
+  ADJUSTMENT
+}
+
+enum WalletTransactionStatus {
+  PENDING
+  POSTED
+  REVERSED
+  FAILED
+}
+
+enum PayoutMethod {
+  BANK_ACCOUNT
+  MOBILE_MONEY
+}
+
+enum PayoutStatus {
+  REQUESTED
+  REVIEWING
+  APPROVED
+  PROCESSING
+  PAID
+  REJECTED
+  CANCELLED
+}
+
+enum NotificationChannel {
+  PUSH
+  SMS
+  EMAIL
+  IN_APP
+}
+
+enum NotificationStatus {
+  QUEUED
+  SENT
+  FAILED
+  READ
+}
+
+enum TicketStatus {
+  OPEN
+  PENDING_PASSENGER
+  PENDING_RIDER
+  ESCALATED
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  CRITICAL
+}
+
+enum IncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum IncidentStatus {
+  OPEN
+  UNDER_REVIEW
+  ACTIONED
+  RESOLVED
+  CLOSED
+}
+
+enum PromoType {
+  FLAT
+  PERCENTAGE
+  CREDIT
+}
+
+enum PromoStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  EXPIRED
+  ARCHIVED
+}
+
+enum PricingRuleScope {
+  CITY
+  ZONE
+  SERVICE_TYPE
+  SCHEDULED_RIDE
+}
+
+model User {
+  id                  String              @id @default(cuid())
+  role                UserRole
+  accountStatus       AccountStatus       @default(PENDING_VERIFICATION)
+  fullName            String              @db.VarChar(160)
+  email               String?             @unique @db.VarChar(190)
+  phoneCountryCode    String              @db.VarChar(6)
+  phoneLocal          String              @db.VarChar(20)
+  phoneE164           String              @unique @db.VarChar(24)
+  passwordHash        String?             @db.VarChar(255)
+  avatarUrl           String?             @db.VarChar(512)
+  isPhoneVerified     Boolean             @default(false)
+  isEmailVerified     Boolean             @default(false)
+  preferredCurrency   String              @db.VarChar(3)
+  lastSeenAt          DateTime?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  deletedAt           DateTime?
+  passengerProfile    PassengerProfile?
+  riderProfile        RiderProfile?
+  adminProfile        AdminProfile?
+  dispatcherProfile   DispatcherProfile?
+  sessions            UserSession[]
+  devices             UserDevice[]
+  wallets             Wallet[]
+  notifications       Notification[]
+  emergencyContacts   EmergencyContact[]
+  savedPlaces         SavedPlace[]
+  createdTickets      SupportTicket[]     @relation("TicketCreator")
+  assignedTickets     SupportTicket[]     @relation("TicketAssignee")
+  reportedIncidents   Incident[]          @relation("IncidentReporter")
+  assignedIncidents   Incident[]          @relation("IncidentAssignee")
+  ratingsGiven        Rating[]            @relation("RatingRater")
+  ratingsReceived     Rating[]            @relation("RatingRated")
+  reviewsGiven        Review[]            @relation("ReviewAuthor")
+  referralsSent       Referral[]          @relation("ReferralSender")
+  referralsReceived   Referral[]          @relation("ReferralReceiver")
+  auditLogs           AuditLog[]          @relation("AuditActor")
+  approvedDocuments   RiderDocument[]     @relation("DocumentReviewer")
+  approvedPayouts     PayoutRequest[]     @relation("PayoutReviewer")
+
+  @@index([role, accountStatus])
+  @@index([createdAt])
+}
+
+model UserSession {
+  id             String   @id @default(cuid())
+  userId         String
+  refreshTokenId String   @unique @db.VarChar(191)
+  ipAddress      String?  @db.VarChar(64)
+  userAgent      String?  @db.VarChar(512)
+  lastUsedAt     DateTime?
+  expiresAt      DateTime
+  revokedAt      DateTime?
+  createdAt      DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, expiresAt])
+}
+
+model UserDevice {
+  id                String   @id @default(cuid())
+  userId            String
+  deviceId          String   @db.VarChar(191)
+  platform          String   @db.VarChar(40)
+  pushToken         String?  @db.VarChar(255)
+  appVersion        String?  @db.VarChar(50)
+  lastSeenAt        DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, deviceId])
+  @@index([pushToken])
+}
+
+model PassengerProfile {
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  referralCode         String    @unique @db.VarChar(24)
+  preferredPayment     PaymentMethod?
+  defaultServiceCity   String?   @db.VarChar(120)
+  ratingAverage        Decimal   @default(0) @db.Decimal(3, 2)
+  totalTrips           Int       @default(0)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  deletedAt            DateTime?
+  user                 User      @relation(fields: [userId], references: [id])
+  rides                Ride[]    @relation("PassengerRides")
+  promoRedemptions     PromoRedemption[]
+
+  @@index([defaultServiceCity])
+}
+
+model RiderProfile {
+  id                    String               @id @default(cuid())
+  userId                String               @unique
+  displayCode           String               @unique @db.VarChar(24)
+  approvalStatus        RiderApprovalStatus  @default(PENDING)
+  city                  String?              @db.VarChar(120)
+  serviceZoneId         String?
+  onlineStatus          Boolean              @default(false)
+  currentLatitude       Decimal?             @db.Decimal(10, 7)
+  currentLongitude      Decimal?             @db.Decimal(10, 7)
+  ratingAverage         Decimal              @default(0) @db.Decimal(3, 2)
+  acceptanceRate        Decimal              @default(0) @db.Decimal(5, 2)
+  cancellationRate      Decimal              @default(0) @db.Decimal(5, 2)
+  completedTrips        Int                  @default(0)
+  commissionPercent     Decimal              @default(12) @db.Decimal(5, 2)
+  bio                   String?              @db.VarChar(500)
+  approvedAt            DateTime?
+  suspendedAt           DateTime?
+  lastOnlineAt          DateTime?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  deletedAt             DateTime?
+  user                  User                 @relation(fields: [userId], references: [id])
+  serviceZone           ServiceZone?         @relation(fields: [serviceZoneId], references: [id])
+  vehicle               Vehicle?
+  documents             RiderDocument[]
+  rides                 Ride[]               @relation("RiderRides")
+  payoutRequests        PayoutRequest[]
+  incidents             Incident[]
+
+  @@index([approvalStatus, onlineStatus])
+  @@index([serviceZoneId, city])
+  @@index([currentLatitude, currentLongitude])
+}
+
+model AdminProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  title        String?  @db.VarChar(120)
+  permissions  Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id])
+}
+
+model DispatcherProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  teamName     String?  @db.VarChar(120)
+  city         String?  @db.VarChar(120)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id])
+}
+
+model Vehicle {
+  id                   String        @id @default(cuid())
+  riderId              String        @unique
+  make                 String        @db.VarChar(80)
+  model                String        @db.VarChar(80)
+  color                String?       @db.VarChar(50)
+  year                 Int?
+  plateNumber          String        @unique @db.VarChar(32)
+  registrationNumber   String?       @db.VarChar(80)
+  insuranceNumber      String?       @db.VarChar(80)
+  status               VehicleStatus @default(ACTIVE)
+  metadata             Json?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  deletedAt            DateTime?
+  rider                RiderProfile  @relation(fields: [riderId], references: [id])
+
+  @@index([status])
+}
+
+model RiderDocument {
+  id                String         @id @default(cuid())
+  riderId           String
+  reviewerId        String?
+  type              DocumentType
+  status            DocumentStatus @default(PENDING)
+  fileUrl           String         @db.VarChar(512)
+  notes             String?        @db.VarChar(500)
+  issuedAt          DateTime?
+  expiresAt         DateTime?
+  reviewedAt        DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  rider             RiderProfile   @relation(fields: [riderId], references: [id])
+  reviewer          User?          @relation("DocumentReviewer", fields: [reviewerId], references: [id])
+
+  @@index([riderId, status])
+  @@index([type, expiresAt])
+}
+
+model ServiceZone {
+  id                 String        @id @default(cuid())
+  name               String        @unique @db.VarChar(160)
+  city               String        @db.VarChar(120)
+  countryCode        String        @db.VarChar(2)
+  currency           String        @db.VarChar(3)
+  isActive           Boolean       @default(true)
+  polygonGeoJson     Json
+  baseFare           Decimal       @db.Decimal(12, 2)
+  perKmFee           Decimal       @db.Decimal(12, 2)
+  perMinuteFee       Decimal       @db.Decimal(12, 2)
+  minimumFare        Decimal       @db.Decimal(12, 2)
+  cancellationFee    Decimal       @db.Decimal(12, 2)
+  waitingFeePerMin   Decimal       @db.Decimal(12, 2)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  deletedAt          DateTime?
+  pricingRules       PricingRule[]
+  rides              Ride[]
+  riders             RiderProfile[]
+
+  @@index([city, isActive])
+}
+
+model PricingRule {
+  id                     String            @id @default(cuid())
+  serviceZoneId          String?
+  name                   String            @db.VarChar(160)
+  scope                  PricingRuleScope
+  rideType               String?           @db.VarChar(60)
+  dayOfWeek              Int?
+  startMinuteOfDay       Int?
+  endMinuteOfDay         Int?
+  surgeMultiplier        Decimal?          @db.Decimal(5, 2)
+  baseFareOverride       Decimal?          @db.Decimal(12, 2)
+  perKmFeeOverride       Decimal?          @db.Decimal(12, 2)
+  perMinuteOverride      Decimal?          @db.Decimal(12, 2)
+  minimumFareOverride    Decimal?          @db.Decimal(12, 2)
+  appliesToScheduled     Boolean           @default(false)
+  isActive               Boolean           @default(true)
+  metadata               Json?
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+  deletedAt              DateTime?
+  serviceZone            ServiceZone?      @relation(fields: [serviceZoneId], references: [id])
+
+  @@index([serviceZoneId, isActive])
+}
+
+model Ride {
+  id                         String              @id @default(cuid())
+  passengerId                String
+  riderId                    String?
+  serviceZoneId              String?
+  promoCodeId                String?
+  status                     RideStatus          @default(SEARCHING)
+  paymentMethod              PaymentMethod?
+  cancellationParty          CancellationParty?
+  cancellationReason         String?             @db.VarChar(300)
+  requestedAt                DateTime            @default(now())
+  scheduledFor               DateTime?
+  assignedAt                 DateTime?
+  riderArrivedAt             DateTime?
+  startedAt                  DateTime?
+  completedAt                DateTime?
+  cancelledAt                DateTime?
+  pickupAddress              String              @db.VarChar(255)
+  pickupLatitude             Decimal             @db.Decimal(10, 7)
+  pickupLongitude            Decimal             @db.Decimal(10, 7)
+  destinationAddress         String              @db.VarChar(255)
+  destinationLatitude        Decimal             @db.Decimal(10, 7)
+  destinationLongitude       Decimal             @db.Decimal(10, 7)
+  routePolyline              String?
+  estimatedDistanceKm        Decimal?            @db.Decimal(10, 2)
+  estimatedDurationMinutes   Int?
+  actualDistanceKm           Decimal?            @db.Decimal(10, 2)
+  actualDurationMinutes      Int?
+  estimatedFare              Decimal?            @db.Decimal(12, 2)
+  finalFare                  Decimal?            @db.Decimal(12, 2)
+  promoDiscount              Decimal?            @db.Decimal(12, 2)
+  referralDiscount           Decimal?            @db.Decimal(12, 2)
+  surgeAmount                Decimal?            @db.Decimal(12, 2)
+  waitingAmount              Decimal?            @db.Decimal(12, 2)
+  cancellationFee            Decimal?            @db.Decimal(12, 2)
+  riderEarnings              Decimal?            @db.Decimal(12, 2)
+  platformCommission         Decimal?            @db.Decimal(12, 2)
+  currency                   String              @db.VarChar(3)
+  notes                      String?             @db.VarChar(500)
+  createdAt                  DateTime            @default(now())
+  updatedAt                  DateTime            @updatedAt
+  passenger                  PassengerProfile    @relation("PassengerRides", fields: [passengerId], references: [id])
+  rider                      RiderProfile?       @relation("RiderRides", fields: [riderId], references: [id])
+  serviceZone                ServiceZone?        @relation(fields: [serviceZoneId], references: [id])
+  promoCode                  PromoCode?          @relation(fields: [promoCodeId], references: [id])
+  payment                    Payment?
+  walletTransactions         WalletTransaction[]
+  locations                  RideLocation[]
+  events                     RideEvent[]
+  ratings                    Rating[]
+  reviews                    Review[]
+  ticket                     SupportTicket?
+  incidents                  Incident[]
+  promoRedemptions           PromoRedemption[]
+
+  @@index([status, requestedAt])
+  @@index([serviceZoneId, status])
+  @@index([riderId, status])
+  @@index([passengerId, requestedAt])
+}
+
+model RideLocation {
+  id            String   @id @default(cuid())
+  rideId        String
+  source        String   @db.VarChar(40)
+  latitude      Decimal  @db.Decimal(10, 7)
+  longitude     Decimal  @db.Decimal(10, 7)
+  speedKph      Decimal? @db.Decimal(8, 2)
+  heading       Decimal? @db.Decimal(6, 2)
+  accuracyM     Decimal? @db.Decimal(8, 2)
+  recordedAt    DateTime @default(now())
+  ride          Ride     @relation(fields: [rideId], references: [id])
+
+  @@index([rideId, recordedAt])
+}
+
+model RideEvent {
+  id            String   @id @default(cuid())
+  rideId        String
+  actorUserId   String?
+  eventType     String   @db.VarChar(80)
+  payload       Json?
+  createdAt     DateTime @default(now())
+  ride          Ride     @relation(fields: [rideId], references: [id])
+
+  @@index([rideId, createdAt])
+}
+
+model Payment {
+  id                    String         @id @default(cuid())
+  rideId                String         @unique
+  payerUserId           String
+  method                PaymentMethod
+  status                PaymentStatus  @default(PENDING)
+  provider              String?        @db.VarChar(80)
+  providerReference     String?        @db.VarChar(120)
+  amount                Decimal        @db.Decimal(12, 2)
+  feeAmount             Decimal?       @db.Decimal(12, 2)
+  refundedAmount        Decimal?       @db.Decimal(12, 2)
+  currency              String         @db.VarChar(3)
+  authorizedAt          DateTime?
+  capturedAt            DateTime?
+  failedAt              DateTime?
+  refundedAt            DateTime?
+  metadata              Json?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  ride                  Ride           @relation(fields: [rideId], references: [id])
+  walletTransactions    WalletTransaction[]
+
+  @@index([payerUserId, status])
+  @@index([providerReference])
+}
+
+model Wallet {
+  id                    String              @id @default(cuid())
+  userId                String
+  type                  WalletType
+  currency              String              @db.VarChar(3)
+  availableBalance      Decimal             @default(0) @db.Decimal(14, 2)
+  lockedBalance         Decimal             @default(0) @db.Decimal(14, 2)
+  isActive              Boolean             @default(true)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  user                  User                @relation(fields: [userId], references: [id])
+  transactions          WalletTransaction[]
+  payoutRequests        PayoutRequest[]
+
+  @@unique([userId, type, currency])
+  @@index([type, currency, isActive])
+}
+
+model WalletTransaction {
+  id                    String                  @id @default(cuid())
+  walletId              String
+  rideId                String?
+  paymentId             String?
+  payoutRequestId       String?
+  type                  WalletTransactionType
+  status                WalletTransactionStatus @default(PENDING)
+  amount                Decimal                 @db.Decimal(14, 2)
+  currency              String                  @db.VarChar(3)
+  direction             String                  @db.VarChar(10)
+  reference             String                  @unique @db.VarChar(80)
+  description           String?                 @db.VarChar(255)
+  createdAt             DateTime                @default(now())
+  postedAt              DateTime?
+  wallet                Wallet                  @relation(fields: [walletId], references: [id])
+  ride                  Ride?                   @relation(fields: [rideId], references: [id])
+  payment               Payment?                @relation(fields: [paymentId], references: [id])
+  payoutRequest         PayoutRequest?          @relation(fields: [payoutRequestId], references: [id])
+
+  @@index([walletId, createdAt])
+  @@index([type, status])
+}
+
+model PayoutRequest {
+  id                    String         @id @default(cuid())
+  riderId               String
+  walletId              String
+  reviewerId            String?
+  method                PayoutMethod
+  status                PayoutStatus   @default(REQUESTED)
+  amount                Decimal        @db.Decimal(12, 2)
+  currency              String         @db.VarChar(3)
+  destinationLabel      String         @db.VarChar(191)
+  rejectionReason       String?        @db.VarChar(255)
+  requestedAt           DateTime       @default(now())
+  reviewedAt            DateTime?
+  paidAt                DateTime?
+  metadata              Json?
+  rider                 RiderProfile   @relation(fields: [riderId], references: [id])
+  wallet                Wallet         @relation(fields: [walletId], references: [id])
+  reviewer              User?          @relation("PayoutReviewer", fields: [reviewerId], references: [id])
+  walletTransactions    WalletTransaction[]
+
+  @@index([status, requestedAt])
+  @@index([riderId, status])
+}
+
+model Rating {
+  id             String    @id @default(cuid())
+  rideId         String
+  raterUserId    String
+  ratedUserId    String
+  score          Int
+  category       String?   @db.VarChar(80)
+  createdAt      DateTime  @default(now())
+  ride           Ride      @relation(fields: [rideId], references: [id])
+  rater          User      @relation("RatingRater", fields: [raterUserId], references: [id])
+  rated          User      @relation("RatingRated", fields: [ratedUserId], references: [id])
+  review         Review?
+
+  @@unique([rideId, raterUserId, ratedUserId])
+  @@index([ratedUserId, createdAt])
+}
+
+model Review {
+  id             String    @id @default(cuid())
+  ratingId       String    @unique
+  rideId         String
+  authorId       String
+  body           String    @db.VarChar(500)
+  isFlagged      Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  rating         Rating    @relation(fields: [ratingId], references: [id])
+  ride           Ride      @relation(fields: [rideId], references: [id])
+  author         User      @relation("ReviewAuthor", fields: [authorId], references: [id])
+
+  @@index([rideId, createdAt])
+}
+
+model PromoCode {
+  id                    String          @id @default(cuid())
+  code                  String          @unique @db.VarChar(40)
+  name                  String          @db.VarChar(160)
+  type                  PromoType
+  status                PromoStatus     @default(DRAFT)
+  discountValue         Decimal         @db.Decimal(12, 2)
+  maxDiscount           Decimal?        @db.Decimal(12, 2)
+  minRideAmount         Decimal?        @db.Decimal(12, 2)
+  maxRedemptions        Int?
+  perUserLimit          Int?
+  city                  String?         @db.VarChar(120)
+  currency              String?         @db.VarChar(3)
+  startsAt              DateTime?
+  endsAt                DateTime?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  deletedAt             DateTime?
+  rides                 Ride[]
+  redemptions           PromoRedemption[]
+
+  @@index([status, startsAt, endsAt])
+}
+
+model PromoRedemption {
+  id                    String      @id @default(cuid())
+  promoCodeId           String
+  passengerId           String
+  rideId                String?
+  discountAmount        Decimal     @db.Decimal(12, 2)
+  redeemedAt            DateTime    @default(now())
+  promoCode             PromoCode   @relation(fields: [promoCodeId], references: [id])
+  passenger             PassengerProfile @relation(fields: [passengerId], references: [id])
+  ride                  Ride?       @relation(fields: [rideId], references: [id])
+
+  @@index([promoCodeId, redeemedAt])
+  @@index([passengerId, redeemedAt])
+}
+
+model Referral {
+  id                    String      @id @default(cuid())
+  referrerUserId        String
+  refereeUserId         String      @unique
+  codeUsed              String      @db.VarChar(40)
+  firstRideId           String?
+  rewardAmount          Decimal?    @db.Decimal(12, 2)
+  rewardCurrency        String?     @db.VarChar(3)
+  rewardReleasedAt      DateTime?
+  createdAt             DateTime    @default(now())
+  referrer              User        @relation("ReferralSender", fields: [referrerUserId], references: [id])
+  referee               User        @relation("ReferralReceiver", fields: [refereeUserId], references: [id])
+
+  @@index([referrerUserId, createdAt])
+}
+
+model Notification {
+  id                    String             @id @default(cuid())
+  userId                String
+  channel               NotificationChannel
+  status                NotificationStatus @default(QUEUED)
+  title                 String             @db.VarChar(160)
+  body                  String             @db.VarChar(500)
+  data                  Json?
+  sentAt                DateTime?
+  readAt                DateTime?
+  createdAt             DateTime           @default(now())
+  user                  User               @relation(fields: [userId], references: [id])
+
+  @@index([userId, status, createdAt])
+}
+
+model SupportTicket {
+  id                    String         @id @default(cuid())
+  createdById           String
+  assignedToId          String?
+  rideId                String?        @unique
+  title                 String         @db.VarChar(160)
+  category              String         @db.VarChar(80)
+  status                TicketStatus   @default(OPEN)
+  priority              TicketPriority @default(NORMAL)
+  description           String         @db.VarChar(1000)
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  closedAt              DateTime?
+  deletedAt             DateTime?
+  createdBy             User           @relation("TicketCreator", fields: [createdById], references: [id])
+  assignedTo            User?          @relation("TicketAssignee", fields: [assignedToId], references: [id])
+  ride                  Ride?          @relation(fields: [rideId], references: [id])
+  messages              SupportTicketMessage[]
+
+  @@index([status, priority, createdAt])
+  @@index([assignedToId, status])
+}
+
+model SupportTicketMessage {
+  id                    String        @id @default(cuid())
+  ticketId              String
+  authorId              String
+  body                  String        @db.VarChar(1000)
+  attachments           Json?
+  createdAt             DateTime      @default(now())
+  ticket                SupportTicket @relation(fields: [ticketId], references: [id])
+
+  @@index([ticketId, createdAt])
+}
+
+model Incident {
+  id                    String            @id @default(cuid())
+  rideId                String?
+  reporterId            String
+  assignedToId          String?
+  riderId               String?
+  severity              IncidentSeverity
+  status                IncidentStatus    @default(OPEN)
+  category              String            @db.VarChar(80)
+  description           String            @db.VarChar(1200)
+  evidence              Json?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  resolvedAt            DateTime?
+  deletedAt             DateTime?
+  ride                  Ride?             @relation(fields: [rideId], references: [id])
+  reporter              User              @relation("IncidentReporter", fields: [reporterId], references: [id])
+  assignedTo            User?             @relation("IncidentAssignee", fields: [assignedToId], references: [id])
+  rider                 RiderProfile?     @relation(fields: [riderId], references: [id])
+
+  @@index([severity, status, createdAt])
+  @@index([rideId])
+}
+
+model EmergencyContact {
+  id                    String      @id @default(cuid())
+  userId                String
+  name                  String      @db.VarChar(160)
+  phoneE164             String      @db.VarChar(24)
+  relationship          String?     @db.VarChar(60)
+  isPrimary             Boolean     @default(false)
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  user                  User        @relation(fields: [userId], references: [id])
+
+  @@index([userId, isPrimary])
+}
+
+model SavedPlace {
+  id                    String      @id @default(cuid())
+  userId                String
+  label                 String      @db.VarChar(60)
+  address               String      @db.VarChar(255)
+  latitude              Decimal     @db.Decimal(10, 7)
+  longitude             Decimal     @db.Decimal(10, 7)
+  notes                 String?     @db.VarChar(255)
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  user                  User        @relation(fields: [userId], references: [id])
+
+  @@index([userId, label])
+}
+
+model AuditLog {
+  id                    String      @id @default(cuid())
+  actorUserId           String?
+  actorRole             UserRole?
+  action                String      @db.VarChar(120)
+  entityType            String      @db.VarChar(80)
+  entityId              String      @db.VarChar(80)
+  changes               Json?
+  ipAddress             String?     @db.VarChar(64)
+  userAgent             String?     @db.VarChar(512)
+  createdAt             DateTime    @default(now())
+  actor                 User?       @relation("AuditActor", fields: [actorUserId], references: [id])
+
+  @@index([entityType, entityId, createdAt])
+  @@index([actorUserId, createdAt])
+}
