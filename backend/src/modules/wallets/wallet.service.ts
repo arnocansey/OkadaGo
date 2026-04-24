@@ -13,7 +13,10 @@ import {
 } from "../../generated/prisma/enums.js";
 import type { z } from "zod";
 import {
+  adminPayoutRequestsQuerySchema,
+  adminPayoutReviewSchema,
   riderPayoutRequestSchema,
+  adminWalletTransactionsQuerySchema,
   payoutEligibilitySchema,
   settlementPreviewSchema,
   walletPaystackInitializeSchema,
@@ -23,6 +26,9 @@ import {
 type SettlementPreviewInput = z.infer<typeof settlementPreviewSchema>;
 type PayoutEligibilityInput = z.infer<typeof payoutEligibilitySchema>;
 type RiderPayoutRequestInput = z.infer<typeof riderPayoutRequestSchema>;
+type AdminWalletTransactionsQueryInput = z.infer<typeof adminWalletTransactionsQuerySchema>;
+type AdminPayoutRequestsQueryInput = z.infer<typeof adminPayoutRequestsQuerySchema>;
+type AdminPayoutReviewInput = z.infer<typeof adminPayoutReviewSchema>;
 type WalletTopUpInput = z.infer<typeof walletTopUpSchema>;
 type WalletPaystackInitializeInput = z.infer<typeof walletPaystackInitializeSchema>;
 
@@ -58,6 +64,11 @@ const pendingPayoutStatuses = [
   PayoutStatus.APPROVED,
   PayoutStatus.PROCESSING
 ];
+const finalPayoutStatuses: PayoutStatus[] = [
+  PayoutStatus.PAID,
+  PayoutStatus.REJECTED,
+  PayoutStatus.CANCELLED
+];
 
 function toSubunit(amount: number) {
   return Math.round(amount * 100);
@@ -81,6 +92,31 @@ function buildWalletRedirectUrl(
 }
 
 export class WalletService {
+  private async getCurrentAdminSession(token: string) {
+    const session = await prisma.userSession.findUnique({
+      where: {
+        refreshTokenId: token
+      },
+      include: {
+        user: {
+          include: {
+            adminProfile: true
+          }
+        }
+      }
+    });
+
+    if (!session || session.revokedAt || session.expiresAt < new Date()) {
+      throw new AppError("Session is invalid or expired", 401, "SESSION_INVALID");
+    }
+
+    if (session.user.role !== UserRole.ADMIN || !session.user.adminProfile) {
+      throw new AppError("Admin access is required", 403, "ADMIN_ACCESS_REQUIRED");
+    }
+
+    return session;
+  }
+
   private async getCurrentRiderSession(token: string) {
     const session = await prisma.userSession.findUnique({
       where: {
@@ -104,6 +140,285 @@ export class WalletService {
     }
 
     return session;
+  }
+
+  async listAdminWalletTransactions(token: string, filters: AdminWalletTransactionsQueryInput) {
+    await this.getCurrentAdminSession(token);
+
+    return prisma.walletTransaction.findMany({
+      where: {
+        ...(filters.status ? { status: filters.status } : {}),
+        ...(filters.type ? { type: filters.type } : {})
+      },
+      orderBy: {
+        createdAt: "desc"
+      },
+      take: 120,
+      include: {
+        wallet: {
+          include: {
+            user: {
+              include: {
+                riderProfile: {
+                  select: {
+                    id: true,
+                    displayCode: true
+                  }
+                },
+                passengerProfile: {
+                  select: {
+                    id: true,
+                    referralCode: true
+                  }
+                }
+              }
+            }
+          }
+        },
+        ride: {
+          select: {
+            id: true,
+            status: true,
+            pickupAddress: true,
+            destinationAddress: true
+          }
+        },
+        payment: {
+          select: {
+            id: true,
+            method: true,
+            status: true,
+            provider: true,
+            providerReference: true
+          }
+        },
+        payoutRequest: {
+          select: {
+            id: true,
+            status: true,
+            destinationLabel: true
+          }
+        }
+      }
+    });
+  }
+
+  async listAdminPayoutRequests(token: string, filters: AdminPayoutRequestsQueryInput) {
+    await this.getCurrentAdminSession(token);
+
+    return prisma.payoutRequest.findMany({
+      where: {
+        ...(filters.status ? { status: filters.status } : {})
+      },
+      orderBy: {
+        requestedAt: "desc"
+      },
+      take: 80,
+      include: {
+        rider: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                fullName: true,
+                phoneE164: true,
+                preferredCurrency: true
+              }
+            }
+          }
+        },
+        reviewer: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true
+          }
+        },
+        wallet: {
+          select: {
+            id: true,
+            availableBalance: true,
+            lockedBalance: true,
+            currency: true
+          }
+        }
+      }
+    });
+  }
+
+  async reviewAdminPayoutRequest(
+    token: string,
+    payoutRequestId: string,
+    input: AdminPayoutReviewInput
+  ) {
+    const session = await this.getCurrentAdminSession(token);
+
+    return prisma.$transaction(async (tx) => {
+      const payoutRequest = await tx.payoutRequest.findUnique({
+        where: {
+          id: payoutRequestId
+        },
+        include: {
+          wallet: true,
+          rider: {
+            include: {
+              user: true
+            }
+          }
+        }
+      });
+
+      if (!payoutRequest) {
+        throw new AppError("Payout request could not be found.", 404, "PAYOUT_REQUEST_NOT_FOUND");
+      }
+
+      if (finalPayoutStatuses.includes(payoutRequest.status)) {
+        throw new AppError(
+          "This payout request has already reached a final state.",
+          409,
+          "PAYOUT_REVIEW_CONFLICT"
+        );
+      }
+
+      const payoutTransaction = await tx.walletTransaction.findFirst({
+        where: {
+          payoutRequestId: payoutRequest.id,
+          type: WalletTransactionType.WITHDRAWAL
+        },
+        orderBy: {
+          createdAt: "desc"
+        }
+      });
+
+      const updateData: {
+        status?: PayoutStatus;
+        reviewerId?: string;
+        reviewedAt?: Date;
+        paidAt?: Date;
+        rejectionReason?: string | null;
+      } = {
+        reviewerId: session.user.id,
+        reviewedAt: new Date()
+      };
+
+      switch (input.action) {
+        case "mark_reviewing":
+          updateData.status = PayoutStatus.REVIEWING;
+          updateData.rejectionReason = null;
+          break;
+        case "approve":
+          updateData.status = PayoutStatus.APPROVED;
+          updateData.rejectionReason = null;
+          break;
+        case "mark_processing":
+          updateData.status = PayoutStatus.PROCESSING;
+          updateData.rejectionReason = null;
+          break;
+        case "mark_paid":
+          updateData.status = PayoutStatus.PAID;
+          updateData.paidAt = new Date();
+          updateData.rejectionReason = null;
+
+          await tx.wallet.update({
+            where: {
+              id: payoutRequest.walletId
+            },
+            data: {
+              lockedBalance: {
+                decrement: payoutRequest.amount
+              }
+            }
+          });
+
+          if (payoutTransaction) {
+            await tx.walletTransaction.update({
+              where: {
+                id: payoutTransaction.id
+              },
+              data: {
+                status: WalletTransactionStatus.POSTED,
+                postedAt: new Date(),
+                description: `Admin marked payout as paid to ${payoutRequest.destinationLabel}`
+              }
+            });
+          }
+          break;
+        case "reject":
+        case "cancel":
+          updateData.status =
+            input.action === "reject" ? PayoutStatus.REJECTED : PayoutStatus.CANCELLED;
+          updateData.rejectionReason =
+            input.action === "reject"
+              ? input.rejectionReason?.trim() || "Rejected by admin review"
+              : input.rejectionReason?.trim() || "Cancelled by admin review";
+
+          await tx.wallet.update({
+            where: {
+              id: payoutRequest.walletId
+            },
+            data: {
+              availableBalance: {
+                increment: payoutRequest.amount
+              },
+              lockedBalance: {
+                decrement: payoutRequest.amount
+              }
+            }
+          });
+
+          if (payoutTransaction) {
+            await tx.walletTransaction.update({
+              where: {
+                id: payoutTransaction.id
+              },
+              data: {
+                status: WalletTransactionStatus.REVERSED,
+                description:
+                  input.action === "reject"
+                    ? `Admin rejected payout to ${payoutRequest.destinationLabel}`
+                    : `Admin cancelled payout to ${payoutRequest.destinationLabel}`
+              }
+            });
+          }
+          break;
+      }
+
+      return tx.payoutRequest.update({
+        where: {
+          id: payoutRequest.id
+        },
+        data: updateData,
+        include: {
+          rider: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  fullName: true,
+                  phoneE164: true,
+                  preferredCurrency: true
+                }
+              }
+            }
+          },
+          reviewer: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true
+            }
+          },
+          wallet: {
+            select: {
+              id: true,
+              availableBalance: true,
+              lockedBalance: true,
+              currency: true
+            }
+          }
+        }
+      });
+    });
   }
 
   async listUserWallets(userId: string) {

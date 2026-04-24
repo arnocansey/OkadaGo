@@ -1,10 +1,18 @@
 import type { FastifyPluginAsync } from "fastify";
 import { AppError } from "../../common/errors.js";
-import { parseBody } from "../../common/validation.js";
+import { parseBody, parseParams, parseQuery } from "../../common/validation.js";
 import { adminPromoteSchema, adminRegisterSchema } from "../auth/auth.schemas.js";
 import { AuthService } from "../auth/auth.service.js";
+import { WalletService } from "../wallets/wallet.service.js";
+import {
+  adminPayoutRequestsQuerySchema,
+  adminPayoutReviewParamsSchema,
+  adminPayoutReviewSchema,
+  adminWalletTransactionsQuerySchema
+} from "../wallets/wallet.schemas.js";
 
 const authService = new AuthService();
+const walletService = new WalletService();
 
 function extractBearerToken(authorizationHeader?: string) {
   if (!authorizationHeader?.startsWith("Bearer ")) {
@@ -83,5 +91,24 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
         "incidents-disputes-and-audit"
       ]
     };
+  });
+
+  server.get("/admin/payments/wallet-transactions", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const query = parseQuery(request, adminWalletTransactionsQuerySchema);
+    return walletService.listAdminWalletTransactions(token, query);
+  });
+
+  server.get("/admin/payments/payout-requests", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const query = parseQuery(request, adminPayoutRequestsQuerySchema);
+    return walletService.listAdminPayoutRequests(token, query);
+  });
+
+  server.patch("/admin/payments/payout-requests/:payoutRequestId", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, adminPayoutReviewParamsSchema);
+    const input = parseBody(request, adminPayoutReviewSchema);
+    return walletService.reviewAdminPayoutRequest(token, params.payoutRequestId, input);
   });
 };

@@ -54,3 +54,32 @@ export const walletPaystackCallbackQuerySchema = z.object({
 export const walletUserParamsSchema = z.object({
   userId: z.string().cuid()
 });
+
+export const adminWalletTransactionsQuerySchema = z.object({
+  status: z.enum(["PENDING", "POSTED", "REVERSED", "FAILED"]).optional(),
+  type: z
+    .enum(["TOP_UP", "DEBIT", "CREDIT", "REFUND", "BONUS", "COMMISSION", "WITHDRAWAL", "ADJUSTMENT"])
+    .optional()
+});
+
+export const adminPayoutRequestsQuerySchema = z.object({
+  status: z
+    .enum(["REQUESTED", "REVIEWING", "APPROVED", "PROCESSING", "PAID", "REJECTED", "CANCELLED"])
+    .optional()
+});
+
+export const adminPayoutReviewParamsSchema = z.object({
+  payoutRequestId: z.string().cuid()
+});
+
+export const adminPayoutReviewSchema = z.object({
+  action: z.enum([
+    "mark_reviewing",
+    "approve",
+    "mark_processing",
+    "mark_paid",
+    "reject",
+    "cancel"
+  ]),
+  rejectionReason: z.string().trim().max(255).optional()
+});

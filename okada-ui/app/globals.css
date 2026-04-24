@@ -795,6 +795,11 @@ main {
   background: rgba(18, 75, 42, 0.08);
 }
 
+.status-chip.danger {
+  color: #991b1b;
+  background: rgba(239, 68, 68, 0.14);
+}
+
 .footer {
   padding: 36px 0 60px;
   color: var(--text-muted);
@@ -3808,6 +3813,86 @@ body.immersive-mode {
 .admin-promote-summary span {
   color: #526277;
   font-size: 0.92rem;
+}
+
+.admin-payments-grid {
+  align-items: start;
+}
+
+.exact-admin-payment-filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.exact-admin-transaction-user {
+  display: grid;
+  gap: 4px;
+}
+
+.exact-admin-transaction-user strong,
+.exact-admin-transaction-user span {
+  display: block;
+}
+
+.exact-admin-transaction-user span {
+  color: #64748b;
+  font-size: 0.82rem;
+}
+
+.exact-admin-payout-list {
+  display: grid;
+  gap: 14px;
+}
+
+.exact-admin-payout-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 18px;
+  background: #f8fafc;
+  border: 1px solid #dbe3ea;
+}
+
+.exact-admin-payout-head,
+.exact-admin-payout-metrics,
+.exact-admin-payout-metadata {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.exact-admin-payout-head strong,
+.exact-admin-payout-head span,
+.exact-admin-payout-metrics span,
+.exact-admin-payout-metadata span {
+  display: block;
+}
+
+.exact-admin-payout-head span,
+.exact-admin-payout-metadata span {
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.exact-admin-payout-metrics span {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.exact-admin-payout-note,
+.exact-admin-payout-feedback {
+  margin-top: 4px;
+}
+
+.exact-admin-payout-reason {
+  margin-top: 2px;
+}
+
+.exact-admin-payout-actions {
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .exact-health-card .status-chip.neutral {
