@@ -15,6 +15,7 @@ export default async function AdminScreenPage({
     "riders",
     "passengers",
     "payments",
+    "ratings",
     "promotions",
     "settings",
     "admins"

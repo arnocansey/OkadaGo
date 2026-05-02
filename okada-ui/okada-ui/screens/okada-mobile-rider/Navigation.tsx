@@ -1,20 +1,12 @@
 import React from 'react';
 import { Phone, MessageCircle, MapPin, Navigation2, Menu } from 'lucide-react';
+import { MobileScreenShell } from '../_shared/mobile-screen-shell';
+import { MobileStatusBar } from '../_shared/mobile-status-bar';
 
 export function Navigation() {
   return (
-    <div className="w-[390px] h-[844px] bg-[#1A231E] relative overflow-hidden font-sans mx-auto shadow-xl">
-      {/* Status Bar (Light text for dark map) */}
-      <div className="absolute top-0 left-0 right-0 h-11 flex items-center justify-between px-6 text-sm font-medium z-50 text-white">
-        <span>9:41</span>
-        <div className="flex gap-1.5 items-center">
-          <div className="w-4 h-3 bg-white rounded-sm"></div>
-          <div className="w-4 h-3 bg-white rounded-sm"></div>
-          <div className="w-6 h-3 border border-white rounded-sm relative">
-            <div className="absolute inset-[1px] bg-white rounded-[1px] w-[70%]"></div>
-          </div>
-        </div>
-      </div>
+    <MobileScreenShell className="bg-[#1A231E] shadow-xl">
+      <MobileStatusBar tone="light" className="absolute top-0 px-6 text-sm" />
 
       {/* Map Background Placeholder */}
       <div className="absolute inset-0 z-0">
@@ -52,7 +44,7 @@ export function Navigation() {
               <h1 className="text-xl font-bold text-gray-900 tracking-tight">Head to pickup</h1>
               <div className="text-[#0D6B4A] font-bold text-2xl mt-1">4 min</div>
             </div>
-            <button className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+            <button className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 active:scale-[0.98] transition-all">
               <Menu className="w-5 h-5 text-gray-700" />
             </button>
           </div>
@@ -73,12 +65,12 @@ export function Navigation() {
       </div>
 
       {/* Recenter Button */}
-      <button className="absolute bottom-[160px] right-4 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center z-30">
+      <button className="absolute bottom-[calc(9.5rem+env(safe-area-inset-bottom))] right-4 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center z-30 hover:bg-gray-100 active:scale-[0.98] transition-all">
         <MapPin className="w-5 h-5 text-gray-700" />
       </button>
 
       {/* Bottom Panel */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-[32px] shadow-[0_-8px_30px_rgba(0,0,0,0.12)] z-40 pb-8">
+      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-[32px] shadow-[0_-8px_30px_rgba(0,0,0,0.12)] z-40 pb-[max(2rem,env(safe-area-inset-bottom))]">
         <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mt-3 mb-5"></div>
         
         <div className="px-6 flex flex-col gap-5">
@@ -95,21 +87,21 @@ export function Navigation() {
               </div>
             </div>
             <div className="flex gap-2">
-              <button className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 hover:bg-gray-200">
+              <button className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 hover:bg-gray-200 active:scale-[0.98] transition-all">
                 <MessageCircle className="w-5 h-5" />
               </button>
-              <button className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-[#0D6B4A] hover:bg-green-200">
+              <button className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-[#0D6B4A] hover:bg-green-200 active:scale-[0.98] transition-all">
                 <Phone className="w-5 h-5" />
               </button>
             </div>
           </div>
 
           {/* Action Button */}
-          <button className="w-full bg-[#0D6B4A] active:bg-[#0a5238] text-white font-bold text-lg py-4 rounded-2xl shadow-lg transition-transform active:scale-[0.98]">
+          <button className="w-full bg-[#0D6B4A] hover:bg-[#0b5c40] active:bg-[#0a5238] text-white font-bold text-lg py-4 rounded-2xl shadow-lg transition-all active:scale-[0.98]">
             Arrived at pickup
           </button>
         </div>
       </div>
-    </div>
+    </MobileScreenShell>
   );
 }

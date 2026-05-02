@@ -4,12 +4,78 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/utils/currency_formatter.dart';
 import '../application/current_ride_controller.dart';
+import '../data/ride_repository.dart';
 
-class TripCompleteScreen extends ConsumerWidget {
+class TripCompleteScreen extends ConsumerStatefulWidget {
   const TripCompleteScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TripCompleteScreen> createState() => _TripCompleteScreenState();
+}
+
+class _TripCompleteScreenState extends ConsumerState<TripCompleteScreen> {
+  final _commentController = TextEditingController();
+  final Set<String> _selectedTags = <String>{'Great driver', 'Safe riding'};
+  int _score = 4;
+  bool _submitting = false;
+  String? _error;
+
+  static const _tagOptions = <String>[
+    'Great driver',
+    'Safe riding',
+    'On time',
+    'Clean bike',
+  ];
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submitRating() async {
+    final ride = ref.read(currentRideProvider);
+    if (ride == null) {
+      context.go('/app');
+      return;
+    }
+
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
+
+    try {
+      final category = _selectedTags.isEmpty ? null : _selectedTags.first;
+      final reviewParts = <String>[
+        if (_selectedTags.isNotEmpty) _selectedTags.join(', '),
+        if (_commentController.text.trim().isNotEmpty) _commentController.text.trim(),
+      ];
+      final review = reviewParts.isEmpty ? null : reviewParts.join(' | ');
+
+      await ref.read(passengerRideRepositoryProvider).submitRideRating(
+            rideId: ride.id,
+            score: _score,
+            category: category,
+            review: review,
+          );
+
+      if (!mounted) return;
+      context.go('/app');
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _error = error.toString().replaceFirst('Exception: ', '');
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _submitting = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final ride = ref.watch(currentRideProvider);
     final total = ride?.finalFare ?? ride?.estimatedFare ?? 0;
@@ -58,9 +124,7 @@ class TripCompleteScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                ride?.isCancelled == true
-                    ? 'Ride cancelled'
-                    : 'Payment recorded',
+                ride?.isCancelled == true ? 'Ride cancelled' : 'Payment recorded',
                 style: theme.textTheme.bodyLarge?.copyWith(
                   color: const Color(0xFF6B7280),
                 ),
@@ -83,16 +147,14 @@ class TripCompleteScreen extends ConsumerWidget {
                       ),
                       _TripStat(
                         label: 'Distance',
-                        value:
-                            '${ride?.estimatedDistanceKm?.toStringAsFixed(1) ?? '--'} km',
+                        value: '${ride?.estimatedDistanceKm?.toStringAsFixed(1) ?? '--'} km',
                       ),
                     ],
                   ),
                   const SizedBox(height: 18),
                   _RouteSummary(
                     pickup: ride?.pickupAddress ?? 'Pickup unavailable',
-                    destination:
-                        ride?.destinationAddress ?? 'Destination unavailable',
+                    destination: ride?.destinationAddress ?? 'Destination unavailable',
                   ),
                 ],
               ),
@@ -131,12 +193,22 @@ class TripCompleteScreen extends ConsumerWidget {
                   5,
                   (index) => Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Icon(
-                      Icons.star_rounded,
-                      size: 38,
-                      color: index < 4
-                          ? const Color(0xFFFFB800)
-                          : const Color(0xFFE5E7EB),
+                    child: InkWell(
+                      onTap: _submitting
+                          ? null
+                          : () {
+                              setState(() {
+                                _score = index + 1;
+                              });
+                            },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Icon(
+                        Icons.star_rounded,
+                        size: 38,
+                        color: index < _score
+                            ? const Color(0xFFFFB800)
+                            : const Color(0xFFE5E7EB),
+                      ),
                     ),
                   ),
                 ),
@@ -146,37 +218,61 @@ class TripCompleteScreen extends ConsumerWidget {
                 spacing: 8,
                 runSpacing: 8,
                 alignment: WrapAlignment.center,
-                children: const [
-                  _FeedbackChip(label: 'Great driver', selected: true),
-                  _FeedbackChip(label: 'Safe riding', selected: true),
-                  _FeedbackChip(label: 'On time'),
-                  _FeedbackChip(label: 'Clean bike'),
-                ],
+                children: _tagOptions
+                    .map(
+                      (tag) => _FeedbackChip(
+                        label: tag,
+                        selected: _selectedTags.contains(tag),
+                        onTap: _submitting
+                            ? null
+                            : () {
+                                setState(() {
+                                  if (_selectedTags.contains(tag)) {
+                                    _selectedTags.remove(tag);
+                                  } else {
+                                    _selectedTags.add(tag);
+                                  }
+                                });
+                              },
+                      ),
+                    )
+                    .toList(growable: false),
               ),
               const SizedBox(height: 18),
               TextField(
+                controller: _commentController,
                 minLines: 2,
                 maxLines: 3,
+                enabled: !_submitting,
                 decoration: const InputDecoration(
                   hintText: 'Add a comment (optional)',
                 ),
               ),
             ],
           ),
+          if (_error != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              _error!,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: Colors.red.shade700,
+              ),
+            ),
+          ],
           const SizedBox(height: 24),
           ElevatedButton(
-            onPressed: () => context.go('/app'),
+            onPressed: _submitting ? null : _submitRating,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF0D6B4A),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(999),
               ),
             ),
-            child: const Text('Submit rating'),
+            child: Text(_submitting ? 'Submitting...' : 'Submit rating'),
           ),
           const SizedBox(height: 8),
           TextButton(
-            onPressed: () => context.go('/app'),
+            onPressed: _submitting ? null : () => context.go('/app'),
             child: const Text('Skip'),
           ),
         ],
@@ -192,8 +288,7 @@ class TripCompleteScreen extends ConsumerWidget {
         .toList();
     if (parts.isEmpty) return 'RD';
     if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
-    return '${parts.first.substring(0, 1)}${parts.last.substring(0, 1)}'
-        .toUpperCase();
+    return '${parts.first.substring(0, 1)}${parts.last.substring(0, 1)}'.toUpperCase();
   }
 }
 
@@ -209,16 +304,12 @@ class _TripStat extends StatelessWidget {
       children: [
         Text(
           label,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: const Color(0xFF6B7280)),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: const Color(0xFF6B7280)),
         ),
         const SizedBox(height: 4),
         Text(
           value,
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
         ),
       ],
     );
@@ -268,27 +359,36 @@ class _RouteSummary extends StatelessWidget {
 }
 
 class _FeedbackChip extends StatelessWidget {
-  const _FeedbackChip({required this.label, this.selected = false});
+  const _FeedbackChip({
+    required this.label,
+    this.selected = false,
+    this.onTap,
+  });
 
   final String label;
   final bool selected;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: selected ? const Color(0xFF0D6B4A) : const Color(0xFFF3F4F6),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: selected ? const Color(0xFF0D6B4A) : const Color(0xFFE5E7EB),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFF0D6B4A) : const Color(0xFFF3F4F6),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: selected ? const Color(0xFF0D6B4A) : const Color(0xFFE5E7EB),
+          ),
         ),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-          color: selected ? Colors.white : const Color(0xFF374151),
-          fontWeight: FontWeight.w700,
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: selected ? Colors.white : const Color(0xFF374151),
+                fontWeight: FontWeight.w700,
+              ),
         ),
       ),
     );

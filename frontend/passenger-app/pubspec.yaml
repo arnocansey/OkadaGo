@@ -18,13 +18,23 @@ dependencies:
   google_fonts: ^6.3.2
   intl: ^0.20.2
   shared_preferences: ^2.5.3
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
   assets:
     - .env
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "web/icons/Icon-512.png"
+  adaptive_icon_background: "#0F6A4A"
+  adaptive_icon_foreground: "web/icons/Icon-512.png"
+  remove_alpha_ios: true

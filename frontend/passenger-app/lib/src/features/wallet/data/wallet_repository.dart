@@ -41,6 +41,26 @@ class WalletRecord {
   }
 }
 
+class WalletTopUpInitialization {
+  const WalletTopUpInitialization({
+    required this.reference,
+    required this.authorizationUrl,
+    this.accessCode,
+  });
+
+  final String reference;
+  final String authorizationUrl;
+  final String? accessCode;
+
+  factory WalletTopUpInitialization.fromJson(Map<String, dynamic> json) {
+    return WalletTopUpInitialization(
+      reference: json['reference'] as String? ?? '',
+      authorizationUrl: json['authorizationUrl'] as String? ?? '',
+      accessCode: json['accessCode'] as String?,
+    );
+  }
+}
+
 class PassengerWalletRepository {
   PassengerWalletRepository(this._dio);
 
@@ -54,6 +74,28 @@ class PassengerWalletRepository {
           .whereType<Map<String, dynamic>>()
           .map(WalletRecord.fromJson)
           .toList(growable: false);
+    } catch (error) {
+      throw mapApiException(error);
+    }
+  }
+
+  Future<WalletTopUpInitialization> initializePaystackTopUp({
+    required double amount,
+    String walletType = 'passenger_cashless',
+    String? currency,
+    String? description,
+  }) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/wallets/top-up/paystack/initialize',
+        data: {
+          'amount': amount,
+          'walletType': walletType,
+          'currency': currency,
+          'description': description,
+        }..removeWhere((key, value) => value == null),
+      );
+      return WalletTopUpInitialization.fromJson(response.data ?? const {});
     } catch (error) {
       throw mapApiException(error);
     }

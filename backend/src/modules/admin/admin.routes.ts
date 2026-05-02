@@ -3,6 +3,8 @@ import { AppError } from "../../common/errors.js";
 import { parseBody, parseParams, parseQuery } from "../../common/validation.js";
 import { adminPromoteSchema, adminRegisterSchema } from "../auth/auth.schemas.js";
 import { AuthService } from "../auth/auth.service.js";
+import { adminRatingsQuerySchema } from "../ratings/rating.schemas.js";
+import { RatingService } from "../ratings/rating.service.js";
 import { WalletService } from "../wallets/wallet.service.js";
 import {
   adminPayoutRequestsQuerySchema,
@@ -13,6 +15,7 @@ import {
 
 const authService = new AuthService();
 const walletService = new WalletService();
+const ratingService = new RatingService();
 
 function extractBearerToken(authorizationHeader?: string) {
   if (!authorizationHeader?.startsWith("Bearer ")) {
@@ -110,5 +113,11 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
     const params = parseParams(request, adminPayoutReviewParamsSchema);
     const input = parseBody(request, adminPayoutReviewSchema);
     return walletService.reviewAdminPayoutRequest(token, params.payoutRequestId, input);
+  });
+
+  server.get("/admin/ratings", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const query = parseQuery(request, adminRatingsQuerySchema);
+    return ratingService.listAdminRatings(token, query);
   });
 };

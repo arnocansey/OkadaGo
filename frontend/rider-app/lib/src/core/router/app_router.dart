@@ -12,6 +12,7 @@ import '../../features/rides/presentation/navigation_screen.dart';
 import '../../features/rides/presentation/ride_request_screen.dart';
 import '../../features/session/application/session_controller.dart';
 import '../../features/splash/presentation/splash_screen.dart';
+import '../../features/wallet/presentation/wallet_screen.dart';
 
 final navigatorKeyProvider = Provider<GlobalKey<NavigatorState>>((ref) {
   return GlobalKey<NavigatorState>();
@@ -53,6 +54,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/active-trip',
         builder: (context, state) => const ActiveTripScreen(),
+      ),
+      GoRoute(
+        path: '/wallet',
+        builder: (context, state) => const WalletScreen(),
       ),
       GoRoute(
         path: '/app',

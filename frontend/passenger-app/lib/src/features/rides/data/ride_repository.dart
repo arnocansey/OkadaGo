@@ -184,4 +184,24 @@ class PassengerRideRepository {
       throw mapApiException(error);
     }
   }
+
+  Future<void> submitRideRating({
+    required String rideId,
+    required int score,
+    String? category,
+    String? review,
+  }) async {
+    try {
+      await _dio.post<Map<String, dynamic>>(
+        '/ratings/rides/$rideId',
+        data: {
+          'score': score,
+          'category': category,
+          'review': review,
+        }..removeWhere((key, value) => value == null || (value is String && value.trim().isEmpty)),
+      );
+    } catch (error) {
+      throw mapApiException(error);
+    }
+  }
 }

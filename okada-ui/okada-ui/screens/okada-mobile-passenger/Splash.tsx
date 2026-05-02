@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { MobileScreenShell } from '../_shared/mobile-screen-shell';
+import { MobileStatusBar } from '../_shared/mobile-status-bar';
 
 export default function Splash() {
   const [page, setPage] = useState(0);
@@ -9,21 +11,10 @@ export default function Splash() {
     if (page < 2) setPage(page + 1);
   };
 
-  const StatusBar = () => (
-    <div className="flex justify-between items-center px-4 py-2 text-xs font-medium w-full z-50">
-      <span>9:41</span>
-      <div className="flex items-center gap-1">
-        <div className="w-4 h-3 bg-current rounded-sm"></div>
-        <div className="w-3 h-3 bg-current rounded-full"></div>
-        <div className="w-5 h-2.5 border border-current rounded-sm"></div>
-      </div>
-    </div>
-  );
-
   if (page === 0) {
     return (
-      <div className="w-[390px] h-[844px] bg-[#0D6B4A] text-white flex flex-col relative overflow-hidden font-sans">
-        <StatusBar />
+      <MobileScreenShell className="bg-[#0D6B4A] text-white flex flex-col">
+        <MobileStatusBar tone="light" />
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
           <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center mb-6 shadow-lg">
             <span className="text-[#0D6B4A] text-4xl font-bold italic">O</span>
@@ -33,20 +24,20 @@ export default function Splash() {
         </div>
         <div className="p-6 pb-10">
           <Button 
-            className="w-full bg-white text-[#0D6B4A] hover:bg-gray-100 h-14 rounded-full text-[16px] font-bold shadow-md"
+            className="w-full bg-white text-[#0D6B4A] hover:bg-gray-100 active:scale-[0.99] transition-all h-14 rounded-full text-[16px] font-bold shadow-md"
             onClick={nextPage}
           >
             Get Started
           </Button>
         </div>
-      </div>
+      </MobileScreenShell>
     );
   }
 
   return (
-    <div className="w-[390px] h-[844px] bg-white text-gray-900 flex flex-col relative overflow-hidden font-sans">
+    <MobileScreenShell className="bg-white text-gray-900 flex flex-col">
       <div className="text-gray-900">
-        <StatusBar />
+        <MobileStatusBar />
       </div>
       
       <div className="flex-1 flex flex-col p-6">
@@ -80,13 +71,13 @@ export default function Splash() {
             <div className={`w-2.5 h-2.5 rounded-full ${page === 2 ? 'bg-[#0D6B4A]' : 'bg-gray-200'}`} />
           </div>
           <Button 
-            className="w-full bg-[#0D6B4A] text-white hover:bg-[#0a5239] h-14 rounded-full text-[16px] font-bold shadow-md"
+            className="w-full bg-[#0D6B4A] text-white hover:bg-[#0a5239] active:scale-[0.99] transition-all h-14 rounded-full text-[16px] font-bold shadow-md"
             onClick={nextPage}
           >
             {page === 2 ? 'Continue' : 'Next'}
           </Button>
         </div>
       </div>
-    </div>
+    </MobileScreenShell>
   );
 }

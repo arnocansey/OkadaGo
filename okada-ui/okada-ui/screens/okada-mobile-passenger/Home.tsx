@@ -1,21 +1,12 @@
 import React from 'react';
 import { Bell, MapPin, Search, Home as HomeIcon, Briefcase, Clock, Navigation } from 'lucide-react';
+import { MobileScreenShell } from '../_shared/mobile-screen-shell';
+import { MobileStatusBar } from '../_shared/mobile-status-bar';
 
 export default function Home() {
-  const StatusBar = () => (
-    <div className="flex justify-between items-center px-4 py-2 text-xs font-medium w-full text-white bg-[#0D6B4A]">
-      <span>9:41</span>
-      <div className="flex items-center gap-1">
-        <div className="w-4 h-3 bg-current rounded-sm"></div>
-        <div className="w-3 h-3 bg-current rounded-full"></div>
-        <div className="w-5 h-2.5 border border-current rounded-sm"></div>
-      </div>
-    </div>
-  );
-
   return (
-    <div className="w-[390px] h-[844px] bg-gray-100 flex flex-col relative overflow-hidden font-sans">
-      <StatusBar />
+    <MobileScreenShell className="bg-gray-100 flex flex-col">
+      <MobileStatusBar tone="light" className="bg-[#0D6B4A]" />
       
       {/* AppBar */}
       <div className="bg-[#0D6B4A] px-4 py-3 flex items-center justify-between shadow-sm z-10">
@@ -31,7 +22,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <button className="w-10 h-10 rounded-full flex items-center justify-center text-white hover:bg-white/10">
+        <button className="w-10 h-10 rounded-full flex items-center justify-center text-white hover:bg-white/10 active:scale-[0.98] transition-all">
           <Bell size={20} />
         </button>
       </div>
@@ -62,12 +53,12 @@ export default function Home() {
       </div>
 
       {/* FAB */}
-      <button className="absolute bottom-[280px] right-4 w-14 h-14 bg-[#0D6B4A] rounded-2xl shadow-lg flex items-center justify-center text-white z-20">
+      <button className="absolute bottom-[calc(15.5rem+env(safe-area-inset-bottom))] right-4 w-14 h-14 bg-[#0D6B4A] rounded-2xl shadow-lg flex items-center justify-center text-white z-20 hover:bg-[#0b5c40] active:scale-[0.98] transition-all">
         <Navigation size={24} className="fill-current" />
       </button>
 
       {/* Bottom Sheet */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.1)] z-30 pt-3 pb-8 px-5 flex flex-col h-[260px]">
+      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.1)] z-30 pt-3 pb-[max(2rem,env(safe-area-inset-bottom))] px-5 flex flex-col h-[min(260px,42dvh)]">
         <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-5" />
         
         <div className="bg-gray-100 rounded-2xl p-4 flex items-center gap-3 mb-4 shadow-sm">
@@ -76,10 +67,10 @@ export default function Home() {
         </div>
 
         <div className="flex gap-3 mb-5">
-          <button className="flex-1 bg-green-50 rounded-full py-2.5 flex items-center justify-center gap-2 text-[#0D6B4A] text-[14px] font-medium border border-green-100">
+          <button className="flex-1 bg-green-50 rounded-full py-2.5 flex items-center justify-center gap-2 text-[#0D6B4A] text-[14px] font-medium border border-green-100 hover:bg-green-100 active:scale-[0.99] transition-all">
             <HomeIcon size={16} /> Home
           </button>
-          <button className="flex-1 bg-gray-50 rounded-full py-2.5 flex items-center justify-center gap-2 text-gray-700 text-[14px] font-medium border border-gray-200">
+          <button className="flex-1 bg-gray-50 rounded-full py-2.5 flex items-center justify-center gap-2 text-gray-700 text-[14px] font-medium border border-gray-200 hover:bg-gray-100 active:scale-[0.99] transition-all">
             <Briefcase size={16} /> Work
           </button>
         </div>
@@ -98,6 +89,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-    </div>
+    </MobileScreenShell>
   );
 }
