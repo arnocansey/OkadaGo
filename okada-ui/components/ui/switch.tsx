@@ -41,11 +41,11 @@ export function Switch({
       aria-checked={resolvedChecked}
       onClick={toggle}
       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-        resolvedChecked ? "bg-[#1a6b3c]" : "bg-slate-300"
+        resolvedChecked ? "bg-[#f7c600]" : "bg-slate-300"
       } ${className}`.trim()}
     >
       <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+        className={`inline-block h-4 w-4 transform rounded-full bg-[#0a0b0d] transition-transform ${
           resolvedChecked ? "translate-x-6" : "translate-x-1"
         }`}
       />

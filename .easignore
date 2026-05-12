@@ -1,0 +1,11 @@
+# Ignore generated artifacts to keep EAS upload small and avoid local disk spikes.
+frontend/apks/
+**/node_modules/
+**/.expo/
+**/android/build/
+**/android/app/build/
+**/android/app/.cxx/
+**/.gradle/
+**/dist/
+**/build/
+**/.next/

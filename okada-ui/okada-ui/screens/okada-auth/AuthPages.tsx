@@ -276,25 +276,26 @@ export function AuthPages({
 
   return (
     <div className="min-h-dvh bg-background flex flex-col md:min-h-screen md:flex-row font-sans">
-      <div className="hidden md:flex md:w-1/2 bg-primary relative overflow-hidden flex-col justify-between p-12 text-white">
+      <div className="hidden md:flex md:w-1/2 bg-[#0a0b0d] relative overflow-hidden flex-col justify-between p-12 text-white">
         <div className="absolute inset-0">
           <img
             src={authBg.src}
             alt="City Background"
-            className="w-full h-full object-cover opacity-40 mix-blend-overlay"
+            className="w-full h-full object-cover opacity-70"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0b0d] via-[#0a0b0d]/80 to-[#0a0b0d]/28" />
+          <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#0a0b0d]/70 to-transparent" />
         </div>
 
         <Link href="/" className="relative z-10 flex items-center gap-2 w-fit">
-          <div className="w-10 h-10 rounded bg-white flex items-center justify-center text-primary font-bold text-2xl">
+          <div className="w-10 h-10 rounded bg-primary flex items-center justify-center text-[#0a0b0d] font-bold text-2xl">
             O
           </div>
           <span className="font-bold text-2xl tracking-tight">OkadaGo</span>
         </Link>
 
         <div className="relative z-10 max-w-md">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-sm text-white backdrop-blur-md">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/15 px-3 py-1 text-sm text-white backdrop-blur-md">
             <Shield className="w-4 h-4" />
             Your safety is our priority
           </div>
@@ -318,10 +319,10 @@ export function AuthPages({
           </div>
 
           <Link href="/" className="mb-10 flex items-center justify-center gap-2 md:hidden w-fit">
-            <div className="flex h-10 w-10 items-center justify-center rounded bg-primary text-2xl font-bold text-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded bg-primary text-2xl font-bold text-[#0a0b0d]">
               O
             </div>
-            <span className="text-2xl font-bold tracking-tight text-primary">OkadaGo</span>
+            <span className="text-2xl font-bold tracking-tight text-[#0a0b0d]">OkadaGo</span>
           </Link>
 
           {errorMessage ? (
@@ -362,7 +363,7 @@ export function AuthPages({
                     <div className="flex">
                       <select
                         aria-label="Country code"
-                        className="min-h-12 rounded-l-xl border border-r-0 border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-700 outline-none transition-colors focus:border-[#0D6B4A]"
+                        className="min-h-12 rounded-l-xl border border-r-0 border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-700 outline-none transition-colors focus:border-[#f7c600]"
                         value={countryCode}
                         onChange={(event) => setCountryCode(event.target.value)}
                       >
@@ -391,7 +392,7 @@ export function AuthPages({
                     <Link
                       href={routeLinks.forgot}
                       className="text-sm font-semibold hover:underline"
-                      style={{ color: "#0D6B4A" }}
+                      style={{ color: "#8a6c00" }}
                     >
                       Forgot?
                     </Link>
@@ -406,7 +407,7 @@ export function AuthPages({
                   />
                 </div>
 
-                <Button type="submit" className="h-12 w-full bg-primary text-base text-white hover:bg-primary/90" disabled={loading}>
+                <Button type="submit" className="h-12 w-full bg-primary text-base text-[#0a0b0d] hover:bg-primary/90" disabled={loading}>
                   {loading ? "Please wait..." : "Log in"}
                 </Button>
               </form>
@@ -416,7 +417,7 @@ export function AuthPages({
                 <Link
                   href={routeLinks.signup}
                   className="font-bold hover:underline"
-                  style={{ color: "#0D6B4A" }}
+                  style={{ color: "#8a6c00" }}
                 >
                   {copy.loginAltCta}
                 </Link>
@@ -428,7 +429,7 @@ export function AuthPages({
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <Link
                 href={routeLinks.login}
-                className="mb-6 flex items-center text-sm font-semibold transition-colors hover:text-[#0D6B4A]"
+                className="mb-6 flex items-center text-sm font-semibold transition-colors hover:text-[#8a6c00]"
                 style={{ color: "#334155" }}
               >
                 <ArrowLeft className="mr-1 h-4 w-4" /> Back to login
@@ -479,7 +480,7 @@ export function AuthPages({
                   <div className="flex">
                     <select
                       aria-label="Country code"
-                      className="min-h-12 rounded-l-xl border border-r-0 border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-700 outline-none transition-colors focus:border-[#0D6B4A]"
+                      className="min-h-12 rounded-l-xl border border-r-0 border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-700 outline-none transition-colors focus:border-[#f7c600]"
                       value={countryCode}
                       onChange={(event) => setCountryCode(event.target.value)}
                     >
@@ -524,15 +525,15 @@ export function AuthPages({
                             backgroundColor: active
                               ? muted
                                 ? "#9EC5B7"
-                                : "#0D6B4A"
+                                : "#f7c600"
                               : "#D7DEE7",
-                            boxShadow: active && !muted ? "0 1px 6px rgba(13, 107, 74, 0.14)" : "none"
+                            boxShadow: active && !muted ? "0 1px 6px rgba(247, 198, 0, 0.2)" : "none"
                           }}
                         />
                       );
                     })}
                   </div>
-                  <p className="mt-1 text-xs font-semibold" style={{ color: passwordStrength.score >= 3 ? "#0D6B4A" : "#64748B" }}>
+                  <p className="mt-1 text-xs font-semibold" style={{ color: passwordStrength.score >= 3 ? "#8a6c00" : "#64748B" }}>
                     {passwordStrength.label}
                   </p>
                   <p className="mt-1 text-xs text-slate-500">
@@ -540,7 +541,7 @@ export function AuthPages({
                   </p>
                 </div>
 
-                <Button type="submit" className="h-12 w-full bg-primary text-base text-white hover:bg-primary/90" disabled={loading}>
+                <Button type="submit" className="h-12 w-full bg-primary text-base text-[#0a0b0d] hover:bg-primary/90" disabled={loading}>
                   {loading ? "Creating account..." : copy.signupCta}
                 </Button>
 
@@ -562,7 +563,7 @@ export function AuthPages({
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <Link
                 href={routeLinks.login}
-                className="mb-8 flex items-center text-sm font-semibold transition-colors hover:text-[#0D6B4A]"
+                className="mb-8 flex items-center text-sm font-semibold transition-colors hover:text-[#8a6c00]"
                 style={{ color: "#334155" }}
               >
                 <ArrowLeft className="mr-1 h-4 w-4" /> Back to login
@@ -592,7 +593,7 @@ export function AuthPages({
                     <div className="flex">
                       <select
                         aria-label="Country code"
-                        className="min-h-12 rounded-l-xl border border-r-0 border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-700 outline-none transition-colors focus:border-[#0D6B4A]"
+                        className="min-h-12 rounded-l-xl border border-r-0 border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-700 outline-none transition-colors focus:border-[#f7c600]"
                         value={countryCode}
                         onChange={(event) => setCountryCode(event.target.value)}
                       >
@@ -615,7 +616,7 @@ export function AuthPages({
                   </div>
                 )}
 
-                <Button type="submit" className="h-12 w-full bg-primary text-base text-white hover:bg-primary/90" disabled={loading}>
+                <Button type="submit" className="h-12 w-full bg-primary text-base text-[#0a0b0d] hover:bg-primary/90" disabled={loading}>
                   Continue
                 </Button>
               </form>

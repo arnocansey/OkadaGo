@@ -12,10 +12,10 @@ export function LandingPage() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded bg-primary flex items-center justify-center text-white font-bold text-xl">
+            <div className="w-8 h-8 rounded bg-primary flex items-center justify-center text-[#0a0b0d] font-bold text-xl">
               O
             </div>
-            <span className="font-bold text-xl tracking-tight text-primary">OkadaGo</span>
+            <span className="font-bold text-xl tracking-tight text-[#0a0b0d]">OkadaGo</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
             <a href="#how" className="text-muted-foreground hover:text-foreground transition-colors">How it works</a>
@@ -25,7 +25,7 @@ export function LandingPage() {
           </nav>
           <div className="flex items-center gap-4">
             <Link href="/login" className="hidden md:block text-sm font-medium">Log in</Link>
-            <Link href="/signup" className="inline-flex items-center justify-center bg-primary text-white hover:bg-primary/90 rounded-full px-6 min-h-10 font-medium transition-colors">
+            <Link href="/signup" className="inline-flex items-center justify-center bg-primary text-[#0a0b0d] hover:bg-primary/90 rounded-full px-6 min-h-10 font-medium transition-colors">
               Ride Now
             </Link>
             <Button variant="ghost" size="icon" className="md:hidden">
@@ -45,13 +45,13 @@ export function LandingPage() {
             </div>
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
               The city moves <br/>
-              <span className="text-primary">at your pace.</span>
+              <span className="text-[#8a6c00]">at your pace.</span>
             </h1>
             <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
               Fast, safe, and reliable motorcycle rides. Skip the traffic and get where you need to be with vetted professional riders you can trust.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/signup" className="inline-flex items-center justify-center bg-primary text-white hover:bg-primary/90 rounded-full h-14 px-8 text-base font-medium transition-colors">
+              <Link href="/signup" className="inline-flex items-center justify-center bg-primary text-[#0a0b0d] hover:bg-primary/90 rounded-full h-14 px-8 text-base font-medium transition-colors">
                 Book a Ride Now
               </Link>
               <Link href="/rider/signup" className="inline-flex items-center justify-center rounded-full h-14 px-8 text-base border-2 border-border hover:bg-muted/50 transition-colors">
@@ -85,19 +85,19 @@ export function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-primary/10">
             <div>
-              <div className="text-3xl font-bold text-primary mb-1">3M+</div>
+              <div className="text-3xl font-bold text-[#8a6c00] mb-1">3M+</div>
               <div className="text-sm font-medium text-muted-foreground">Safe Rides</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-primary mb-1">&lt; 3min</div>
+              <div className="text-3xl font-bold text-[#8a6c00] mb-1">&lt; 3min</div>
               <div className="text-sm font-medium text-muted-foreground">Average Wait</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-primary mb-1">24/7</div>
+              <div className="text-3xl font-bold text-[#8a6c00] mb-1">24/7</div>
               <div className="text-sm font-medium text-muted-foreground">Support</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-primary mb-1">100%</div>
+              <div className="text-3xl font-bold text-[#8a6c00] mb-1">100%</div>
               <div className="text-sm font-medium text-muted-foreground">Vetted Riders</div>
             </div>
           </div>
@@ -117,17 +117,17 @@ export function LandingPage() {
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                icon: <Shield className="w-8 h-8 text-primary" />,
+                icon: <Shield className="w-8 h-8 text-[#8a6c00]" />,
                 title: "Vetted Professionals",
                 desc: "Every rider passes background checks, rigorous training, and a 50-point vehicle inspection before they can accept a ride."
               },
               {
-                icon: <MapPin className="w-8 h-8 text-primary" />,
+                icon: <MapPin className="w-8 h-8 text-[#8a6c00]" />,
                 title: "Live GPS Tracking",
                 desc: "Share your trip status in real-time with loved ones. Our 24/7 control center monitors every ride for anomalies."
               },
               {
-                icon: <Clock className="w-8 h-8 text-primary" />,
+                icon: <Clock className="w-8 h-8 text-[#8a6c00]" />,
                 title: "Instant Response",
                 desc: "In-app SOS button connects you directly to emergency services and our rapid response team anywhere in the city."
               }
@@ -167,7 +167,7 @@ export function LandingPage() {
       </section>
 
       {/* How it works */}
-      <section id="how" className="py-24 bg-primary text-white">
+      <section id="how" className="py-24 bg-[#0a0b0d] text-white">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div>
@@ -193,7 +193,7 @@ export function LandingPage() {
                 <div className="w-full bg-white text-foreground rounded-2xl p-4 shadow-2xl transform -rotate-2">
                   <div className="flex justify-between items-center mb-4">
                     <div className="font-bold">Ride to Victoria Island</div>
-                    <div className="text-primary font-bold">₦1,200</div>
+                    <div className="text-[#8a6c00] font-bold">₦1,200</div>
                   </div>
                   <div className="flex items-center gap-3 bg-muted p-3 rounded-xl">
                     <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
@@ -206,7 +206,7 @@ export function LandingPage() {
                       </div>
                     </div>
                   </div>
-                  <Link href="/signup" className="inline-flex items-center justify-center w-full mt-4 bg-primary hover:bg-primary/90 rounded-xl min-h-10 text-white font-medium transition-colors">Confirm Ride</Link>
+                  <Link href="/signup" className="inline-flex items-center justify-center w-full mt-4 bg-primary hover:bg-primary/90 rounded-xl min-h-10 text-[#0a0b0d] font-medium transition-colors">Confirm Ride</Link>
                 </div>
                 <div className="text-center text-white/50 text-sm italic">Interactive booking experience right in your browser.</div>
               </div>
@@ -257,7 +257,7 @@ export function LandingPage() {
 
       {/* CTA */}
       <section className="py-24 px-4">
-        <div className="container mx-auto bg-primary rounded-3xl p-12 md:p-20 text-center text-white relative overflow-hidden">
+        <div className="container mx-auto bg-[#0a0b0d] rounded-3xl p-12 md:p-20 text-center text-white relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-secondary/20 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
           
@@ -267,7 +267,7 @@ export function LandingPage() {
               Book a ride directly from your browser. No app download required. Just tap and go.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link href="/signup" className="inline-flex items-center justify-center bg-white text-primary hover:bg-gray-100 rounded-full h-14 px-8 text-lg font-bold transition-colors">
+              <Link href="/signup" className="inline-flex items-center justify-center bg-primary text-[#0a0b0d] hover:bg-primary/90 rounded-full h-14 px-8 text-lg font-bold transition-colors">
                 Book on Web
                 <ChevronRight className="w-5 h-5 ml-2" />
               </Link>
@@ -282,7 +282,7 @@ export function LandingPage() {
           <div className="grid md:grid-cols-4 gap-8 mb-12">
             <div>
               <Link href="/" className="flex items-center gap-2 mb-6">
-                <div className="w-8 h-8 rounded bg-primary flex items-center justify-center text-white font-bold text-xl">
+                <div className="w-8 h-8 rounded bg-primary flex items-center justify-center text-[#0a0b0d] font-bold text-xl">
                   O
                 </div>
                 <span className="font-bold text-xl tracking-tight">OkadaGo</span>
