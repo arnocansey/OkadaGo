@@ -3,18 +3,24 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  ArrowUpRight,
   Bell,
   Bike,
+  CalendarDays,
+  ChevronDown,
   CreditCard,
   FileText,
+  Headphones,
   LayoutDashboard,
   LogOut,
+  MapPin,
+  Menu,
+  Package,
   Search,
   Settings,
   ShieldAlert,
   Tag,
   User,
+  UserPlus,
   Users
 } from "lucide-react";
 import { LiveOperationsTable } from "@/components/dashboard/live-operations-table";
@@ -91,6 +97,13 @@ type RiderRecord = {
   serviceZone: {
     id: string;
     name: string;
+  } | null;
+  vehicle?: {
+    id: string;
+    make: string;
+    model: string;
+    plateNumber: string;
+    status: string;
   } | null;
   user: {
     fullName: string;
@@ -450,8 +463,8 @@ function AdminSidebarPulse({
 }) {
   return (
     <section className="exact-admin-sidebar-card">
-      <p className="exact-admin-sidebar-card-eyebrow">Platform pulse</p>
-      <h3>Live network snapshot</h3>
+      <p className="exact-admin-sidebar-card-eyebrow">OkadaGo Wallet</p>
+      <h3>{formatMoney(currency, totalRevenue)}</h3>
       <div className="exact-admin-sidebar-metrics">
         <div>
           <span>Trips in motion</span>
@@ -470,6 +483,9 @@ function AdminSidebarPulse({
           <strong>{zones}</strong>
         </div>
       </div>
+      <a className="exact-admin-sidebar-action" href="/admin/payments">
+        Review finance
+      </a>
     </section>
   );
 }
@@ -655,6 +671,7 @@ export function AdminConsolePage({
   const riders = ridersQuery.data ?? [];
   const passengers = passengersQuery.data ?? [];
   const zones = zonesQuery.data ?? [];
+  const adminCurrency = session?.user.preferredCurrency ?? "GHS";
   const walletTransactions = walletTransactionsQuery.data ?? [];
   const payoutRequests = payoutRequestsQuery.data ?? [];
   const ratings = ratingsQuery.data ?? [];
@@ -824,36 +841,101 @@ export function AdminConsolePage({
       variant: "driver" as const
     }));
 
+  const vehicleCount = riders.filter((rider) => Boolean(rider.vehicle)).length;
+  const deliveryOrderCount = 0;
+  const deliveryRevenue = 0;
+  const rideRevenue = totalRevenue;
+  const totalDashboardRevenue = rideRevenue + deliveryRevenue;
+  const rideRevenuePercent =
+    totalDashboardRevenue > 0 ? Math.round((rideRevenue / totalDashboardRevenue) * 100) : 0;
+  const deliveryRevenuePercent =
+    totalDashboardRevenue > 0 ? Math.max(0, 100 - rideRevenuePercent) : 0;
+  const dashboardToday = new Intl.DateTimeFormat("en-GH", {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  }).format(new Date());
+  const shortDateFormatter = new Intl.DateTimeFormat("en-GH", {
+    month: "short",
+    day: "numeric"
+  });
+  const weeklyRideBuckets = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - (6 - index));
+    const key = date.toISOString().slice(0, 10);
+    const dayRides = rides.filter((ride) => {
+      const rideDate = new Date(ride.createdAt);
+      return !Number.isNaN(rideDate.getTime()) && rideDate.toISOString().slice(0, 10) === key;
+    });
+
+    return {
+      key,
+      label: shortDateFormatter.format(date),
+      rides: dayRides.length,
+      completed: dayRides.filter((ride) => ride.status.toLowerCase() === "completed").length
+    };
+  });
+  const weeklyRideMax = Math.max(
+    1,
+    ...weeklyRideBuckets.map((bucket) => Math.max(bucket.rides, bucket.completed))
+  );
+  const recentRideRequests = recentRideTimeline.slice(0, 4);
+  const liveActivityItems = [
+    ...recentRideTimeline.slice(0, 3).map((ride) => ({
+      id: `ride-${ride.id}`,
+      icon: Bike,
+      title: `Ride ${formatEnumLabel(ride.status)}`,
+      body: `${ride.pickupAddress} to ${ride.destinationAddress}`,
+      meta: formatDateTime(ride.createdAt),
+      tone: statusTone(ride.status)
+    })),
+    ...activeRiders.slice(0, 2).map((rider) => ({
+      id: `rider-${rider.id}`,
+      icon: User,
+      title: "Rider online",
+      body: `${rider.user.fullName}${rider.city ? ` in ${rider.city}` : ""}`,
+      meta: rider.serviceZone?.name ?? "No zone assigned",
+      tone: "success"
+    })),
+    ...recentPassengers.slice(0, 2).map((passenger) => ({
+      id: `passenger-${passenger.id}`,
+      icon: UserPlus,
+      title: "Passenger registered",
+      body: passenger.user.fullName,
+      meta: passenger.defaultServiceCity ?? "No default city",
+      tone: "neutral"
+    }))
+  ].slice(0, 5);
+
   const dashboardMetrics = [
     {
-      label: "Total trips",
+      label: "Total Rides",
       value: `${rides.length}`,
-      trend: `${completedTrips.length} completed`
+      trend: `${completedTrips.length} completed`,
+      icon: Bike,
+      tone: "green"
     },
     {
-      label: "Active rides",
-      value: `${activeTrips.length}`,
-      trend: `${cancelledTrips.length} cancelled`
+      label: "Delivery Orders",
+      value: `${deliveryOrderCount}`,
+      trend: "No delivery endpoint wired",
+      icon: Package,
+      tone: "yellow"
     },
     {
-      label: "Active riders",
-      value: `${activeRiders.length}`,
-      trend: `${riders.length - activeRiders.length} offline`
+      label: "Total Users",
+      value: `${passengers.length + riders.length}`,
+      trend: `${passengers.length} passengers, ${riders.length} riders`,
+      icon: Users,
+      tone: "green"
     },
     {
-      label: "Revenue today",
-      value: formatMoney(session?.user.preferredCurrency ?? "GHS", totalRevenue),
-      trend: formatMoney(session?.user.preferredCurrency ?? "GHS", totalCommission) + " commission"
-    },
-    {
-      label: "Promo-assisted rides",
-      value: `${promoAdjustedTrips.length}`,
-      trend: formatMoney(session?.user.preferredCurrency ?? "GHS", promoSpend + referralSpend) + " discount"
-    },
-    {
-      label: "Service zones",
-      value: `${zones.length}`,
-      trend: `${zones.filter((zone) => zone.isActive).length} active zones`
+      label: "Total Revenue",
+      value: formatMoney(adminCurrency, totalDashboardRevenue),
+      trend: `${formatMoney(adminCurrency, totalCommission)} commission`,
+      icon: CreditCard,
+      tone: "yellow"
     }
   ];
 
@@ -869,16 +951,16 @@ export function AdminConsolePage({
         badge: `${activeTrips.length}`
       },
       {
-        label: "Rides",
+        label: "Requests",
         href: "/admin/rides",
         icon: Bike,
         screen: "rides",
         group: "main",
-        hint: "Trip dispatch and history",
+        hint: "Ride requests and history",
         badge: `${completedTrips.length}`
       },
       {
-        label: "Riders",
+        label: "Riders Management",
         href: "/admin/riders",
         icon: User,
         screen: "riders",
@@ -887,7 +969,7 @@ export function AdminConsolePage({
         badge: `${activeRiders.length}`
       },
       {
-        label: "Passengers",
+        label: "Users Management",
         href: "/admin/passengers",
         icon: Users,
         screen: "passengers",
@@ -896,7 +978,7 @@ export function AdminConsolePage({
         badge: `${passengers.length}`
       },
       {
-        label: "Payments",
+        label: "Finance",
         href: "/admin/payments",
         icon: CreditCard,
         screen: "payments",
@@ -905,9 +987,9 @@ export function AdminConsolePage({
         badge: `${pendingPayoutRequests.length}`
       },
       {
-        label: "Ratings",
+        label: "Support Center",
         href: "/admin/ratings",
-        icon: FileText,
+        icon: Headphones,
         screen: "ratings",
         group: "finance",
         hint: "Submission verification",
@@ -923,9 +1005,9 @@ export function AdminConsolePage({
         badge: `${promoAdjustedTrips.length}`
       },
       {
-        label: "Settings",
+        label: "Locations & Settings",
         href: "/admin/settings",
-        icon: Settings,
+        icon: MapPin,
         screen: "settings",
         group: "system",
         hint: "Zones, pricing, modules",
@@ -1234,186 +1316,244 @@ export function AdminConsolePage({
 
   const content =
     screen === "dashboard" ? (
-      <>
-        <AdminSectionIntro
-          eyebrow="Admin dashboard"
-          title={screenMeta.dashboard.title}
-          description={screenMeta.dashboard.description}
-        />
+      <div className="exact-admin-dashboard">
+        <section className="admin-reference-kpis" aria-label="Admin dashboard metrics">
+          {dashboardMetrics.map((metric) => {
+            const Icon = metric.icon;
 
-        <section className="exact-admin-section">
-          <div className="exact-admin-kpis exact-admin-kpis-expanded">
-            {dashboardMetrics.map((metric) => (
-              <article key={metric.label} className="exact-admin-kpi">
-                <span>{metric.label}</span>
-                <strong>{metric.value}</strong>
-                <small>{metric.trend}</small>
+            return (
+              <article key={metric.label} className="admin-reference-kpi">
+                <div className={`admin-reference-kpi-icon ${metric.tone}`}>
+                  <Icon size={22} />
+                </div>
+                <div>
+                  <span>{metric.label}</span>
+                  <strong>{metric.value}</strong>
+                  <small>{metric.trend}</small>
+                </div>
               </article>
-            ))}
-          </div>
+            );
+          })}
         </section>
 
-        <div className="exact-admin-grid">
-          <section className="exact-admin-card wide">
-              <div className="exact-admin-cardhead">
+        <section className="admin-reference-grid-3">
+          <article className="admin-reference-card admin-reference-overview">
+            <div className="admin-reference-cardhead">
+              <div>
+                <h3>Overview</h3>
+                <p>Last 7 days from live ride records.</p>
+              </div>
+              <span>This week</span>
+            </div>
+            <div className="admin-reference-legend">
+              <span><i className="black" /> Ride requests</span>
+              <span><i className="yellow" /> Completed rides</span>
+            </div>
+            <div className="admin-reference-bars">
+              {weeklyRideBuckets.map((bucket) => (
+                <div key={bucket.key} className="admin-reference-bar-day">
+                  <div className="admin-reference-bar-track">
+                    <i
+                      className="rides"
+                      style={{
+                        height: bucket.rides === 0 ? 0 : `${Math.max(8, (bucket.rides / weeklyRideMax) * 100)}%`
+                      }}
+                    />
+                    <i
+                      className="completed"
+                      style={{
+                        height:
+                          bucket.completed === 0
+                            ? 0
+                            : `${Math.max(8, (bucket.completed / weeklyRideMax) * 100)}%`
+                      }}
+                    />
+                  </div>
+                  <span>{bucket.label}</span>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="admin-reference-card admin-reference-revenue">
+            <div className="admin-reference-cardhead">
+              <div>
+                <h3>Revenue Overview</h3>
+                <p>{formatMoney(adminCurrency, totalDashboardRevenue)} captured.</p>
+              </div>
+              <span>This week</span>
+            </div>
+            <div className="admin-reference-revenue-body">
+              <div
+                className="admin-reference-donut"
+                style={{
+                  background:
+                    totalDashboardRevenue === 0
+                      ? "#eef1f5"
+                      : `conic-gradient(#111827 0 ${rideRevenuePercent}%, #ffc107 ${rideRevenuePercent}% 100%)`
+                }}
+              >
                 <div>
-                  <h3>Operations canvas</h3>
-                  <p>Live rider coordinates from the backend availability feed.</p>
+                  <span>Total</span>
+                  <strong>{formatMoney(adminCurrency, totalDashboardRevenue)}</strong>
                 </div>
               </div>
-              <div className="exact-admin-map">
-                <OperationsMap
-                  center={mapMarkers[0]?.position ?? [5.6037, -0.187]}
-                  zoom={mapMarkers.length > 0 ? 11 : 6}
-                  markers={mapMarkers}
-                  emptyTitle="No live rider coordinates yet."
-                  emptyDescription="Use the rider availability controls to bring riders online with coordinates across Accra."
-                />
-              </div>
-          </section>
-
-          <div className="exact-admin-stack">
-            <section className="exact-admin-card">
-              <div className="exact-admin-cardhead">
-                <div>
-                  <h3>Dispatch priorities</h3>
-                  <p>Where the operations team should focus right now.</p>
-                </div>
-              </div>
-              <div className="exact-admin-priority-grid">
-                <article className="exact-admin-priority-card">
-                  <span>Needs dispatch</span>
-                  <strong>{ridesNeedingDispatch.length}</strong>
-                  <small>Searching or newly assigned rides still waiting for smooth handoff.</small>
-                </article>
-                <article className="exact-admin-priority-card">
-                  <span>Awaiting pickup</span>
-                  <strong>{ridesAwaitingPickup.length}</strong>
-                  <small>Riders are approaching or already at pickup points.</small>
-                </article>
-                <article className="exact-admin-priority-card">
-                  <span>Trips in progress</span>
-                  <strong>{ridesInProgress.length}</strong>
-                  <small>Active journeys already moving through the network.</small>
-                </article>
-              </div>
-            </section>
-
-            <PlatformHealthCard />
-          </div>
-        </div>
-
-        <div className="exact-admin-grid">
-          <section className="exact-admin-card wide">
-            <div className="exact-admin-cardhead">
-              <div>
-                <h3>Live trips</h3>
-                <p>Trips currently in flight across the dispatch network.</p>
-              </div>
+              <ul className="admin-reference-revenue-list">
+                <li>
+                  <i className="black" />
+                  <span>Ride Revenue</span>
+                  <strong>{formatMoney(adminCurrency, rideRevenue)}</strong>
+                  <small>{rideRevenuePercent}%</small>
+                </li>
+                <li>
+                  <i className="yellow" />
+                  <span>Delivery Revenue</span>
+                  <strong>{formatMoney(adminCurrency, deliveryRevenue)}</strong>
+                  <small>{deliveryRevenuePercent}%</small>
+                </li>
+              </ul>
             </div>
-            <LiveOperationsTable
-              rows={rows.filter((row) =>
-                ["searching", "assigned", "arriving", "arrived", "started"].includes(row.status)
-              )}
-            />
-          </section>
+          </article>
 
-          <section className="exact-admin-card">
-            <div className="exact-admin-cardhead">
+          <article className="admin-reference-card admin-reference-map-card">
+            <div className="admin-reference-cardhead">
               <div>
-                <h3>Ride status mix</h3>
-                <p>Quick pressure read across dispatch lanes.</p>
+                <h3>Live Map</h3>
+                <p>{activeRiders.length} riders online.</p>
               </div>
+              <a href="/admin/riders">View full map</a>
             </div>
-            <ul className="workbench-list exact-admin-status-list">
-              <li>
-                <span>Searching or assigned</span>
-                <strong>{ridesNeedingDispatch.length}</strong>
-              </li>
-              <li>
-                <span>Arriving or arrived</span>
-                <strong>{ridesAwaitingPickup.length}</strong>
-              </li>
-              <li>
-                <span>Started rides</span>
-                <strong>{ridesInProgress.length}</strong>
-              </li>
-              <li>
-                <span>Completed rides</span>
-                <strong>{completedTrips.length}</strong>
-              </li>
-            </ul>
-          </section>
-        </div>
+            <div className="admin-reference-map">
+              <OperationsMap
+                center={mapMarkers[0]?.position ?? [5.6037, -0.187]}
+                zoom={mapMarkers.length > 0 ? 11 : 6}
+                markers={mapMarkers}
+                emptyTitle="No live rider coordinates yet."
+                emptyDescription="Online riders with coordinates will appear on this map automatically."
+              />
+            </div>
+          </article>
+        </section>
 
-        <div className="exact-admin-grid">
-          <section className="exact-admin-card wide">
-            <div className="exact-admin-cardhead">
+        <section className="admin-reference-lists">
+          <article className="admin-reference-card admin-reference-list-card">
+            <div className="admin-reference-cardhead">
               <div>
-                <h3>Service zone coverage</h3>
-                <p>Live zones, current pricing, and the riders currently online inside each zone.</p>
+                <h3>Recent Ride Requests</h3>
+                <p>Newest ride records from the backend.</p>
               </div>
+              <a href="/admin/rides">View all</a>
             </div>
-            {zonesWithActiveRiders.length === 0 ? (
+            {recentRideRequests.length === 0 ? (
               <EmptyCard
-                title="No service zones found."
-                body="Create or sync service zones and they will appear here with live rider coverage."
+                title="No ride requests yet."
+                body="Ride requests will appear here as soon as passengers start booking."
               />
             ) : (
-              <div className="table-wrapper">
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Zone</th>
-                      <th>City</th>
-                      <th>Currency</th>
-                      <th>Base fare</th>
-                      <th>Min fare</th>
-                      <th>Online riders</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {zonesWithActiveRiders.map((zone) => (
-                      <tr key={zone.id}>
-                        <td>{zone.name}</td>
-                        <td>{zone.city}</td>
-                        <td>{zone.currency}</td>
-                        <td>{formatMoney(zone.currency, zone.baseFare)}</td>
-                        <td>{formatMoney(zone.currency, zone.minimumFare)}</td>
-                        <td>{zone.activeRiderCount}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
-
-          <section className="exact-admin-card">
-            <div className="exact-admin-cardhead">
-              <div>
-                <h3>Zone demand pattern</h3>
-                <p>Where ride activity is currently concentrating by service zone.</p>
-              </div>
-            </div>
-            {rideZoneSnapshot.length === 0 ? (
-              <EmptyCard
-                title="No ride activity yet."
-                body="Zone demand will appear here as soon as rides start flowing through the backend."
-              />
-            ) : (
-              <ul className="workbench-list">
-                {rideZoneSnapshot.map(([zoneName, rideCount]) => (
-                  <li key={zoneName}>
-                    <span>{zoneName}</span>
-                    <strong>{rideCount}</strong>
+              <ul className="admin-reference-request-list">
+                {recentRideRequests.map((ride) => (
+                  <li key={ride.id}>
+                    <div className="admin-reference-avatar">
+                      {ride.passenger.user.fullName
+                        .split(" ")
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .map((part) => part[0])
+                        .join("")
+                        .toUpperCase()}
+                    </div>
+                    <div>
+                      <strong>{ride.passenger.user.fullName}</strong>
+                      <span>{ride.pickupAddress} to {ride.destinationAddress}</span>
+                      <small>{formatDateTime(ride.createdAt)}</small>
+                    </div>
+                    <div className="admin-reference-request-money">
+                      <strong>{formatMoney(ride.currency, parseNumber(ride.finalFare ?? ride.estimatedFare))}</strong>
+                      <span className={`status-chip ${statusTone(ride.status)}`}>{formatEnumLabel(ride.status)}</span>
+                    </div>
                   </li>
                 ))}
               </ul>
             )}
-          </section>
-        </div>
-      </>
+          </article>
+
+          <article className="admin-reference-card admin-reference-list-card">
+            <div className="admin-reference-cardhead">
+              <div>
+                <h3>Recent Delivery Orders</h3>
+                <p>Delivery data will render here when the backend exposes it.</p>
+              </div>
+              <span>No endpoint</span>
+            </div>
+            <EmptyCard
+              title="No delivery order feed is wired."
+              body="The current backend exposes ride, rider, passenger, wallet, rating, and zone data, but no delivery order endpoint yet."
+            />
+          </article>
+
+          <article className="admin-reference-card admin-reference-list-card">
+            <div className="admin-reference-cardhead">
+              <div>
+                <h3>Live Activity</h3>
+                <p>Latest operational events from live records.</p>
+              </div>
+              <a href="/admin/rides">View all</a>
+            </div>
+            {liveActivityItems.length === 0 ? (
+              <EmptyCard
+                title="No activity yet."
+                body="Ride, rider, and passenger activity will populate this feed automatically."
+              />
+            ) : (
+              <ul className="admin-reference-activity-list">
+                {liveActivityItems.map((item) => {
+                  const Icon = item.icon;
+
+                  return (
+                    <li key={item.id}>
+                      <div className={`admin-reference-activity-icon ${item.tone}`}>
+                        <Icon size={17} />
+                      </div>
+                      <div>
+                        <strong>{item.title}</strong>
+                        <span>{item.body}</span>
+                        <small>{item.meta}</small>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </article>
+        </section>
+
+        <section className="admin-reference-card admin-reference-quick-actions">
+          <a href="/admin/riders">
+            <UserPlus size={18} />
+            <span>Add New Rider</span>
+          </a>
+          <a href="/admin/riders">
+            <Bike size={18} />
+            <span>Review Vehicles ({vehicleCount})</span>
+          </a>
+          <a href="/admin/promotions">
+            <Tag size={18} />
+            <span>Create Promo</span>
+          </a>
+          <a href="/admin/ratings">
+            <Headphones size={18} />
+            <span>Support Tickets</span>
+          </a>
+          <a href="/admin/payments">
+            <CreditCard size={18} />
+            <span>Finance Reports</span>
+          </a>
+          <a href="/admin/settings">
+            <Settings size={18} />
+            <span>Locations</span>
+          </a>
+        </section>
+      </div>
     ) : screen === "rides" ? (
       <>
         <section className="exact-admin-section">
@@ -3588,10 +3728,9 @@ export function AdminConsolePage({
       <div className="exact-admin-shell">
         <aside className="exact-admin-sidebar">
           <div className="exact-admin-brand">
-            <div className="exact-admin-brandmark">O</div>
             <div>
-              <strong>OKADAGO</strong>
-              <span>Operations console</span>
+              <strong>Okada<span>Go</span></strong>
+              <small>Move • Deliver</small>
             </div>
           </div>
 
@@ -3667,8 +3806,10 @@ export function AdminConsolePage({
         <section className="exact-admin-main">
           <header className="exact-admin-topbar">
             <div className="exact-admin-topbarcopy">
+              <button className="exact-admin-menu-button" type="button" aria-label="Open admin navigation">
+                <Menu size={21} />
+              </button>
               <div className="exact-admin-pageintro">
-                <p className="exact-admin-pageeyebrow">{screenMeta[screen].eyebrow}</p>
                 <div className="exact-admin-topmeta">
                   <strong>{screenMeta[screen].title}</strong>
                   <span>{screenMeta[screen].description}</span>
@@ -3681,16 +3822,30 @@ export function AdminConsolePage({
             </div>
 
             <div className="exact-admin-actions">
-              <a className="exact-admin-quickaction" href={screenMeta[screen].quickActionHref}>
-                <ArrowUpRight size={16} />
-                <span>{screenMeta[screen].quickActionLabel}</span>
-              </a>
               <button className="exact-icon-button notification" type="button">
                 <Bell size={18} />
               </button>
               <button className="exact-admin-zone" type="button">
-                {new Date().toLocaleDateString("en-GH", { month: "short", day: "numeric", year: "numeric" })}
+                <CalendarDays size={15} />
+                <span>{dashboardToday}</span>
+                <ChevronDown size={15} />
               </button>
+              <div className="exact-admin-top-profile">
+                <div className="exact-avatar">
+                  {session.user.fullName
+                    .split(" ")
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map((part) => part[0])
+                    .join("")
+                    .toUpperCase()}
+                </div>
+                <div>
+                  <strong>{session.user.fullName}</strong>
+                  <span>Super Admin</span>
+                </div>
+                <ChevronDown size={15} />
+              </div>
             </div>
           </header>
 
