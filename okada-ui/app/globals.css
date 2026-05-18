@@ -8209,6 +8209,231 @@ body {
   color: #94a3b8;
 }
 
+.admin-dark-shell.exact-admin-shell,
+.admin-dark-shell .exact-admin-main,
+.admin-dark-shell .exact-admin-scroll {
+  background:
+    radial-gradient(circle at 78% 0%, rgba(255, 193, 7, 0.08), transparent 28%),
+    linear-gradient(180deg, #090b0f 0%, #0b0e14 100%);
+}
+
+.admin-dark-shell .exact-admin-topbar {
+  background: rgba(9, 11, 15, 0.96);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.admin-dark-shell .exact-admin-menu-button,
+.admin-dark-shell .exact-admin-topmeta strong,
+.admin-dark-shell .exact-admin-zone,
+.admin-dark-shell .exact-admin-top-profile,
+.admin-dark-shell .exact-admin-search input {
+  color: #f8fafc;
+}
+
+.admin-dark-shell .exact-admin-topmeta span,
+.admin-dark-shell .exact-admin-top-profile span {
+  color: #9ca3af;
+}
+
+.admin-dark-shell .exact-admin-search,
+.admin-dark-shell .exact-admin-zone,
+.admin-dark-shell .exact-icon-button,
+.admin-dark-shell .exact-admin-quickaction {
+  background: #11141b;
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+}
+
+.admin-dark-shell .exact-admin-search input::placeholder {
+  color: #64748b;
+}
+
+.admin-dark-shell .exact-admin-top-profile .exact-avatar {
+  background: #11141b;
+  color: #ffc107;
+  border-color: rgba(255, 193, 7, 0.34);
+}
+
+.admin-dark-shell .exact-admin-heading h1,
+.admin-dark-shell .exact-admin-card strong,
+.admin-dark-shell .exact-admin-card h3,
+.admin-dark-shell .exact-health-card strong,
+.admin-dark-shell .admin-reference-cardhead h3,
+.admin-dark-shell .admin-reference-kpi strong,
+.admin-dark-shell .admin-reference-card strong,
+.admin-dark-shell .admin-reference-request-list strong,
+.admin-dark-shell .admin-reference-activity-list strong,
+.admin-dark-shell .admin-reference-revenue-list strong,
+.admin-dark-shell .workbench-list strong,
+.admin-dark-shell .exact-admin-transaction-user strong,
+.admin-dark-shell .exact-admin-payout-head strong,
+.admin-dark-shell .exact-admin-payout-metrics span,
+.admin-dark-shell .admin-promote-summary strong {
+  color: #ffffff;
+}
+
+.admin-dark-shell .exact-admin-heading p,
+.admin-dark-shell .exact-admin-card .kicker,
+.admin-dark-shell .exact-admin-card .body-muted,
+.admin-dark-shell .exact-admin-card p,
+.admin-dark-shell .exact-admin-card li,
+.admin-dark-shell .exact-admin-card .field-label,
+.admin-dark-shell .admin-reference-cardhead p,
+.admin-dark-shell .admin-reference-kpi span,
+.admin-dark-shell .admin-reference-card p,
+.admin-dark-shell .admin-reference-request-list span,
+.admin-dark-shell .admin-reference-request-list small,
+.admin-dark-shell .admin-reference-activity-list span,
+.admin-dark-shell .admin-reference-activity-list small,
+.admin-dark-shell .admin-reference-revenue-list small,
+.admin-dark-shell .admin-reference-bar-day span,
+.admin-dark-shell .admin-reference-donut span,
+.admin-dark-shell .exact-admin-transaction-user span,
+.admin-dark-shell .exact-admin-payout-head span,
+.admin-dark-shell .exact-admin-payout-metadata span,
+.admin-dark-shell .admin-promote-summary span,
+.admin-dark-shell .workbench-list span {
+  color: #94a3b8;
+}
+
+.admin-dark-shell .exact-admin-kpi,
+.admin-dark-shell .exact-admin-card,
+.admin-dark-shell .exact-admin-card-inset,
+.admin-dark-shell .exact-admin-priority-card,
+.admin-dark-shell .admin-reference-kpi,
+.admin-dark-shell .admin-reference-card,
+.admin-dark-shell .admin-reference-list-card,
+.admin-dark-shell .admin-promote-summary,
+.admin-dark-shell .table-wrapper,
+.admin-dark-shell .empty-state {
+  background: #11141b;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
+}
+
+.admin-dark-shell .exact-admin-card-inset,
+.admin-dark-shell .workbench-list li,
+.admin-dark-shell .exact-admin-payout-card,
+.admin-dark-shell .admin-reference-request-list li,
+.admin-dark-shell .admin-reference-activity-list li,
+.admin-dark-shell .admin-reference-quick-actions a,
+.admin-dark-shell .admin-reference-donut > div,
+.admin-dark-shell .admin-reference-map,
+.admin-dark-shell .admin-reference-map .map-shell,
+.admin-dark-shell .admin-reference-map .leaflet-container {
+  background: #0b0e14;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.admin-dark-shell .admin-reference-kpi-icon,
+.admin-dark-shell .admin-reference-activity-icon.neutral {
+  background: rgba(255, 193, 7, 0.14);
+  color: #ffc107;
+}
+
+.admin-dark-shell .admin-reference-kpi-icon.green,
+.admin-dark-shell .admin-reference-activity-icon.success {
+  background: rgba(34, 197, 94, 0.16);
+  color: #22c55e;
+}
+
+.admin-dark-shell .admin-reference-activity-icon.warning {
+  background: rgba(255, 193, 7, 0.16);
+  color: #ffc107;
+}
+
+.admin-dark-shell .admin-reference-activity-icon.danger {
+  background: rgba(248, 113, 113, 0.16);
+  color: #f87171;
+}
+
+.admin-dark-shell .exact-admin-priority-card span,
+.admin-dark-shell .exact-admin-kpi span,
+.admin-dark-shell .exact-admin-kpi small {
+  color: #94a3b8;
+}
+
+.admin-dark-shell .exact-admin-priority-card small {
+  color: #94a3b8;
+}
+
+.admin-dark-shell .exact-admin-priority-card strong,
+.admin-dark-shell .exact-admin-kpi strong {
+  color: #ffffff;
+}
+
+.admin-dark-shell .exact-admin-card .input,
+.admin-dark-shell .exact-admin-card .select,
+.admin-dark-shell .exact-admin-card .textarea,
+.admin-dark-shell .input,
+.admin-dark-shell .select,
+.admin-dark-shell .textarea {
+  background: #0b0e14;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.admin-dark-shell .exact-admin-card .input::placeholder,
+.admin-dark-shell .exact-admin-card .textarea::placeholder,
+.admin-dark-shell .input::placeholder,
+.admin-dark-shell .textarea::placeholder {
+  color: #64748b;
+}
+
+.admin-dark-shell .exact-admin-card .select option,
+.admin-dark-shell .select option {
+  color: #f8fafc;
+  background: #11141b;
+}
+
+.admin-dark-shell .table {
+  color: #e5e7eb;
+}
+
+.admin-dark-shell .table th {
+  color: #94a3b8;
+}
+
+.admin-dark-shell .table td {
+  color: #e5e7eb;
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+}
+
+.admin-dark-shell .admin-reference-bars,
+.admin-dark-shell .admin-reference-request-list li,
+.admin-dark-shell .admin-reference-activity-list li,
+.admin-dark-shell .exact-admin-payout-card {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.admin-dark-shell .admin-reference-cardhead a,
+.admin-dark-shell .admin-reference-cardhead span,
+.admin-dark-shell .exact-admin-cardhead a,
+.admin-dark-shell .exact-admin-cardhead span {
+  color: #ffc107;
+}
+
+.admin-dark-shell .status-chip.success {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.14);
+}
+
+.admin-dark-shell .status-chip.warning {
+  color: #facc15;
+  background: rgba(255, 193, 7, 0.16);
+}
+
+.admin-dark-shell .status-chip.neutral {
+  color: #cbd5e1;
+  background: rgba(148, 163, 184, 0.14);
+}
+
+.admin-dark-shell .status-chip.danger {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.16);
+}
+
 @media (max-width: 1280px) {
   .admin-users-kpis {
     grid-template-columns: repeat(2, minmax(0, 1fr));

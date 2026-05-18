@@ -4765,11 +4765,7 @@ export function AdminConsolePage({
 
   return (
     <ImmersivePage className="exact-admin-page">
-      <div
-        className={`exact-admin-shell ${
-          ["payments", "rides", "passengers"].includes(screen) ? "admin-finance-shell" : ""
-        }`}
-      >
+      <div className={`exact-admin-shell admin-dark-shell ${screen === "payments" ? "admin-finance-shell" : ""}`}>
         <aside className="exact-admin-sidebar">
           <div className="exact-admin-brand">
             <div>
