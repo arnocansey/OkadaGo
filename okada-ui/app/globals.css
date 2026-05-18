@@ -7114,14 +7114,14 @@ body {
 
 .admin-finance-dashboard {
   display: grid;
-  gap: 16px;
+  gap: 12px;
   color: #f8fafc;
 }
 
 .admin-finance-kpis {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 
 .admin-finance-kpi,
@@ -7132,23 +7132,23 @@ body {
 }
 
 .admin-finance-kpi {
-  min-height: 108px;
-  padding: 16px;
-  border-radius: 14px;
+  min-height: 96px;
+  padding: 14px;
+  border-radius: 12px;
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr);
+  grid-template-columns: 42px minmax(0, 1fr);
   grid-template-areas:
     "icon label"
     "icon value"
     "icon trend";
-  gap: 3px 12px;
+  gap: 2px 10px;
   align-items: center;
 }
 
 .admin-finance-kpi-icon {
   grid-area: icon;
-  width: 46px;
-  height: 46px;
+  width: 40px;
+  height: 40px;
   border-radius: 999px;
   display: grid;
   place-items: center;
@@ -7197,9 +7197,9 @@ body {
 
 .admin-finance-grid-main {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.7fr) minmax(320px, 0.8fr);
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.85fr);
   gap: 12px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .admin-finance-grid-lower,
@@ -7212,19 +7212,22 @@ body {
 
 .admin-finance-side-stack {
   display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 
 .admin-finance-card {
-  border-radius: 14px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 14px;
+  min-width: 0;
 }
 
 .admin-finance-cardhead {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .admin-finance-cardhead h3 {
@@ -7234,7 +7237,7 @@ body {
 }
 
 .admin-finance-cardhead p {
-  margin: 5px 0 0;
+  margin: 3px 0 0;
   color: #94a3b8;
   font-size: 0.78rem;
   line-height: 1.45;
@@ -7250,7 +7253,7 @@ body {
 .admin-finance-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
   color: #cbd5e1;
   font-size: 0.72rem;
   font-weight: 700;
@@ -7271,13 +7274,13 @@ body {
 }
 
 .admin-finance-chart {
-  height: 220px;
-  margin-top: 16px;
+  height: 198px;
+  margin-top: 12px;
   display: grid;
   grid-template-columns: repeat(10, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 14px;
+  padding-top: 12px;
 }
 
 .admin-finance-chart-day,
@@ -7290,7 +7293,7 @@ body {
 }
 
 .admin-finance-chart-bars {
-  height: 170px;
+  height: 150px;
   display: flex;
   align-items: end;
   justify-content: center;
@@ -7341,16 +7344,16 @@ body {
 
 .admin-finance-breakdown-body {
   display: grid;
-  grid-template-columns: 150px minmax(0, 1fr);
-  gap: 18px;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 14px;
   align-items: center;
 }
 
 .admin-finance-donut {
-  width: 150px;
-  height: 150px;
+  width: 132px;
+  height: 132px;
   border-radius: 999px;
-  padding: 28px;
+  padding: 24px;
 }
 
 .admin-finance-donut > div {
@@ -7384,7 +7387,7 @@ body {
 .admin-finance-breakdown-list,
 .admin-finance-transaction-list {
   display: grid;
-  gap: 12px;
+  gap: 9px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -7409,7 +7412,7 @@ body {
 }
 
 .admin-finance-wallet-main {
-  padding: 14px;
+  padding: 12px;
   border-radius: 12px;
   background: #0b0e14;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -7439,11 +7442,11 @@ body {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .admin-finance-wallet-grid div {
-  padding: 12px;
+  padding: 10px;
   border-radius: 12px;
   background: #151923;
 }
@@ -7457,9 +7460,9 @@ body {
 .admin-finance-transaction-list li {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
-  padding-bottom: 10px;
+  padding-bottom: 8px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
@@ -7498,15 +7501,15 @@ body {
 }
 
 .admin-finance-payout-bars {
-  height: 185px;
+  height: 160px;
   display: grid;
   grid-template-columns: repeat(10, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 8px;
+  gap: 8px;
+  margin-top: 6px;
 }
 
 .admin-finance-payout-bars div {
-  height: 185px;
+  height: 160px;
 }
 
 .admin-finance-payout-bars i {
@@ -7517,15 +7520,15 @@ body {
 
 .admin-finance-progress-list {
   display: grid;
-  gap: 12px;
-  margin-top: 18px;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .admin-finance-progress-list div {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  padding-top: 10px;
+  padding-top: 8px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -7571,14 +7574,18 @@ body {
   color: #cbd5e1;
 }
 
+.admin-finance-controls .exact-admin-payment-filters {
+  gap: 10px;
+}
+
 .admin-finance-summary-strip {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 
 .admin-finance-summary-strip div {
-  padding: 14px;
+  padding: 12px;
   border-radius: 12px;
   background: #0b0e14;
 }
@@ -7603,6 +7610,8 @@ body {
 .admin-finance-dashboard .empty-state {
   background: #0b0e14;
   border-color: rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  padding: 16px;
 }
 
 .admin-finance-dashboard .empty-state strong {
@@ -8243,12 +8252,17 @@ body {
   .admin-finance-grid-ledgers {
     grid-template-columns: 1fr;
   }
+
+  .admin-finance-side-stack {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 720px) {
   .admin-finance-kpis,
   .admin-finance-summary-strip,
-  .admin-finance-wallet-grid {
+  .admin-finance-wallet-grid,
+  .admin-finance-side-stack {
     grid-template-columns: 1fr;
   }
 
