@@ -8434,6 +8434,94 @@ body {
   background: rgba(239, 68, 68, 0.16);
 }
 
+.admin-dark-shell :where(
+  .exact-admin-card,
+  .exact-admin-card-inset,
+  .exact-admin-kpi,
+  .admin-reference-card,
+  .admin-reference-kpi,
+  .admin-reference-list-card,
+  .admin-dark-card,
+  .admin-dark-kpi,
+  .admin-finance-card,
+  .table-wrapper,
+  .empty-state
+) {
+  color: #e5e7eb;
+}
+
+.admin-dark-shell :where(
+  h1,
+  h2,
+  h3,
+  h4,
+  strong,
+  b,
+  th,
+  .table td,
+  .admin-reference-revenue-list li,
+  .admin-reference-quick-actions a,
+  .exact-admin-payout-metrics span,
+  .exact-admin-priority-card strong
+) {
+  color: #f8fafc;
+}
+
+.admin-dark-shell :where(
+  p,
+  small,
+  label,
+  .field-label,
+  .body-muted,
+  .kicker,
+  .admin-reference-legend,
+  .admin-reference-legend span,
+  .admin-reference-revenue-list small,
+  .admin-reference-request-money small,
+  .exact-admin-priority-card span,
+  .exact-admin-priority-card small,
+  .workbench-list span,
+  .workbench-list small
+) {
+  color: #94a3b8;
+}
+
+.admin-dark-shell :where(a:not(.button):not(.exact-admin-sidebar a):not(.exact-admin-nav a)) {
+  color: #ffc107;
+}
+
+.admin-dark-shell :where(svg) {
+  color: inherit;
+}
+
+.admin-dark-shell :where(.button, .button-secondary, .button-ghost) {
+  color: #ffffff;
+}
+
+.admin-dark-shell :where(.admin-reference-quick-actions a) {
+  background: #0b0e14;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.admin-dark-shell :where(.admin-reference-quick-actions a:hover) {
+  background: #151923;
+  border-color: rgba(255, 193, 7, 0.28);
+}
+
+.admin-dark-shell :where(.workbench-inline-note) {
+  background: rgba(255, 193, 7, 0.1);
+  border-color: rgba(255, 193, 7, 0.2);
+  color: #facc15;
+}
+
+.admin-dark-shell :where([class~="text-primary"]) {
+  color: #ffc107 !important;
+}
+
+.admin-dark-shell :where([class~="text-muted"], [class~="text-slate-500"], [class~="text-gray-500"]) {
+  color: #94a3b8 !important;
+}
+
 @media (max-width: 1280px) {
   .admin-users-kpis {
     grid-template-columns: repeat(2, minmax(0, 1fr));
