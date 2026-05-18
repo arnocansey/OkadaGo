@@ -77,6 +77,7 @@ export const rideStatusUpdateSchema = z.object({
   nextStatus: z.enum(["assigned", "arriving", "arrived", "started", "completed", "cancelled"]),
   actorRole: z.enum(["passenger", "rider", "admin", "dispatcher", "system"]),
   actorUserId: z.string().cuid().optional(),
+  riderProfileId: z.string().cuid().optional(),
   cancellationReason: z.string().max(300).optional()
 });
 

@@ -19,7 +19,8 @@ import type {
   rideIdParamsSchema,
   rideLocationUpdateSchema,
   riderAvailabilitySchema,
-  rideLifecycleValidationSchema
+  rideLifecycleValidationSchema,
+  rideStatusUpdateSchema
 } from "./ride.schemas.js";
 import type { z } from "zod";
 
@@ -30,6 +31,7 @@ type MatchingPreviewInput = z.infer<typeof matchingPreviewSchema>;
 type RiderAvailabilityInput = z.infer<typeof riderAvailabilitySchema>;
 type RideLocationUpdateInput = z.infer<typeof rideLocationUpdateSchema>;
 type RideIdParams = z.infer<typeof rideIdParamsSchema>;
+type RideStatusUpdateInput = z.infer<typeof rideStatusUpdateSchema>;
 
 const lifecycleTransitions: Record<string, string[]> = {
   searching: ["assigned", "cancelled"],
@@ -568,7 +570,124 @@ export class RideService {
     return this.getRide(rideId);
   }
 
-  async updateRideStatus(rideId: string, input: z.infer<typeof import("./ride.schemas.js").rideStatusUpdateSchema>) {
+  private async findRiderForAssignment(
+    ride: {
+      riderId: string | null;
+      serviceZoneId: string | null;
+      pickupLatitude: unknown;
+      pickupLongitude: unknown;
+    },
+    riderProfileId?: string
+  ) {
+    if (ride.riderId && riderProfileId && ride.riderId !== riderProfileId) {
+      throw new AppError("Ride already has a different assigned rider", 409, "RIDE_ALREADY_ASSIGNED");
+    }
+
+    if (ride.riderId) {
+      const currentRider = await prisma.riderProfile.findUnique({
+        where: {
+          id: ride.riderId
+        },
+        include: {
+          user: true,
+          vehicle: true,
+          serviceZone: true
+        }
+      });
+
+      if (!currentRider) {
+        throw new AppError("Assigned rider profile was not found", 404, "RIDER_NOT_FOUND");
+      }
+
+      return currentRider;
+    }
+
+    if (!ride.serviceZoneId) {
+      throw new AppError(
+        "Ride cannot be accepted because it is not linked to a service zone",
+        409,
+        "RIDE_MISSING_SERVICE_ZONE"
+      );
+    }
+
+    const riderWhere = {
+      serviceZoneId: ride.serviceZoneId,
+      onlineStatus: true,
+      approvalStatus: RiderApprovalStatus.APPROVED,
+      deletedAt: null
+    };
+
+    const riders = await prisma.riderProfile.findMany({
+      where: riderProfileId
+        ? {
+            ...riderWhere,
+            id: riderProfileId
+          }
+        : riderWhere,
+      include: {
+        user: true,
+        vehicle: true,
+        serviceZone: true
+      }
+    });
+
+    if (riders.length === 0) {
+      throw new AppError(
+        riderProfileId
+          ? "Selected rider is not online, approved, or in this ride zone"
+          : "No online approved rider is available for this ride zone",
+        409,
+        "NO_AVAILABLE_RIDER"
+      );
+    }
+
+    if (riderProfileId) {
+      return riders[0];
+    }
+
+    const rankedCandidates = this.matchingService.rankCandidates({
+      requestedServiceZoneId: ride.serviceZoneId,
+      maxPickupRadiusKm: 8,
+      candidates: riders
+        .filter((rider) => rider.currentLatitude !== null && rider.currentLongitude !== null)
+        .map((rider) => {
+          const distanceToPickupKm = haversineDistanceKm(
+            Number(rider.currentLatitude),
+            Number(rider.currentLongitude),
+            Number(ride.pickupLatitude),
+            Number(ride.pickupLongitude)
+          );
+          const etaMinutes = Math.max(2, Math.round((distanceToPickupKm / 22) * 60));
+
+          return {
+            riderId: rider.id,
+            displayName: rider.user.fullName,
+            serviceZoneId: rider.serviceZoneId ?? "",
+            distanceToPickupKm,
+            etaMinutes,
+            ratingAverage: Number(rider.ratingAverage),
+            acceptanceRate: Number(rider.acceptanceRate),
+            cancellationRate: Number(rider.cancellationRate),
+            isOnline: rider.onlineStatus,
+            isApproved: rider.approvalStatus === RiderApprovalStatus.APPROVED,
+            isAvailable: true
+          };
+        })
+    });
+
+    const selectedCandidate = rankedCandidates[0];
+    const selectedRider = selectedCandidate
+      ? riders.find((rider) => rider.id === selectedCandidate.riderId)
+      : riders[0];
+
+    if (!selectedRider) {
+      throw new AppError("No online approved rider with usable location is available", 409, "NO_AVAILABLE_RIDER");
+    }
+
+    return selectedRider;
+  }
+
+  async updateRideStatus(rideId: string, input: RideStatusUpdateInput) {
     const ride = await prisma.ride.findUnique({
       where: {
         id: rideId
@@ -587,6 +706,10 @@ export class RideService {
     });
 
     const nextDbStatus = apiToDbRideStatus[input.nextStatus];
+    const assignedRider =
+      input.nextStatus === "assigned"
+        ? await this.findRiderForAssignment(ride, input.riderProfileId)
+        : undefined;
 
     return prisma.$transaction(async (tx) => {
       const updatedRide = await tx.ride.update({
@@ -595,6 +718,7 @@ export class RideService {
         },
         data: {
           status: nextDbStatus,
+          riderId: assignedRider?.id,
           assignedAt: input.nextStatus === "assigned" ? new Date() : undefined,
           riderArrivedAt: input.nextStatus === "arrived" ? new Date() : undefined,
           startedAt: input.nextStatus === "started" ? new Date() : undefined,
@@ -612,6 +736,7 @@ export class RideService {
           eventType: `ride_${input.nextStatus}`,
           payload: {
             actorRole: input.actorRole,
+            riderProfileId: assignedRider?.id ?? input.riderProfileId,
             cancellationReason: input.cancellationReason
           }
         }

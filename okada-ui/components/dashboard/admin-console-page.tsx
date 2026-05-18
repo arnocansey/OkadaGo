@@ -1490,6 +1490,29 @@ export function AdminConsolePage({
     }
   });
 
+  const rideRequestActionMutation = useMutation({
+    mutationFn: async ({
+      rideId,
+      action
+    }: {
+      rideId: string;
+      action: "accept" | "decline";
+    }) =>
+      requestJson(`/rides/${rideId}/status`, {
+        method: "PATCH",
+        token: session?.token,
+        body: JSON.stringify({
+          nextStatus: action === "accept" ? "assigned" : "cancelled",
+          actorRole: "admin",
+          actorUserId: session?.user.id,
+          cancellationReason: action === "decline" ? "Declined by admin from request dashboard" : undefined
+        })
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["rides"] });
+    }
+  });
+
   if (status === "loading") {
     return (
       <AccessState
@@ -1876,6 +1899,9 @@ export function AdminConsolePage({
                 {visibleRequestCards.map((ride) => {
                   const normalizedStatus = ride.status.toLowerCase();
                   const isActionable = ["searching", "pending"].includes(normalizedStatus);
+                  const isMutatingThisRide =
+                    rideRequestActionMutation.isPending &&
+                    rideRequestActionMutation.variables?.rideId === ride.id;
 
                   return (
                     <article key={ride.id} className="admin-request-card">
@@ -1907,10 +1933,29 @@ export function AdminConsolePage({
                       <div className="admin-request-card-actions">
                         {isActionable ? (
                           <>
-                            <button type="button" disabled title="Dispatch accept endpoint is not exposed yet">
-                              Accept
+                            <button
+                              type="button"
+                              disabled={rideRequestActionMutation.isPending}
+                              onClick={() =>
+                                rideRequestActionMutation.mutate({
+                                  rideId: ride.id,
+                                  action: "accept"
+                                })
+                              }
+                            >
+                              {isMutatingThisRide ? "Working..." : "Accept"}
                             </button>
-                            <button className="outline" type="button" disabled title="Dispatch decline endpoint is not exposed yet">
+                            <button
+                              className="outline"
+                              type="button"
+                              disabled={rideRequestActionMutation.isPending}
+                              onClick={() =>
+                                rideRequestActionMutation.mutate({
+                                  rideId: ride.id,
+                                  action: "decline"
+                                })
+                              }
+                            >
                               Decline
                             </button>
                           </>
@@ -1923,6 +1968,12 @@ export function AdminConsolePage({
                 })}
               </div>
             )}
+            {rideRequestActionMutation.isError ? (
+              <div className="empty-state exact-admin-payout-feedback">
+                <strong>Ride request action failed.</strong>
+                <p>{rideRequestActionMutation.error.message}</p>
+              </div>
+            ) : null}
           </article>
 
           <aside className="admin-request-side">
