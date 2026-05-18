@@ -534,6 +534,12 @@ export function AdminConsolePage({
   const [payoutRejectionReasons, setPayoutRejectionReasons] = useState<Record<string, string>>({});
   const [incidentStatusFilter, setIncidentStatusFilter] = useState("");
   const [incidentSeverityFilter, setIncidentSeverityFilter] = useState("");
+  const [requestTab, setRequestTab] = useState<"rides" | "food" | "delivery">("rides");
+  const [requestStatusView, setRequestStatusView] = useState<
+    "all" | "pending" | "accepted" | "on-trip" | "completed" | "cancelled"
+  >("all");
+  const [userTypeView, setUserTypeView] = useState<"all" | "riders" | "customers" | "vendors" | "admins">("all");
+  const [adminSearchTerm, setAdminSearchTerm] = useState("");
 
   const ridesQuery = useQuery({
     queryKey: ["rides"],
@@ -998,6 +1004,34 @@ export function AdminConsolePage({
     .slice()
     .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))
     .slice(0, 8);
+  const visibleRequestCards =
+    requestTab === "rides"
+      ? requestCards.filter((ride) => {
+          const status = ride.status.toLowerCase();
+
+          if (requestStatusView === "pending") {
+            return ["searching", "pending"].includes(status);
+          }
+
+          if (requestStatusView === "accepted") {
+            return ["assigned", "arriving", "arrived"].includes(status);
+          }
+
+          if (requestStatusView === "on-trip") {
+            return status === "started";
+          }
+
+          if (requestStatusView === "completed") {
+            return status === "completed";
+          }
+
+          if (requestStatusView === "cancelled") {
+            return status === "cancelled";
+          }
+
+          return true;
+        })
+      : [];
   const requestPeakBuckets = Array.from({ length: 6 }, (_, index) => {
     const startHour = index * 4;
     const endHour = startHour + 3;
@@ -1038,6 +1072,28 @@ export function AdminConsolePage({
       icon: User
     }))
   ].sort((left, right) => Date.parse(right.joinedAt ?? "") - Date.parse(left.joinedAt ?? ""));
+  const searchedManagedUsers = managedUsers.filter((user) => {
+    const searchTarget = `${user.name} ${user.type} ${user.phone} ${user.email} ${user.location} ${user.reference}`.toLowerCase();
+    const matchesSearch = searchTarget.includes(adminSearchTerm.toLowerCase().trim());
+
+    if (!matchesSearch) {
+      return false;
+    }
+
+    if (userTypeView === "riders") {
+      return user.type === "Rider";
+    }
+
+    if (userTypeView === "customers") {
+      return user.type === "Customer";
+    }
+
+    if (userTypeView === "vendors" || userTypeView === "admins") {
+      return false;
+    }
+
+    return true;
+  });
   const blockedUsers = managedUsers.filter((user) => user.status.toLowerCase() === "blocked");
   const userLocationSnapshot = Object.entries(
     managedUsers.reduce<Record<string, number>>((accumulator, user) => {
@@ -1699,24 +1755,76 @@ export function AdminConsolePage({
     ) : screen === "rides" ? (
       <div className="admin-reference-dark admin-requests-dashboard">
         <section className="admin-request-tabs">
-          <button className="active" type="button">
+          <button
+            className={requestTab === "rides" ? "active" : ""}
+            type="button"
+            onClick={() => {
+              setRequestTab("rides");
+              setRequestStatusView("all");
+            }}
+          >
             <Bike size={16} />
             <span>Ride Requests</span>
           </button>
-          <button type="button">
+          <button
+            className={requestTab === "food" ? "active" : ""}
+            type="button"
+            onClick={() => {
+              setRequestTab("food");
+              setRequestStatusView("all");
+            }}
+          >
             <Package size={16} />
             <span>Food Orders</span>
           </button>
-          <button type="button">
+          <button
+            className={requestTab === "delivery" ? "active" : ""}
+            type="button"
+            onClick={() => {
+              setRequestTab("delivery");
+              setRequestStatusView("all");
+            }}
+          >
             <Package size={16} />
             <span>Delivery Requests</span>
           </button>
           <div className="admin-request-actions">
-            <button type="button">
+            <button type="button" onClick={() => setRequestStatusView("pending")}>
               <Filter size={15} />
-              <span>Filters</span>
+              <span>Show Pending</span>
             </button>
-            <button className="primary" type="button">
+            <button
+              className="primary"
+              type="button"
+              onClick={() => {
+                const headers = ["id", "status", "passenger", "rider", "pickup", "destination", "fare", "createdAt"];
+                const csv = [
+                  headers.join(","),
+                  ...visibleRequestCards.map((ride) =>
+                    [
+                      ride.id,
+                      ride.status,
+                      ride.passenger.user.fullName,
+                      ride.rider?.user.fullName ?? "",
+                      ride.pickupAddress,
+                      ride.destinationAddress,
+                      parseNumber(ride.finalFare ?? ride.estimatedFare).toString(),
+                      ride.createdAt
+                    ]
+                      .map((value) => `"${String(value).replaceAll("\"", "\"\"")}"`)
+                      .join(",")
+                  )
+                ].join("\n");
+                const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = "okadago-ride-requests.csv";
+                link.click();
+                URL.revokeObjectURL(url);
+              }}
+              disabled={visibleRequestCards.length === 0}
+            >
               <Download size={15} />
               <span>Export</span>
             </button>
@@ -1724,12 +1832,24 @@ export function AdminConsolePage({
         </section>
 
         <section className="admin-request-filter-row">
-          <span className="active">All Requests <strong>{rides.length}</strong></span>
-          <span>Pending <strong>{requestPending.length}</strong></span>
-          <span>Accepted <strong>{requestAccepted.length}</strong></span>
-          <span>On Trip <strong>{requestOnTrip.length}</strong></span>
-          <span>Completed <strong>{requestCompleted.length}</strong></span>
-          <span className="danger">Cancelled <strong>{requestCancelled.length}</strong></span>
+          <button className={requestStatusView === "all" ? "active" : ""} type="button" onClick={() => setRequestStatusView("all")}>
+            All Requests <strong>{rides.length}</strong>
+          </button>
+          <button className={requestStatusView === "pending" ? "active" : ""} type="button" onClick={() => setRequestStatusView("pending")}>
+            Pending <strong>{requestPending.length}</strong>
+          </button>
+          <button className={requestStatusView === "accepted" ? "active" : ""} type="button" onClick={() => setRequestStatusView("accepted")}>
+            Accepted <strong>{requestAccepted.length}</strong>
+          </button>
+          <button className={requestStatusView === "on-trip" ? "active" : ""} type="button" onClick={() => setRequestStatusView("on-trip")}>
+            On Trip <strong>{requestOnTrip.length}</strong>
+          </button>
+          <button className={requestStatusView === "completed" ? "active" : ""} type="button" onClick={() => setRequestStatusView("completed")}>
+            Completed <strong>{requestCompleted.length}</strong>
+          </button>
+          <button className={`danger ${requestStatusView === "cancelled" ? "active" : ""}`} type="button" onClick={() => setRequestStatusView("cancelled")}>
+            Cancelled <strong>{requestCancelled.length}</strong>
+          </button>
         </section>
 
         <section className="admin-request-layout">
@@ -1741,14 +1861,19 @@ export function AdminConsolePage({
               </div>
               <span>Sort by: Newest</span>
             </div>
-            {requestCards.length === 0 ? (
+            {requestTab !== "rides" ? (
               <EmptyCard
-                title="No ride requests yet."
-                body="Ride requests will appear here as soon as passengers book trips."
+                title={`${requestTab === "food" ? "Food orders" : "Delivery requests"} are not wired yet.`}
+                body="The backend currently exposes ride requests only. When this API is added, this tab can render live records."
+              />
+            ) : visibleRequestCards.length === 0 ? (
+              <EmptyCard
+                title="No ride requests match this filter."
+                body="Change the selected status filter or wait for matching live ride requests."
               />
             ) : (
               <div className="admin-request-list">
-                {requestCards.map((ride) => {
+                {visibleRequestCards.map((ride) => {
                   const normalizedStatus = ride.status.toLowerCase();
                   const isActionable = ["searching", "pending"].includes(normalizedStatus);
 
@@ -1782,11 +1907,15 @@ export function AdminConsolePage({
                       <div className="admin-request-card-actions">
                         {isActionable ? (
                           <>
-                            <button type="button">Accept</button>
-                            <button className="outline" type="button">Decline</button>
+                            <button type="button" disabled title="Dispatch accept endpoint is not exposed yet">
+                              Accept
+                            </button>
+                            <button className="outline" type="button" disabled title="Dispatch decline endpoint is not exposed yet">
+                              Decline
+                            </button>
                           </>
                         ) : (
-                          <a href={`/admin/requests`}>View Details</a>
+                          <button type="button" onClick={() => setRequestStatusView("all")}>View Details</button>
                         )}
                       </div>
                     </article>
@@ -2095,21 +2224,76 @@ export function AdminConsolePage({
                 <p>Riders and customers from the live backend. Vendors and admins appear when exposed by API.</p>
               </div>
               <div className="admin-users-actions">
-                <button type="button"><Filter size={15} /> Filters</button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserTypeView("all");
+                    setAdminSearchTerm("");
+                  }}
+                >
+                  <Filter size={15} /> Reset Filters
+                </button>
                 <a href="/admin/riders"><UserPlus size={15} /> Add User</a>
               </div>
             </div>
+            <label className="admin-users-search">
+              <Search size={16} />
+              <input
+                type="search"
+                value={adminSearchTerm}
+                onChange={(event) => setAdminSearchTerm(event.target.value)}
+                placeholder="Search by name, phone, email, or code"
+              />
+            </label>
             <div className="admin-users-segments">
-              <span className="active">All ({managedUsers.length})</span>
-              <span>Riders ({riders.length})</span>
-              <span>Customers ({passengers.length})</span>
-              <span>Vendors (0)</span>
-              <span>Admins (0)</span>
+              <button
+                type="button"
+                className={userTypeView === "all" ? "active" : ""}
+                onClick={() => setUserTypeView("all")}
+              >
+                All ({managedUsers.length})
+              </button>
+              <button
+                type="button"
+                className={userTypeView === "riders" ? "active" : ""}
+                onClick={() => setUserTypeView("riders")}
+              >
+                Riders ({riders.length})
+              </button>
+              <button
+                type="button"
+                className={userTypeView === "customers" ? "active" : ""}
+                onClick={() => setUserTypeView("customers")}
+              >
+                Customers ({passengers.length})
+              </button>
+              <button
+                type="button"
+                className={userTypeView === "vendors" ? "active" : ""}
+                onClick={() => setUserTypeView("vendors")}
+              >
+                Vendors (0)
+              </button>
+              <button
+                type="button"
+                className={userTypeView === "admins" ? "active" : ""}
+                onClick={() => setUserTypeView("admins")}
+              >
+                Admins (0)
+              </button>
             </div>
-            {managedUsers.length === 0 ? (
+            {searchedManagedUsers.length === 0 ? (
               <EmptyCard
-                title="No users found."
-                body="Passenger and rider records will appear here after signup or provisioning."
+                title={
+                  userTypeView === "vendors" || userTypeView === "admins"
+                    ? `${formatEnumLabel(userTypeView)} are not wired yet.`
+                    : "No users found."
+                }
+                body={
+                  userTypeView === "vendors" || userTypeView === "admins"
+                    ? "This UI is ready, but the backend does not expose this user type yet."
+                    : "Try a different search term or reset the filters to see all users."
+                }
               />
             ) : (
               <div className="table-wrapper admin-dark-table">
@@ -2125,7 +2309,7 @@ export function AdminConsolePage({
                     </tr>
                   </thead>
                   <tbody>
-                    {managedUsers.map((user) => {
+                    {searchedManagedUsers.map((user) => {
                       const Icon = user.icon;
 
                       return (

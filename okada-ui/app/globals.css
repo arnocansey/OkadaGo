@@ -7724,7 +7724,9 @@ body {
 }
 
 .admin-request-filter-row span,
-.admin-users-segments span {
+.admin-request-filter-row button,
+.admin-users-segments span,
+.admin-users-segments button {
   min-height: 38px;
   padding: 0 14px;
   border-radius: 10px;
@@ -7736,15 +7738,19 @@ body {
   gap: 8px;
   font-size: 0.78rem;
   font-weight: 800;
+  cursor: pointer;
 }
 
 .admin-request-filter-row span.active,
-.admin-users-segments span.active {
+.admin-request-filter-row button.active,
+.admin-users-segments span.active,
+.admin-users-segments button.active {
   background: #ffc107;
   color: #080b10;
 }
 
-.admin-request-filter-row span.danger {
+.admin-request-filter-row span.danger,
+.admin-request-filter-row button.danger {
   color: #f87171;
 }
 
@@ -7832,6 +7838,12 @@ body {
   place-items: center;
   font-size: 0.78rem;
   font-weight: 900;
+}
+
+.admin-request-card-actions button:disabled,
+.admin-request-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
 }
 
 .admin-request-card-actions .outline {
@@ -7987,6 +7999,32 @@ body {
 .admin-users-actions {
   display: flex;
   gap: 8px;
+}
+
+.admin-users-search {
+  min-height: 44px;
+  margin: 14px 0 12px;
+  padding: 0 14px;
+  border-radius: 12px;
+  background: #0b0e14;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-users-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #ffffff;
+  font: inherit;
+}
+
+.admin-users-search input::placeholder {
+  color: #64748b;
 }
 
 .admin-dark-table {
