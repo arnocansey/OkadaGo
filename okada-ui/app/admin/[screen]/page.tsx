@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import {
   AdminConsolePage,
   type AdminConsoleScreen
@@ -10,20 +10,38 @@ export default async function AdminScreenPage({
   params: Promise<{ screen: string }>;
 }) {
   const { screen } = await params;
-  const allowedScreens: AdminConsoleScreen[] = [
-    "rides",
-    "riders",
-    "passengers",
-    "payments",
-    "ratings",
-    "promotions",
-    "settings",
-    "admins"
-  ];
+  const screenAliases: Record<string, AdminConsoleScreen> = {
+    requests: "rides",
+    rides: "rides",
+    riders: "riders",
+    users: "passengers",
+    passengers: "passengers",
+    finance: "payments",
+    payments: "payments",
+    support: "ratings",
+    ratings: "ratings",
+    promotions: "promotions",
+    settings: "settings",
+    locations: "settings",
+    admins: "admins"
+  };
+  const canonicalPaths: Partial<Record<AdminConsoleScreen, string>> = {
+    rides: "/admin/requests",
+    passengers: "/admin/users",
+    payments: "/admin/finance",
+    ratings: "/admin/support"
+  };
+  const resolvedScreen = screenAliases[screen];
 
-  if (!allowedScreens.includes(screen as AdminConsoleScreen)) {
+  if (!resolvedScreen) {
     notFound();
   }
 
-  return <AdminConsolePage screen={screen as AdminConsoleScreen} />;
+  const canonicalPath = canonicalPaths[resolvedScreen];
+
+  if (canonicalPath && screen !== canonicalPath.split("/").pop()) {
+    redirect(canonicalPath);
+  }
+
+  return <AdminConsolePage screen={resolvedScreen} />;
 }

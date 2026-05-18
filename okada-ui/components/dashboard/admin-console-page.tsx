@@ -483,7 +483,7 @@ function AdminSidebarPulse({
           <strong>{zones}</strong>
         </div>
       </div>
-      <a className="exact-admin-sidebar-action" href="/admin/payments">
+      <a className="exact-admin-sidebar-action" href="/admin/finance">
         Review finance
       </a>
     </section>
@@ -907,6 +907,78 @@ export function AdminConsolePage({
       tone: "neutral"
     }))
   ].slice(0, 5);
+  const postedWalletVolume = postedWalletTransactions.reduce(
+    (sum, transaction) => sum + Math.abs(parseNumber(transaction.amount)),
+    0
+  );
+  const pendingPayoutValue = pendingPayoutRequests.reduce(
+    (sum, request) => sum + parseNumber(request.amount),
+    0
+  );
+  const payoutHoldBalance = payoutRequests.reduce(
+    (sum, request) => sum + parseNumber(request.wallet.lockedBalance),
+    0
+  );
+  const platformNetProfit = Math.max(0, totalRevenue - payoutOutflow);
+  const profitMargin = totalRevenue > 0 ? (platformNetProfit / totalRevenue) * 100 : 0;
+  const financeDailyBuckets = Array.from({ length: 10 }, (_, index) => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - (9 - index));
+    const key = date.toISOString().slice(0, 10);
+    const dayTrips = completedTrips.filter((ride) => {
+      const rideDate = new Date(ride.createdAt);
+      return !Number.isNaN(rideDate.getTime()) && rideDate.toISOString().slice(0, 10) === key;
+    });
+    const dayRevenue = dayTrips.reduce(
+      (sum, ride) => sum + parseNumber(ride.finalFare ?? ride.estimatedFare),
+      0
+    );
+    const dayCommission = dayTrips.reduce(
+      (sum, ride) => sum + parseNumber(ride.platformCommission),
+      0
+    );
+
+    return {
+      key,
+      label: shortDateFormatter.format(date),
+      revenue: dayRevenue,
+      commission: dayCommission
+    };
+  });
+  const financeDailyMax = Math.max(
+    1,
+    ...financeDailyBuckets.map((bucket) => Math.max(bucket.revenue, bucket.commission))
+  );
+  const payoutDailyBuckets = financeDailyBuckets.map((bucket) => {
+    const dayPayouts = paidPayoutRequests.filter((request) => {
+      const paidAt = request.paidAt ?? request.requestedAt;
+      const payoutDate = new Date(paidAt);
+      return !Number.isNaN(payoutDate.getTime()) && payoutDate.toISOString().slice(0, 10) === bucket.key;
+    });
+
+    return {
+      ...bucket,
+      payouts: dayPayouts.reduce((sum, request) => sum + parseNumber(request.amount), 0)
+    };
+  });
+  const payoutDailyMax = Math.max(1, ...payoutDailyBuckets.map((bucket) => bucket.payouts));
+  const paymentMethodSnapshot = Object.entries(
+    walletTransactions.reduce<Record<string, number>>((accumulator, transaction) => {
+      const key =
+        transaction.payment?.method ??
+        transaction.payment?.provider ??
+        transaction.wallet.type ??
+        transaction.type;
+      accumulator[key] = (accumulator[key] ?? 0) + Math.abs(parseNumber(transaction.amount));
+      return accumulator;
+    }, {})
+  ).sort((left, right) => right[1] - left[1]);
+  const paymentMethodTotal = paymentMethodSnapshot.reduce((sum, [, amount]) => sum + amount, 0);
+  const recentFinanceTransactions = walletTransactions
+    .slice()
+    .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))
+    .slice(0, 5);
 
   const dashboardMetrics = [
     {
@@ -952,7 +1024,7 @@ export function AdminConsolePage({
       },
       {
         label: "Requests",
-        href: "/admin/rides",
+        href: "/admin/requests",
         icon: Bike,
         screen: "rides",
         group: "main",
@@ -970,7 +1042,7 @@ export function AdminConsolePage({
       },
       {
         label: "Users Management",
-        href: "/admin/passengers",
+        href: "/admin/users",
         icon: Users,
         screen: "passengers",
         group: "main",
@@ -979,7 +1051,7 @@ export function AdminConsolePage({
       },
       {
         label: "Finance",
-        href: "/admin/payments",
+        href: "/admin/finance",
         icon: CreditCard,
         screen: "payments",
         group: "finance",
@@ -988,7 +1060,7 @@ export function AdminConsolePage({
       },
       {
         label: "Support Center",
-        href: "/admin/ratings",
+        href: "/admin/support",
         icon: Headphones,
         screen: "ratings",
         group: "finance",
@@ -1005,7 +1077,7 @@ export function AdminConsolePage({
         badge: `${promoAdjustedTrips.length}`
       },
       {
-        label: "Locations & Settings",
+        label: "Settings",
         href: "/admin/settings",
         icon: MapPin,
         screen: "settings",
@@ -1049,13 +1121,13 @@ export function AdminConsolePage({
       description: "Real-time metrics sourced from live backend rides, riders, passengers, and service zones.",
       searchLabel: "Search rides, riders, or passengers...",
       quickActionLabel: "Open dispatch board",
-      quickActionHref: "/admin/rides",
+      quickActionHref: "/admin/requests",
       quickActionNote: "Jump straight into operational ride flow."
     },
     rides: {
       eyebrow: "Dispatch operations",
-      title: "Rides",
-      description: "Track live, completed, and cancelled rides from the persisted dispatch feed.",
+      title: "Requests",
+      description: "Track live, completed, and cancelled ride requests from the persisted dispatch feed.",
       searchLabel: "Search ride codes, riders, or passengers...",
       quickActionLabel: "See rider supply",
       quickActionHref: "/admin/riders",
@@ -1067,12 +1139,12 @@ export function AdminConsolePage({
       description: "Monitor rider availability, city coverage, and live coordinate activity.",
       searchLabel: "Search riders or service zones...",
       quickActionLabel: "Review payouts",
-      quickActionHref: "/admin/payments",
+      quickActionHref: "/admin/finance",
       quickActionNote: "Move from supply health into rider wallet and payout operations."
     },
     passengers: {
       eyebrow: "Demand management",
-      title: "Passengers",
+      title: "Users Management",
       description: "Review passenger profiles, referral codes, and city distribution from the live backend.",
       searchLabel: "Search passengers or referral codes...",
       quickActionLabel: "Open promotions",
@@ -1081,20 +1153,20 @@ export function AdminConsolePage({
     },
     payments: {
       eyebrow: "Finance operations",
-      title: "Payments",
+      title: "Finance",
       description: "Review revenue flow from completed rides and active trip value moving through the platform.",
       searchLabel: "Search payment and fare records...",
       quickActionLabel: "Open ratings",
-      quickActionHref: "/admin/ratings",
+      quickActionHref: "/admin/support",
       quickActionNote: "Cross-check payment records against verified rider rating submissions."
     },
     ratings: {
       eyebrow: "Quality operations",
-      title: "Ratings",
+      title: "Support Center",
       description: "Verify passenger rating submissions with rider, ride, and date-level filters.",
       searchLabel: "Search rider, ride, or rating records...",
       quickActionLabel: "View payments",
-      quickActionHref: "/admin/payments",
+      quickActionHref: "/admin/finance",
       quickActionNote: "Compare rating quality signals with payout and settlement flow."
     },
     promotions: {
@@ -1103,7 +1175,7 @@ export function AdminConsolePage({
       description: "Track promo-assisted trips and referral-driven discounts from live ride records.",
       searchLabel: "Search promo-adjusted rides or zones...",
       quickActionLabel: "View finance",
-      quickActionHref: "/admin/payments",
+      quickActionHref: "/admin/finance",
       quickActionNote: "See how incentives are affecting platform cashflow."
     },
     settings: {
@@ -1442,7 +1514,7 @@ export function AdminConsolePage({
                 <h3>Recent Ride Requests</h3>
                 <p>Newest ride records from the backend.</p>
               </div>
-              <a href="/admin/rides">View all</a>
+              <a href="/admin/requests">View all</a>
             </div>
             {recentRideRequests.length === 0 ? (
               <EmptyCard
@@ -1497,7 +1569,7 @@ export function AdminConsolePage({
                 <h3>Live Activity</h3>
                 <p>Latest operational events from live records.</p>
               </div>
-              <a href="/admin/rides">View all</a>
+              <a href="/admin/requests">View all</a>
             </div>
             {liveActivityItems.length === 0 ? (
               <EmptyCard
@@ -1540,11 +1612,11 @@ export function AdminConsolePage({
             <Tag size={18} />
             <span>Create Promo</span>
           </a>
-          <a href="/admin/ratings">
+          <a href="/admin/support">
             <Headphones size={18} />
             <span>Support Tickets</span>
           </a>
-          <a href="/admin/payments">
+          <a href="/admin/finance">
             <CreditCard size={18} />
             <span>Finance Reports</span>
           </a>
@@ -3178,6 +3250,665 @@ export function AdminConsolePage({
           </section>
         </div>
       </>
+    ) : screen === "payments" ? (
+      <div className="admin-finance-dashboard">
+        <section className="admin-finance-kpis" aria-label="Finance metrics">
+          <article className="admin-finance-kpi">
+            <div className="admin-finance-kpi-icon yellow">
+              <CreditCard size={21} />
+            </div>
+            <span>Total Revenue</span>
+            <strong>{formatMoney(adminCurrency, totalRevenue)}</strong>
+            <small>{completedTrips.length} completed rides</small>
+          </article>
+          <article className="admin-finance-kpi">
+            <div className="admin-finance-kpi-icon yellow">
+              <Bike size={21} />
+            </div>
+            <span>Rides Revenue</span>
+            <strong>{formatMoney(adminCurrency, rideRevenue)}</strong>
+            <small>{formatMoney(adminCurrency, totalCommission)} commission</small>
+          </article>
+          <article className="admin-finance-kpi">
+            <div className="admin-finance-kpi-icon yellow">
+              <Package size={21} />
+            </div>
+            <span>Food Revenue</span>
+            <strong>{formatMoney(adminCurrency, 0)}</strong>
+            <small>No food order endpoint wired</small>
+          </article>
+          <article className="admin-finance-kpi">
+            <div className="admin-finance-kpi-icon yellow">
+              <Package size={21} />
+            </div>
+            <span>Delivery Revenue</span>
+            <strong>{formatMoney(adminCurrency, deliveryRevenue)}</strong>
+            <small>No delivery endpoint wired</small>
+          </article>
+          <article className="admin-finance-kpi">
+            <div className="admin-finance-kpi-icon purple">
+              <CreditCard size={21} />
+            </div>
+            <span>Total Payouts</span>
+            <strong>{formatMoney(adminCurrency, payoutOutflow)}</strong>
+            <small>{paidPayoutRequests.length} paid requests</small>
+          </article>
+          <article className="admin-finance-kpi">
+            <div className="admin-finance-kpi-icon green">
+              <Bike size={21} />
+            </div>
+            <span>Net Profit</span>
+            <strong>{formatMoney(adminCurrency, platformNetProfit)}</strong>
+            <small>{profitMargin.toFixed(1)}% profit margin</small>
+          </article>
+        </section>
+
+        <section className="admin-finance-grid-main">
+          <article className="admin-finance-card admin-finance-revenue-chart">
+            <div className="admin-finance-cardhead">
+              <div>
+                <h3>Revenue Overview</h3>
+                <p>Completed ride revenue and platform commission over the last 10 days.</p>
+              </div>
+              <span>This week</span>
+            </div>
+            <div className="admin-finance-legend">
+              <span><i className="yellow" /> Total revenue</span>
+              <span><i className="blue" /> Platform commission</span>
+              <span><i className="green" /> Food revenue</span>
+              <span><i className="purple" /> Delivery revenue</span>
+            </div>
+            <div className="admin-finance-chart">
+              {financeDailyBuckets.map((bucket) => (
+                <div key={bucket.key} className="admin-finance-chart-day">
+                  <div className="admin-finance-chart-bars">
+                    <i
+                      className="yellow"
+                      style={{
+                        height:
+                          bucket.revenue === 0
+                            ? 0
+                            : `${Math.max(8, (bucket.revenue / financeDailyMax) * 100)}%`
+                      }}
+                    />
+                    <i
+                      className="blue"
+                      style={{
+                        height:
+                          bucket.commission === 0
+                            ? 0
+                            : `${Math.max(8, (bucket.commission / financeDailyMax) * 100)}%`
+                      }}
+                    />
+                    <i className="green" style={{ height: 0 }} />
+                    <i className="purple" style={{ height: 0 }} />
+                  </div>
+                  <span>{bucket.label}</span>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="admin-finance-card admin-finance-breakdown">
+            <div className="admin-finance-cardhead">
+              <div>
+                <h3>Revenue Breakdown</h3>
+                <p>Revenue split by currently wired business line.</p>
+              </div>
+            </div>
+            <div className="admin-finance-breakdown-body">
+              <div
+                className="admin-finance-donut"
+                style={{
+                  background:
+                    totalDashboardRevenue === 0
+                      ? "#1f2937"
+                      : `conic-gradient(#ffc107 0 ${rideRevenuePercent}%, #22c55e ${rideRevenuePercent}% ${rideRevenuePercent}%, #6d5dfc ${rideRevenuePercent}% 100%)`
+                }}
+              >
+                <div>
+                  <span>Total</span>
+                  <strong>{formatMoney(adminCurrency, totalDashboardRevenue)}</strong>
+                </div>
+              </div>
+              <ul className="admin-finance-breakdown-list">
+                <li>
+                  <i className="yellow" />
+                  <span>Rides Revenue</span>
+                  <strong>{formatMoney(adminCurrency, rideRevenue)}</strong>
+                  <small>{rideRevenuePercent}%</small>
+                </li>
+                <li>
+                  <i className="green" />
+                  <span>Food Revenue</span>
+                  <strong>{formatMoney(adminCurrency, 0)}</strong>
+                  <small>0%</small>
+                </li>
+                <li>
+                  <i className="purple" />
+                  <span>Delivery Revenue</span>
+                  <strong>{formatMoney(adminCurrency, deliveryRevenue)}</strong>
+                  <small>{deliveryRevenuePercent}%</small>
+                </li>
+              </ul>
+            </div>
+          </article>
+
+          <aside className="admin-finance-side-stack">
+            <article className="admin-finance-card">
+              <div className="admin-finance-cardhead">
+                <div>
+                  <h3>Wallet Summary</h3>
+                  <p>Admin-visible wallet and payout movement.</p>
+                </div>
+                <a href="/admin/finance">View all</a>
+              </div>
+              <div className="admin-finance-wallet-main">
+                <span>OkadaGo Wallet Volume</span>
+                <strong>{formatMoney(adminCurrency, postedWalletVolume)}</strong>
+              </div>
+              <div className="admin-finance-wallet-grid">
+                <div>
+                  <span>Pending payouts</span>
+                  <strong>{formatMoney(adminCurrency, pendingPayoutValue)}</strong>
+                </div>
+                <div>
+                  <span>Hold balance</span>
+                  <strong>{formatMoney(adminCurrency, payoutHoldBalance)}</strong>
+                </div>
+              </div>
+            </article>
+
+            <article className="admin-finance-card">
+              <div className="admin-finance-cardhead">
+                <div>
+                  <h3>Recent Transactions</h3>
+                  <p>Latest wallet transactions from the backend.</p>
+                </div>
+                <a href="#finance-ledger">View all</a>
+              </div>
+              {walletTransactionsQuery.isLoading ? (
+                <div className="status-chip warning">Loading transactions</div>
+              ) : walletTransactionsQuery.isError ? (
+                <EmptyCard
+                  title="Could not load transactions."
+                  body={walletTransactionsQuery.error.message}
+                />
+              ) : recentFinanceTransactions.length === 0 ? (
+                <EmptyCard
+                  title="No wallet transactions yet."
+                  body="Wallet top-ups, commissions, payouts, and reversals will appear here."
+                />
+              ) : (
+                <ul className="admin-finance-transaction-list">
+                  {recentFinanceTransactions.map((transaction) => (
+                    <li key={transaction.id}>
+                      <div>
+                        <strong>{transaction.description ?? formatEnumLabel(transaction.type)}</strong>
+                        <span>{transaction.wallet.user.fullName}</span>
+                      </div>
+                      <span className={parseNumber(transaction.amount) < 0 ? "debit" : "credit"}>
+                        {formatMoney(transaction.currency, transaction.amount)}
+                      </span>
+                      <em className={`status-chip ${statusTone(transaction.status)}`}>
+                        {formatEnumLabel(transaction.status)}
+                      </em>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </article>
+
+            <article className="admin-finance-card">
+              <div className="admin-finance-cardhead">
+                <div>
+                  <h3>Expenses Summary</h3>
+                  <p>Expense tracking is not exposed by the backend yet.</p>
+                </div>
+                <span>This month</span>
+              </div>
+              <EmptyCard
+                title="No expenses endpoint is wired."
+                body="Once expenses or invoices are added to the API, this panel can show real operational costs."
+              />
+            </article>
+          </aside>
+        </section>
+
+        <section className="admin-finance-grid-lower">
+          <article className="admin-finance-card">
+            <div className="admin-finance-cardhead">
+              <div>
+                <h3>Payout Overview</h3>
+                <p>Paid payout volume over the same 10-day window.</p>
+              </div>
+              <span>This week</span>
+            </div>
+            <div className="admin-finance-payout-bars">
+              {payoutDailyBuckets.map((bucket) => (
+                <div key={bucket.key}>
+                  <i
+                    style={{
+                      height:
+                        bucket.payouts === 0
+                          ? 0
+                          : `${Math.max(8, (bucket.payouts / payoutDailyMax) * 100)}%`
+                    }}
+                  />
+                  <span>{bucket.label}</span>
+                </div>
+              ))}
+            </div>
+            <div className="admin-finance-progress-list">
+              <div>
+                <span>Paid payouts</span>
+                <strong>{formatMoney(adminCurrency, payoutOutflow)}</strong>
+              </div>
+              <div>
+                <span>Pending payout queue</span>
+                <strong>{formatMoney(adminCurrency, pendingPayoutValue)}</strong>
+              </div>
+            </div>
+          </article>
+
+          <article className="admin-finance-card">
+            <div className="admin-finance-cardhead">
+              <div>
+                <h3>Payment Methods</h3>
+                <p>Grouped from linked payment and wallet transaction data.</p>
+              </div>
+              <a href="#finance-ledger">View all</a>
+            </div>
+            {paymentMethodSnapshot.length === 0 ? (
+              <EmptyCard
+                title="No payment method volume yet."
+                body="Payment method totals will appear after wallet transactions are recorded."
+              />
+            ) : (
+              <div className="table-wrapper admin-finance-table">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Method</th>
+                      <th>Revenue</th>
+                      <th>Percentage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paymentMethodSnapshot.map(([method, amount]) => (
+                      <tr key={method}>
+                        <td>{formatEnumLabel(method)}</td>
+                        <td>{formatMoney(adminCurrency, amount)}</td>
+                        <td>
+                          {paymentMethodTotal > 0
+                            ? `${((amount / paymentMethodTotal) * 100).toFixed(1)}%`
+                            : "0%"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td>Total</td>
+                      <td>{formatMoney(adminCurrency, paymentMethodTotal)}</td>
+                      <td>100%</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            )}
+          </article>
+        </section>
+
+        <section className="admin-finance-card admin-finance-controls">
+          <div className="admin-finance-cardhead">
+            <div>
+              <h3>Finance Filters</h3>
+              <p>Filter wallet movement, payout requests, and rating verification records.</p>
+            </div>
+          </div>
+          <div className="exact-admin-payment-filters">
+            <div className="field-group">
+              <label className="field-label">Wallet transaction status</label>
+              <select
+                className="select"
+                value={transactionStatusFilter}
+                onChange={(event) => setTransactionStatusFilter(event.target.value)}
+              >
+                <option value="">All statuses</option>
+                <option value="PENDING">Pending</option>
+                <option value="POSTED">Posted</option>
+                <option value="REVERSED">Reversed</option>
+                <option value="FAILED">Failed</option>
+              </select>
+            </div>
+
+            <div className="field-group">
+              <label className="field-label">Wallet transaction type</label>
+              <select
+                className="select"
+                value={transactionTypeFilter}
+                onChange={(event) => setTransactionTypeFilter(event.target.value)}
+              >
+                <option value="">All types</option>
+                <option value="TOP_UP">Top up</option>
+                <option value="WITHDRAWAL">Withdrawal</option>
+                <option value="COMMISSION">Commission</option>
+                <option value="ADJUSTMENT">Adjustment</option>
+                <option value="CREDIT">Credit</option>
+                <option value="DEBIT">Debit</option>
+                <option value="REFUND">Refund</option>
+                <option value="BONUS">Bonus</option>
+              </select>
+            </div>
+
+            <div className="field-group">
+              <label className="field-label">Payout request status</label>
+              <select
+                className="select"
+                value={payoutStatusFilter}
+                onChange={(event) => setPayoutStatusFilter(event.target.value)}
+              >
+                <option value="">All payout statuses</option>
+                <option value="REQUESTED">Requested</option>
+                <option value="REVIEWING">Reviewing</option>
+                <option value="APPROVED">Approved</option>
+                <option value="PROCESSING">Processing</option>
+                <option value="PAID">Paid</option>
+                <option value="REJECTED">Rejected</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+            </div>
+
+            <div className="field-group">
+              <label className="field-label">Rating rider profile ID</label>
+              <input
+                className="input"
+                value={ratingRiderFilter}
+                onChange={(event) => setRatingRiderFilter(event.target.value)}
+                placeholder="Filter by rider profile CUID"
+              />
+            </div>
+
+            <div className="field-group">
+              <label className="field-label">Rating ride ID</label>
+              <input
+                className="input"
+                value={ratingRideFilter}
+                onChange={(event) => setRatingRideFilter(event.target.value)}
+                placeholder="Filter by ride CUID"
+              />
+            </div>
+
+            <div className="field-group">
+              <label className="field-label">Ratings from date</label>
+              <input
+                className="input"
+                type="date"
+                value={ratingFromDateFilter}
+                onChange={(event) => setRatingFromDateFilter(event.target.value)}
+              />
+            </div>
+
+            <div className="field-group">
+              <label className="field-label">Ratings to date</label>
+              <input
+                className="input"
+                type="date"
+                value={ratingToDateFilter}
+                onChange={(event) => setRatingToDateFilter(event.target.value)}
+              />
+            </div>
+          </div>
+        </section>
+
+        <section id="finance-ledger" className="admin-finance-grid-ledgers">
+          <article className="admin-finance-card">
+            <div className="admin-finance-cardhead">
+              <div>
+                <h3>Wallet Transaction Ledger</h3>
+                <p>Live wallet movement across top-ups, commissions, withdrawals, and reversals.</p>
+              </div>
+            </div>
+            {walletTransactionsQuery.isLoading ? (
+              <div className="status-chip warning">Loading wallet transactions</div>
+            ) : walletTransactionsQuery.isError ? (
+              <EmptyCard
+                title="Wallet transactions could not be loaded."
+                body={walletTransactionsQuery.error.message}
+              />
+            ) : walletTransactions.length === 0 ? (
+              <EmptyCard
+                title="No wallet transactions found."
+                body="Top-ups, payouts, and settlement movement will appear here as soon as they happen."
+              />
+            ) : (
+              <div className="table-wrapper admin-finance-table">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>User</th>
+                      <th>Wallet</th>
+                      <th>Type</th>
+                      <th>Status</th>
+                      <th>Amount</th>
+                      <th>Reference</th>
+                      <th>Created</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {walletTransactions
+                      .slice()
+                      .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))
+                      .map((transaction) => (
+                        <tr key={transaction.id}>
+                          <td>
+                            <div className="exact-admin-transaction-user">
+                              <strong>{transaction.wallet.user.fullName}</strong>
+                              <span>{transaction.wallet.user.phoneE164}</span>
+                            </div>
+                          </td>
+                          <td>{formatEnumLabel(transaction.wallet.type)}</td>
+                          <td>{formatEnumLabel(transaction.type)}</td>
+                          <td>
+                            <span className={`status-chip ${statusTone(transaction.status)}`}>
+                              {formatEnumLabel(transaction.status)}
+                            </span>
+                          </td>
+                          <td>{formatMoney(transaction.currency, transaction.amount)}</td>
+                          <td>{transaction.reference}</td>
+                          <td>{formatDateTime(transaction.createdAt)}</td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </article>
+
+          <article className="admin-finance-card">
+            <div className="admin-finance-cardhead">
+              <div>
+                <h3>Payout Review Queue</h3>
+                <p>Approve, process, pay, or reject rider payout requests.</p>
+              </div>
+            </div>
+            {payoutRequestsQuery.isLoading ? (
+              <div className="status-chip warning">Loading payout requests</div>
+            ) : payoutRequestsQuery.isError ? (
+              <EmptyCard
+                title="Payout requests could not be loaded."
+                body={payoutRequestsQuery.error.message}
+              />
+            ) : payoutRequests.length === 0 ? (
+              <EmptyCard
+                title="No payout requests yet."
+                body="Rider withdrawals will appear here once riders start requesting payouts."
+              />
+            ) : (
+              <div className="exact-admin-payout-list">
+                {payoutRequests.map((request) => (
+                  <article key={request.id} className="exact-admin-payout-card">
+                    <div className="exact-admin-payout-head">
+                      <div>
+                        <strong>{request.rider.user.fullName}</strong>
+                        <span>{request.rider.displayCode} - {request.destinationLabel}</span>
+                      </div>
+                      <span className={`status-chip ${statusTone(request.status)}`}>
+                        {formatEnumLabel(request.status)}
+                      </span>
+                    </div>
+
+                    <div className="exact-admin-payout-metrics">
+                      <span>{formatMoney(request.currency, request.amount)}</span>
+                      <span>{formatEnumLabel(request.method)}</span>
+                      <span>{formatDateTime(request.requestedAt)}</span>
+                    </div>
+
+                    {["REQUESTED", "REVIEWING", "APPROVED", "PROCESSING"].includes(request.status) ? (
+                      <>
+                        <div className="field-group exact-admin-payout-reason">
+                          <label className="field-label">Rejection note</label>
+                          <input
+                            className="input"
+                            value={payoutRejectionReasons[request.id] ?? ""}
+                            onChange={(event) =>
+                              setPayoutRejectionReasons((current) => ({
+                                ...current,
+                                [request.id]: event.target.value
+                              }))
+                            }
+                            placeholder="Optional reason if you reject this payout"
+                          />
+                        </div>
+
+                        <div className="button-row exact-admin-payout-actions">
+                          {request.status === "REQUESTED" ? (
+                            <button
+                              className="button button-secondary"
+                              type="button"
+                              disabled={payoutReviewMutation.isPending}
+                              onClick={() =>
+                                payoutReviewMutation.mutate({
+                                  payoutRequestId: request.id,
+                                  action: "mark_reviewing"
+                                })
+                              }
+                            >
+                              Review
+                            </button>
+                          ) : null}
+
+                          {["REQUESTED", "REVIEWING"].includes(request.status) ? (
+                            <button
+                              className="button"
+                              type="button"
+                              disabled={payoutReviewMutation.isPending}
+                              onClick={() =>
+                                payoutReviewMutation.mutate({
+                                  payoutRequestId: request.id,
+                                  action: "approve"
+                                })
+                              }
+                            >
+                              Approve
+                            </button>
+                          ) : null}
+
+                          {request.status === "APPROVED" ? (
+                            <button
+                              className="button button-secondary"
+                              type="button"
+                              disabled={payoutReviewMutation.isPending}
+                              onClick={() =>
+                                payoutReviewMutation.mutate({
+                                  payoutRequestId: request.id,
+                                  action: "mark_processing"
+                                })
+                              }
+                            >
+                              Mark processing
+                            </button>
+                          ) : null}
+
+                          {["APPROVED", "PROCESSING"].includes(request.status) ? (
+                            <button
+                              className="button"
+                              type="button"
+                              disabled={payoutReviewMutation.isPending}
+                              onClick={() =>
+                                payoutReviewMutation.mutate({
+                                  payoutRequestId: request.id,
+                                  action: "mark_paid"
+                                })
+                              }
+                            >
+                              Mark paid
+                            </button>
+                          ) : null}
+
+                          <button
+                            className="button button-secondary"
+                            type="button"
+                            disabled={payoutReviewMutation.isPending}
+                            onClick={() =>
+                              payoutReviewMutation.mutate({
+                                payoutRequestId: request.id,
+                                action: "reject",
+                                rejectionReason: payoutRejectionReasons[request.id]
+                              })
+                            }
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+            )}
+
+            {payoutReviewMutation.isError ? (
+              <div className="empty-state exact-admin-payout-feedback">
+                <strong>Payout review failed.</strong>
+                <p>{payoutReviewMutation.error.message}</p>
+              </div>
+            ) : null}
+          </article>
+        </section>
+
+        <section className="admin-finance-card">
+          <div className="admin-finance-cardhead">
+            <div>
+              <h3>Finance Summary</h3>
+              <p>Combined view of ride revenue, payouts, expenses, and margin.</p>
+            </div>
+          </div>
+          <div className="admin-finance-summary-strip">
+            <div>
+              <span>Total Revenue</span>
+              <strong>{formatMoney(adminCurrency, totalRevenue)}</strong>
+            </div>
+            <div>
+              <span>Total Payouts</span>
+              <strong>{formatMoney(adminCurrency, payoutOutflow)}</strong>
+            </div>
+            <div>
+              <span>Total Expenses</span>
+              <strong>{formatMoney(adminCurrency, 0)}</strong>
+            </div>
+            <div>
+              <span>Net Profit</span>
+              <strong>{formatMoney(adminCurrency, platformNetProfit)}</strong>
+            </div>
+            <div>
+              <span>Profit Margin</span>
+              <strong>{profitMargin.toFixed(1)}%</strong>
+            </div>
+          </div>
+        </section>
+      </div>
     ) : (
       <>
         <section className="exact-admin-section">
@@ -3725,12 +4456,12 @@ export function AdminConsolePage({
 
   return (
     <ImmersivePage className="exact-admin-page">
-      <div className="exact-admin-shell">
+      <div className={`exact-admin-shell ${screen === "payments" ? "admin-finance-shell" : ""}`}>
         <aside className="exact-admin-sidebar">
           <div className="exact-admin-brand">
             <div>
               <strong>Okada<span>Go</span></strong>
-              <small>Move • Deliver</small>
+              <small>Move - Deliver</small>
             </div>
           </div>
 
