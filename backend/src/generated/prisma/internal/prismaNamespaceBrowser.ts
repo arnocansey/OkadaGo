@@ -63,6 +63,7 @@ export const ModelName = {
   ServiceZone: 'ServiceZone',
   PricingRule: 'PricingRule',
   Ride: 'Ride',
+  DeliveryRequest: 'DeliveryRequest',
   RideLocation: 'RideLocation',
   RideEvent: 'RideEvent',
   Payment: 'Payment',
@@ -348,6 +349,46 @@ export const RideScalarFieldEnum = {
 } as const
 
 export type RideScalarFieldEnum = (typeof RideScalarFieldEnum)[keyof typeof RideScalarFieldEnum]
+
+
+export const DeliveryRequestScalarFieldEnum = {
+  id: 'id',
+  passengerId: 'passengerId',
+  riderId: 'riderId',
+  serviceZoneId: 'serviceZoneId',
+  status: 'status',
+  paymentMethod: 'paymentMethod',
+  cancellationParty: 'cancellationParty',
+  cancellationReason: 'cancellationReason',
+  requestedAt: 'requestedAt',
+  assignedAt: 'assignedAt',
+  pickedUpAt: 'pickedUpAt',
+  inTransitAt: 'inTransitAt',
+  deliveredAt: 'deliveredAt',
+  cancelledAt: 'cancelledAt',
+  pickupAddress: 'pickupAddress',
+  pickupLatitude: 'pickupLatitude',
+  pickupLongitude: 'pickupLongitude',
+  dropoffAddress: 'dropoffAddress',
+  dropoffLatitude: 'dropoffLatitude',
+  dropoffLongitude: 'dropoffLongitude',
+  recipientName: 'recipientName',
+  recipientPhoneE164: 'recipientPhoneE164',
+  packageType: 'packageType',
+  packageDescription: 'packageDescription',
+  estimatedDistanceKm: 'estimatedDistanceKm',
+  estimatedDurationMinutes: 'estimatedDurationMinutes',
+  estimatedFee: 'estimatedFee',
+  finalFee: 'finalFee',
+  riderEarnings: 'riderEarnings',
+  platformCommission: 'platformCommission',
+  currency: 'currency',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DeliveryRequestScalarFieldEnum = (typeof DeliveryRequestScalarFieldEnum)[keyof typeof DeliveryRequestScalarFieldEnum]
 
 
 export const RideLocationScalarFieldEnum = {

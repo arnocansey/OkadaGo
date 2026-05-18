@@ -78,6 +78,11 @@ export type PricingRule = Prisma.PricingRuleModel
  */
 export type Ride = Prisma.RideModel
 /**
+ * Model DeliveryRequest
+ * 
+ */
+export type DeliveryRequest = Prisma.DeliveryRequestModel
+/**
  * Model RideLocation
  * 
  */

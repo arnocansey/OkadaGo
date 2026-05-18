@@ -74,6 +74,38 @@ type RideRecord = {
   } | null;
 };
 
+type DeliveryRecord = {
+  id: string;
+  status: string;
+  pickupAddress: string;
+  dropoffAddress: string;
+  recipientName: string;
+  recipientPhoneE164: string;
+  packageType: string;
+  packageDescription: string;
+  currency: string;
+  estimatedFee: string | number | null;
+  finalFee: string | number | null;
+  riderEarnings: string | number | null;
+  platformCommission: string | number | null;
+  createdAt: string;
+  requestedAt: string;
+  passenger: {
+    user: {
+      fullName: string;
+    };
+  };
+  rider: {
+    user: {
+      fullName: string;
+    };
+  } | null;
+  serviceZone?: {
+    id: string;
+    name: string;
+  } | null;
+};
+
 type PassengerRecord = {
   id: string;
   userId: string;
@@ -358,14 +390,24 @@ function formatDateTime(value: string) {
 function statusTone(status: string) {
   const normalized = status.toLowerCase();
 
-  if (["completed", "paid", "captured", "posted", "approved"].includes(normalized)) {
+  if (["completed", "delivered", "paid", "captured", "posted", "approved"].includes(normalized)) {
     return "success";
   }
 
   if (
-    ["searching", "assigned", "arriving", "arrived", "started", "pending", "requested", "reviewing", "processing"].includes(
-      normalized
-    )
+    [
+      "searching",
+      "assigned",
+      "arriving",
+      "arrived",
+      "started",
+      "picked_up",
+      "in_transit",
+      "pending",
+      "requested",
+      "reviewing",
+      "processing"
+    ].includes(normalized)
   ) {
     return "warning";
   }
@@ -548,6 +590,13 @@ export function AdminConsolePage({
     refetchInterval: 10_000
   });
 
+  const deliveriesQuery = useQuery({
+    queryKey: ["deliveries"],
+    queryFn: () => fetchJson<DeliveryRecord[]>("/deliveries"),
+    enabled: status === "authenticated",
+    refetchInterval: 10_000
+  });
+
   const ridersQuery = useQuery({
     queryKey: ["riders"],
     queryFn: () => fetchJson<RiderRecord[]>("/bootstrap/riders?limit=100"),
@@ -682,6 +731,7 @@ export function AdminConsolePage({
   });
 
   const rides = ridesQuery.data ?? [];
+  const deliveries = deliveriesQuery.data ?? [];
   const riders = ridersQuery.data ?? [];
   const passengers = passengersQuery.data ?? [];
   const zones = zonesQuery.data ?? [];
@@ -856,8 +906,16 @@ export function AdminConsolePage({
     }));
 
   const vehicleCount = riders.filter((rider) => Boolean(rider.vehicle)).length;
-  const deliveryOrderCount = 0;
-  const deliveryRevenue = 0;
+  const completedDeliveries = deliveries.filter((delivery) => delivery.status.toLowerCase() === "delivered");
+  const deliveryOrderCount = deliveries.length;
+  const deliveryRevenue = completedDeliveries.reduce(
+    (sum, delivery) => sum + parseNumber(delivery.finalFee ?? delivery.estimatedFee),
+    0
+  );
+  const deliveryCommission = completedDeliveries.reduce(
+    (sum, delivery) => sum + parseNumber(delivery.platformCommission),
+    0
+  );
   const rideRevenue = totalRevenue;
   const totalDashboardRevenue = rideRevenue + deliveryRevenue;
   const rideRevenuePercent =
@@ -903,6 +961,14 @@ export function AdminConsolePage({
       body: `${ride.pickupAddress} to ${ride.destinationAddress}`,
       meta: formatDateTime(ride.createdAt),
       tone: statusTone(ride.status)
+    })),
+    ...deliveries.slice(0, 3).map((delivery) => ({
+      id: `delivery-${delivery.id}`,
+      icon: Package,
+      title: `Delivery ${formatEnumLabel(delivery.status)}`,
+      body: `${delivery.pickupAddress} to ${delivery.dropoffAddress}`,
+      meta: formatDateTime(delivery.createdAt),
+      tone: statusTone(delivery.status)
     })),
     ...activeRiders.slice(0, 2).map((rider) => ({
       id: `rider-${rider.id}`,
@@ -1004,6 +1070,21 @@ export function AdminConsolePage({
     .slice()
     .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))
     .slice(0, 8);
+  const deliveryRequestPending = deliveries.filter((delivery) =>
+    ["searching", "pending"].includes(delivery.status.toLowerCase())
+  );
+  const deliveryRequestAccepted = deliveries.filter((delivery) =>
+    delivery.status.toLowerCase() === "assigned"
+  );
+  const deliveryRequestOnTrip = deliveries.filter((delivery) =>
+    ["picked_up", "in_transit"].includes(delivery.status.toLowerCase())
+  );
+  const deliveryRequestCompleted = deliveries.filter((delivery) => delivery.status.toLowerCase() === "delivered");
+  const deliveryRequestCancelled = deliveries.filter((delivery) => delivery.status.toLowerCase() === "cancelled");
+  const deliveryRequestCards = deliveries
+    .slice()
+    .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))
+    .slice(0, 8);
   const visibleRequestCards =
     requestTab === "rides"
       ? requestCards.filter((ride) => {
@@ -1032,6 +1113,61 @@ export function AdminConsolePage({
           return true;
         })
       : [];
+  const visibleDeliveryRequestCards =
+    requestTab === "delivery"
+      ? deliveryRequestCards.filter((delivery) => {
+          const status = delivery.status.toLowerCase();
+
+          if (requestStatusView === "pending") {
+            return ["searching", "pending"].includes(status);
+          }
+
+          if (requestStatusView === "accepted") {
+            return status === "assigned";
+          }
+
+          if (requestStatusView === "on-trip") {
+            return ["picked_up", "in_transit"].includes(status);
+          }
+
+          if (requestStatusView === "completed") {
+            return status === "delivered";
+          }
+
+          if (requestStatusView === "cancelled") {
+            return status === "cancelled";
+          }
+
+          return true;
+        })
+      : [];
+  const activeRequestCounts =
+    requestTab === "delivery"
+      ? {
+          all: deliveries.length,
+          pending: deliveryRequestPending.length,
+          accepted: deliveryRequestAccepted.length,
+          onTrip: deliveryRequestOnTrip.length,
+          completed: deliveryRequestCompleted.length,
+          cancelled: deliveryRequestCancelled.length
+        }
+      : requestTab === "rides"
+        ? {
+            all: rides.length,
+            pending: requestPending.length,
+            accepted: requestAccepted.length,
+            onTrip: requestOnTrip.length,
+            completed: requestCompleted.length,
+            cancelled: requestCancelled.length
+          }
+        : {
+            all: 0,
+            pending: 0,
+            accepted: 0,
+            onTrip: 0,
+            completed: 0,
+            cancelled: 0
+          };
   const requestPeakBuckets = Array.from({ length: 6 }, (_, index) => {
     const startHour = index * 4;
     const endHour = startHour + 3;
@@ -1117,7 +1253,7 @@ export function AdminConsolePage({
     {
       label: "Delivery Orders",
       value: `${deliveryOrderCount}`,
-      trend: "No delivery endpoint wired",
+      trend: `${completedDeliveries.length} delivered`,
       icon: Package,
       tone: "yellow"
     },
@@ -1131,7 +1267,7 @@ export function AdminConsolePage({
     {
       label: "Total Revenue",
       value: formatMoney(adminCurrency, totalDashboardRevenue),
-      trend: `${formatMoney(adminCurrency, totalCommission)} commission`,
+      trend: `${formatMoney(adminCurrency, totalCommission + deliveryCommission)} commission`,
       icon: CreditCard,
       tone: "yellow"
     }
@@ -1513,6 +1649,29 @@ export function AdminConsolePage({
     }
   });
 
+  const deliveryRequestActionMutation = useMutation({
+    mutationFn: async ({
+      deliveryId,
+      action
+    }: {
+      deliveryId: string;
+      action: "accept" | "decline";
+    }) =>
+      requestJson(`/deliveries/${deliveryId}/status`, {
+        method: "PATCH",
+        token: session?.token,
+        body: JSON.stringify({
+          nextStatus: action === "accept" ? "assigned" : "cancelled",
+          actorRole: "admin",
+          actorUserId: session?.user.id,
+          cancellationReason: action === "decline" ? "Declined by admin from request dashboard" : undefined
+        })
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["deliveries"] });
+    }
+  });
+
   if (status === "loading") {
     return (
       <AccessState
@@ -1702,14 +1861,43 @@ export function AdminConsolePage({
             <div className="admin-reference-cardhead">
               <div>
                 <h3>Recent Delivery Orders</h3>
-                <p>Delivery data will render here when the backend exposes it.</p>
+                <p>Newest parcel delivery records from the backend.</p>
               </div>
-              <span>No endpoint</span>
+              <a href="/admin/requests">View all</a>
             </div>
-            <EmptyCard
-              title="No delivery order feed is wired."
-              body="The current backend exposes ride, rider, passenger, wallet, rating, and zone data, but no delivery order endpoint yet."
-            />
+            {deliveries.length === 0 ? (
+              <EmptyCard
+                title="No delivery orders yet."
+                body="Delivery orders will appear here once passengers start requesting parcel drops."
+              />
+            ) : (
+              <ul className="admin-reference-request-list">
+                {deliveries.slice(0, 5).map((delivery) => (
+                  <li key={delivery.id}>
+                    <div className="admin-reference-avatar">
+                      {delivery.passenger.user.fullName
+                        .split(" ")
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .map((part) => part[0])
+                        .join("")
+                        .toUpperCase()}
+                    </div>
+                    <div>
+                      <strong>{delivery.packageDescription}</strong>
+                      <span>{delivery.pickupAddress} to {delivery.dropoffAddress}</span>
+                      <small>{formatDateTime(delivery.createdAt)}</small>
+                    </div>
+                    <div className="admin-reference-request-money">
+                      <strong>{formatMoney(delivery.currency, parseNumber(delivery.finalFee ?? delivery.estimatedFee))}</strong>
+                      <span className={`status-chip ${statusTone(delivery.status)}`}>
+                        {formatEnumLabel(delivery.status)}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </article>
 
           <article className="admin-reference-card admin-reference-list-card">
@@ -1820,33 +2008,52 @@ export function AdminConsolePage({
               className="primary"
               type="button"
               onClick={() => {
-                const headers = ["id", "status", "passenger", "rider", "pickup", "destination", "fare", "createdAt"];
+                const headers =
+                  requestTab === "delivery"
+                    ? ["id", "status", "passenger", "rider", "pickup", "dropoff", "package", "fee", "createdAt"]
+                    : ["id", "status", "passenger", "rider", "pickup", "destination", "fare", "createdAt"];
+                const rows =
+                  requestTab === "delivery"
+                    ? visibleDeliveryRequestCards.map((delivery) => [
+                        delivery.id,
+                        delivery.status,
+                        delivery.passenger.user.fullName,
+                        delivery.rider?.user.fullName ?? "",
+                        delivery.pickupAddress,
+                        delivery.dropoffAddress,
+                        delivery.packageDescription,
+                        parseNumber(delivery.finalFee ?? delivery.estimatedFee).toString(),
+                        delivery.createdAt
+                      ])
+                    : visibleRequestCards.map((ride) => [
+                        ride.id,
+                        ride.status,
+                        ride.passenger.user.fullName,
+                        ride.rider?.user.fullName ?? "",
+                        ride.pickupAddress,
+                        ride.destinationAddress,
+                        parseNumber(ride.finalFare ?? ride.estimatedFare).toString(),
+                        ride.createdAt
+                      ]);
                 const csv = [
                   headers.join(","),
-                  ...visibleRequestCards.map((ride) =>
-                    [
-                      ride.id,
-                      ride.status,
-                      ride.passenger.user.fullName,
-                      ride.rider?.user.fullName ?? "",
-                      ride.pickupAddress,
-                      ride.destinationAddress,
-                      parseNumber(ride.finalFare ?? ride.estimatedFare).toString(),
-                      ride.createdAt
-                    ]
-                      .map((value) => `"${String(value).replaceAll("\"", "\"\"")}"`)
-                      .join(",")
+                  ...rows.map((row) =>
+                    row.map((value) => `"${String(value).replaceAll("\"", "\"\"")}"`).join(",")
                   )
                 ].join("\n");
                 const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement("a");
                 link.href = url;
-                link.download = "okadago-ride-requests.csv";
+                link.download = requestTab === "delivery" ? "okadago-delivery-requests.csv" : "okadago-ride-requests.csv";
                 link.click();
                 URL.revokeObjectURL(url);
               }}
-              disabled={visibleRequestCards.length === 0}
+              disabled={
+                requestTab === "delivery"
+                  ? visibleDeliveryRequestCards.length === 0
+                  : visibleRequestCards.length === 0
+              }
             >
               <Download size={15} />
               <span>Export</span>
@@ -1856,22 +2063,22 @@ export function AdminConsolePage({
 
         <section className="admin-request-filter-row">
           <button className={requestStatusView === "all" ? "active" : ""} type="button" onClick={() => setRequestStatusView("all")}>
-            All Requests <strong>{rides.length}</strong>
+            All Requests <strong>{activeRequestCounts.all}</strong>
           </button>
           <button className={requestStatusView === "pending" ? "active" : ""} type="button" onClick={() => setRequestStatusView("pending")}>
-            Pending <strong>{requestPending.length}</strong>
+            Pending <strong>{activeRequestCounts.pending}</strong>
           </button>
           <button className={requestStatusView === "accepted" ? "active" : ""} type="button" onClick={() => setRequestStatusView("accepted")}>
-            Accepted <strong>{requestAccepted.length}</strong>
+            Accepted <strong>{activeRequestCounts.accepted}</strong>
           </button>
           <button className={requestStatusView === "on-trip" ? "active" : ""} type="button" onClick={() => setRequestStatusView("on-trip")}>
-            On Trip <strong>{requestOnTrip.length}</strong>
+            On Trip <strong>{activeRequestCounts.onTrip}</strong>
           </button>
           <button className={requestStatusView === "completed" ? "active" : ""} type="button" onClick={() => setRequestStatusView("completed")}>
-            Completed <strong>{requestCompleted.length}</strong>
+            Completed <strong>{activeRequestCounts.completed}</strong>
           </button>
           <button className={`danger ${requestStatusView === "cancelled" ? "active" : ""}`} type="button" onClick={() => setRequestStatusView("cancelled")}>
-            Cancelled <strong>{requestCancelled.length}</strong>
+            Cancelled <strong>{activeRequestCounts.cancelled}</strong>
           </button>
         </section>
 
@@ -1879,16 +2086,110 @@ export function AdminConsolePage({
           <article className="admin-dark-card admin-request-list-card">
             <div className="admin-dark-cardhead">
               <div>
-                <h3>All Ride Requests ({rides.length})</h3>
-                <p>Live ride requests from the backend ride service.</p>
+                <h3>
+                  {requestTab === "delivery"
+                    ? `All Delivery Requests (${deliveries.length})`
+                    : requestTab === "food"
+                      ? "All Food Orders (0)"
+                      : `All Ride Requests (${rides.length})`}
+                </h3>
+                <p>
+                  {requestTab === "delivery"
+                    ? "Live parcel delivery requests from the backend delivery service."
+                    : requestTab === "food"
+                      ? "Food orders are not part of the backend yet."
+                      : "Live ride requests from the backend ride service."}
+                </p>
               </div>
               <span>Sort by: Newest</span>
             </div>
-            {requestTab !== "rides" ? (
+            {requestTab === "food" ? (
               <EmptyCard
-                title={`${requestTab === "food" ? "Food orders" : "Delivery requests"} are not wired yet.`}
-                body="The backend currently exposes ride requests only. When this API is added, this tab can render live records."
+                title="Food orders are not wired yet."
+                body="The delivery system is wired now. Food ordering still needs its own backend model and API before it can render live records."
               />
+            ) : requestTab === "delivery" ? (
+              visibleDeliveryRequestCards.length === 0 ? (
+                <EmptyCard
+                  title="No delivery requests match this filter."
+                  body="Change the selected status filter or wait for matching live delivery requests."
+                />
+              ) : (
+                <div className="admin-request-list">
+                  {visibleDeliveryRequestCards.map((delivery) => {
+                    const normalizedStatus = delivery.status.toLowerCase();
+                    const isActionable = ["searching", "pending"].includes(normalizedStatus);
+                    const isMutatingThisDelivery =
+                      deliveryRequestActionMutation.isPending &&
+                      deliveryRequestActionMutation.variables?.deliveryId === delivery.id;
+
+                    return (
+                      <article key={delivery.id} className="admin-request-card">
+                        <div className="admin-request-user">
+                          <span className={`status-chip ${statusTone(delivery.status)}`}>
+                            {formatEnumLabel(delivery.status)}
+                          </span>
+                          <div className="admin-reference-avatar">
+                            {delivery.passenger.user.fullName
+                              .split(" ")
+                              .filter(Boolean)
+                              .slice(0, 2)
+                              .map((part) => part[0])
+                              .join("")
+                              .toUpperCase()}
+                          </div>
+                          <strong>{delivery.passenger.user.fullName}</strong>
+                          <small>{delivery.rider?.user.fullName ?? "Awaiting rider"}</small>
+                        </div>
+                        <div className="admin-request-route">
+                          <span>{delivery.pickupAddress}</span>
+                          <span>{delivery.dropoffAddress}</span>
+                          <small>
+                            {delivery.packageType}: {delivery.packageDescription}
+                          </small>
+                        </div>
+                        <div className="admin-request-fare">
+                          <strong>{formatMoney(delivery.currency, delivery.finalFee ?? delivery.estimatedFee)}</strong>
+                          <span>{delivery.id.slice(-10).toUpperCase()}</span>
+                        </div>
+                        <div className="admin-request-card-actions">
+                          {isActionable ? (
+                            <>
+                              <button
+                                type="button"
+                                disabled={deliveryRequestActionMutation.isPending}
+                                onClick={() =>
+                                  deliveryRequestActionMutation.mutate({
+                                    deliveryId: delivery.id,
+                                    action: "accept"
+                                  })
+                                }
+                              >
+                                {isMutatingThisDelivery ? "Working..." : "Accept"}
+                              </button>
+                              <button
+                                className="outline"
+                                type="button"
+                                disabled={deliveryRequestActionMutation.isPending}
+                                onClick={() =>
+                                  deliveryRequestActionMutation.mutate({
+                                    deliveryId: delivery.id,
+                                    action: "decline"
+                                  })
+                                }
+                              >
+                                Decline
+                              </button>
+                            </>
+                          ) : (
+                            <button type="button" onClick={() => setRequestStatusView("all")}>View Details</button>
+                          )}
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              )
             ) : visibleRequestCards.length === 0 ? (
               <EmptyCard
                 title="No ride requests match this filter."
@@ -1972,6 +2273,12 @@ export function AdminConsolePage({
               <div className="empty-state exact-admin-payout-feedback">
                 <strong>Ride request action failed.</strong>
                 <p>{rideRequestActionMutation.error.message}</p>
+              </div>
+            ) : null}
+            {deliveryRequestActionMutation.isError ? (
+              <div className="empty-state exact-admin-payout-feedback">
+                <strong>Delivery request action failed.</strong>
+                <p>{deliveryRequestActionMutation.error.message}</p>
               </div>
             ) : null}
           </article>

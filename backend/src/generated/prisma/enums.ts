@@ -84,6 +84,18 @@ export const RideStatus = {
 export type RideStatus = (typeof RideStatus)[keyof typeof RideStatus]
 
 
+export const DeliveryStatus = {
+  SEARCHING: 'SEARCHING',
+  ASSIGNED: 'ASSIGNED',
+  PICKED_UP: 'PICKED_UP',
+  IN_TRANSIT: 'IN_TRANSIT',
+  DELIVERED: 'DELIVERED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type DeliveryStatus = (typeof DeliveryStatus)[keyof typeof DeliveryStatus]
+
+
 export const CancellationParty = {
   PASSENGER: 'PASSENGER',
   RIDER: 'RIDER',

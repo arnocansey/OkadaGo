@@ -373,6 +373,7 @@ export type RiderProfileWhereInput = {
   vehicle?: Prisma.XOR<Prisma.VehicleNullableScalarRelationFilter, Prisma.VehicleWhereInput> | null
   documents?: Prisma.RiderDocumentListRelationFilter
   rides?: Prisma.RideListRelationFilter
+  deliveries?: Prisma.DeliveryRequestListRelationFilter
   payoutRequests?: Prisma.PayoutRequestListRelationFilter
   incidents?: Prisma.IncidentListRelationFilter
 }
@@ -404,6 +405,7 @@ export type RiderProfileOrderByWithRelationInput = {
   vehicle?: Prisma.VehicleOrderByWithRelationInput
   documents?: Prisma.RiderDocumentOrderByRelationAggregateInput
   rides?: Prisma.RideOrderByRelationAggregateInput
+  deliveries?: Prisma.DeliveryRequestOrderByRelationAggregateInput
   payoutRequests?: Prisma.PayoutRequestOrderByRelationAggregateInput
   incidents?: Prisma.IncidentOrderByRelationAggregateInput
 }
@@ -438,6 +440,7 @@ export type RiderProfileWhereUniqueInput = Prisma.AtLeast<{
   vehicle?: Prisma.XOR<Prisma.VehicleNullableScalarRelationFilter, Prisma.VehicleWhereInput> | null
   documents?: Prisma.RiderDocumentListRelationFilter
   rides?: Prisma.RideListRelationFilter
+  deliveries?: Prisma.DeliveryRequestListRelationFilter
   payoutRequests?: Prisma.PayoutRequestListRelationFilter
   incidents?: Prisma.IncidentListRelationFilter
 }, "id" | "userId" | "displayCode">
@@ -523,6 +526,7 @@ export type RiderProfileCreateInput = {
   vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutRiderInput
   payoutRequests?: Prisma.PayoutRequestCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
 }
@@ -552,6 +556,7 @@ export type RiderProfileUncheckedCreateInput = {
   vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutRiderInput
   payoutRequests?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
 }
@@ -581,6 +586,7 @@ export type RiderProfileUpdateInput = {
   vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUpdateManyWithoutRiderNestedInput
   payoutRequests?: Prisma.PayoutRequestUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
 }
@@ -610,6 +616,7 @@ export type RiderProfileUncheckedUpdateInput = {
   vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutRiderNestedInput
   payoutRequests?: Prisma.PayoutRequestUncheckedUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
 }
@@ -926,6 +933,22 @@ export type RiderProfileUpdateOneWithoutRidesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.RiderProfileUpdateToOneWithWhereWithoutRidesInput, Prisma.RiderProfileUpdateWithoutRidesInput>, Prisma.RiderProfileUncheckedUpdateWithoutRidesInput>
 }
 
+export type RiderProfileCreateNestedOneWithoutDeliveriesInput = {
+  create?: Prisma.XOR<Prisma.RiderProfileCreateWithoutDeliveriesInput, Prisma.RiderProfileUncheckedCreateWithoutDeliveriesInput>
+  connectOrCreate?: Prisma.RiderProfileCreateOrConnectWithoutDeliveriesInput
+  connect?: Prisma.RiderProfileWhereUniqueInput
+}
+
+export type RiderProfileUpdateOneWithoutDeliveriesNestedInput = {
+  create?: Prisma.XOR<Prisma.RiderProfileCreateWithoutDeliveriesInput, Prisma.RiderProfileUncheckedCreateWithoutDeliveriesInput>
+  connectOrCreate?: Prisma.RiderProfileCreateOrConnectWithoutDeliveriesInput
+  upsert?: Prisma.RiderProfileUpsertWithoutDeliveriesInput
+  disconnect?: Prisma.RiderProfileWhereInput | boolean
+  delete?: Prisma.RiderProfileWhereInput | boolean
+  connect?: Prisma.RiderProfileWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.RiderProfileUpdateToOneWithWhereWithoutDeliveriesInput, Prisma.RiderProfileUpdateWithoutDeliveriesInput>, Prisma.RiderProfileUncheckedUpdateWithoutDeliveriesInput>
+}
+
 export type RiderProfileCreateNestedOneWithoutPayoutRequestsInput = {
   create?: Prisma.XOR<Prisma.RiderProfileCreateWithoutPayoutRequestsInput, Prisma.RiderProfileUncheckedCreateWithoutPayoutRequestsInput>
   connectOrCreate?: Prisma.RiderProfileCreateOrConnectWithoutPayoutRequestsInput
@@ -980,6 +1003,7 @@ export type RiderProfileCreateWithoutUserInput = {
   vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutRiderInput
   payoutRequests?: Prisma.PayoutRequestCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
 }
@@ -1008,6 +1032,7 @@ export type RiderProfileUncheckedCreateWithoutUserInput = {
   vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutRiderInput
   payoutRequests?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
 }
@@ -1052,6 +1077,7 @@ export type RiderProfileUpdateWithoutUserInput = {
   vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUpdateManyWithoutRiderNestedInput
   payoutRequests?: Prisma.PayoutRequestUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
 }
@@ -1080,6 +1106,7 @@ export type RiderProfileUncheckedUpdateWithoutUserInput = {
   vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutRiderNestedInput
   payoutRequests?: Prisma.PayoutRequestUncheckedUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
 }
@@ -1108,6 +1135,7 @@ export type RiderProfileCreateWithoutVehicleInput = {
   serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidersInput
   documents?: Prisma.RiderDocumentCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutRiderInput
   payoutRequests?: Prisma.PayoutRequestCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
 }
@@ -1136,6 +1164,7 @@ export type RiderProfileUncheckedCreateWithoutVehicleInput = {
   deletedAt?: Date | string | null
   documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutRiderInput
   payoutRequests?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
 }
@@ -1180,6 +1209,7 @@ export type RiderProfileUpdateWithoutVehicleInput = {
   serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidersNestedInput
   documents?: Prisma.RiderDocumentUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUpdateManyWithoutRiderNestedInput
   payoutRequests?: Prisma.PayoutRequestUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
 }
@@ -1208,6 +1238,7 @@ export type RiderProfileUncheckedUpdateWithoutVehicleInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutRiderNestedInput
   payoutRequests?: Prisma.PayoutRequestUncheckedUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
 }
@@ -1236,6 +1267,7 @@ export type RiderProfileCreateWithoutDocumentsInput = {
   serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidersInput
   vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
   rides?: Prisma.RideCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutRiderInput
   payoutRequests?: Prisma.PayoutRequestCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
 }
@@ -1264,6 +1296,7 @@ export type RiderProfileUncheckedCreateWithoutDocumentsInput = {
   deletedAt?: Date | string | null
   vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutRiderInput
   payoutRequests?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
 }
@@ -1308,6 +1341,7 @@ export type RiderProfileUpdateWithoutDocumentsInput = {
   serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidersNestedInput
   vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
   rides?: Prisma.RideUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUpdateManyWithoutRiderNestedInput
   payoutRequests?: Prisma.PayoutRequestUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
 }
@@ -1336,6 +1370,7 @@ export type RiderProfileUncheckedUpdateWithoutDocumentsInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
   rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutRiderNestedInput
   payoutRequests?: Prisma.PayoutRequestUncheckedUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
 }
@@ -1364,6 +1399,7 @@ export type RiderProfileCreateWithoutServiceZoneInput = {
   vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutRiderInput
   payoutRequests?: Prisma.PayoutRequestCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
 }
@@ -1392,6 +1428,7 @@ export type RiderProfileUncheckedCreateWithoutServiceZoneInput = {
   vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutRiderInput
   payoutRequests?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
 }
@@ -1473,6 +1510,7 @@ export type RiderProfileCreateWithoutRidesInput = {
   serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidersInput
   vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutRiderInput
   payoutRequests?: Prisma.PayoutRequestCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
 }
@@ -1501,6 +1539,7 @@ export type RiderProfileUncheckedCreateWithoutRidesInput = {
   deletedAt?: Date | string | null
   vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutRiderInput
   payoutRequests?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
 }
@@ -1545,6 +1584,7 @@ export type RiderProfileUpdateWithoutRidesInput = {
   serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidersNestedInput
   vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUpdateManyWithoutRiderNestedInput
   payoutRequests?: Prisma.PayoutRequestUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
 }
@@ -1573,6 +1613,139 @@ export type RiderProfileUncheckedUpdateWithoutRidesInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutRiderNestedInput
+  payoutRequests?: Prisma.PayoutRequestUncheckedUpdateManyWithoutRiderNestedInput
+  incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
+}
+
+export type RiderProfileCreateWithoutDeliveriesInput = {
+  id?: string
+  displayCode: string
+  approvalStatus?: $Enums.RiderApprovalStatus
+  city?: string | null
+  onlineStatus?: boolean
+  currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: number
+  commissionPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: string | null
+  approvedAt?: Date | string | null
+  suspendedAt?: Date | string | null
+  lastOnlineAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  user: Prisma.UserCreateNestedOneWithoutRiderProfileInput
+  serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidersInput
+  vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
+  documents?: Prisma.RiderDocumentCreateNestedManyWithoutRiderInput
+  rides?: Prisma.RideCreateNestedManyWithoutRiderInput
+  payoutRequests?: Prisma.PayoutRequestCreateNestedManyWithoutRiderInput
+  incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
+}
+
+export type RiderProfileUncheckedCreateWithoutDeliveriesInput = {
+  id?: string
+  userId: string
+  displayCode: string
+  approvalStatus?: $Enums.RiderApprovalStatus
+  city?: string | null
+  serviceZoneId?: string | null
+  onlineStatus?: boolean
+  currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: number
+  commissionPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: string | null
+  approvedAt?: Date | string | null
+  suspendedAt?: Date | string | null
+  lastOnlineAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
+  documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
+  rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
+  payoutRequests?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutRiderInput
+  incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
+}
+
+export type RiderProfileCreateOrConnectWithoutDeliveriesInput = {
+  where: Prisma.RiderProfileWhereUniqueInput
+  create: Prisma.XOR<Prisma.RiderProfileCreateWithoutDeliveriesInput, Prisma.RiderProfileUncheckedCreateWithoutDeliveriesInput>
+}
+
+export type RiderProfileUpsertWithoutDeliveriesInput = {
+  update: Prisma.XOR<Prisma.RiderProfileUpdateWithoutDeliveriesInput, Prisma.RiderProfileUncheckedUpdateWithoutDeliveriesInput>
+  create: Prisma.XOR<Prisma.RiderProfileCreateWithoutDeliveriesInput, Prisma.RiderProfileUncheckedCreateWithoutDeliveriesInput>
+  where?: Prisma.RiderProfileWhereInput
+}
+
+export type RiderProfileUpdateToOneWithWhereWithoutDeliveriesInput = {
+  where?: Prisma.RiderProfileWhereInput
+  data: Prisma.XOR<Prisma.RiderProfileUpdateWithoutDeliveriesInput, Prisma.RiderProfileUncheckedUpdateWithoutDeliveriesInput>
+}
+
+export type RiderProfileUpdateWithoutDeliveriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  displayCode?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: Prisma.IntFieldUpdateOperationsInput | number
+  commissionPercent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  user?: Prisma.UserUpdateOneRequiredWithoutRiderProfileNestedInput
+  serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidersNestedInput
+  vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
+  documents?: Prisma.RiderDocumentUpdateManyWithoutRiderNestedInput
+  rides?: Prisma.RideUpdateManyWithoutRiderNestedInput
+  payoutRequests?: Prisma.PayoutRequestUpdateManyWithoutRiderNestedInput
+  incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
+}
+
+export type RiderProfileUncheckedUpdateWithoutDeliveriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  displayCode?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serviceZoneId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: Prisma.IntFieldUpdateOperationsInput | number
+  commissionPercent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
+  documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
+  rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
   payoutRequests?: Prisma.PayoutRequestUncheckedUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
 }
@@ -1602,6 +1775,7 @@ export type RiderProfileCreateWithoutPayoutRequestsInput = {
   vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
 }
 
@@ -1630,6 +1804,7 @@ export type RiderProfileUncheckedCreateWithoutPayoutRequestsInput = {
   vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
 }
 
@@ -1674,6 +1849,7 @@ export type RiderProfileUpdateWithoutPayoutRequestsInput = {
   vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
 }
 
@@ -1702,6 +1878,7 @@ export type RiderProfileUncheckedUpdateWithoutPayoutRequestsInput = {
   vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
 }
 
@@ -1730,6 +1907,7 @@ export type RiderProfileCreateWithoutIncidentsInput = {
   vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutRiderInput
   payoutRequests?: Prisma.PayoutRequestCreateNestedManyWithoutRiderInput
 }
 
@@ -1758,6 +1936,7 @@ export type RiderProfileUncheckedCreateWithoutIncidentsInput = {
   vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutRiderInput
   payoutRequests?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutRiderInput
 }
 
@@ -1802,6 +1981,7 @@ export type RiderProfileUpdateWithoutIncidentsInput = {
   vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUpdateManyWithoutRiderNestedInput
   payoutRequests?: Prisma.PayoutRequestUpdateManyWithoutRiderNestedInput
 }
 
@@ -1830,6 +2010,7 @@ export type RiderProfileUncheckedUpdateWithoutIncidentsInput = {
   vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutRiderNestedInput
   payoutRequests?: Prisma.PayoutRequestUncheckedUpdateManyWithoutRiderNestedInput
 }
 
@@ -1880,6 +2061,7 @@ export type RiderProfileUpdateWithoutServiceZoneInput = {
   vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUpdateManyWithoutRiderNestedInput
   payoutRequests?: Prisma.PayoutRequestUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
 }
@@ -1908,6 +2090,7 @@ export type RiderProfileUncheckedUpdateWithoutServiceZoneInput = {
   vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutRiderNestedInput
   payoutRequests?: Prisma.PayoutRequestUncheckedUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
 }
@@ -1943,6 +2126,7 @@ export type RiderProfileUncheckedUpdateManyWithoutServiceZoneInput = {
 export type RiderProfileCountOutputType = {
   documents: number
   rides: number
+  deliveries: number
   payoutRequests: number
   incidents: number
 }
@@ -1950,6 +2134,7 @@ export type RiderProfileCountOutputType = {
 export type RiderProfileCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   documents?: boolean | RiderProfileCountOutputTypeCountDocumentsArgs
   rides?: boolean | RiderProfileCountOutputTypeCountRidesArgs
+  deliveries?: boolean | RiderProfileCountOutputTypeCountDeliveriesArgs
   payoutRequests?: boolean | RiderProfileCountOutputTypeCountPayoutRequestsArgs
   incidents?: boolean | RiderProfileCountOutputTypeCountIncidentsArgs
 }
@@ -1976,6 +2161,13 @@ export type RiderProfileCountOutputTypeCountDocumentsArgs<ExtArgs extends runtim
  */
 export type RiderProfileCountOutputTypeCountRidesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.RideWhereInput
+}
+
+/**
+ * RiderProfileCountOutputType without action
+ */
+export type RiderProfileCountOutputTypeCountDeliveriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DeliveryRequestWhereInput
 }
 
 /**
@@ -2020,6 +2212,7 @@ export type RiderProfileSelect<ExtArgs extends runtime.Types.Extensions.Internal
   vehicle?: boolean | Prisma.RiderProfile$vehicleArgs<ExtArgs>
   documents?: boolean | Prisma.RiderProfile$documentsArgs<ExtArgs>
   rides?: boolean | Prisma.RiderProfile$ridesArgs<ExtArgs>
+  deliveries?: boolean | Prisma.RiderProfile$deliveriesArgs<ExtArgs>
   payoutRequests?: boolean | Prisma.RiderProfile$payoutRequestsArgs<ExtArgs>
   incidents?: boolean | Prisma.RiderProfile$incidentsArgs<ExtArgs>
   _count?: boolean | Prisma.RiderProfileCountOutputTypeDefaultArgs<ExtArgs>
@@ -2108,6 +2301,7 @@ export type RiderProfileInclude<ExtArgs extends runtime.Types.Extensions.Interna
   vehicle?: boolean | Prisma.RiderProfile$vehicleArgs<ExtArgs>
   documents?: boolean | Prisma.RiderProfile$documentsArgs<ExtArgs>
   rides?: boolean | Prisma.RiderProfile$ridesArgs<ExtArgs>
+  deliveries?: boolean | Prisma.RiderProfile$deliveriesArgs<ExtArgs>
   payoutRequests?: boolean | Prisma.RiderProfile$payoutRequestsArgs<ExtArgs>
   incidents?: boolean | Prisma.RiderProfile$incidentsArgs<ExtArgs>
   _count?: boolean | Prisma.RiderProfileCountOutputTypeDefaultArgs<ExtArgs>
@@ -2129,6 +2323,7 @@ export type $RiderProfilePayload<ExtArgs extends runtime.Types.Extensions.Intern
     vehicle: Prisma.$VehiclePayload<ExtArgs> | null
     documents: Prisma.$RiderDocumentPayload<ExtArgs>[]
     rides: Prisma.$RidePayload<ExtArgs>[]
+    deliveries: Prisma.$DeliveryRequestPayload<ExtArgs>[]
     payoutRequests: Prisma.$PayoutRequestPayload<ExtArgs>[]
     incidents: Prisma.$IncidentPayload<ExtArgs>[]
   }
@@ -2553,6 +2748,7 @@ export interface Prisma__RiderProfileClient<T, Null = never, ExtArgs extends run
   vehicle<T extends Prisma.RiderProfile$vehicleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RiderProfile$vehicleArgs<ExtArgs>>): Prisma.Prisma__VehicleClient<runtime.Types.Result.GetResult<Prisma.$VehiclePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   documents<T extends Prisma.RiderProfile$documentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RiderProfile$documentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RiderDocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   rides<T extends Prisma.RiderProfile$ridesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RiderProfile$ridesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RidePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  deliveries<T extends Prisma.RiderProfile$deliveriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RiderProfile$deliveriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeliveryRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   payoutRequests<T extends Prisma.RiderProfile$payoutRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RiderProfile$payoutRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PayoutRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   incidents<T extends Prisma.RiderProfile$incidentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RiderProfile$incidentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$IncidentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -3089,6 +3285,30 @@ export type RiderProfile$ridesArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.RideScalarFieldEnum | Prisma.RideScalarFieldEnum[]
+}
+
+/**
+ * RiderProfile.deliveries
+ */
+export type RiderProfile$deliveriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DeliveryRequest
+   */
+  select?: Prisma.DeliveryRequestSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DeliveryRequest
+   */
+  omit?: Prisma.DeliveryRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DeliveryRequestInclude<ExtArgs> | null
+  where?: Prisma.DeliveryRequestWhereInput
+  orderBy?: Prisma.DeliveryRequestOrderByWithRelationInput | Prisma.DeliveryRequestOrderByWithRelationInput[]
+  cursor?: Prisma.DeliveryRequestWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DeliveryRequestScalarFieldEnum | Prisma.DeliveryRequestScalarFieldEnum[]
 }
 
 /**

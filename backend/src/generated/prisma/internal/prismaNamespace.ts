@@ -396,6 +396,7 @@ export const ModelName = {
   ServiceZone: 'ServiceZone',
   PricingRule: 'PricingRule',
   Ride: 'Ride',
+  DeliveryRequest: 'DeliveryRequest',
   RideLocation: 'RideLocation',
   RideEvent: 'RideEvent',
   Payment: 'Payment',
@@ -429,7 +430,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "adminProfile" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog"
+    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "adminProfile" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "deliveryRequest" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1318,6 +1319,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.RideCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.RideCountAggregateOutputType> | number
+        }
+      }
+    }
+    DeliveryRequest: {
+      payload: Prisma.$DeliveryRequestPayload<ExtArgs>
+      fields: Prisma.DeliveryRequestFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DeliveryRequestFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryRequestPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DeliveryRequestFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryRequestPayload>
+        }
+        findFirst: {
+          args: Prisma.DeliveryRequestFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryRequestPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DeliveryRequestFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryRequestPayload>
+        }
+        findMany: {
+          args: Prisma.DeliveryRequestFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryRequestPayload>[]
+        }
+        create: {
+          args: Prisma.DeliveryRequestCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryRequestPayload>
+        }
+        createMany: {
+          args: Prisma.DeliveryRequestCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DeliveryRequestCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryRequestPayload>[]
+        }
+        delete: {
+          args: Prisma.DeliveryRequestDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryRequestPayload>
+        }
+        update: {
+          args: Prisma.DeliveryRequestUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryRequestPayload>
+        }
+        deleteMany: {
+          args: Prisma.DeliveryRequestDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DeliveryRequestUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DeliveryRequestUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryRequestPayload>[]
+        }
+        upsert: {
+          args: Prisma.DeliveryRequestUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryRequestPayload>
+        }
+        aggregate: {
+          args: Prisma.DeliveryRequestAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDeliveryRequest>
+        }
+        groupBy: {
+          args: Prisma.DeliveryRequestGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DeliveryRequestGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DeliveryRequestCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DeliveryRequestCountAggregateOutputType> | number
         }
       }
     }
@@ -2943,6 +3018,46 @@ export const RideScalarFieldEnum = {
 export type RideScalarFieldEnum = (typeof RideScalarFieldEnum)[keyof typeof RideScalarFieldEnum]
 
 
+export const DeliveryRequestScalarFieldEnum = {
+  id: 'id',
+  passengerId: 'passengerId',
+  riderId: 'riderId',
+  serviceZoneId: 'serviceZoneId',
+  status: 'status',
+  paymentMethod: 'paymentMethod',
+  cancellationParty: 'cancellationParty',
+  cancellationReason: 'cancellationReason',
+  requestedAt: 'requestedAt',
+  assignedAt: 'assignedAt',
+  pickedUpAt: 'pickedUpAt',
+  inTransitAt: 'inTransitAt',
+  deliveredAt: 'deliveredAt',
+  cancelledAt: 'cancelledAt',
+  pickupAddress: 'pickupAddress',
+  pickupLatitude: 'pickupLatitude',
+  pickupLongitude: 'pickupLongitude',
+  dropoffAddress: 'dropoffAddress',
+  dropoffLatitude: 'dropoffLatitude',
+  dropoffLongitude: 'dropoffLongitude',
+  recipientName: 'recipientName',
+  recipientPhoneE164: 'recipientPhoneE164',
+  packageType: 'packageType',
+  packageDescription: 'packageDescription',
+  estimatedDistanceKm: 'estimatedDistanceKm',
+  estimatedDurationMinutes: 'estimatedDurationMinutes',
+  estimatedFee: 'estimatedFee',
+  finalFee: 'finalFee',
+  riderEarnings: 'riderEarnings',
+  platformCommission: 'platformCommission',
+  currency: 'currency',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DeliveryRequestScalarFieldEnum = (typeof DeliveryRequestScalarFieldEnum)[keyof typeof DeliveryRequestScalarFieldEnum]
+
+
 export const RideLocationScalarFieldEnum = {
   id: 'id',
   rideId: 'rideId',
@@ -3509,6 +3624,20 @@ export type ListEnumCancellationPartyFieldRefInput<$PrismaModel> = FieldRefInput
 
 
 /**
+ * Reference to a field of type 'DeliveryStatus'
+ */
+export type EnumDeliveryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeliveryStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'DeliveryStatus[]'
+ */
+export type ListEnumDeliveryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeliveryStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'PaymentStatus'
  */
 export type EnumPaymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentStatus'>
@@ -3824,6 +3953,7 @@ export type GlobalOmitConfig = {
   serviceZone?: Prisma.ServiceZoneOmit
   pricingRule?: Prisma.PricingRuleOmit
   ride?: Prisma.RideOmit
+  deliveryRequest?: Prisma.DeliveryRequestOmit
   rideLocation?: Prisma.RideLocationOmit
   rideEvent?: Prisma.RideEventOmit
   payment?: Prisma.PaymentOmit

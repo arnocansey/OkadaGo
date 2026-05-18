@@ -7,12 +7,14 @@ import { adminRoutes } from "./admin/admin.routes.js";
 import { bootstrapRoutes } from "./bootstrap/bootstrap.routes.js";
 import { ratingRoutes } from "./ratings/rating.routes.js";
 import { safetyRoutes } from "./safety/safety.routes.js";
+import { deliveryRoutes } from "./deliveries/delivery.routes.js";
 
 export const registerRoutes: FastifyPluginAsync = async (server) => {
   await server.register(healthRoutes);
   await server.register(authRoutes);
   await server.register(bootstrapRoutes);
   await server.register(rideRoutes);
+  await server.register(deliveryRoutes);
   await server.register(walletRoutes);
   await server.register(ratingRoutes);
   await server.register(safetyRoutes);
