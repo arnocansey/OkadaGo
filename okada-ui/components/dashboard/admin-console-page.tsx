@@ -6,8 +6,12 @@ import {
   Bell,
   Bike,
   CalendarDays,
+  CheckCircle,
   ChevronDown,
+  Clock,
   CreditCard,
+  Download,
+  Filter,
   FileText,
   Headphones,
   LayoutDashboard,
@@ -21,10 +25,9 @@ import {
   Tag,
   User,
   UserPlus,
-  Users
+  Users,
+  XCircle
 } from "lucide-react";
-import { LiveOperationsTable } from "@/components/dashboard/live-operations-table";
-import { PlatformHealthCard } from "@/components/dashboard/platform-health-card";
 import { ImmersivePage } from "@/components/layout/immersive-page";
 import { OperationsMap } from "@/components/maps/operations-map";
 import { fetchJson, requestJson } from "@/lib/api";
@@ -77,6 +80,7 @@ type PassengerRecord = {
   referralCode: string;
   defaultServiceCity: string | null;
   preferredPayment: string | null;
+  createdAt?: string;
   user: {
     id: string;
     fullName: string;
@@ -84,6 +88,7 @@ type PassengerRecord = {
     phoneE164: string;
     preferredCurrency: string;
     role: string;
+    accountStatus?: string;
   };
 };
 
@@ -107,9 +112,12 @@ type RiderRecord = {
   } | null;
   user: {
     fullName: string;
+    email?: string | null;
     phoneE164: string;
     preferredCurrency: string;
+    accountStatus?: string;
   };
+  createdAt?: string;
 };
 
 type ServiceZoneRecord = {
@@ -979,6 +987,68 @@ export function AdminConsolePage({
     .slice()
     .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))
     .slice(0, 5);
+  const requestPending = rides.filter((ride) => ["searching", "pending"].includes(ride.status.toLowerCase()));
+  const requestAccepted = rides.filter((ride) =>
+    ["assigned", "arriving", "arrived"].includes(ride.status.toLowerCase())
+  );
+  const requestOnTrip = rides.filter((ride) => ride.status.toLowerCase() === "started");
+  const requestCompleted = rides.filter((ride) => ride.status.toLowerCase() === "completed");
+  const requestCancelled = rides.filter((ride) => ride.status.toLowerCase() === "cancelled");
+  const requestCards = rides
+    .slice()
+    .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))
+    .slice(0, 8);
+  const requestPeakBuckets = Array.from({ length: 6 }, (_, index) => {
+    const startHour = index * 4;
+    const endHour = startHour + 3;
+    const count = rides.filter((ride) => {
+      const date = new Date(ride.createdAt);
+      return !Number.isNaN(date.getTime()) && date.getHours() >= startHour && date.getHours() <= endHour;
+    }).length;
+
+    return {
+      label: `${String(startHour).padStart(2, "0")}:00`,
+      count
+    };
+  });
+  const requestPeakMax = Math.max(1, ...requestPeakBuckets.map((bucket) => bucket.count));
+  const managedUsers = [
+    ...riders.map((rider) => ({
+      id: rider.id,
+      name: rider.user.fullName,
+      type: "Rider",
+      phone: rider.user.phoneE164,
+      email: rider.user.email ?? "No email",
+      status: rider.user.accountStatus ?? (rider.onlineStatus ? "ACTIVE" : "OFFLINE"),
+      joinedAt: rider.createdAt,
+      location: rider.city ?? rider.serviceZone?.name ?? "No location",
+      reference: rider.displayCode,
+      icon: Bike
+    })),
+    ...passengers.map((passenger) => ({
+      id: passenger.id,
+      name: passenger.user.fullName,
+      type: "Customer",
+      phone: passenger.user.phoneE164,
+      email: passenger.user.email ?? "No email",
+      status: passenger.user.accountStatus ?? "ACTIVE",
+      joinedAt: passenger.createdAt,
+      location: passenger.defaultServiceCity ?? "No location",
+      reference: passenger.referralCode,
+      icon: User
+    }))
+  ].sort((left, right) => Date.parse(right.joinedAt ?? "") - Date.parse(left.joinedAt ?? ""));
+  const blockedUsers = managedUsers.filter((user) => user.status.toLowerCase() === "blocked");
+  const userLocationSnapshot = Object.entries(
+    managedUsers.reduce<Record<string, number>>((accumulator, user) => {
+      accumulator[user.location] = (accumulator[user.location] ?? 0) + 1;
+      return accumulator;
+    }, {})
+  )
+    .sort((left, right) => right[1] - left[1])
+    .slice(0, 6);
+  const userLocationMax = Math.max(1, ...userLocationSnapshot.map(([, count]) => count));
+  const recentManagedUsers = managedUsers.slice(0, 5);
 
   const dashboardMetrics = [
     {
@@ -1627,154 +1697,163 @@ export function AdminConsolePage({
         </section>
       </div>
     ) : screen === "rides" ? (
-      <>
-        <section className="exact-admin-section">
-          <div className="exact-admin-heading">
-            <p className="exact-admin-eyebrow">{screenMeta.rides.eyebrow}</p>
-            <h1>{screenMeta.rides.title}</h1>
-            <p>{screenMeta.rides.description}</p>
-          </div>
-
-          <div className="exact-admin-kpis">
-            <article className="exact-admin-kpi">
-              <span>Total rides</span>
-              <strong>{rides.length}</strong>
-            </article>
-            <article className="exact-admin-kpi">
-              <span>Live rides</span>
-              <strong>{activeTrips.length}</strong>
-            </article>
-            <article className="exact-admin-kpi">
-              <span>Completed rides</span>
-              <strong>{completedTrips.length}</strong>
-            </article>
-            <article className="exact-admin-kpi">
-              <span>Cancelled rides</span>
-              <strong>{cancelledTrips.length}</strong>
-            </article>
+      <div className="admin-reference-dark admin-requests-dashboard">
+        <section className="admin-request-tabs">
+          <button className="active" type="button">
+            <Bike size={16} />
+            <span>Ride Requests</span>
+          </button>
+          <button type="button">
+            <Package size={16} />
+            <span>Food Orders</span>
+          </button>
+          <button type="button">
+            <Package size={16} />
+            <span>Delivery Requests</span>
+          </button>
+          <div className="admin-request-actions">
+            <button type="button">
+              <Filter size={15} />
+              <span>Filters</span>
+            </button>
+            <button className="primary" type="button">
+              <Download size={15} />
+              <span>Export</span>
+            </button>
           </div>
         </section>
 
-        <div className="exact-admin-grid">
-          <section className="exact-admin-card wide">
-            <div className="exact-admin-cardhead">
+        <section className="admin-request-filter-row">
+          <span className="active">All Requests <strong>{rides.length}</strong></span>
+          <span>Pending <strong>{requestPending.length}</strong></span>
+          <span>Accepted <strong>{requestAccepted.length}</strong></span>
+          <span>On Trip <strong>{requestOnTrip.length}</strong></span>
+          <span>Completed <strong>{requestCompleted.length}</strong></span>
+          <span className="danger">Cancelled <strong>{requestCancelled.length}</strong></span>
+        </section>
+
+        <section className="admin-request-layout">
+          <article className="admin-dark-card admin-request-list-card">
+            <div className="admin-dark-cardhead">
               <div>
-                <h3>Ride timeline</h3>
-                <p>All persisted rides flowing through the backend ride service.</p>
+                <h3>All Ride Requests ({rides.length})</h3>
+                <p>Live ride requests from the backend ride service.</p>
               </div>
+              <span>Sort by: Newest</span>
             </div>
-            <LiveOperationsTable rows={rows} />
-          </section>
-
-          <div className="exact-admin-stack">
-            <section className="exact-admin-card">
-              <div className="exact-admin-cardhead">
-                <div>
-                  <h3>Dispatch queue</h3>
-                  <p>Operational lanes that need attention first.</p>
-                </div>
-              </div>
-              <div className="exact-admin-priority-grid">
-                <article className="exact-admin-priority-card">
-                  <span>Searching queue</span>
-                  <strong>{rides.filter((ride) => ride.status === "searching").length}</strong>
-                  <small>Passengers still waiting for rider discovery.</small>
-                </article>
-                <article className="exact-admin-priority-card">
-                  <span>Assigned queue</span>
-                  <strong>{rides.filter((ride) => ride.status === "assigned").length}</strong>
-                  <small>Rides that have a rider but still need dispatch confidence.</small>
-                </article>
-                <article className="exact-admin-priority-card">
-                  <span>Arrival queue</span>
-                  <strong>{ridesAwaitingPickup.length}</strong>
-                  <small>Trips close to pickup completion and likely to flip into live travel soon.</small>
-                </article>
-              </div>
-            </section>
-
-            <section className="exact-admin-card">
-              <div className="exact-admin-cardhead">
-                <div>
-                  <h3>Recent ride activity</h3>
-                  <p>The freshest ride records entering the system.</p>
-                </div>
-              </div>
-              {recentRideTimeline.length === 0 ? (
-                <EmptyCard
-                  title="No rides recorded yet."
-                  body="The latest ride activity will start appearing here once ride creation begins."
-                />
-              ) : (
-                <ul className="workbench-list exact-admin-ride-feed">
-                  {recentRideTimeline.map((ride) => (
-                    <li key={ride.id}>
-                      <span>
-                        {ride.passenger.user.fullName}
-                        {ride.rider?.user.fullName ? ` with ${ride.rider.user.fullName}` : " awaiting rider"}
-                      </span>
-                      <strong>{formatEnumLabel(ride.status)}</strong>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          </div>
-        </div>
-
-        <div className="exact-admin-grid">
-          <section className="exact-admin-card wide">
-            <div className="exact-admin-cardhead">
-              <div>
-                <h3>Ride pressure snapshot</h3>
-                <p>Operational state split for quick dispatch triage.</p>
-              </div>
-            </div>
-            <ul className="workbench-list">
-              <li>
-                <span>Searching or unassigned</span>
-                <strong>{rides.filter((ride) => ["searching", "assigned"].includes(ride.status)).length}</strong>
-              </li>
-              <li>
-                <span>Arriving or arrived</span>
-                <strong>{rides.filter((ride) => ["arriving", "arrived"].includes(ride.status)).length}</strong>
-              </li>
-              <li>
-                <span>Started trips</span>
-                <strong>{rides.filter((ride) => ride.status === "started").length}</strong>
-              </li>
-              <li>
-                <span>Completed today snapshot</span>
-                <strong>{completedTrips.length}</strong>
-              </li>
-            </ul>
-          </section>
-
-          <section className="exact-admin-card">
-            <div className="exact-admin-cardhead">
-              <div>
-                <h3>Zone trip concentration</h3>
-                <p>Top zones currently driving ride volume.</p>
-              </div>
-            </div>
-            {rideZoneSnapshot.length === 0 ? (
+            {requestCards.length === 0 ? (
               <EmptyCard
-                title="No zones with rides yet."
-                body="Ride concentration by service zone will show up here as soon as trips are persisted."
+                title="No ride requests yet."
+                body="Ride requests will appear here as soon as passengers book trips."
               />
             ) : (
-              <ul className="workbench-list">
-                {rideZoneSnapshot.map(([zoneName, rideCount]) => (
-                  <li key={zoneName}>
-                    <span>{zoneName}</span>
-                    <strong>{rideCount}</strong>
-                  </li>
-                ))}
-              </ul>
+              <div className="admin-request-list">
+                {requestCards.map((ride) => {
+                  const normalizedStatus = ride.status.toLowerCase();
+                  const isActionable = ["searching", "pending"].includes(normalizedStatus);
+
+                  return (
+                    <article key={ride.id} className="admin-request-card">
+                      <div className="admin-request-user">
+                        <span className={`status-chip ${statusTone(ride.status)}`}>
+                          {formatEnumLabel(ride.status)}
+                        </span>
+                        <div className="admin-reference-avatar">
+                          {ride.passenger.user.fullName
+                            .split(" ")
+                            .filter(Boolean)
+                            .slice(0, 2)
+                            .map((part) => part[0])
+                            .join("")
+                            .toUpperCase()}
+                        </div>
+                        <strong>{ride.passenger.user.fullName}</strong>
+                        <small>{ride.rider?.user.fullName ?? "Awaiting rider"}</small>
+                      </div>
+                      <div className="admin-request-route">
+                        <span>{ride.pickupAddress}</span>
+                        <span>{ride.destinationAddress}</span>
+                        <small>{formatDateTime(ride.createdAt)}</small>
+                      </div>
+                      <div className="admin-request-fare">
+                        <strong>{formatMoney(ride.currency, ride.finalFare ?? ride.estimatedFare)}</strong>
+                        <span>{ride.id.slice(-10).toUpperCase()}</span>
+                      </div>
+                      <div className="admin-request-card-actions">
+                        {isActionable ? (
+                          <>
+                            <button type="button">Accept</button>
+                            <button className="outline" type="button">Decline</button>
+                          </>
+                        ) : (
+                          <a href={`/admin/requests`}>View Details</a>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
             )}
-          </section>
-        </div>
-      </>
+          </article>
+
+          <aside className="admin-request-side">
+            <article className="admin-dark-card">
+              <div className="admin-dark-cardhead">
+                <div>
+                  <h3>Live Requests Map</h3>
+                  <p>{mapMarkers.length} live rider locations.</p>
+                </div>
+                <span className="live-dot">Live</span>
+              </div>
+              <div className="admin-request-map">
+                <OperationsMap
+                  center={mapMarkers[0]?.position ?? [5.6037, -0.187]}
+                  zoom={mapMarkers.length > 0 ? 11 : 6}
+                  markers={mapMarkers}
+                  emptyTitle="No live map coordinates."
+                  emptyDescription="Online riders with coordinates will appear here."
+                />
+              </div>
+            </article>
+
+            <article className="admin-dark-card">
+              <div className="admin-dark-cardhead">
+                <div>
+                  <h3>Request Statistics</h3>
+                  <p>Current ride request status mix.</p>
+                </div>
+                <span>Today</span>
+              </div>
+              <div className="admin-request-stats">
+                <div><Package size={16} /><span>Total Requests</span><strong>{rides.length}</strong></div>
+                <div><Clock size={16} /><span>Pending</span><strong>{requestPending.length}</strong></div>
+                <div><CheckCircle size={16} /><span>Accepted</span><strong>{requestAccepted.length}</strong></div>
+                <div><Bike size={16} /><span>On Trip</span><strong>{requestOnTrip.length}</strong></div>
+                <div><CheckCircle size={16} /><span>Completed</span><strong>{requestCompleted.length}</strong></div>
+                <div><XCircle size={16} /><span>Cancelled</span><strong>{requestCancelled.length}</strong></div>
+              </div>
+            </article>
+
+            <article className="admin-dark-card">
+              <div className="admin-dark-cardhead">
+                <div>
+                  <h3>Peak Request Time</h3>
+                  <p>Requests grouped into 4-hour windows.</p>
+                </div>
+                <span>Today</span>
+              </div>
+              <div className="admin-request-peak-chart">
+                {requestPeakBuckets.map((bucket) => (
+                  <div key={bucket.label}>
+                    <i style={{ height: bucket.count === 0 ? 0 : `${Math.max(8, (bucket.count / requestPeakMax) * 100)}%` }} />
+                    <span>{bucket.label}</span>
+                  </div>
+                ))}
+              </div>
+            </article>
+          </aside>
+        </section>
+      </div>
     ) : screen === "riders" ? (
       <>
         <section className="exact-admin-section">
@@ -1974,205 +2053,200 @@ export function AdminConsolePage({
         </div>
       </>
     ) : screen === "passengers" ? (
-      <>
-        <section className="exact-admin-section">
-          <div className="exact-admin-heading">
-            <p className="exact-admin-eyebrow">{screenMeta.passengers.eyebrow}</p>
-            <h1>{screenMeta.passengers.title}</h1>
-            <p>{screenMeta.passengers.description}</p>
-          </div>
-
-          <div className="exact-admin-kpis">
-            <article className="exact-admin-kpi">
-              <span>Total passengers</span>
-              <strong>{passengers.length}</strong>
-            </article>
-            <article className="exact-admin-kpi">
-              <span>With default city</span>
-              <strong>{passengers.filter((passenger) => Boolean(passenger.defaultServiceCity)).length}</strong>
-            </article>
-            <article className="exact-admin-kpi">
-              <span>Referred accounts</span>
-              <strong>{passengers.filter((passenger) => Boolean(passenger.referralCode)).length}</strong>
-            </article>
-            <article className="exact-admin-kpi">
-              <span>Passenger-linked rides</span>
-              <strong>{new Set(rides.map((ride) => ride.passenger.user.fullName)).size}</strong>
-            </article>
-          </div>
+      <div className="admin-reference-dark admin-users-dashboard">
+        <section className="admin-users-kpis">
+          <article className="admin-dark-kpi">
+            <Users size={22} />
+            <span>Total Users</span>
+            <strong>{managedUsers.length}</strong>
+            <small>{passengers.length} customers, {riders.length} riders</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <Bike size={22} />
+            <span>Riders</span>
+            <strong>{riders.length}</strong>
+            <small>{activeRiders.length} online</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <User size={22} />
+            <span>Customers</span>
+            <strong>{passengers.length}</strong>
+            <small>{recentPassengers.length} recent profiles</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <Package size={22} />
+            <span>Vendors</span>
+            <strong>0</strong>
+            <small>No vendor endpoint wired</small>
+          </article>
+          <article className="admin-dark-kpi danger">
+            <ShieldAlert size={22} />
+            <span>Blocked Users</span>
+            <strong>{blockedUsers.length}</strong>
+            <small>From account status data</small>
+          </article>
         </section>
 
-        <div className="exact-admin-grid">
-          <section className="exact-admin-card wide">
-            <div className="exact-admin-cardhead">
+        <section className="admin-users-layout">
+          <article className="admin-dark-card admin-users-table-card">
+            <div className="admin-dark-cardhead">
               <div>
-                <h3>Passenger directory</h3>
-                <p>Passenger profiles currently persisted in the live backend.</p>
+                <h3>All Users</h3>
+                <p>Riders and customers from the live backend. Vendors and admins appear when exposed by API.</p>
+              </div>
+              <div className="admin-users-actions">
+                <button type="button"><Filter size={15} /> Filters</button>
+                <a href="/admin/riders"><UserPlus size={15} /> Add User</a>
               </div>
             </div>
-            {passengers.length === 0 ? (
+            <div className="admin-users-segments">
+              <span className="active">All ({managedUsers.length})</span>
+              <span>Riders ({riders.length})</span>
+              <span>Customers ({passengers.length})</span>
+              <span>Vendors (0)</span>
+              <span>Admins (0)</span>
+            </div>
+            {managedUsers.length === 0 ? (
               <EmptyCard
-                title="No passengers found."
-                body="Passenger signups or operations-lab provisioning will populate this directory."
+                title="No users found."
+                body="Passenger and rider records will appear here after signup or provisioning."
               />
             ) : (
-              <div className="table-wrapper">
+              <div className="table-wrapper admin-dark-table">
                 <table className="table">
                   <thead>
                     <tr>
-                      <th>Passenger</th>
-                      <th>Phone</th>
-                      <th>Referral</th>
-                      <th>Default city</th>
+                      <th>User</th>
+                      <th>User Type</th>
+                      <th>Phone Number</th>
+                      <th>Email</th>
+                      <th>Status</th>
+                      <th>Joined Date</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {passengers.map((passenger) => (
-                      <tr key={passenger.id}>
-                        <td>{passenger.user.fullName}</td>
-                        <td>{passenger.user.phoneE164}</td>
-                        <td>{passenger.referralCode}</td>
-                        <td>{passenger.defaultServiceCity ?? "Not set"}</td>
-                      </tr>
-                    ))}
+                    {managedUsers.map((user) => {
+                      const Icon = user.icon;
+
+                      return (
+                        <tr key={`${user.type}-${user.id}`}>
+                          <td>
+                            <div className="admin-users-person">
+                              <span><Icon size={15} /></span>
+                              <div>
+                                <strong>{user.name}</strong>
+                                <small>{user.reference}</small>
+                              </div>
+                            </div>
+                          </td>
+                          <td>{user.type}</td>
+                          <td>{user.phone}</td>
+                          <td>{user.email}</td>
+                          <td>
+                            <span className={`status-chip ${statusTone(user.status)}`}>
+                              {formatEnumLabel(user.status)}
+                            </span>
+                          </td>
+                          <td>{user.joinedAt ? formatDateTime(user.joinedAt) : "Not available"}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
             )}
-          </section>
+          </article>
 
-          <div className="exact-admin-stack">
-            <section className="exact-admin-card">
-              <div className="exact-admin-cardhead">
+          <aside className="admin-users-side">
+            <article className="admin-dark-card">
+              <div className="admin-dark-cardhead">
                 <div>
-                  <h3>Demand signals</h3>
-                  <p>Quick passenger-side indicators for growth and engagement.</p>
+                  <h3>User Statistics</h3>
+                  <p>Current user type split.</p>
                 </div>
+                <span>This month</span>
               </div>
-              <div className="exact-admin-priority-grid">
-                <article className="exact-admin-priority-card">
-                  <span>Default city set</span>
-                  <strong>{passengers.filter((passenger) => Boolean(passenger.defaultServiceCity)).length}</strong>
-                  <small>Accounts with enough profile detail for more tailored dispatch experiences.</small>
-                </article>
-                <article className="exact-admin-priority-card">
-                  <span>Referral-coded</span>
-                  <strong>{passengers.filter((passenger) => Boolean(passenger.referralCode)).length}</strong>
-                  <small>Passenger accounts already participating in referral loops.</small>
-                </article>
-                <article className="exact-admin-priority-card">
-                  <span>Ride-linked passengers</span>
-                  <strong>{new Set(rides.map((ride) => ride.passenger.user.fullName)).size}</strong>
-                  <small>Passengers with actual ride activity in the current system.</small>
-                </article>
+              <div className="admin-users-donut-wrap">
+                <div
+                  className="admin-users-donut"
+                  style={{
+                    background:
+                      managedUsers.length === 0
+                        ? "#1f2937"
+                        : `conic-gradient(#ffc107 0 ${(riders.length / Math.max(1, managedUsers.length)) * 100}%, #22c55e ${(riders.length / Math.max(1, managedUsers.length)) * 100}% 100%)`
+                  }}
+                >
+                  <div>
+                    <strong>{managedUsers.length}</strong>
+                    <span>Total Users</span>
+                  </div>
+                </div>
+                <ul className="admin-users-stat-list">
+                  <li><i className="yellow" /> Riders <strong>{riders.length}</strong></li>
+                  <li><i className="green" /> Customers <strong>{passengers.length}</strong></li>
+                  <li><i className="blue" /> Vendors <strong>0</strong></li>
+                  <li><i className="red" /> Admins <strong>0</strong></li>
+                </ul>
               </div>
-            </section>
+            </article>
 
-            <section className="exact-admin-card">
-              <div className="exact-admin-cardhead">
+            <article className="admin-dark-card">
+              <div className="admin-dark-cardhead">
                 <div>
-                  <h3>City distribution</h3>
-                  <p>Where passengers are currently biased in the saved profile data.</p>
+                  <h3>Recent Signups</h3>
+                  <p>Newest rider and customer records.</p>
                 </div>
+                <span>View all</span>
               </div>
-              {passengerCitySnapshot.length === 0 ? (
+              {recentManagedUsers.length === 0 ? (
                 <EmptyCard
-                  title="No passenger city data yet."
-                  body="Passenger profile cities will show up here once accounts are created."
+                  title="No recent users."
+                  body="New signups will appear here when records include signup timestamps."
                 />
               ) : (
-                <ul className="workbench-list">
-                  {passengerCitySnapshot.map(([city, count]) => (
-                    <li key={city}>
-                      <span>{city}</span>
+                <ul className="admin-users-recent-list">
+                  {recentManagedUsers.map((user) => (
+                    <li key={`${user.type}-recent-${user.id}`}>
+                      <div className="admin-reference-avatar">{user.name.slice(0, 2).toUpperCase()}</div>
+                      <div>
+                        <strong>{user.name}</strong>
+                        <span>{user.type}</span>
+                      </div>
+                      <small>{user.joinedAt ? formatDateTime(user.joinedAt) : "Recent"}</small>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </article>
+
+            <article className="admin-dark-card">
+              <div className="admin-dark-cardhead">
+                <div>
+                  <h3>User by Location</h3>
+                  <p>Location distribution from rider cities and customer default cities.</p>
+                </div>
+                <span>View full report</span>
+              </div>
+              {userLocationSnapshot.length === 0 ? (
+                <EmptyCard
+                  title="No location data."
+                  body="User location distribution will appear as profiles add city data."
+                />
+              ) : (
+                <div className="admin-users-location-list">
+                  {userLocationSnapshot.map(([location, count]) => (
+                    <div key={location}>
+                      <span>{location}</span>
                       <strong>{count}</strong>
-                    </li>
+                      <i style={{ width: `${Math.max(8, (count / userLocationMax) * 100)}%` }} />
+                    </div>
                   ))}
-                </ul>
-              )}
-            </section>
-          </div>
-        </div>
-
-        <div className="exact-admin-grid">
-          <section className="exact-admin-card wide">
-            <div className="exact-admin-cardhead">
-              <div>
-                <h3>Recent passenger activity</h3>
-                <p>The newest passenger profiles and where they are anchored.</p>
-              </div>
-            </div>
-            {recentPassengers.length === 0 ? (
-              <EmptyCard
-                title="No recent passenger profiles yet."
-                body="Recent passenger signups will appear here as soon as the first accounts are created."
-              />
-            ) : (
-              <ul className="workbench-list exact-admin-ride-feed">
-                {recentPassengers.map((passenger) => (
-                  <li key={passenger.id}>
-                    <span>
-                      {passenger.user.fullName}
-                      {passenger.defaultServiceCity ? ` - ${passenger.defaultServiceCity}` : " - no city set"}
-                    </span>
-                    <strong>{passenger.user.phoneE164}</strong>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-
-          <div className="exact-admin-stack">
-            <section className="exact-admin-card">
-              <div className="exact-admin-cardhead">
-                <div>
-                  <h3>Highest ride demand</h3>
-                  <p>Passengers currently showing the strongest ride usage footprint.</p>
                 </div>
-              </div>
-              {passengerDemandSnapshot.length === 0 ? (
-                <EmptyCard
-                  title="No passenger demand yet."
-                  body="Ride demand by passenger will show up here once ride records accumulate."
-                />
-              ) : (
-                <ul className="workbench-list exact-admin-ride-feed">
-                  {passengerDemandSnapshot.map(([name, count]) => (
-                    <li key={name}>
-                      <span>{name}</span>
-                      <strong>{count} rides</strong>
-                    </li>
-                  ))}
-                </ul>
               )}
-            </section>
-
-            <section className="exact-admin-card">
-              <div className="exact-admin-cardhead">
-                <div>
-                  <h3>Recent rider-side pairings</h3>
-                  <p>A quick look at how current passengers are connecting to supply.</p>
-                </div>
-              </div>
-              {recentRideTimeline.length === 0 ? (
-                <EmptyCard
-                  title="No ride pairings yet."
-                  body="Passenger-to-rider pairings will surface here once trips are being created."
-                />
-              ) : (
-                <ul className="workbench-list exact-admin-ride-feed">
-                  {recentRideTimeline.map((ride) => (
-                    <li key={ride.id}>
-                      <span>{ride.passenger.user.fullName}</span>
-                      <strong>{ride.rider?.user.fullName ?? "Awaiting rider"}</strong>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          </div>
-        </div>
-      </>
+            </article>
+          </aside>
+        </section>
+      </div>
     ) : screen === "ratings" ? (
       <>
         <section className="exact-admin-section">
@@ -4456,7 +4530,11 @@ export function AdminConsolePage({
 
   return (
     <ImmersivePage className="exact-admin-page">
-      <div className={`exact-admin-shell ${screen === "payments" ? "admin-finance-shell" : ""}`}>
+      <div
+        className={`exact-admin-shell ${
+          ["payments", "rides", "passengers"].includes(screen) ? "admin-finance-shell" : ""
+        }`}
+      >
         <aside className="exact-admin-sidebar">
           <div className="exact-admin-brand">
             <div>
