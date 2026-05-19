@@ -1,26 +1,41 @@
-import { Text, View } from "react-native";
+import { View } from "react-native";
 import { compactDate, money } from "../api";
-import { Card, EmptyState, SectionTitle, styles } from "../components/ui";
-import type { Ride } from "../types";
+import { Card, EmptyState, ListRow, Pill, SectionTitle } from "../components/ui";
+import type { Delivery, Ride } from "../types";
 
-export function TripsScreen({ rides }: { rides: Ride[] }) {
+export function TripsScreen({ rides, deliveries }: { rides: Ride[]; deliveries: Delivery[] }) {
+  const hasHistory = rides.length > 0 || deliveries.length > 0;
+
   return (
     <>
-      <SectionTitle kicker="My trips" title="Trip history" />
+      <SectionTitle kicker="My trips" title="Trip and delivery history" />
       <Card>
-        {rides.length ? (
-          rides.map((ride) => (
-            <View key={ride.id} style={{ flexDirection: "row", gap: 12, alignItems: "center", justifyContent: "space-between", paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: "#2A2A2A" }}>
-              <View style={{ flex: 1, paddingRight: 12 }}>
-                <Text style={{ color: "#FFFFFF", fontSize: 15, fontWeight: "900" }}>{ride.pickupAddress}</Text>
-                <Text style={{ color: "#9EA4AE", fontSize: 13, marginTop: 4 }}>{ride.destinationAddress}</Text>
-                <Text style={{ color: "#9EA4AE", fontSize: 13, marginTop: 4 }}>{ride.status} - {compactDate(ride.createdAt)}</Text>
-              </View>
-              <Text style={{ color: "#F5B800", fontSize: 14, fontWeight: "900" }}>{money(ride.finalFare ?? ride.estimatedFare, ride.currency ?? "GHS")}</Text>
-            </View>
-          ))
+        {hasHistory ? (
+          <>
+          <Pill label={`${rides.length} rides`} />
+          {rides.map((ride) => (
+            <ListRow
+              key={ride.id}
+              title={ride.pickupAddress}
+              body={ride.destinationAddress}
+              meta={`${ride.status} - ${compactDate(ride.createdAt)}`}
+              amount={money(ride.finalFare ?? ride.estimatedFare, ride.currency ?? "GHS")}
+            />
+          ))}
+          <View style={{ height: 8 }} />
+          <Pill label={`${deliveries.length} deliveries`} />
+          {deliveries.map((delivery) => (
+            <ListRow
+              key={delivery.id}
+              title={delivery.packageDescription}
+              body={`${delivery.pickupAddress} to ${delivery.dropoffAddress}`}
+              meta={`${delivery.status} - ${compactDate(delivery.createdAt)}`}
+              amount={money(delivery.finalFee ?? delivery.estimatedFee, delivery.currency ?? "GHS")}
+            />
+          ))}
+          </>
         ) : (
-          <EmptyState title="No trips yet." body="Trips will appear here after your first backend ride request." />
+          <EmptyState title="No activity yet." body="Trips and deliveries will appear here after your first backend request." />
         )}
       </Card>
     </>

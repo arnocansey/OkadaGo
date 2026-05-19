@@ -39,6 +39,15 @@ export type AdminConsoleScreen =
   | "dashboard"
   | "rides"
   | "riders"
+  | "riderVerification"
+  | "riderDocuments"
+  | "riderPerformance"
+  | "riderEarnings"
+  | "riderWallet"
+  | "riderPayouts"
+  | "riderComplaints"
+  | "riderActivity"
+  | "riderSuspensions"
   | "passengers"
   | "payments"
   | "ratings"
@@ -197,6 +206,12 @@ type AdminNavItem = {
   group: "main" | "finance" | "system";
   hint: string;
   badge?: string;
+  children?: Array<{
+    label: string;
+    href: string;
+    screen: AdminConsoleScreen;
+    badge?: string;
+  }>;
 };
 
 type AdminScreenMeta = {
@@ -390,7 +405,7 @@ function formatDateTime(value: string) {
 function statusTone(status: string) {
   const normalized = status.toLowerCase();
 
-  if (["completed", "delivered", "paid", "captured", "posted", "approved"].includes(normalized)) {
+  if (["completed", "delivered", "paid", "captured", "posted", "approved", "valid"].includes(normalized)) {
     return "success";
   }
 
@@ -406,13 +421,14 @@ function statusTone(status: string) {
       "pending",
       "requested",
       "reviewing",
+      "under review",
       "processing"
     ].includes(normalized)
   ) {
     return "warning";
   }
 
-  if (["failed", "rejected", "cancelled", "reversed"].includes(normalized)) {
+  if (["failed", "rejected", "cancelled", "reversed", "missing", "expired"].includes(normalized)) {
     return "danger";
   }
 
@@ -690,7 +706,10 @@ export function AdminConsolePage({
       requestJson<WalletTransactionRecord[]>(walletTransactionsPath, {
         token: session?.token
       }),
-    enabled: status === "authenticated" && isAdmin && screen === "payments"
+    enabled:
+      status === "authenticated" &&
+      isAdmin &&
+      (screen === "payments" || screen === "riderWallet" || screen === "riderEarnings")
   });
 
   const payoutRequestsQuery = useQuery({
@@ -699,7 +718,10 @@ export function AdminConsolePage({
       requestJson<PayoutRequestRecord[]>(payoutRequestsPath, {
         token: session?.token
       }),
-    enabled: status === "authenticated" && isAdmin && screen === "payments"
+    enabled:
+      status === "authenticated" &&
+      isAdmin &&
+      (screen === "payments" || screen === "riderPayouts" || screen === "riderEarnings")
   });
 
   const ratingsQuery = useQuery({
@@ -718,7 +740,7 @@ export function AdminConsolePage({
     enabled:
       status === "authenticated" &&
       isAdmin &&
-      (screen === "payments" || screen === "ratings")
+      (screen === "payments" || screen === "ratings" || screen === "riderPerformance")
   });
 
   const incidentsQuery = useQuery({
@@ -727,7 +749,10 @@ export function AdminConsolePage({
       requestJson<AdminIncidentRecord[]>(incidentsPath, {
         token: session?.token
       }),
-    enabled: status === "authenticated" && isAdmin && screen === "ratings"
+    enabled:
+      status === "authenticated" &&
+      isAdmin &&
+      (screen === "ratings" || screen === "riderComplaints")
   });
 
   const rides = ridesQuery.data ?? [];
@@ -1241,6 +1266,156 @@ export function AdminConsolePage({
     .slice(0, 6);
   const userLocationMax = Math.max(1, ...userLocationSnapshot.map(([, count]) => count));
   const recentManagedUsers = managedUsers.slice(0, 5);
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const riderVerificationRows = riders.map((rider) => {
+    const accountStatus = rider.user.accountStatus?.toLowerCase() ?? "";
+    const hasVehicle = Boolean(rider.vehicle?.plateNumber);
+    const hasZone = Boolean(rider.serviceZone?.id);
+    const hasContact = Boolean(rider.user.phoneE164 || rider.user.email);
+    const isRejected = ["blocked", "rejected", "suspended"].some((status) =>
+      accountStatus.includes(status)
+    );
+    const verificationStatus = isRejected
+      ? "Rejected"
+      : hasVehicle && hasZone && hasContact
+        ? "Approved"
+        : hasVehicle || hasZone
+          ? "Under Review"
+          : "Pending";
+
+    return {
+      rider,
+      verificationStatus,
+      hasVehicle,
+      hasZone,
+      hasContact,
+      appliedAt: rider.createdAt
+    };
+  });
+  const riderVerificationStats = {
+    pending: riderVerificationRows.filter((row) => row.verificationStatus === "Pending").length,
+    approved: riderVerificationRows.filter((row) => row.verificationStatus === "Approved").length,
+    rejected: riderVerificationRows.filter((row) => row.verificationStatus === "Rejected").length,
+    underReview: riderVerificationRows.filter((row) => row.verificationStatus === "Under Review").length,
+    today: riderVerificationRows.filter((row) => row.appliedAt?.slice(0, 10) === todayKey).length
+  };
+  const riderDocumentRows = riders.flatMap((rider) => {
+    const base = {
+      riderName: rider.user.fullName,
+      displayCode: rider.displayCode,
+      phone: rider.user.phoneE164,
+      createdAt: rider.createdAt
+    };
+
+    return [
+      {
+        ...base,
+        id: `${rider.id}-identity`,
+        documentType: "Identity profile",
+        documentNumber: rider.user.phoneE164 || rider.user.email || "Missing contact",
+        status: rider.user.phoneE164 || rider.user.email ? "Valid" : "Missing",
+        issueDate: rider.createdAt,
+        expiryDate: "Backend upload pending",
+        daysLeft: "N/A"
+      },
+      {
+        ...base,
+        id: `${rider.id}-vehicle`,
+        documentType: "Bike registration",
+        documentNumber: rider.vehicle?.plateNumber ?? "No vehicle on file",
+        status: rider.vehicle?.plateNumber ? "Valid" : "Missing",
+        issueDate: rider.createdAt,
+        expiryDate: "Backend upload pending",
+        daysLeft: "N/A"
+      },
+      {
+        ...base,
+        id: `${rider.id}-zone`,
+        documentType: "Service zone",
+        documentNumber: rider.serviceZone?.name ?? "No zone assigned",
+        status: rider.serviceZone?.id ? "Valid" : "Missing",
+        issueDate: rider.createdAt,
+        expiryDate: "Operational assignment",
+        daysLeft: "N/A"
+      },
+      {
+        ...base,
+        id: `${rider.id}-location`,
+        documentType: "Live location signal",
+        documentNumber:
+          rider.currentLatitude !== null && rider.currentLongitude !== null
+            ? `${rider.currentLatitude}, ${rider.currentLongitude}`
+            : "No coordinates",
+        status:
+          rider.currentLatitude !== null && rider.currentLongitude !== null
+            ? "Valid"
+            : rider.onlineStatus
+              ? "Under Review"
+              : "Missing",
+        issueDate: rider.createdAt,
+        expiryDate: "Live feed",
+        daysLeft: "N/A"
+      }
+    ];
+  });
+  const riderDocumentStats = {
+    total: riders.length,
+    compliant: riderVerificationStats.approved,
+    expiringSoon: 0,
+    expired: 0,
+    missing: riderDocumentRows.filter((row) => row.status === "Missing").length
+  };
+  const riderWalletTransactions = walletTransactions.filter((transaction) =>
+    Boolean(transaction.wallet.user.riderProfile?.id)
+  );
+  const riderPayoutRequests = payoutRequests.filter((request) => Boolean(request.rider?.id));
+  const riderIncidents = incidents.filter((incident) => Boolean(incident.rider?.id));
+  const suspendedRiders = riders.filter((rider) =>
+    ["blocked", "suspended", "rejected"].some((status) =>
+      (rider.user.accountStatus ?? "").toLowerCase().includes(status)
+    )
+  );
+  const riderFinancialRows = riders.map((rider) => {
+    const riderRides = rides.filter((ride) => ride.rider?.user.fullName === rider.user.fullName);
+    const completedRiderRides = riderRides.filter((ride) => ride.status === "completed");
+    const riderRevenue = completedRiderRides.reduce(
+      (sum, ride) => sum + parseNumber(ride.finalFare ?? ride.estimatedFare),
+      0
+    );
+    const riderCommission = completedRiderRides.reduce(
+      (sum, ride) => sum + parseNumber(ride.platformCommission),
+      0
+    );
+    const riderRatings = ratings.filter((rating) => rating.rated.riderProfile?.id === rider.id);
+    const riderWalletMovement = riderWalletTransactions
+      .filter((transaction) => transaction.wallet.user.riderProfile?.id === rider.id)
+      .reduce((sum, transaction) => sum + parseNumber(transaction.amount), 0);
+    const riderPayoutTotal = riderPayoutRequests
+      .filter((request) => request.rider.id === rider.id)
+      .reduce((sum, request) => sum + parseNumber(request.amount), 0);
+
+    return {
+      rider,
+      rideCount: riderRides.length,
+      completedCount: completedRiderRides.length,
+      activeCount: riderRides.filter((ride) =>
+        ["searching", "assigned", "arriving", "arrived", "started"].includes(ride.status)
+      ).length,
+      revenue: riderRevenue,
+      earnings: Math.max(0, riderRevenue - riderCommission),
+      commission: riderCommission,
+      averageRating:
+        riderRatings.length === 0
+          ? 0
+          : riderRatings.reduce((sum, rating) => sum + rating.score, 0) / riderRatings.length,
+      ratingCount: riderRatings.length,
+      walletMovement: riderWalletMovement,
+      payoutTotal: riderPayoutTotal
+    };
+  });
+  const topRiderPerformanceRows = riderFinancialRows
+    .slice()
+    .sort((left, right) => right.completedCount - left.completedCount || right.earnings - left.earnings);
 
   const dashboardMetrics = [
     {
@@ -1300,7 +1475,69 @@ export function AdminConsolePage({
         screen: "riders",
         group: "main",
         hint: "Supply and availability",
-        badge: `${activeRiders.length}`
+        badge: `${activeRiders.length}`,
+        children: [
+          {
+            label: "All Riders",
+            href: "/admin/riders",
+            screen: "riders",
+            badge: `${riders.length}`
+          },
+          {
+            label: "Rider Verification",
+            href: "/admin/riders/verification",
+            screen: "riderVerification",
+            badge: `${riderVerificationStats.pending + riderVerificationStats.underReview}`
+          },
+          {
+            label: "Documents",
+            href: "/admin/riders/documents",
+            screen: "riderDocuments",
+            badge: `${riderDocumentStats.missing}`
+          },
+          {
+            label: "Performance",
+            href: "/admin/riders/performance",
+            screen: "riderPerformance",
+            badge: `${completedTrips.length}`
+          },
+          {
+            label: "Earnings",
+            href: "/admin/riders/earnings",
+            screen: "riderEarnings",
+            badge: `${topRiderPerformanceRows.filter((row) => row.earnings > 0).length}`
+          },
+          {
+            label: "Wallet",
+            href: "/admin/riders/wallet",
+            screen: "riderWallet",
+            badge: `${riderWalletTransactions.length}`
+          },
+          {
+            label: "Payouts",
+            href: "/admin/riders/payouts",
+            screen: "riderPayouts",
+            badge: `${riderPayoutRequests.filter((request) => request.status.toLowerCase() === "requested").length}`
+          },
+          {
+            label: "Complaints",
+            href: "/admin/riders/complaints",
+            screen: "riderComplaints",
+            badge: `${riderIncidents.length}`
+          },
+          {
+            label: "Activity Tracking",
+            href: "/admin/riders/activity-tracking",
+            screen: "riderActivity",
+            badge: `${ridersWithCoords.length}`
+          },
+          {
+            label: "Suspensions",
+            href: "/admin/riders/suspensions",
+            screen: "riderSuspensions",
+            badge: `${suspendedRiders.length}`
+          }
+        ]
       },
       {
         label: "Users Management",
@@ -1365,6 +1602,16 @@ export function AdminConsolePage({
       passengers.length,
       pendingPayoutRequests.length,
       promoAdjustedTrips.length,
+      riderDocumentStats.missing,
+      riderIncidents.length,
+      riderPayoutRequests,
+      riderVerificationStats.pending,
+      riderVerificationStats.underReview,
+      riderWalletTransactions.length,
+      riders.length,
+      ridersWithCoords.length,
+      suspendedRiders.length,
+      topRiderPerformanceRows,
       ratings.length,
       zones
     ]
@@ -1403,6 +1650,87 @@ export function AdminConsolePage({
       quickActionLabel: "Review payouts",
       quickActionHref: "/admin/finance",
       quickActionNote: "Move from supply health into rider wallet and payout operations."
+    },
+    riderVerification: {
+      eyebrow: "Riders management",
+      title: "Rider Verification",
+      description: "Review rider approval readiness using live profile, vehicle, zone, and account data.",
+      searchLabel: "Search rider verification queue...",
+      quickActionLabel: "Open rider documents",
+      quickActionHref: "/admin/riders/documents",
+      quickActionNote: "Verification status is derived from live rider records until a dedicated KYC endpoint is added."
+    },
+    riderDocuments: {
+      eyebrow: "Riders management",
+      title: "Rider Documents",
+      description: "Track rider document readiness and missing operational requirements from live records.",
+      searchLabel: "Search rider documents...",
+      quickActionLabel: "Open verification",
+      quickActionHref: "/admin/riders/verification",
+      quickActionNote: "Document uploads and expiry dates need backend support; this page currently exposes readiness gaps without dummy files."
+    },
+    riderPerformance: {
+      eyebrow: "Riders management",
+      title: "Rider Performance",
+      description: "Compare rider trip volume, completion load, earnings, and rating signals from live operations.",
+      searchLabel: "Search rider performance...",
+      quickActionLabel: "Open earnings",
+      quickActionHref: "/admin/riders/earnings",
+      quickActionNote: "Performance is grouped from assigned ride records and rating submissions."
+    },
+    riderEarnings: {
+      eyebrow: "Riders management",
+      title: "Rider Earnings",
+      description: "Review rider earnings estimated from completed trips and platform commission.",
+      searchLabel: "Search rider earnings...",
+      quickActionLabel: "Open payouts",
+      quickActionHref: "/admin/riders/payouts",
+      quickActionNote: "Earnings are calculated from live completed ride fares minus platform commission."
+    },
+    riderWallet: {
+      eyebrow: "Riders management",
+      title: "Rider Wallet",
+      description: "Inspect rider wallet movement from admin-visible wallet transactions.",
+      searchLabel: "Search rider wallet records...",
+      quickActionLabel: "Open payouts",
+      quickActionHref: "/admin/riders/payouts",
+      quickActionNote: "Wallet rows come from the admin payments ledger filtered to rider wallets."
+    },
+    riderPayouts: {
+      eyebrow: "Riders management",
+      title: "Rider Payouts",
+      description: "Track rider payout requests, review states, and paid settlement history.",
+      searchLabel: "Search rider payouts...",
+      quickActionLabel: "Open finance",
+      quickActionHref: "/admin/finance",
+      quickActionNote: "Payout actions remain controlled from the finance page workflow."
+    },
+    riderComplaints: {
+      eyebrow: "Riders management",
+      title: "Rider Complaints",
+      description: "Review rider-linked incidents and complaint reports from support operations.",
+      searchLabel: "Search rider complaints...",
+      quickActionLabel: "Open support",
+      quickActionHref: "/admin/support",
+      quickActionNote: "Complaints are pulled from support incidents that are linked to a rider."
+    },
+    riderActivity: {
+      eyebrow: "Riders management",
+      title: "Activity Tracking",
+      description: "Track online state, location availability, zone coverage, and active trip load.",
+      searchLabel: "Search rider activity...",
+      quickActionLabel: "Open rider map",
+      quickActionHref: "/admin/riders",
+      quickActionNote: "Activity tracking uses live availability and coordinate fields from rider profiles."
+    },
+    riderSuspensions: {
+      eyebrow: "Riders management",
+      title: "Suspensions",
+      description: "Review riders whose account status indicates blocked, suspended, or rejected access.",
+      searchLabel: "Search rider suspensions...",
+      quickActionLabel: "Open verification",
+      quickActionHref: "/admin/riders/verification",
+      quickActionNote: "Suspension controls need a dedicated backend action before this page can mutate status."
     },
     passengers: {
       eyebrow: "Demand management",
@@ -1480,6 +1808,51 @@ export function AdminConsolePage({
       { label: "Online", value: `${activeRiders.length}` },
       { label: "Mapped", value: `${ridersWithCoords.length}` },
       { label: "Zones covered", value: `${zonesWithActiveRiders.filter((zone) => zone.activeRiderCount > 0).length}` }
+    ],
+    riderVerification: [
+      { label: "Pending", value: `${riderVerificationStats.pending}` },
+      { label: "Approved", value: `${riderVerificationStats.approved}` },
+      { label: "Under review", value: `${riderVerificationStats.underReview}` }
+    ],
+    riderDocuments: [
+      { label: "Riders", value: `${riderDocumentStats.total}` },
+      { label: "Compliant", value: `${riderDocumentStats.compliant}` },
+      { label: "Missing items", value: `${riderDocumentStats.missing}` }
+    ],
+    riderPerformance: [
+      { label: "Completed trips", value: `${completedTrips.length}` },
+      { label: "Rated riders", value: `${riderFinancialRows.filter((row) => row.ratingCount > 0).length}` },
+      { label: "Active load", value: `${activeTrips.length}` }
+    ],
+    riderEarnings: [
+      { label: "Earned riders", value: `${riderFinancialRows.filter((row) => row.earnings > 0).length}` },
+      { label: "Total earnings", value: formatMoney(adminCurrency, riderFinancialRows.reduce((sum, row) => sum + row.earnings, 0)) },
+      { label: "Commission", value: formatMoney(adminCurrency, riderFinancialRows.reduce((sum, row) => sum + row.commission, 0)) }
+    ],
+    riderWallet: [
+      { label: "Wallet rows", value: `${riderWalletTransactions.length}` },
+      { label: "Posted", value: `${riderWalletTransactions.filter((transaction) => transaction.status.toLowerCase() === "posted").length}` },
+      { label: "Movement", value: formatMoney(adminCurrency, riderWalletTransactions.reduce((sum, transaction) => sum + parseNumber(transaction.amount), 0)) }
+    ],
+    riderPayouts: [
+      { label: "Requests", value: `${riderPayoutRequests.length}` },
+      { label: "Pending", value: `${riderPayoutRequests.filter((request) => request.status.toLowerCase() === "requested").length}` },
+      { label: "Paid", value: `${riderPayoutRequests.filter((request) => request.status.toLowerCase() === "paid").length}` }
+    ],
+    riderComplaints: [
+      { label: "Complaints", value: `${riderIncidents.length}` },
+      { label: "Open", value: `${riderIncidents.filter((incident) => incident.status.toLowerCase() !== "resolved").length}` },
+      { label: "Resolved", value: `${riderIncidents.filter((incident) => incident.status.toLowerCase() === "resolved").length}` }
+    ],
+    riderActivity: [
+      { label: "Online", value: `${activeRiders.length}` },
+      { label: "With location", value: `${ridersWithCoords.length}` },
+      { label: "Active trips", value: `${activeTrips.length}` }
+    ],
+    riderSuspensions: [
+      { label: "Flagged riders", value: `${suspendedRiders.length}` },
+      { label: "Total riders", value: `${riders.length}` },
+      { label: "Clear accounts", value: `${Math.max(0, riders.length - suspendedRiders.length)}` }
     ],
     passengers: [
       { label: "Passenger base", value: `${passengers.length}` },
@@ -2539,6 +2912,630 @@ export function AdminConsolePage({
           </div>
         </div>
       </>
+    ) : screen === "riderVerification" ? (
+      <div className="admin-reference-dark admin-rider-subset-page">
+        <section className="admin-rider-subset-kpis">
+          <article className="admin-dark-kpi">
+            <Clock size={22} />
+            <span>Pending Verification</span>
+            <strong>{riderVerificationStats.pending}</strong>
+            <small>Missing required profile inputs</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <CheckCircle size={22} />
+            <span>Approved</span>
+            <strong>{riderVerificationStats.approved}</strong>
+            <small>Vehicle, zone, and contact ready</small>
+          </article>
+          <article className="admin-dark-kpi danger">
+            <XCircle size={22} />
+            <span>Rejected</span>
+            <strong>{riderVerificationStats.rejected}</strong>
+            <small>Blocked, suspended, or rejected accounts</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <ShieldAlert size={22} />
+            <span>Under Review</span>
+            <strong>{riderVerificationStats.underReview}</strong>
+            <small>Partially complete rider profile</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <CalendarDays size={22} />
+            <span>Verification Today</span>
+            <strong>{riderVerificationStats.today}</strong>
+            <small>Riders created today</small>
+          </article>
+        </section>
+
+        <section className="admin-rider-verification-layout">
+          <article className="admin-dark-card admin-rider-queue-card">
+            <div className="admin-dark-cardhead">
+              <div>
+                <h3>Verification Queue</h3>
+                <p>Live rider records sorted by newest profile first.</p>
+              </div>
+              <span>{riderVerificationRows.length} riders</span>
+            </div>
+            {riderVerificationRows.length === 0 ? (
+              <EmptyCard
+                title="No riders in verification."
+                body="Rider applications will appear here after riders are created."
+              />
+            ) : (
+              <div className="admin-rider-queue-list">
+                {riderVerificationRows
+                  .slice()
+                  .sort((left, right) => Date.parse(right.appliedAt ?? "") - Date.parse(left.appliedAt ?? ""))
+                  .map((row) => (
+                    <article key={row.rider.id} className="admin-rider-queue-item">
+                      <div className="exact-avatar">
+                        {row.rider.user.fullName
+                          .split(" ")
+                          .filter(Boolean)
+                          .slice(0, 2)
+                          .map((part) => part[0])
+                          .join("")
+                          .toUpperCase()}
+                      </div>
+                      <div>
+                        <strong>{row.rider.user.fullName}</strong>
+                        <span>{row.rider.displayCode}</span>
+                        <small>{row.appliedAt ? `Applied ${formatDateTime(row.appliedAt)}` : "Application date unavailable"}</small>
+                      </div>
+                      <span className={`status-chip ${statusTone(row.verificationStatus)}`}>
+                        {row.verificationStatus}
+                      </span>
+                    </article>
+                  ))}
+              </div>
+            )}
+          </article>
+
+          <article className="admin-dark-card admin-rider-review-card">
+            <div className="admin-dark-cardhead">
+              <div>
+                <h3>Verification Readiness</h3>
+                <p>Checks are derived from the live rider profile until document upload endpoints are available.</p>
+              </div>
+              <a href="/admin/riders/documents">Open documents</a>
+            </div>
+
+            {riderVerificationRows.length === 0 ? (
+              <EmptyCard
+                title="No rider profile selected."
+                body="Create a rider first to inspect verification readiness."
+              />
+            ) : (
+              <div className="table-wrapper admin-rider-subset-table">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Rider</th>
+                      <th>Contact</th>
+                      <th>Vehicle</th>
+                      <th>Zone</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {riderVerificationRows.map((row) => (
+                      <tr key={row.rider.id}>
+                        <td>
+                          <strong>{row.rider.user.fullName}</strong>
+                          <div>{row.rider.displayCode}</div>
+                        </td>
+                        <td>
+                          <span className={`status-chip ${row.hasContact ? "success" : "warning"}`}>
+                            {row.hasContact ? "Available" : "Missing"}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`status-chip ${row.hasVehicle ? "success" : "warning"}`}>
+                            {row.rider.vehicle?.plateNumber ?? "Missing"}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`status-chip ${row.hasZone ? "success" : "warning"}`}>
+                            {row.rider.serviceZone?.name ?? "Missing"}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`status-chip ${statusTone(row.verificationStatus)}`}>
+                            {row.verificationStatus}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </article>
+        </section>
+      </div>
+    ) : screen === "riderDocuments" ? (
+      <div className="admin-reference-dark admin-rider-subset-page">
+        <section className="admin-rider-subset-kpis">
+          <article className="admin-dark-kpi">
+            <Users size={22} />
+            <span>Total Riders</span>
+            <strong>{riderDocumentStats.total}</strong>
+            <small>All registered riders</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <CheckCircle size={22} />
+            <span>Compliant</span>
+            <strong>{riderDocumentStats.compliant}</strong>
+            <small>Ready by current live fields</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <Clock size={22} />
+            <span>Expiring Soon</span>
+            <strong>{riderDocumentStats.expiringSoon}</strong>
+            <small>Needs document-expiry backend data</small>
+          </article>
+          <article className="admin-dark-kpi danger">
+            <XCircle size={22} />
+            <span>Expired</span>
+            <strong>{riderDocumentStats.expired}</strong>
+            <small>Needs document-expiry backend data</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <FileText size={22} />
+            <span>Missing Documents</span>
+            <strong>{riderDocumentStats.missing}</strong>
+            <small>Missing profile, vehicle, zone, or location data</small>
+          </article>
+        </section>
+
+        <section className="admin-dark-card">
+          <div className="admin-dark-cardhead">
+            <div>
+              <h3>Rider document readiness</h3>
+              <p>Operational readiness table based on live rider records. No dummy document uploads are shown.</p>
+            </div>
+            <a href="/admin/riders/verification">Open verification</a>
+          </div>
+
+          {riderDocumentRows.length === 0 ? (
+            <EmptyCard
+              title="No rider documents yet."
+              body="Document readiness will appear here as soon as rider profiles exist."
+            />
+          ) : (
+            <div className="table-wrapper admin-rider-subset-table">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Rider</th>
+                    <th>Document Type</th>
+                    <th>Document Number</th>
+                    <th>Issue Date</th>
+                    <th>Expiry Date</th>
+                    <th>Status</th>
+                    <th>Days Left</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {riderDocumentRows.map((row) => (
+                    <tr key={row.id}>
+                      <td>
+                        <strong>{row.riderName}</strong>
+                        <div>{row.displayCode}</div>
+                      </td>
+                      <td>{row.documentType}</td>
+                      <td>{row.documentNumber}</td>
+                      <td>{row.issueDate ? formatDateTime(row.issueDate) : "Not available"}</td>
+                      <td>{row.expiryDate}</td>
+                      <td>
+                        <span className={`status-chip ${statusTone(row.status)}`}>{row.status}</span>
+                      </td>
+                      <td>{row.daysLeft}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </div>
+    ) : screen === "riderPerformance" ? (
+      <div className="admin-reference-dark admin-rider-subset-page">
+        <section className="admin-rider-subset-kpis">
+          <article className="admin-dark-kpi">
+            <Bike size={22} />
+            <span>Completed Trips</span>
+            <strong>{completedTrips.length}</strong>
+            <small>Trips contributing to rider performance</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <CheckCircle size={22} />
+            <span>Active Riders</span>
+            <strong>{activeRiders.length}</strong>
+            <small>Currently online supply</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <Clock size={22} />
+            <span>Active Trip Load</span>
+            <strong>{activeTrips.length}</strong>
+            <small>Trips currently in motion</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <User size={22} />
+            <span>Rated Riders</span>
+            <strong>{riderFinancialRows.filter((row) => row.ratingCount > 0).length}</strong>
+            <small>Have submitted ratings</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <CreditCard size={22} />
+            <span>Rider Earnings</span>
+            <strong>{formatMoney(adminCurrency, riderFinancialRows.reduce((sum, row) => sum + row.earnings, 0))}</strong>
+            <small>Completed fare minus commission</small>
+          </article>
+        </section>
+
+        <section className="admin-dark-card">
+          <div className="admin-dark-cardhead">
+            <div>
+              <h3>Rider performance table</h3>
+              <p>Live grouped ride volume, active load, ratings, and earnings by rider.</p>
+            </div>
+            <a href="/admin/riders/earnings">Open earnings</a>
+          </div>
+          {topRiderPerformanceRows.length === 0 ? (
+            <EmptyCard title="No rider performance yet." body="Performance rows appear after riders are created." />
+          ) : (
+            <div className="table-wrapper admin-rider-subset-table">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Rider</th>
+                    <th>Completed</th>
+                    <th>Active</th>
+                    <th>Total Rides</th>
+                    <th>Rating</th>
+                    <th>Earnings</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topRiderPerformanceRows.map((row) => (
+                    <tr key={row.rider.id}>
+                      <td>
+                        <strong>{row.rider.user.fullName}</strong>
+                        <div>{row.rider.displayCode}</div>
+                      </td>
+                      <td>{row.completedCount}</td>
+                      <td>{row.activeCount}</td>
+                      <td>{row.rideCount}</td>
+                      <td>{row.ratingCount === 0 ? "No ratings" : `${row.averageRating.toFixed(1)} (${row.ratingCount})`}</td>
+                      <td>{formatMoney(adminCurrency, row.earnings)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </div>
+    ) : screen === "riderEarnings" ? (
+      <div className="admin-reference-dark admin-rider-subset-page">
+        <section className="admin-rider-subset-kpis">
+          <article className="admin-dark-kpi">
+            <CreditCard size={22} />
+            <span>Total Earnings</span>
+            <strong>{formatMoney(adminCurrency, riderFinancialRows.reduce((sum, row) => sum + row.earnings, 0))}</strong>
+            <small>Completed fares minus commission</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <FileText size={22} />
+            <span>Commission</span>
+            <strong>{formatMoney(adminCurrency, riderFinancialRows.reduce((sum, row) => sum + row.commission, 0))}</strong>
+            <small>Platform share from rider trips</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <Users size={22} />
+            <span>Earned Riders</span>
+            <strong>{riderFinancialRows.filter((row) => row.earnings > 0).length}</strong>
+            <small>Have completed earnings</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <Download size={22} />
+            <span>Payout Requested</span>
+            <strong>{formatMoney(adminCurrency, riderPayoutRequests.reduce((sum, request) => sum + parseNumber(request.amount), 0))}</strong>
+            <small>All rider payout requests</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <Clock size={22} />
+            <span>Pending Payouts</span>
+            <strong>{riderPayoutRequests.filter((request) => request.status.toLowerCase() === "requested").length}</strong>
+            <small>Awaiting finance review</small>
+          </article>
+        </section>
+
+        <section className="admin-dark-card">
+          <div className="admin-dark-cardhead">
+            <div>
+              <h3>Rider earnings ledger</h3>
+              <p>Grouped estimated earnings from completed rides.</p>
+            </div>
+            <a href="/admin/riders/payouts">Open payouts</a>
+          </div>
+          <div className="table-wrapper admin-rider-subset-table">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Rider</th>
+                  <th>Completed Trips</th>
+                  <th>Gross Revenue</th>
+                  <th>Commission</th>
+                  <th>Estimated Earnings</th>
+                  <th>Payout Requests</th>
+                </tr>
+              </thead>
+              <tbody>
+                {riderFinancialRows.map((row) => (
+                  <tr key={row.rider.id}>
+                    <td>
+                      <strong>{row.rider.user.fullName}</strong>
+                      <div>{row.rider.displayCode}</div>
+                    </td>
+                    <td>{row.completedCount}</td>
+                    <td>{formatMoney(adminCurrency, row.revenue)}</td>
+                    <td>{formatMoney(adminCurrency, row.commission)}</td>
+                    <td>{formatMoney(adminCurrency, row.earnings)}</td>
+                    <td>{formatMoney(adminCurrency, row.payoutTotal)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    ) : screen === "riderWallet" ? (
+      <div className="admin-reference-dark admin-rider-subset-page">
+        <section className="admin-dark-card">
+          <div className="admin-dark-cardhead">
+            <div>
+              <h3>Rider wallet transactions</h3>
+              <p>Admin payment ledger filtered to rider wallet owners.</p>
+            </div>
+            <a href="/admin/finance">Open full finance</a>
+          </div>
+          {riderWalletTransactions.length === 0 ? (
+            <EmptyCard title="No rider wallet transactions." body="Wallet movement will appear after rider ledger records are posted." />
+          ) : (
+            <div className="table-wrapper admin-rider-subset-table">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Rider</th>
+                    <th>Type</th>
+                    <th>Direction</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Reference</th>
+                    <th>Created</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {riderWalletTransactions.map((transaction) => (
+                    <tr key={transaction.id}>
+                      <td>
+                        <strong>{transaction.wallet.user.fullName}</strong>
+                        <div>{transaction.wallet.user.riderProfile?.displayCode ?? "Rider wallet"}</div>
+                      </td>
+                      <td>{formatEnumLabel(transaction.type)}</td>
+                      <td>{formatEnumLabel(transaction.direction)}</td>
+                      <td>{formatMoney(transaction.currency, parseNumber(transaction.amount))}</td>
+                      <td><span className={`status-chip ${statusTone(transaction.status)}`}>{formatEnumLabel(transaction.status)}</span></td>
+                      <td>{transaction.reference}</td>
+                      <td>{formatDateTime(transaction.createdAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </div>
+    ) : screen === "riderPayouts" ? (
+      <div className="admin-reference-dark admin-rider-subset-page">
+        <section className="admin-dark-card">
+          <div className="admin-dark-cardhead">
+            <div>
+              <h3>Rider payout requests</h3>
+              <p>Rider settlement requests with current finance review state.</p>
+            </div>
+            <a href="/admin/finance">Manage payouts</a>
+          </div>
+          {riderPayoutRequests.length === 0 ? (
+            <EmptyCard title="No rider payout requests." body="Payout requests will appear here after riders request settlement." />
+          ) : (
+            <div className="table-wrapper admin-rider-subset-table">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Rider</th>
+                    <th>Method</th>
+                    <th>Destination</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Requested</th>
+                    <th>Reviewed</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {riderPayoutRequests.map((request) => (
+                    <tr key={request.id}>
+                      <td>
+                        <strong>{request.rider.user.fullName}</strong>
+                        <div>{request.rider.displayCode}</div>
+                      </td>
+                      <td>{formatEnumLabel(request.method)}</td>
+                      <td>{request.destinationLabel}</td>
+                      <td>{formatMoney(request.currency, parseNumber(request.amount))}</td>
+                      <td><span className={`status-chip ${statusTone(request.status)}`}>{formatEnumLabel(request.status)}</span></td>
+                      <td>{formatDateTime(request.requestedAt)}</td>
+                      <td>{request.reviewedAt ? formatDateTime(request.reviewedAt) : "Pending review"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </div>
+    ) : screen === "riderComplaints" ? (
+      <div className="admin-reference-dark admin-rider-subset-page">
+        <section className="admin-dark-card">
+          <div className="admin-dark-cardhead">
+            <div>
+              <h3>Rider-linked complaints</h3>
+              <p>Support incidents attached to rider profiles.</p>
+            </div>
+            <a href="/admin/support">Open support center</a>
+          </div>
+          {riderIncidents.length === 0 ? (
+            <EmptyCard title="No rider complaints." body="Rider-linked incidents will appear after passengers or admins submit reports." />
+          ) : (
+            <div className="table-wrapper admin-rider-subset-table">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Rider</th>
+                    <th>Category</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                    <th>Reporter</th>
+                    <th>Created</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {riderIncidents.map((incident) => (
+                    <tr key={incident.id}>
+                      <td>
+                        <strong>{incident.rider?.user.fullName ?? "Unknown rider"}</strong>
+                        <div>{incident.rider?.displayCode ?? "No rider code"}</div>
+                      </td>
+                      <td>{formatEnumLabel(incident.category)}</td>
+                      <td>{formatEnumLabel(incident.severity)}</td>
+                      <td><span className={`status-chip ${statusTone(incident.status)}`}>{formatEnumLabel(incident.status)}</span></td>
+                      <td>{incident.reporter.fullName}</td>
+                      <td>{formatDateTime(incident.createdAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </div>
+    ) : screen === "riderActivity" ? (
+      <div className="admin-reference-dark admin-rider-subset-page">
+        <section className="admin-dark-card">
+          <div className="admin-dark-cardhead">
+            <div>
+              <h3>Rider activity tracking</h3>
+              <p>Current online state, location feed readiness, zone, and active ride load.</p>
+            </div>
+            <a href="/admin/riders">Open rider map</a>
+          </div>
+          {riders.length === 0 ? (
+            <EmptyCard title="No rider activity yet." body="Activity tracking starts once rider profiles are created." />
+          ) : (
+            <div className="table-wrapper admin-rider-subset-table">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Rider</th>
+                    <th>Status</th>
+                    <th>Location Signal</th>
+                    <th>City</th>
+                    <th>Zone</th>
+                    <th>Active Trips</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {riderFinancialRows.map((row) => {
+                    const hasLocation =
+                      row.rider.currentLatitude !== null && row.rider.currentLongitude !== null;
+
+                    return (
+                      <tr key={row.rider.id}>
+                        <td>
+                          <strong>{row.rider.user.fullName}</strong>
+                          <div>{row.rider.displayCode}</div>
+                        </td>
+                        <td>
+                          <span className={`status-chip ${row.rider.onlineStatus ? "success" : "neutral"}`}>
+                            {row.rider.onlineStatus ? "Online" : "Offline"}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`status-chip ${hasLocation ? "success" : "warning"}`}>
+                            {hasLocation ? "Live coordinates" : "No coordinates"}
+                          </span>
+                        </td>
+                        <td>{row.rider.city ?? "No city"}</td>
+                        <td>{row.rider.serviceZone?.name ?? "No zone"}</td>
+                        <td>{row.activeCount}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </div>
+    ) : screen === "riderSuspensions" ? (
+      <div className="admin-reference-dark admin-rider-subset-page">
+        <section className="admin-dark-card">
+          <div className="admin-dark-cardhead">
+            <div>
+              <h3>Suspended and blocked riders</h3>
+              <p>Riders whose account status contains blocked, suspended, or rejected.</p>
+            </div>
+            <a href="/admin/riders/verification">Open verification</a>
+          </div>
+          {suspendedRiders.length === 0 ? (
+            <EmptyCard
+              title="No suspended riders."
+              body="Suspended, blocked, or rejected riders will appear here when the backend account status reflects it."
+            />
+          ) : (
+            <div className="table-wrapper admin-rider-subset-table">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Rider</th>
+                    <th>Account Status</th>
+                    <th>Phone</th>
+                    <th>City</th>
+                    <th>Zone</th>
+                    <th>Online</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {suspendedRiders.map((rider) => (
+                    <tr key={rider.id}>
+                      <td>
+                        <strong>{rider.user.fullName}</strong>
+                        <div>{rider.displayCode}</div>
+                      </td>
+                      <td><span className="status-chip danger">{rider.user.accountStatus ?? "Flagged"}</span></td>
+                      <td>{rider.user.phoneE164}</td>
+                      <td>{rider.city ?? "No city"}</td>
+                      <td>{rider.serviceZone?.name ?? "No zone"}</td>
+                      <td>{rider.onlineStatus ? "Online" : "Offline"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </div>
     ) : screen === "passengers" ? (
       <div className="admin-reference-dark admin-users-dashboard">
         <section className="admin-users-kpis">
@@ -3899,7 +4896,7 @@ export function AdminConsolePage({
             </div>
             <span>Delivery Revenue</span>
             <strong>{formatMoney(adminCurrency, deliveryRevenue)}</strong>
-            <small>No delivery endpoint wired</small>
+            <small>{completedDeliveries.length} delivered orders</small>
           </article>
           <article className="admin-finance-kpi">
             <div className="admin-finance-kpi-icon purple">
@@ -5089,20 +6086,34 @@ export function AdminConsolePage({
                   .filter((item) => item.group === group.key)
                   .map((item) => {
                     const Icon = item.icon;
+                    const isActive =
+                      item.screen === screen || Boolean(item.children?.some((child) => child.screen === screen));
 
                     return (
-                      <a
-                        key={item.label}
-                        href={item.href}
-                        className={item.screen === screen ? "active" : ""}
-                      >
-                        <Icon size={18} />
-                        <div className="exact-admin-navcopy">
-                          <strong>{item.label}</strong>
-                          <small>{item.hint}</small>
-                        </div>
-                        {item.badge ? <em>{item.badge}</em> : null}
-                      </a>
+                      <div key={item.label} className="exact-admin-navitem">
+                        <a href={item.href} className={isActive ? "active" : ""}>
+                          <Icon size={18} />
+                          <div className="exact-admin-navcopy">
+                            <strong>{item.label}</strong>
+                            <small>{item.hint}</small>
+                          </div>
+                          {item.badge ? <em>{item.badge}</em> : null}
+                        </a>
+                        {item.children ? (
+                          <div className="exact-admin-subnav">
+                            {item.children.map((child) => (
+                              <a
+                                key={child.href}
+                                href={child.href}
+                                className={child.screen === screen ? "active" : ""}
+                              >
+                                <span>{child.label}</span>
+                                {child.badge ? <em>{child.badge}</em> : null}
+                              </a>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
                     );
                   })}
               </div>

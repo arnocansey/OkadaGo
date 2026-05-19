@@ -1,5 +1,5 @@
 import { Text } from "react-native";
-import { Card, EmptyState, SectionTitle, StatCard, styles } from "../components/ui";
+import { Card, EmptyState, Pill, SectionTitle, StatCard, styles } from "../components/ui";
 import type { Ride } from "../types";
 
 export function IncentivesScreen({ rides }: { rides: Ride[] }) {
@@ -8,6 +8,7 @@ export function IncentivesScreen({ rides }: { rides: Ride[] }) {
     <>
       <SectionTitle kicker="Incentives" title="Performance rewards" />
       <Card>
+        <Pill label="No dummy rewards" tone="warning" />
         <Text style={styles.muted}>Rewards are calculated from live completed ride records. No dummy bonus data is shown.</Text>
         <StatCard label="Completed rides" value={`${completedCount}`} />
       </Card>

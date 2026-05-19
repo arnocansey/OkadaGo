@@ -32,3 +32,21 @@ export type Ride = {
   rider?: { id: string; user?: { fullName: string }; vehicle?: { plateNumber?: string | null } | null } | null;
   passenger?: { user?: { fullName: string; phoneE164?: string } };
 };
+
+export type Delivery = {
+  id: string;
+  status: string;
+  pickupAddress: string;
+  dropoffAddress: string;
+  recipientName: string;
+  recipientPhoneE164: string;
+  packageType: string;
+  packageDescription: string;
+  estimatedFee?: string | number | null;
+  finalFee?: string | number | null;
+  riderEarnings?: string | number | null;
+  currency?: string;
+  createdAt?: string;
+  rider?: { id: string; user?: { fullName: string }; vehicle?: { plateNumber?: string | null } | null } | null;
+  passenger?: { user?: { fullName: string; phoneE164?: string } };
+};

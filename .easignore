@@ -1,11 +1,13 @@
-# Ignore generated artifacts to keep EAS upload small and avoid local disk spikes.
-frontend/apks/
 **/node_modules/
+**/.pnpm-store/
 **/.expo/
-**/android/build/
-**/android/app/build/
-**/android/app/.cxx/
-**/.gradle/
-**/dist/
-**/build/
 **/.next/
+**/dist/
+**/web-build/
+**/android/
+**/ios/
+**/*.apk
+**/*.aab
+**/*.tsbuildinfo
+
+frontend/okadago-ui-mobile/

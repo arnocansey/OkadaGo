@@ -1,7 +1,10 @@
 import { Pressable, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { styles } from "./ui";
 import type { PassengerScreen } from "../types";
 
 export function BottomNav({ active, onChange }: { active: PassengerScreen; onChange: (screen: PassengerScreen) => void }) {
+  const insets = useSafeAreaInsets();
   const items: Array<{ key: PassengerScreen; label: string }> = [
     { key: "home", label: "Home" },
     { key: "book", label: "Book" },
@@ -10,10 +13,11 @@ export function BottomNav({ active, onChange }: { active: PassengerScreen; onCha
     { key: "profile", label: "Profile" },
   ];
   return (
-    <View style={{ position: "absolute", left: 14, right: 14, bottom: 16, flexDirection: "row", gap: 8, padding: 8, borderRadius: 28, backgroundColor: "#1B1B1B", borderWidth: 1, borderColor: "#2A2A2A" }}>
+    <View style={[styles.bottomNav, { bottom: Math.max(insets.bottom, 10) + 8 }]}>
       {items.map((item) => (
-        <Pressable key={item.key} style={{ flex: 1, alignItems: "center", paddingVertical: 12, borderRadius: 20, backgroundColor: active === item.key ? "#F5B800" : "transparent" }} onPress={() => onChange(item.key)}>
-          <Text style={{ color: active === item.key ? "#111111" : "#9EA4AE", fontSize: 12, fontWeight: "900" }}>{item.label}</Text>
+        <Pressable key={item.key} style={[styles.bottomNavItem, active === item.key && styles.bottomNavItemActive]} onPress={() => onChange(item.key)}>
+          <Text style={[styles.bottomNavIcon, active === item.key && styles.bottomNavIconActive]}>{item.label.slice(0, 1)}</Text>
+          <Text style={[styles.bottomNavText, active === item.key && styles.bottomNavTextActive]}>{item.label}</Text>
         </Pressable>
       ))}
     </View>

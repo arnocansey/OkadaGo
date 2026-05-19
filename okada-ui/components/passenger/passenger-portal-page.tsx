@@ -92,6 +92,13 @@ type RideCreationResponse = {
   ride: RideRecord;
 };
 
+type DeliveryCreationResponse = {
+  delivery: {
+    id: string;
+    status: string;
+  };
+};
+
 type ReverseGeocodeResponse = {
   label: string;
   displayName: string | null;
@@ -200,8 +207,15 @@ function getZoneCenter(zone: ServiceZoneRecord | null) {
 export function PassengerPortalPage() {
   const { session, status, signOut } = useAuth();
   const queryClient = useQueryClient();
+  const [bookingMode, setBookingMode] = useState<"ride" | "delivery">("ride");
   const [rideType, setRideType] = useState<"standard_bike" | "express_bike">("standard_bike");
   const [paymentMethod, setPaymentMethod] = useState<"wallet" | "cash" | "card" | "mobile_money">("wallet");
+  const [deliveryForm, setDeliveryForm] = useState({
+    recipientName: "",
+    recipientPhoneE164: "",
+    packageType: "parcel",
+    packageDescription: ""
+  });
   const [pickupLocationPending, setPickupLocationPending] = useState(false);
   const [pickupLocationError, setPickupLocationError] = useState<string | null>(null);
   const [liveLocation, setLiveLocation] = useState<{
@@ -912,6 +926,64 @@ export function PassengerPortalPage() {
     }
   });
 
+  const createDeliveryMutation = useMutation({
+    mutationFn: async () => {
+      if (!passengerProfileId) {
+        throw new Error("Your passenger profile is missing from the current session. Please sign out and sign back in.");
+      }
+
+      if (!selectedZone) {
+        throw new Error("No active service zone is configured yet. Set up a Ghana service zone before requesting deliveries.");
+      }
+
+      if (
+        pickupLatitude == null ||
+        pickupLongitude == null ||
+        destinationLatitude == null ||
+        destinationLongitude == null ||
+        !pickupAddress ||
+        !destinationAddress
+      ) {
+        throw new Error("Set your pickup and dropoff so the delivery route can be mapped first.");
+      }
+
+      if (
+        !deliveryForm.recipientName.trim() ||
+        !deliveryForm.recipientPhoneE164.trim() ||
+        !deliveryForm.packageDescription.trim()
+      ) {
+        throw new Error("Add recipient and package details before requesting delivery.");
+      }
+
+      return postJson<DeliveryCreationResponse, unknown>("/deliveries/request", {
+        passengerProfileId,
+        serviceZoneId: selectedZone.id,
+        paymentMethod,
+        pickup: {
+          address: pickupAddress,
+          latitude: pickupLatitude,
+          longitude: pickupLongitude
+        },
+        dropoff: {
+          address: destinationAddress,
+          latitude: destinationLatitude,
+          longitude: destinationLongitude
+        },
+        recipientName: deliveryForm.recipientName,
+        recipientPhoneE164: deliveryForm.recipientPhoneE164,
+        packageType: deliveryForm.packageType || "parcel",
+        packageDescription: deliveryForm.packageDescription,
+        estimatedDistanceKm:
+          routePreviewQuery.data?.distanceKm ?? Number(form.estimatedDistanceKm),
+        estimatedDurationMinutes:
+          routePreviewQuery.data?.durationMinutes ?? Number(form.estimatedDurationMinutes)
+      });
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["rides"] });
+    }
+  });
+
   const preferredCurrency = session?.user.preferredCurrency ?? "GHS";
   const routeDistanceLabel = routePreviewQuery.data
     ? `${routePreviewQuery.data.distanceKm.toFixed(1)} km`
@@ -969,7 +1041,20 @@ export function PassengerPortalPage() {
         <aside className="exact-passenger-sidebar">
           <div className="exact-sidebar-scroll">
             <section className="exact-sidebar-block">
-              <h2>Book a live ride</h2>
+              <h2>{bookingMode === "delivery" ? "Book a delivery" : "Book a live ride"}</h2>
+
+                <div className="button-row" style={{ marginTop: 18 }}>
+                  {(["ride", "delivery"] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      className={bookingMode === mode ? "button" : "button-secondary"}
+                      type="button"
+                      onClick={() => setBookingMode(mode)}
+                    >
+                      {mode === "delivery" ? "Delivery" : "Ride"}
+                    </button>
+                  ))}
+                </div>
 
                 <div className="exact-zone-card" style={{ marginTop: 18 }}>
                   <span className="exact-zone-label">Operating zone</span>
@@ -1062,7 +1147,7 @@ export function PassengerPortalPage() {
                           destinationLongitude: ""
                         }))
                       }
-                      placeholder="Destination address"
+                      placeholder={bookingMode === "delivery" ? "Dropoff address" : "Destination address"}
                     />
                     <Search size={16} />
                   </label>
@@ -1182,6 +1267,57 @@ export function PassengerPortalPage() {
                   </div>
                 ) : null}
 
+                {bookingMode === "delivery" ? (
+                  <div className="exact-ride-options">
+                    <h3>Package details</h3>
+                    <div className="field-group">
+                      <label className="field-label">Recipient name</label>
+                      <input
+                        className="input"
+                        value={deliveryForm.recipientName}
+                        onChange={(event) =>
+                          setDeliveryForm((current) => ({ ...current, recipientName: event.target.value }))
+                        }
+                        placeholder="Recipient name"
+                      />
+                    </div>
+                    <div className="field-group">
+                      <label className="field-label">Recipient phone</label>
+                      <input
+                        className="input"
+                        value={deliveryForm.recipientPhoneE164}
+                        onChange={(event) =>
+                          setDeliveryForm((current) => ({ ...current, recipientPhoneE164: event.target.value }))
+                        }
+                        placeholder="+233..."
+                      />
+                    </div>
+                    <div className="field-group">
+                      <label className="field-label">Package type</label>
+                      <input
+                        className="input"
+                        value={deliveryForm.packageType}
+                        onChange={(event) =>
+                          setDeliveryForm((current) => ({ ...current, packageType: event.target.value }))
+                        }
+                        placeholder="parcel"
+                      />
+                    </div>
+                    <div className="field-group">
+                      <label className="field-label">Package description</label>
+                      <textarea
+                        className="textarea"
+                        value={deliveryForm.packageDescription}
+                        onChange={(event) =>
+                          setDeliveryForm((current) => ({ ...current, packageDescription: event.target.value }))
+                        }
+                        placeholder="Describe what the rider is carrying"
+                      />
+                    </div>
+                  </div>
+                ) : null}
+
+                {bookingMode === "ride" ? (
                 <div className="exact-ride-options">
                   <h3>Choose a ride</h3>
                   {(["standard_bike", "express_bike"] as const).map((option) => {
@@ -1220,6 +1356,7 @@ export function PassengerPortalPage() {
                     );
                   })}
               </div>
+                ) : null}
 
                 <div className="button-row" style={{ marginTop: 18 }}>
                   <select
@@ -1259,6 +1396,13 @@ export function PassengerPortalPage() {
                     <p>{createRideMutation.error.message}</p>
                   </div>
                 ) : null}
+
+                {createDeliveryMutation.isError ? (
+                  <div className="empty-state" style={{ marginTop: 18 }}>
+                    <strong>Delivery request failed.</strong>
+                    <p>{createDeliveryMutation.error.message}</p>
+                  </div>
+                ) : null}
             </section>
           </div>
 
@@ -1274,12 +1418,20 @@ export function PassengerPortalPage() {
             <button
               className="exact-primary-cta"
               type="button"
-              onClick={() => createRideMutation.mutate()}
-              disabled={createRideMutation.isPending}
+              onClick={() =>
+                bookingMode === "delivery"
+                  ? createDeliveryMutation.mutate()
+                  : createRideMutation.mutate()
+              }
+              disabled={createRideMutation.isPending || createDeliveryMutation.isPending}
             >
               {createRideMutation.isPending
                 ? "Requesting ride..."
-                : `Book ${getRideTypeLabel(rideType)}`}
+                : createDeliveryMutation.isPending
+                  ? "Requesting delivery..."
+                  : bookingMode === "delivery"
+                    ? "Book delivery"
+                    : `Book ${getRideTypeLabel(rideType)}`}
             </button>
           </footer>
         </aside>

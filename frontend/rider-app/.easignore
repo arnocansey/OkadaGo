@@ -1,0 +1,10 @@
+node_modules/
+.pnpm-store/
+.expo/
+android/
+ios/
+dist/
+web-build/
+*.apk
+*.aab
+*.tsbuildinfo

@@ -1,6 +1,6 @@
 import { Text } from "react-native";
 import { api, money } from "../api";
-import { Card, EmptyState, PrimaryButton, SectionTitle, styles } from "../components/ui";
+import { Card, EmptyState, ListRow, Pill, PrimaryButton, SectionTitle, styles } from "../components/ui";
 import type { Ride, Session } from "../types";
 
 export function RideRequestScreen({ session, ride, onAccepted, onRefresh }: { session: Session; ride?: Ride; onAccepted: () => void; onRefresh: () => void }) {
@@ -16,9 +16,11 @@ export function RideRequestScreen({ session, ride, onAccepted, onRefresh }: { se
       <SectionTitle kicker="Ride request" title="Incoming assignment" />
       {ride ? (
         <Card>
-          <Text style={styles.emptyTitle}>{ride.pickupAddress} to {ride.destinationAddress}</Text>
-          <Text style={styles.muted}>Passenger: {ride.passenger?.user?.fullName ?? "Passenger details pending"}</Text>
-          <Text style={styles.muted}>Fare: {money(ride.estimatedFare ?? ride.finalFare, ride.currency ?? "GHS")}</Text>
+          <Pill label="New ride" tone="warning" />
+          <Text style={styles.emptyTitle}>{money(ride.estimatedFare ?? ride.finalFare, ride.currency ?? "GHS")}</Text>
+          <ListRow title="Pickup" body={ride.pickupAddress} meta="Start point" />
+          <ListRow title="Drop-off" body={ride.destinationAddress} meta="Destination" />
+          <ListRow title="Passenger" body={ride.passenger?.user?.fullName ?? "Passenger details pending"} meta="Rider assignment" />
           <PrimaryButton label="Accept and head to pickup" onPress={acceptRide} />
         </Card>
       ) : (

@@ -1,7 +1,7 @@
 import { Linking, Text, View } from "react-native";
 import { useState } from "react";
 import { api, compactDate, money } from "../api";
-import { Card, EmptyState, Field, PrimaryButton, SectionTitle, StatCard, styles } from "../components/ui";
+import { Card, EmptyState, Field, ListRow, Pill, PrimaryButton, SectionTitle, StatCard, styles } from "../components/ui";
 import type { Session, Wallet, WalletTransaction } from "../types";
 
 export function WalletScreen({ session, wallets, transactions, onRefresh }: { session: Session; wallets: Wallet[]; transactions: WalletTransaction[]; onRefresh: () => void }) {
@@ -30,6 +30,7 @@ export function WalletScreen({ session, wallets, transactions, onRefresh }: { se
   return (
     <>
       <SectionTitle kicker="Wallet" title="Balance and activity" />
+      <Pill label="Paystack enabled" tone="success" />
       <View style={styles.grid}>
         {wallets.length ? wallets.map((wallet) => <StatCard key={wallet.id} label={wallet.type.replaceAll("_", " ")} value={money(wallet.availableBalance, wallet.currency)} />) : <StatCard label="Wallet" value={money(0, session.user.preferredCurrency)} />}
       </View>
@@ -43,13 +44,13 @@ export function WalletScreen({ session, wallets, transactions, onRefresh }: { se
         <SectionTitle kicker="Activity" title="Wallet transactions" />
         {transactions.length ? (
           transactions.map((tx) => (
-            <View key={tx.id} style={{ flexDirection: "row", gap: 12, alignItems: "center", justifyContent: "space-between", paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: "#2A2A2A" }}>
-              <View>
-                <Text style={{ color: "#FFFFFF", fontSize: 15, fontWeight: "900" }}>{tx.description ?? tx.type}</Text>
-                <Text style={{ color: "#9EA4AE", fontSize: 13, marginTop: 4 }}>{tx.status} - {compactDate(tx.createdAt)}</Text>
-              </View>
-              <Text style={{ color: "#F5B800", fontSize: 14, fontWeight: "900" }}>{tx.direction === "debit" ? "-" : "+"}{money(tx.amount, tx.currency)}</Text>
-            </View>
+            <ListRow
+              key={tx.id}
+              title={tx.description ?? tx.type}
+              body={tx.status}
+              meta={compactDate(tx.createdAt)}
+              amount={`${tx.direction === "debit" ? "-" : "+"}${money(tx.amount, tx.currency)}`}
+            />
           ))
         ) : (
           <EmptyState title="No wallet activity yet." body="Top-ups and ride payments will be listed here." />

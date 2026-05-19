@@ -1,7 +1,7 @@
 import { Linking, Text, View } from "react-native";
 import { useState } from "react";
 import { api, compactDate, money } from "../api";
-import { Card, EmptyState, Field, PrimaryButton, SectionTitle, StatCard, styles } from "../components/ui";
+import { Card, EmptyState, Field, ListRow, Pill, PrimaryButton, SectionTitle, StatCard, styles } from "../components/ui";
 import type { Ride, Session, Wallet, WalletTransaction } from "../types";
 
 export function EarningsScreen({ session, wallets, rides, transactions, onRefresh }: { session: Session; wallets: Wallet[]; rides: Ride[]; transactions: WalletTransaction[]; onRefresh: () => void }) {
@@ -31,6 +31,7 @@ export function EarningsScreen({ session, wallets, rides, transactions, onRefres
   return (
     <>
       <SectionTitle kicker="Earnings" title="Settlement overview" />
+      <Pill label={deficit >= 200 ? "Offline lock" : deficit > 0 ? "Deficit warning" : "Healthy"} tone={deficit >= 200 ? "danger" : deficit > 0 ? "warning" : "success"} />
       <View style={styles.grid}>
         <StatCard label="Earned" value={money(totalEarnings, settlementWallet?.currency ?? session.user.preferredCurrency)} />
         <StatCard label="Completed" value={`${completed.length}`} />
@@ -48,7 +49,15 @@ export function EarningsScreen({ session, wallets, rides, transactions, onRefres
       </Card>
       <Card>
         <SectionTitle kicker="Activity" title="Settlement transactions" />
-        {transactions.length ? transactions.slice(0, 8).map((tx) => <Text key={tx.id} style={{ color: "#FFFFFF" }}>{tx.description ?? tx.type} - {tx.direction === "debit" ? "-" : "+"}{money(tx.amount, tx.currency)} - {compactDate(tx.createdAt)}</Text>) : <EmptyState title="No settlement activity." body="Ride earnings and top-ups will appear here." />}
+        {transactions.length ? transactions.slice(0, 8).map((tx) => (
+          <ListRow
+            key={tx.id}
+            title={tx.description ?? tx.type}
+            body={tx.status}
+            meta={compactDate(tx.createdAt)}
+            amount={`${tx.direction === "debit" ? "-" : "+"}${money(tx.amount, tx.currency)}`}
+          />
+        )) : <EmptyState title="No settlement activity." body="Ride earnings and top-ups will appear here." />}
       </Card>
     </>
   );

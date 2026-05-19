@@ -14,7 +14,13 @@ export async function api<T>(
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
   const text = await response.text();
-  const payload = text ? JSON.parse(text) : null;
+  let payload: any = null;
+
+  try {
+    payload = text ? JSON.parse(text) : null;
+  } catch {
+    payload = { message: text || "The server returned an unreadable response." };
+  }
   if (!response.ok) throw new Error(payload?.message ?? payload?.error ?? `Request failed with ${response.status}`);
   return payload as T;
 }
@@ -36,4 +42,8 @@ export function compactDate(value?: string) {
 
 export function nextRideStatus(status: string) {
   return ({ assigned: "arriving", arriving: "arrived", arrived: "started", started: "completed" } as Record<string, string | undefined>)[status.toLowerCase()];
+}
+
+export function nextDeliveryStatus(status: string) {
+  return ({ assigned: "picked_up", picked_up: "in_transit", in_transit: "delivered" } as Record<string, string | undefined>)[status.toLowerCase()];
 }

@@ -1,17 +1,26 @@
 {
   "name": "rider-app",
   "version": "1.0.0",
+  "packageManager": "pnpm@9.15.9",
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "eas-build-pre-install": "corepack enable && corepack prepare pnpm@9.15.9 --activate",
+    "eas:init": "npx eas-cli init",
+    "eas:build:android": "npx eas-cli build --platform android --profile production",
+    "eas:build:preview": "npx eas-cli build --platform android --profile preview",
+    "eas:update:production": "npx eas-cli update --channel production",
+    "eas:update:preview": "npx eas-cli update --channel preview"
   },
   "dependencies": {
     "expo": "~54.0.33",
+    "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
+    "expo-updates": "^29.0.17",
     "react": "19.1.0",
     "react-native": "0.81.5",
     "react-native-safe-area-context": "^5.6.2"

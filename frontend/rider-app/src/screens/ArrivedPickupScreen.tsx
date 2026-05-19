@@ -1,6 +1,6 @@
 import { Text } from "react-native";
 import { api } from "../api";
-import { Card, EmptyState, PrimaryButton, SectionTitle, styles } from "../components/ui";
+import { Card, EmptyState, ListRow, Pill, PrimaryButton, SectionTitle, styles } from "../components/ui";
 import type { Ride, Session } from "../types";
 
 export function ArrivedPickupScreen({ session, ride, onStarted, onRefresh }: { session: Session; ride?: Ride; onStarted: () => void; onRefresh: () => void }) {
@@ -16,8 +16,10 @@ export function ArrivedPickupScreen({ session, ride, onStarted, onRefresh }: { s
       <SectionTitle kicker="Passenger pickup" title="Arrived" />
       {ride ? (
         <Card>
+          <Pill label="Confirm pickup" tone="success" />
           <Text style={styles.emptyTitle}>{ride.passenger?.user?.fullName ?? "Passenger"}</Text>
-          <Text style={styles.muted}>{ride.passenger?.user?.phoneE164 ?? "Passenger phone unavailable"}</Text>
+          <ListRow title="Phone" body={ride.passenger?.user?.phoneE164 ?? "Passenger phone unavailable"} meta="Passenger contact" />
+          <ListRow title="Destination" body={ride.destinationAddress} meta="Trip route" />
           <Text style={styles.muted}>Confirm the passenger is on board before starting the trip.</Text>
           <PrimaryButton label="Start trip" onPress={startTrip} />
         </Card>

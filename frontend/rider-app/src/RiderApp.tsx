@@ -20,7 +20,7 @@ import { SettingsScreen } from "./screens/SettingsScreen";
 import { TripCompletedScreen } from "./screens/TripCompletedScreen";
 import { TripProgressScreen } from "./screens/TripProgressScreen";
 import { WalletScreen } from "./screens/WalletScreen";
-import type { PayoutRequest, Ride, RiderScreen, ServiceZone, Session, Wallet, WalletTransaction } from "./types";
+import type { Delivery, PayoutRequest, Ride, RiderScreen, ServiceZone, Session, Wallet, WalletTransaction } from "./types";
 
 export default function RiderApp() {
   const [session, setSession] = useState<Session | null>(null);
@@ -29,6 +29,7 @@ export default function RiderApp() {
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
   const [rides, setRides] = useState<Ride[]>([]);
+  const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [zones, setZones] = useState<ServiceZone[]>([]);
   const [payouts, setPayouts] = useState<PayoutRequest[]>([]);
   const [online, setOnline] = useState(false);
@@ -40,16 +41,22 @@ export default function RiderApp() {
     setLoading(true);
     setMessage("");
     try {
-      const [walletData, txData, rideData, zoneData, payoutData] = await Promise.all([
+      const [walletData, txData, rideData, deliveryData, zoneData, payoutData] = await Promise.all([
         api<Wallet[]>(`/wallets/users/${current.user.id}`),
         api<WalletTransaction[]>(`/wallets/users/${current.user.id}/transactions`),
         api<Ride[]>("/rides"),
+        api<Delivery[]>("/deliveries"),
         api<ServiceZone[]>("/bootstrap/service-zones?limit=30"),
         api<PayoutRequest[]>("/wallets/rider/payout-requests", { token: current.token }).catch(() => []),
       ]);
       setWallets(walletData);
       setTransactions(txData);
       setRides(rideData.filter((ride) => ride.rider?.id === current.user.riderProfileId));
+      setDeliveries(
+        deliveryData.filter(
+          (delivery) => delivery.rider?.id === current.user.riderProfileId || delivery.status.toLowerCase() === "searching"
+        )
+      );
       setZones(zoneData);
       setPayouts(payoutData);
     } catch (error) {
@@ -74,6 +81,9 @@ export default function RiderApp() {
 
   const activeSession = session;
   const activeRide = rides.find((ride) => !["COMPLETED", "CANCELLED"].includes(ride.status));
+  const activeDelivery = deliveries.find(
+    (delivery) => delivery.rider?.id === activeSession.user.riderProfileId && !["DELIVERED", "CANCELLED"].includes(delivery.status)
+  );
   const completedRide = [...rides]
     .filter((ride) => ride.status === "COMPLETED")
     .sort((left, right) => Date.parse(right.createdAt ?? "0") - Date.parse(left.createdAt ?? "0"))[0];
@@ -127,6 +137,11 @@ export default function RiderApp() {
   }
 
   function openTripFlow() {
+    if (activeDelivery && !activeRide) {
+      setActiveScreen("trips");
+      return;
+    }
+
     const status = activeRide?.status.toLowerCase();
     if (status === "assigned") setFlowScreen("request");
     else if (status === "arriving") setFlowScreen("way");
@@ -142,6 +157,7 @@ export default function RiderApp() {
           session={activeSession}
           wallets={wallets}
           rides={rides}
+          deliveries={deliveries}
           online={online}
           onOpenActiveTrip={openTripFlow}
           onOpenIncentives={() => setFlowScreen("incentives")}
@@ -162,7 +178,7 @@ export default function RiderApp() {
   function TripsRoute() {
     return (
       <Chrome showNav>
-        <TripsScreen session={activeSession} rides={rides} onRefresh={() => refresh()} />
+        <TripsScreen session={activeSession} rides={rides} deliveries={deliveries} onRefresh={() => refresh()} />
       </Chrome>
     );
   }

@@ -16,7 +16,8 @@ import { TrackRideScreen } from "./screens/TrackRideScreen";
 import { TripCompleteScreen } from "./screens/TripCompleteScreen";
 import { TripsScreen } from "./screens/TripsScreen";
 import { WalletScreen } from "./screens/WalletScreen";
-import type { PassengerScreen, Ride, ServiceZone, Session, Wallet, WalletTransaction } from "./types";
+import { clearSavedSession, loadSavedSession, saveSession } from "./session-storage";
+import type { Delivery, PassengerScreen, Ride, ServiceZone, Session, Wallet, WalletTransaction } from "./types";
 
 export default function PassengerApp() {
   const [session, setSession] = useState<Session | null>(null);
@@ -26,24 +27,64 @@ export default function PassengerApp() {
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
   const [rides, setRides] = useState<Ride[]>([]);
+  const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [zones, setZones] = useState<ServiceZone[]>([]);
   const [loading, setLoading] = useState(false);
+  const [restoring, setRestoring] = useState(true);
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    loadSavedSession()
+      .then((saved) => {
+        if (!active) return;
+        if (saved) {
+          setSession(saved);
+        }
+      })
+      .catch(() => {
+        if (active) setMessage("Could not restore your saved session.");
+      })
+      .finally(() => {
+        if (active) setRestoring(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  async function handleSession(nextSession: Session) {
+    setSession(nextSession);
+    setAuthStep("auth");
+    await saveSession(nextSession);
+  }
+
+  async function logout() {
+    setSession(null);
+    setFlowScreen(null);
+    setActiveScreen("home");
+    setAuthStep("auth");
+    await clearSavedSession();
+  }
 
   async function refresh(current = session) {
     if (!current) return;
     setLoading(true);
     setMessage("");
     try {
-      const [walletData, txData, rideData, zoneData] = await Promise.all([
+      const [walletData, txData, rideData, deliveryData, zoneData] = await Promise.all([
         api<Wallet[]>(`/wallets/users/${current.user.id}`),
         api<WalletTransaction[]>(`/wallets/users/${current.user.id}/transactions`),
         api<Ride[]>("/rides"),
+        api<Delivery[]>("/deliveries"),
         api<ServiceZone[]>("/bootstrap/service-zones?limit=30"),
       ]);
       setWallets(walletData);
       setTransactions(txData);
       setRides(rideData.filter((ride) => ride.passenger?.id === current.user.passengerProfileId));
+      setDeliveries(deliveryData.filter((delivery) => delivery.passenger?.id === current.user.passengerProfileId));
       setZones(zoneData);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to load app data.");
@@ -58,11 +99,20 @@ export default function PassengerApp() {
     }
   }, [session?.token]);
 
+  if (restoring) {
+    return (
+      <>
+        <StatusBar style="light" />
+        <SplashScreen onStart={() => undefined} busy />
+      </>
+    );
+  }
+
   if (!session) {
     return (
       <>
         <StatusBar style="light" />
-        {authStep === "splash" ? <SplashScreen onStart={() => setAuthStep("auth")} /> : <AuthScreen onSession={setSession} />}
+        {authStep === "splash" ? <SplashScreen onStart={() => setAuthStep("auth")} /> : <AuthScreen onSession={handleSession} />}
       </>
     );
   }
@@ -73,7 +123,7 @@ export default function PassengerApp() {
     .filter((ride) => ride.status === "COMPLETED")
     .sort((left, right) => Date.parse(right.createdAt ?? "0") - Date.parse(left.createdAt ?? "0"))[0];
 
-  function Chrome({ children, showNav = false }: { children: ReactNode; showNav?: boolean }) {
+  function Chrome({ children, showNav = false, onBack }: { children: ReactNode; showNav?: boolean; onBack?: () => void }) {
     function changeTab(nextScreen: PassengerScreen) {
       if (nextScreen === "book") {
         setFlowScreen("book");
@@ -86,6 +136,11 @@ export default function PassengerApp() {
       <SafeAreaView style={styles.screen}>
         <StatusBar style="light" />
         <View style={styles.topBar}>
+          {onBack ? (
+            <Pressable style={styles.backButton} onPress={onBack}>
+              <Text style={styles.backButtonText}>Back</Text>
+            </Pressable>
+          ) : null}
           <View style={styles.logoMark}>
             <Text style={styles.logoIcon}>O</Text>
           </View>
@@ -124,7 +179,7 @@ export default function PassengerApp() {
   function TripsRoute() {
     return (
       <Chrome showNav>
-        <TripsScreen rides={rides} />
+        <TripsScreen rides={rides} deliveries={deliveries} />
       </Chrome>
     );
   }
@@ -140,7 +195,7 @@ export default function PassengerApp() {
   function ProfileRoute() {
     return (
       <Chrome showNav>
-        <ProfileScreen user={activeSession.user} onLogout={() => setSession(null)} />
+        <ProfileScreen user={activeSession.user} wallets={wallets} rides={rides} deliveries={deliveries} onLogout={logout} />
       </Chrome>
     );
   }
@@ -154,13 +209,14 @@ export default function PassengerApp() {
 
   function BookRideRoute() {
     return (
-      <Chrome>
+      <Chrome onBack={() => setFlowScreen(null)}>
         <BookRideScreen
           session={activeSession}
           zones={zones}
           onCreated={() => {
             refresh();
-            setFlowScreen("track");
+            setActiveScreen("trips");
+            setFlowScreen(null);
           }}
         />
       </Chrome>
@@ -169,7 +225,7 @@ export default function PassengerApp() {
 
   function TrackRideRoute() {
     return (
-      <Chrome>
+      <Chrome onBack={() => setFlowScreen(null)}>
         <TrackRideScreen ride={activeRide} onLive={() => setFlowScreen("live")} onBack={() => setFlowScreen(null)} />
       </Chrome>
     );
@@ -177,7 +233,7 @@ export default function PassengerApp() {
 
   function LiveTrackingRoute() {
     return (
-      <Chrome>
+      <Chrome onBack={() => setFlowScreen("track")}>
         <LiveTrackingScreen ride={activeRide} onComplete={() => setFlowScreen("complete")} onBack={() => setFlowScreen(null)} />
       </Chrome>
     );
@@ -185,7 +241,7 @@ export default function PassengerApp() {
 
   function TripCompleteRoute() {
     return (
-      <Chrome>
+      <Chrome onBack={() => setFlowScreen(null)}>
         <TripCompleteScreen ride={completedRide} onDone={() => setFlowScreen(null)} />
       </Chrome>
     );
@@ -193,7 +249,7 @@ export default function PassengerApp() {
 
   function SideMenuRoute() {
     return (
-      <Chrome>
+      <Chrome onBack={() => setFlowScreen(null)}>
         <SideMenuScreen
           user={activeSession.user}
           onTrips={() => {
@@ -208,7 +264,7 @@ export default function PassengerApp() {
             setActiveScreen("profile");
             setFlowScreen(null);
           }}
-          onLogout={() => setSession(null)}
+          onLogout={logout}
         />
       </Chrome>
     );

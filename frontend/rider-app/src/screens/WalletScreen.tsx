@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { api, compactDate, money } from "../api";
-import { Card, EmptyState, Field, PrimaryButton, SectionTitle, StatCard, styles } from "../components/ui";
+import { Card, EmptyState, Field, ListRow, Pill, PrimaryButton, SectionTitle, StatCard, styles } from "../components/ui";
 import type { PayoutRequest, Session, Wallet, WalletTransaction } from "../types";
 
 export function WalletScreen({ session, wallets, payouts, transactions, onRefresh }: { session: Session; wallets: Wallet[]; payouts: PayoutRequest[]; transactions: WalletTransaction[]; onRefresh: () => void }) {
@@ -32,6 +32,7 @@ export function WalletScreen({ session, wallets, payouts, transactions, onRefres
       </View>
       <Card>
         <SectionTitle kicker="Payout" title="Request withdrawal" />
+        <Pill label={method.replace("_", " ")} tone="warning" />
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
           {(["MOBILE_MONEY", "BANK_ACCOUNT"] as const).map((item) => (
             <Pressable key={item} style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: method === item ? "#F5B800" : "#111111", borderWidth: 1, borderColor: method === item ? "#F5B800" : "#2C2C2C" }} onPress={() => setMethod(item)}>
@@ -46,11 +47,27 @@ export function WalletScreen({ session, wallets, payouts, transactions, onRefres
       </Card>
       <Card>
         <SectionTitle kicker="Payout history" title="Admin-reviewed requests" />
-        {payouts.length ? payouts.map((payout) => <Text key={payout.id} style={{ color: "#FFFFFF" }}>{payout.destinationLabel} - {payout.status} - {money(payout.amount, payout.currency)}</Text>) : <EmptyState title="No payout requests yet." body="Your payout history will appear after you request a withdrawal." />}
+        {payouts.length ? payouts.map((payout) => (
+          <ListRow
+            key={payout.id}
+            title={payout.destinationLabel}
+            body={payout.status}
+            meta={compactDate(payout.requestedAt)}
+            amount={money(payout.amount, payout.currency)}
+          />
+        )) : <EmptyState title="No payout requests yet." body="Your payout history will appear after you request a withdrawal." />}
       </Card>
       <Card>
         <SectionTitle kicker="Transactions" title="Wallet activity" />
-        {transactions.length ? transactions.slice(0, 6).map((tx) => <Text key={tx.id} style={{ color: "#FFFFFF" }}>{tx.description ?? tx.type} - {compactDate(tx.createdAt)}</Text>) : <EmptyState title="No wallet activity yet." body="Settlement and payout entries will appear here." />}
+        {transactions.length ? transactions.slice(0, 6).map((tx) => (
+          <ListRow
+            key={tx.id}
+            title={tx.description ?? tx.type}
+            body={tx.status}
+            meta={compactDate(tx.createdAt)}
+            amount={money(tx.amount, tx.currency)}
+          />
+        )) : <EmptyState title="No wallet activity yet." body="Settlement and payout entries will appear here." />}
       </Card>
     </>
   );

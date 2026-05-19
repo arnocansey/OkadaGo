@@ -15,7 +15,13 @@ export async function api<T>(
   });
 
   const text = await response.text();
-  const payload = text ? JSON.parse(text) : null;
+  let payload: any = null;
+
+  try {
+    payload = text ? JSON.parse(text) : null;
+  } catch {
+    payload = { message: text || "The server returned an unreadable response." };
+  }
 
   if (!response.ok) {
     throw new Error(payload?.message ?? payload?.error ?? `Request failed with ${response.status}`);

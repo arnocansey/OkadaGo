@@ -1,6 +1,6 @@
 import { Text } from "react-native";
 import { api } from "../api";
-import { Card, EmptyState, MapPanel, PrimaryButton, SectionTitle, styles } from "../components/ui";
+import { Card, EmptyState, ListRow, MapPanel, Pill, PrimaryButton, SectionTitle, styles } from "../components/ui";
 import type { Ride, Session } from "../types";
 
 export function TripProgressScreen({ session, ride, onCompleted, onRefresh }: { session: Session; ride?: Ride; onCompleted: () => void; onRefresh: () => void }) {
@@ -18,7 +18,10 @@ export function TripProgressScreen({ session, ride, onCompleted, onRefresh }: { 
         <>
           <MapPanel title="en route" subtitle={ride.destinationAddress} />
           <Card>
+            <Pill label="In progress" tone="success" />
             <Text style={styles.emptyTitle}>{ride.destinationAddress}</Text>
+            <ListRow title="From" body={ride.pickupAddress} meta="Pickup" />
+            <ListRow title="To" body={ride.destinationAddress} meta="Drop-off" />
             <Text style={styles.muted}>Complete the ride only after safely dropping off the passenger.</Text>
             <PrimaryButton label="Complete trip" onPress={completeTrip} />
           </Card>
