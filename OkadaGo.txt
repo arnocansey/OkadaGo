@@ -1,0 +1,385 @@
+Nice — this is exactly how you level up your project 🔥
+Let’s lock in a **UI-only master prompt** that’s clean, powerful, and ready for tools like **v0, Lovable, Bolt, Figma AI, or Cursor**.
+
+---
+
+# 🎯 MASTER PROMPT — OKADA APP (UI ONLY)
+
+**Prompt:**
+
+You are a world-class **UI/UX designer**, **product designer**, and **frontend architect** specializing in building modern, production-ready interfaces for high-growth startups.
+
+I want you to design a **complete UI-only system** for a **motorcycle ride-hailing (Okada) platform**, similar to Uber/Bolt, but optimized for **African markets (Ghana/Nigeria)**.
+
+⚠️ IMPORTANT:
+
+* This is **UI ONLY (no backend logic)**
+* Use **mock data**
+* Focus on **design, layout, flows, and interactions**
+* Must look like a **real startup product ready for launch**
+
+---
+
+# 🧠 PRODUCT GOAL
+
+Design a clean, premium, intuitive interface for:
+
+1. Passenger mobile app
+2. Rider mobile app
+3. Admin web dashboard
+
+The UI must feel:
+
+* Fast ⚡
+* Trustworthy 🔐
+* Modern 💎
+* Simple but powerful
+
+---
+
+# 🎨 DESIGN SYSTEM
+
+Create a strong design system:
+
+### Colors
+
+* Primary: Deep Green / Blue (trust + transport)
+* Accent: Orange / Yellow (actions, alerts)
+* Neutral: Soft grays + white
+* Status:
+
+  * Success: Green
+  * Warning: Orange
+  * Error: Red
+
+### Typography
+
+* Clean modern font (Inter / Poppins)
+* Clear hierarchy:
+
+  * Headings
+  * Subheadings
+  * Body text
+  * Labels
+
+### UI Style
+
+* Rounded corners (2xl style)
+* Soft shadows
+* Card-based layout
+* Floating action buttons
+* Clean map overlays
+* Minimal clutter
+
+### Components
+
+Design reusable components:
+
+* Buttons (primary, secondary, ghost)
+* Input fields
+* Dropdowns
+* Cards
+* Modals
+* Bottom sheets (VERY IMPORTANT for mobile)
+* Tabs
+* Navigation bars
+* Toast notifications
+* Loading skeletons
+* Empty states
+* Error states
+
+---
+
+# 📱 PASSENGER MOBILE APP UI
+
+Design all screens with full layout and interactions:
+
+### Onboarding
+
+* Welcome slides
+* App intro (fast rides, safe travel)
+* CTA buttons (Get Started, Login)
+
+### Authentication
+
+* Signup/Login screen
+* Phone number input
+* OTP verification UI
+* Social login buttons (optional)
+
+### Home Screen (CORE)
+
+* Full-screen map
+* Current location marker
+* Search input ("Where are you going?")
+* Nearby riders on map
+* Bottom sheet with ride options
+
+### Location Selection
+
+* Pickup & destination fields
+* Map pin selection
+* Saved places (Home, Work)
+* Recent locations
+
+### Ride Selection
+
+* Ride types (Bike, Express, etc.)
+* Price estimates
+* ETA
+* Confirm booking button
+
+### Searching Rider
+
+* Animated searching UI
+* Cancel button
+
+### Rider Assigned
+
+* Rider card (name, rating, bike)
+* Call & chat buttons
+* ETA countdown
+
+### Live Ride Tracking
+
+* Real-time map
+* Route line
+* Rider movement
+* Trip details panel
+
+### Payment Screen
+
+* Payment method selector:
+
+  * Cash
+  * Wallet
+  * Card
+* Confirm payment UI
+
+### Rating Screen
+
+* Star rating
+* Feedback text field
+* Submit button
+
+### Ride History
+
+* List of past rides
+* Trip details screen
+
+### Wallet UI
+
+* Balance display
+* Add money
+* Transactions list
+
+### Profile
+
+* User info
+* Settings
+* Saved places
+* Notifications
+* Help/support
+
+### Safety UI
+
+* SOS button (highlighted)
+* Emergency contacts
+* Report issue screen
+
+---
+
+# 🏍️ RIDER MOBILE APP UI
+
+### Onboarding
+
+* Rider introduction
+* Earnings-focused messaging
+
+### Authentication
+
+* Signup/login
+* OTP verification
+
+### Document Upload
+
+* Upload ID, license, bike docs
+* Progress indicator
+* Status: Pending / Approved
+
+### Home Screen (Driver Mode)
+
+* Big ONLINE / OFFLINE toggle
+* Map view
+* Earnings summary
+
+### Incoming Ride Request
+
+* Popup modal:
+
+  * Passenger info
+  * Distance
+  * Fare
+* Accept / Reject buttons
+* Countdown timer
+
+### Navigation Screen
+
+* Map with route
+* Pickup instructions
+
+### Active Trip UI
+
+* Passenger info
+* Call/chat buttons
+* Start / End trip buttons
+
+### Earnings Dashboard
+
+* Daily / weekly earnings
+* Charts
+* Bonuses
+
+### Wallet
+
+* Balance
+* Withdraw button
+* Transaction history
+
+### Ratings
+
+* Customer feedback
+* Average rating
+
+### Profile
+
+* Rider info
+* Bike details
+* Documents
+* Settings
+
+---
+
+# 🖥️ ADMIN DASHBOARD UI (WEB)
+
+Design a modern SaaS-style dashboard:
+
+### Layout
+
+* Sidebar navigation
+* Top navbar (search, profile)
+* Responsive grid
+
+### Dashboard Overview
+
+* KPI cards:
+
+  * Total rides
+  * Revenue
+  * Active riders
+* Charts (line, bar, pie)
+* Map showing live rides
+
+### Riders Management
+
+* Table of riders
+* Status badges
+* View details modal
+* Approve / Reject buttons
+
+### Passengers Management
+
+* User table
+* Activity logs
+
+### Trips Management
+
+* Ride table
+* Filters (date, status)
+* View trip details
+
+### Live Map
+
+* Real-time ride tracking
+* Rider locations
+
+### Payments
+
+* Transactions table
+* Wallet activity
+* Commission overview
+
+### Promotions
+
+* Create promo codes
+* Referral system UI
+
+### Safety & Reports
+
+* Incident reports
+* Complaint management
+
+### Notifications
+
+* Send broadcast messages
+
+### Settings
+
+* Pricing configuration UI
+* Zone management
+* Platform settings
+
+---
+
+# ✨ UX REQUIREMENTS
+
+* Smooth transitions
+* Bottom sheets for mobile interactions
+* Clear CTA buttons
+* Minimal typing (use maps + suggestions)
+* Fast booking flow (under 3 taps)
+* Accessibility (large touch targets)
+* Offline-friendly UI states
+* Skeleton loaders instead of spinners
+
+---
+
+# 📐 RESPONSIVENESS
+
+* Mobile-first design
+* Tablet support
+* Desktop admin dashboard
+* Adaptive layouts
+
+---
+
+# 🎯 OUTPUT FORMAT
+
+Generate:
+
+1. Full UI structure
+2. Screen-by-screen breakdown
+3. Component hierarchy
+4. Design system tokens
+5. Layout descriptions
+6. Interaction flows
+7. Suggested animations
+8. Example mock data
+9. Tailwind / React component structure (optional)
+10. Figma-ready structure
+
+---
+
+# 🚀 EXTRA INSTRUCTION
+
+Make it:
+
+* Premium startup quality
+* Clean like Uber/Bolt
+* Not generic
+* Highly detailed
+* Ready to convert into code instantly
+
+---
+
+

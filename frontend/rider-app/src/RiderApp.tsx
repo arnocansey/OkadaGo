@@ -1,7 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-import { SafeAreaView, ScrollView, Text, View } from "react-native";
+import { Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
 import { api } from "./api";
 import { AvailabilityToggle } from "./components/AvailabilityToggle";
 import { BottomNav } from "./components/BottomNav";
@@ -20,6 +20,7 @@ import { SettingsScreen } from "./screens/SettingsScreen";
 import { TripCompletedScreen } from "./screens/TripCompletedScreen";
 import { TripProgressScreen } from "./screens/TripProgressScreen";
 import { WalletScreen } from "./screens/WalletScreen";
+import { clearSavedSession, loadSavedSession, saveSession } from "./session-storage";
 import type { Delivery, PayoutRequest, Ride, RiderScreen, ServiceZone, Session, Wallet, WalletTransaction } from "./types";
 
 export default function RiderApp() {
@@ -34,7 +35,40 @@ export default function RiderApp() {
   const [payouts, setPayouts] = useState<PayoutRequest[]>([]);
   const [online, setOnline] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [restoring, setRestoring] = useState(true);
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    loadSavedSession()
+      .then((saved) => {
+        if (active && saved) setSession(saved);
+      })
+      .catch(() => {
+        if (active) setMessage("Could not restore your saved session.");
+      })
+      .finally(() => {
+        if (active) setRestoring(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  async function handleSession(nextSession: Session) {
+    setSession(nextSession);
+    await saveSession(nextSession);
+  }
+
+  async function logout() {
+    setSession(null);
+    setFlowScreen(null);
+    setActiveScreen("dashboard");
+    setOnline(false);
+    await clearSavedSession();
+  }
 
   async function refresh(current = session) {
     if (!current) return;
@@ -70,11 +104,27 @@ export default function RiderApp() {
     if (session) refresh(session);
   }, [session?.token]);
 
+  if (restoring) {
+    return (
+      <SafeAreaView style={styles.screen}>
+        <StatusBar style="light" />
+        <View style={styles.authContent}>
+          <View style={styles.authHero}>
+            <View style={styles.brandMarkLarge}><Text style={styles.brandIconLarge}>O</Text></View>
+            <Text style={styles.kicker}>OKADAGO RIDER</Text>
+            <Text style={styles.authTitle}>Loading rider workspace</Text>
+            <Text style={styles.muted}>Restoring your saved session.</Text>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   if (!session) {
     return (
       <>
         <StatusBar style="light" />
-        <AuthScreen onSession={setSession} />
+        <AuthScreen onSession={handleSession} />
       </>
     );
   }
@@ -104,7 +154,7 @@ export default function RiderApp() {
     }
   }
 
-  function Chrome({ children, showNav = false }: { children: ReactNode; showNav?: boolean }) {
+  function Chrome({ children, showNav = false, onBack }: { children: ReactNode; showNav?: boolean; onBack?: () => void }) {
     return (
       <SafeAreaView style={styles.screen}>
         <StatusBar style="light" />
@@ -113,6 +163,11 @@ export default function RiderApp() {
           <View style={[styles.liveDot, online ? styles.liveDotOnline : styles.liveDotOffline]} />
         </View>
         <View style={styles.topBar}>
+          {onBack ? (
+            <Pressable style={styles.backButton} onPress={onBack}>
+              <Text style={styles.backButtonText}>Back</Text>
+            </Pressable>
+          ) : null}
           <View style={styles.logoMark}>
             <Text style={styles.logoIcon}>O</Text>
           </View>
@@ -199,7 +254,7 @@ export default function RiderApp() {
           zones={zones}
           onDocuments={() => setFlowScreen("documents")}
           onSettings={() => setFlowScreen("settings")}
-          onLogout={() => setSession(null)}
+          onLogout={logout}
         />
       </Chrome>
     );
@@ -215,7 +270,7 @@ export default function RiderApp() {
 
   function RideRequestRoute() {
     return (
-      <Chrome>
+      <Chrome onBack={() => setFlowScreen(null)}>
         <RideRequestScreen session={activeSession} ride={activeRide} onRefresh={() => refresh()} onAccepted={() => setFlowScreen("way")} />
       </Chrome>
     );
@@ -223,7 +278,7 @@ export default function RiderApp() {
 
   function OnTheWayRoute() {
     return (
-      <Chrome>
+      <Chrome onBack={() => setFlowScreen(null)}>
         <OnTheWayScreen session={activeSession} ride={activeRide} onRefresh={() => refresh()} onArrived={() => setFlowScreen("arrived")} />
       </Chrome>
     );
@@ -231,7 +286,7 @@ export default function RiderApp() {
 
   function ArrivedPickupRoute() {
     return (
-      <Chrome>
+      <Chrome onBack={() => setFlowScreen(null)}>
         <ArrivedPickupScreen session={activeSession} ride={activeRide} onRefresh={() => refresh()} onStarted={() => setFlowScreen("progress")} />
       </Chrome>
     );
@@ -239,7 +294,7 @@ export default function RiderApp() {
 
   function TripProgressRoute() {
     return (
-      <Chrome>
+      <Chrome onBack={() => setFlowScreen(null)}>
         <TripProgressScreen session={activeSession} ride={activeRide} onRefresh={() => refresh()} onCompleted={() => setFlowScreen("completed")} />
       </Chrome>
     );
@@ -247,7 +302,7 @@ export default function RiderApp() {
 
   function TripCompletedRoute() {
     return (
-      <Chrome>
+      <Chrome onBack={() => setFlowScreen(null)}>
         <TripCompletedScreen ride={completedRide} onDone={() => setFlowScreen(null)} />
       </Chrome>
     );
@@ -255,7 +310,7 @@ export default function RiderApp() {
 
   function IncentivesRoute() {
     return (
-      <Chrome>
+      <Chrome onBack={() => setFlowScreen(null)}>
         <IncentivesScreen rides={rides} />
       </Chrome>
     );
@@ -263,7 +318,7 @@ export default function RiderApp() {
 
   function DocumentsRoute() {
     return (
-      <Chrome>
+      <Chrome onBack={() => setFlowScreen(null)}>
         <DocumentsScreen user={activeSession.user} />
       </Chrome>
     );
@@ -271,8 +326,8 @@ export default function RiderApp() {
 
   function SettingsRoute() {
     return (
-      <Chrome>
-        <SettingsScreen user={activeSession.user} onLogout={() => setSession(null)} />
+      <Chrome onBack={() => setFlowScreen(null)}>
+        <SettingsScreen user={activeSession.user} onLogout={logout} />
       </Chrome>
     );
   }

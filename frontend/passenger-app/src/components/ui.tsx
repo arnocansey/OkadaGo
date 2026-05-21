@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { WebView } from "react-native-webview";
 
 export const palette = {
   ink: "#070A0E",
@@ -116,16 +117,31 @@ export function ListRow({
   );
 }
 
-export function MapPanel({ title, subtitle }: { title: string; subtitle: string }) {
+export function MapPanel({
+  title,
+  subtitle,
+  start,
+  end,
+}: {
+  title: string;
+  subtitle: string;
+  start?: { latitude: number; longitude: number; label?: string } | null;
+  end?: { latitude: number; longitude: number; label?: string } | null;
+}) {
+  const center = start ?? end ?? { latitude: 5.6037, longitude: -0.187 };
+  const span = start && end ? 0.08 : 0.12;
+  const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${center.longitude - span}%2C${center.latitude - span}%2C${center.longitude + span}%2C${center.latitude + span}&layer=mapnik&marker=${center.latitude}%2C${center.longitude}`;
+
   return (
     <View style={styles.mapPanel}>
-      <View style={styles.mapGrid} />
-      <View style={styles.mapRoadOne} />
-      <View style={styles.mapRoadTwo} />
-      <View style={styles.mapRoadThree} />
-      <View style={styles.mapRoute} />
-      <View style={styles.mapDotStart} />
-      <View style={styles.mapDotEnd} />
+      <WebView style={styles.realMap} source={{ uri: mapUrl }} originWhitelist={["*"]} scrollEnabled={false} />
+      {start && end ? (
+        <View style={styles.mapRouteOverlay}>
+          <View style={styles.mapDotStart} />
+          <View style={styles.mapRoute} />
+          <View style={styles.mapDotEnd} />
+        </View>
+      ) : null}
       <View style={styles.mapPin}>
         <Text style={styles.mapPinText}>GPS</Text>
       </View>
@@ -148,19 +164,19 @@ export function EmptyState({ title, body }: { title: string; body: string }) {
 
 export const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: palette.ink },
-  content: { padding: 18, paddingBottom: 132, gap: 16 },
-  authContent: { padding: 20, paddingBottom: 34, gap: 18 },
-  authHero: { minHeight: 280, justifyContent: "flex-end", gap: 12, paddingBottom: 10 },
-  brandMarkLarge: { width: 72, height: 72, borderRadius: 24, backgroundColor: palette.yellow, alignItems: "center", justifyContent: "center", shadowColor: palette.yellow, shadowOpacity: 0.25, shadowRadius: 20 },
-  brandIconLarge: { color: "#111111", fontSize: 34, fontWeight: "900" },
-  authTitle: { color: "#FFFFFF", fontSize: 42, lineHeight: 44, fontWeight: "900", letterSpacing: -1.4 },
+  content: { padding: 16, paddingBottom: 126, gap: 14 },
+  authContent: { padding: 18, paddingBottom: 30, gap: 16 },
+  authHero: { minHeight: 210, justifyContent: "flex-end", gap: 10, paddingBottom: 6 },
+  brandMarkLarge: { width: 64, height: 64, borderRadius: 22, backgroundColor: palette.yellow, alignItems: "center", justifyContent: "center", shadowColor: palette.yellow, shadowOpacity: 0.25, shadowRadius: 20 },
+  brandIconLarge: { color: "#111111", fontSize: 30, fontWeight: "900" },
+  authTitle: { color: "#FFFFFF", fontSize: 34, lineHeight: 37, fontWeight: "900", letterSpacing: -1.2 },
   modeTabs: { flexDirection: "row", padding: 4, backgroundColor: "#0D1117", borderRadius: 999, borderWidth: 1, borderColor: "#252D39" },
   modeTab: { flex: 1, paddingVertical: 11, borderRadius: 999, alignItems: "center" },
   modeTabActive: { backgroundColor: palette.yellow },
   modeTabText: { color: "#A8ADB6", fontWeight: "900" },
   modeTabTextActive: { color: "#111111" },
   apiText: { color: "#6F7682", fontSize: 11, textAlign: "center" },
-  topBar: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 18, paddingTop: 12, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: "#1E2530", backgroundColor: "#0B0F14" },
+  topBar: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, paddingTop: 10, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: "#1E2530", backgroundColor: "#0B0F14" },
   backButton: { borderRadius: 999, paddingHorizontal: 12, paddingVertical: 9, backgroundColor: "#171D26", borderWidth: 1, borderColor: "#303846" },
   backButtonText: { color: "#FFFFFF", fontSize: 12, fontWeight: "900" },
   logoMark: { width: 42, height: 42, borderRadius: 16, backgroundColor: palette.yellow, alignItems: "center", justifyContent: "center", shadowColor: palette.yellow, shadowOpacity: 0.25, shadowRadius: 18 },
@@ -171,13 +187,13 @@ export const styles = StyleSheet.create({
   refreshText: { color: "#8EF0A5", fontWeight: "800" },
   inlineError: { marginHorizontal: 18, marginTop: 10, color: "#FFB4A8", fontWeight: "700" },
   hello: { color: "#B8BDC7", fontSize: 15, fontWeight: "700" },
-  pageTitle: { color: "#FFFFFF", fontSize: 34, lineHeight: 38, fontWeight: "900", letterSpacing: -1 },
-  card: { backgroundColor: palette.panel, borderRadius: 30, padding: 18, gap: 14, borderWidth: 1, borderColor: palette.stroke },
+  pageTitle: { color: "#FFFFFF", fontSize: 30, lineHeight: 34, fontWeight: "900", letterSpacing: -0.8 },
+  card: { backgroundColor: palette.panel, borderRadius: 26, padding: 16, gap: 12, borderWidth: 1, borderColor: palette.stroke },
   yellowCard: { backgroundColor: palette.yellow, borderColor: palette.yellow },
   heroLabel: { color: "#4B3900", fontSize: 12, fontWeight: "900", letterSpacing: 1.2, textTransform: "uppercase" },
   heroTitle: { color: "#111111", fontSize: 28, lineHeight: 32, fontWeight: "900" },
   heroCopy: { color: "#2D260D", fontSize: 15, lineHeight: 22 },
-  grid: { flexDirection: "row", gap: 12 },
+  grid: { flexDirection: "row", gap: 10 },
   serviceTile: { flex: 1, backgroundColor: "#0D1117", borderRadius: 24, padding: 15, gap: 9, borderWidth: 1, borderColor: "#303846" },
   serviceTitle: { color: "#FFFFFF", fontSize: 16, fontWeight: "900" },
   serviceBody: { color: "#A8ADB6", fontSize: 13, lineHeight: 18 },
@@ -204,7 +220,9 @@ export const styles = StyleSheet.create({
   errorText: { color: "#FFB4A8", fontSize: 13, fontWeight: "700", lineHeight: 19 },
   emptyState: { borderWidth: 1, borderColor: "#323232", borderStyle: "dashed", borderRadius: 22, padding: 16, gap: 6 },
   emptyTitle: { color: "#FFFFFF", fontSize: 16, fontWeight: "900" },
-  mapPanel: { height: 270, borderRadius: 32, overflow: "hidden", backgroundColor: "#1E2633", borderWidth: 1, borderColor: "#3A4657" },
+  mapPanel: { height: 235, borderRadius: 28, overflow: "hidden", backgroundColor: "#1E2633", borderWidth: 1, borderColor: "#3A4657" },
+  realMap: { ...StyleSheet.absoluteFillObject },
+  mapRouteOverlay: { ...StyleSheet.absoluteFillObject },
   mapGrid: { ...StyleSheet.absoluteFillObject, opacity: 0.11, backgroundColor: palette.yellow },
   mapRoadOne: { position: "absolute", left: -24, right: 28, top: 72, height: 5, borderRadius: 999, backgroundColor: "#526070", transform: [{ rotate: "10deg" }] },
   mapRoadTwo: { position: "absolute", left: 28, right: -30, top: 190, height: 5, borderRadius: 999, backgroundColor: "#526070", transform: [{ rotate: "-12deg" }] },

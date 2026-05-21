@@ -14,7 +14,7 @@ export function DocumentsScreen({ user }: { user: SessionUser }) {
         <ListRow title="National ID" body="Identity verification will appear here." meta="Pending endpoint" />
         <ListRow title="Vehicle document" body="Vehicle compliance will appear here." meta="Pending endpoint" />
       </Card>
-      <EmptyState title="No uploaded documents." body="License, ID, and vehicle documents will be listed here from backend records." />
+      <EmptyState title="No uploaded documents." body="License, ID, and vehicle documents will be listed here after upload." />
     </>
   );
 }

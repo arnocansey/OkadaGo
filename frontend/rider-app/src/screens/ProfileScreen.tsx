@@ -29,7 +29,7 @@ export function ProfileScreen({
       </Card>
       <Card>
         <SectionTitle kicker="Documents" title="Compliance status" />
-        <EmptyState title="No document records exposed yet." body="When backend document endpoints are available, this screen can show upload and approval status here." />
+        <EmptyState title="No document records yet." body="Your upload and approval status will appear here." />
       </Card>
     </>
   );

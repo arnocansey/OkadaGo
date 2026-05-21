@@ -1416,6 +1416,70 @@ export function AdminConsolePage({
   const topRiderPerformanceRows = riderFinancialRows
     .slice()
     .sort((left, right) => right.completedCount - left.completedCount || right.earnings - left.earnings);
+  const totalRiderGrossRevenue = riderFinancialRows.reduce((sum, row) => sum + row.revenue, 0);
+  const totalRiderEarnings = riderFinancialRows.reduce((sum, row) => sum + row.earnings, 0);
+  const totalRiderCommission = riderFinancialRows.reduce((sum, row) => sum + row.commission, 0);
+  const totalRiderPayoutValue = riderPayoutRequests.reduce((sum, request) => sum + parseNumber(request.amount), 0);
+  const requestedRiderPayouts = riderPayoutRequests.filter((request) => request.status.toLowerCase() === "requested");
+  const paidRiderPayouts = riderPayoutRequests.filter((request) => ["paid", "approved"].includes(request.status.toLowerCase()));
+  const failedRiderPayouts = riderPayoutRequests.filter((request) =>
+    ["failed", "rejected", "cancelled"].includes(request.status.toLowerCase())
+  );
+  const riderWalletMovementTotal = riderWalletTransactions.reduce(
+    (sum, transaction) => sum + parseNumber(transaction.amount),
+    0
+  );
+  const riderWalletCredits = riderWalletTransactions
+    .filter((transaction) => transaction.direction.toLowerCase() === "credit" || parseNumber(transaction.amount) > 0)
+    .reduce((sum, transaction) => sum + Math.abs(parseNumber(transaction.amount)), 0);
+  const riderWalletDebits = riderWalletTransactions
+    .filter((transaction) => transaction.direction.toLowerCase() === "debit" || parseNumber(transaction.amount) < 0)
+    .reduce((sum, transaction) => sum + Math.abs(parseNumber(transaction.amount)), 0);
+  const riderWalletAvailableBalance = Math.max(0, riderWalletCredits - riderWalletDebits);
+  const riderWalletLockedBalance = riderPayoutRequests.reduce(
+    (sum, request) => sum + parseNumber(request.wallet.lockedBalance),
+    0
+  );
+  const riderRatingAverage =
+    ratings.length === 0 ? 0 : ratings.reduce((sum, rating) => sum + rating.score, 0) / ratings.length;
+  const riderRatingDistribution = [5, 4, 3, 2, 1].map((score) => ({
+    score,
+    count: ratings.filter((rating) => Math.round(rating.score) === score).length
+  }));
+  const riderPayoutMethodSnapshot = Object.entries(
+    riderPayoutRequests.reduce<Record<string, number>>((accumulator, request) => {
+      accumulator[request.method] = (accumulator[request.method] ?? 0) + parseNumber(request.amount);
+      return accumulator;
+    }, {})
+  ).sort((left, right) => right[1] - left[1]);
+  const riderPayoutMethodTotal = riderPayoutMethodSnapshot.reduce((sum, [, amount]) => sum + amount, 0);
+  const riderComplaintOpen = riderIncidents.filter((incident) => ["open", "new"].includes(incident.status.toLowerCase()));
+  const riderComplaintInProgress = riderIncidents.filter((incident) =>
+    ["in_progress", "in progress", "assigned", "reviewing"].includes(incident.status.toLowerCase())
+  );
+  const riderComplaintResolved = riderIncidents.filter((incident) =>
+    ["resolved", "closed"].includes(incident.status.toLowerCase())
+  );
+  const riderEarningBuckets = financeDailyBuckets.map((bucket) => {
+    const bucketCompletedTrips = completedTrips.filter((ride) => {
+      const rideDate = new Date(ride.createdAt);
+      return !Number.isNaN(rideDate.getTime()) && rideDate.toISOString().slice(0, 10) === bucket.key;
+    });
+    const tripEarnings = bucketCompletedTrips.reduce((sum, ride) => {
+      const fare = parseNumber(ride.finalFare ?? ride.estimatedFare);
+      return sum + Math.max(0, fare - parseNumber(ride.platformCommission));
+    }, 0);
+
+    return {
+      ...bucket,
+      trips: bucketCompletedTrips.length,
+      earnings: tripEarnings
+    };
+  });
+  const riderChartMax = Math.max(
+    1,
+    ...riderEarningBuckets.map((bucket) => Math.max(bucket.trips, bucket.earnings, bucket.commission))
+  );
 
   const dashboardMetrics = [
     {
@@ -3144,77 +3208,194 @@ export function AdminConsolePage({
         <section className="admin-rider-subset-kpis">
           <article className="admin-dark-kpi">
             <Bike size={22} />
-            <span>Completed Trips</span>
-            <strong>{completedTrips.length}</strong>
-            <small>Trips contributing to rider performance</small>
+            <span>Total Trips</span>
+            <strong>{rides.length}</strong>
+            <small>{completedTrips.length} completed trips recorded</small>
           </article>
           <article className="admin-dark-kpi">
             <CheckCircle size={22} />
-            <span>Active Riders</span>
-            <strong>{activeRiders.length}</strong>
-            <small>Currently online supply</small>
+            <span>Completed Trips</span>
+            <strong>{completedTrips.length}</strong>
+            <small>{activeTrips.length} currently active</small>
           </article>
-          <article className="admin-dark-kpi">
-            <Clock size={22} />
-            <span>Active Trip Load</span>
-            <strong>{activeTrips.length}</strong>
-            <small>Trips currently in motion</small>
+          <article className="admin-dark-kpi danger">
+            <XCircle size={22} />
+            <span>Cancelled Trips</span>
+            <strong>{requestCancelled.length}</strong>
+            <small>{rides.length === 0 ? "0" : ((requestCancelled.length / rides.length) * 100).toFixed(1)}% cancellation rate</small>
           </article>
           <article className="admin-dark-kpi">
             <User size={22} />
-            <span>Rated Riders</span>
-            <strong>{riderFinancialRows.filter((row) => row.ratingCount > 0).length}</strong>
-            <small>Have submitted ratings</small>
+            <span>Acceptance Rate</span>
+            <strong>{rides.length === 0 ? "0.0%" : `${((completedTrips.length / rides.length) * 100).toFixed(1)}%`}</strong>
+            <small>Completed against total assigned work</small>
           </article>
           <article className="admin-dark-kpi">
             <CreditCard size={22} />
-            <span>Rider Earnings</span>
-            <strong>{formatMoney(adminCurrency, riderFinancialRows.reduce((sum, row) => sum + row.earnings, 0))}</strong>
-            <small>Completed fare minus commission</small>
+            <span>Average Rating</span>
+            <strong>{riderRatingAverage.toFixed(1)}</strong>
+            <small>{ratings.length} rating submissions</small>
           </article>
         </section>
 
-        <section className="admin-dark-card">
-          <div className="admin-dark-cardhead">
-            <div>
-              <h3>Rider performance table</h3>
-              <p>Live grouped ride volume, active load, ratings, and earnings by rider.</p>
+        <section className="admin-rider-dashboard-grid performance">
+          <article className="admin-dark-card admin-rider-chart-card">
+            <div className="admin-dark-cardhead">
+              <div>
+                <h3>Performance Overview</h3>
+                <p>Recent trips, earnings, and commission movement from live ride records.</p>
+              </div>
+              <span>This month</span>
             </div>
-            <a href="/admin/riders/earnings">Open earnings</a>
-          </div>
-          {topRiderPerformanceRows.length === 0 ? (
-            <EmptyCard title="No rider performance yet." body="Performance rows appear after riders are created." />
-          ) : (
-            <div className="table-wrapper admin-rider-subset-table">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Rider</th>
-                    <th>Completed</th>
-                    <th>Active</th>
-                    <th>Total Rides</th>
-                    <th>Rating</th>
-                    <th>Earnings</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {topRiderPerformanceRows.map((row) => (
-                    <tr key={row.rider.id}>
-                      <td>
-                        <strong>{row.rider.user.fullName}</strong>
-                        <div>{row.rider.displayCode}</div>
-                      </td>
-                      <td>{row.completedCount}</td>
-                      <td>{row.activeCount}</td>
-                      <td>{row.rideCount}</td>
-                      <td>{row.ratingCount === 0 ? "No ratings" : `${row.averageRating.toFixed(1)} (${row.ratingCount})`}</td>
-                      <td>{formatMoney(adminCurrency, row.earnings)}</td>
+            <div className="admin-rider-bars multi">
+              {riderEarningBuckets.map((bucket) => (
+                <div key={bucket.key} className="admin-rider-bar-cluster">
+                  <i className="green" style={{ height: `${Math.max(5, (bucket.trips / riderChartMax) * 100)}%` }} />
+                  <i className="yellow" style={{ height: `${Math.max(5, (bucket.earnings / riderChartMax) * 100)}%` }} />
+                  <i className="red" style={{ height: `${Math.max(5, (bucket.commission / riderChartMax) * 100)}%` }} />
+                  <span>{bucket.label}</span>
+                </div>
+              ))}
+            </div>
+            <div className="admin-rider-legend compact">
+              <span><i className="green" /> Trips</span>
+              <span><i className="yellow" /> Earnings</span>
+              <span><i className="red" /> Commission</span>
+            </div>
+          </article>
+
+          <article className="admin-dark-card admin-rider-map-card">
+            <div className="admin-dark-cardhead">
+              <div>
+                <h3>Performance by Location</h3>
+                <p>Online rider coordinates and active service coverage.</p>
+              </div>
+              <span>{mapMarkers.length} live</span>
+            </div>
+            <div className="admin-rider-map">
+              <OperationsMap
+                center={mapMarkers[0]?.position ?? [5.6037, -0.187]}
+                zoom={mapMarkers.length > 0 ? 11 : 6}
+                markers={mapMarkers}
+                emptyTitle="No live rider locations."
+                emptyDescription="Rider coordinates will appear as soon as online riders send location updates."
+              />
+            </div>
+          </article>
+
+          <article className="admin-dark-card admin-rider-side-list">
+            <div className="admin-dark-cardhead">
+              <div>
+                <h3>Top Performing Riders</h3>
+                <p>Ranked by completed trips and earnings.</p>
+              </div>
+              <a href="/admin/riders/earnings">View all</a>
+            </div>
+            {topRiderPerformanceRows.length === 0 ? (
+              <EmptyCard title="No riders yet." body="Top performers appear after rider profiles and trips exist." />
+            ) : (
+              <ul className="admin-rider-ranking">
+                {topRiderPerformanceRows.slice(0, 5).map((row, index) => (
+                  <li key={row.rider.id}>
+                    <b>{index + 1}</b>
+                    <div>
+                      <strong>{row.rider.user.fullName}</strong>
+                      <span>{row.completedCount} trips</span>
+                    </div>
+                    <em>{row.ratingCount === 0 ? "0.0" : row.averageRating.toFixed(1)}</em>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </article>
+        </section>
+
+        <section className="admin-rider-dashboard-grid lower">
+          <article className="admin-dark-card admin-rider-wide-table">
+            <div className="admin-dark-cardhead">
+              <div>
+                <h3>Performance by Metrics</h3>
+                <p>Live grouped ride volume, active load, ratings, and earnings by rider.</p>
+              </div>
+              <a href="/admin/riders/earnings">Open earnings</a>
+            </div>
+            {topRiderPerformanceRows.length === 0 ? (
+              <EmptyCard title="No rider performance yet." body="Performance rows appear after riders are created." />
+            ) : (
+              <div className="table-wrapper admin-rider-subset-table">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Rider</th>
+                      <th>Total Trips</th>
+                      <th>Completed</th>
+                      <th>Cancelled</th>
+                      <th>Acceptance</th>
+                      <th>Rating</th>
+                      <th>Earnings</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {topRiderPerformanceRows.map((row) => {
+                      const cancelled = rides.filter(
+                        (ride) => ride.rider?.user.fullName === row.rider.user.fullName && ride.status.toLowerCase() === "cancelled"
+                      ).length;
+                      const acceptance = row.rideCount === 0 ? 0 : (row.completedCount / row.rideCount) * 100;
+
+                      return (
+                        <tr key={row.rider.id}>
+                          <td>
+                            <strong>{row.rider.user.fullName}</strong>
+                            <div>{row.rider.displayCode}</div>
+                          </td>
+                          <td>{row.rideCount}</td>
+                          <td>{row.completedCount}</td>
+                          <td>{cancelled}</td>
+                          <td>{acceptance.toFixed(1)}%</td>
+                          <td>{row.ratingCount === 0 ? "No ratings" : `${row.averageRating.toFixed(1)} (${row.ratingCount})`}</td>
+                          <td>{formatMoney(adminCurrency, row.earnings)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </article>
+
+          <article className="admin-dark-card">
+            <div className="admin-dark-cardhead">
+              <div>
+                <h3>Ratings Distribution</h3>
+                <p>Score spread from submitted rider ratings.</p>
+              </div>
+              <span>{ratings.length} ratings</span>
             </div>
-          )}
+            <div className="admin-rider-donut-wrap">
+              <div
+                className="admin-rider-donut rating"
+                style={{
+                  background:
+                    ratings.length === 0
+                      ? "#1f2937"
+                      : `conic-gradient(#22c55e 0 ${(riderRatingDistribution[0].count / Math.max(1, ratings.length)) * 100}%, #ffc107 ${(riderRatingDistribution[0].count / Math.max(1, ratings.length)) * 100}% ${((riderRatingDistribution[0].count + riderRatingDistribution[1].count) / Math.max(1, ratings.length)) * 100}%, #3b82f6 ${((riderRatingDistribution[0].count + riderRatingDistribution[1].count) / Math.max(1, ratings.length)) * 100}% 100%)`
+                }}
+              >
+                <div>
+                  <strong>{ratings.length}</strong>
+                  <span>Total Ratings</span>
+                </div>
+              </div>
+              <ul className="admin-rider-breakdown-list">
+                {riderRatingDistribution.map((item) => (
+                  <li key={item.score}>
+                    <span>{item.score} Stars</span>
+                    <strong>{item.count}</strong>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </article>
         </section>
       </div>
     ) : screen === "riderEarnings" ? (
@@ -3223,13 +3404,19 @@ export function AdminConsolePage({
           <article className="admin-dark-kpi">
             <CreditCard size={22} />
             <span>Total Earnings</span>
-            <strong>{formatMoney(adminCurrency, riderFinancialRows.reduce((sum, row) => sum + row.earnings, 0))}</strong>
+            <strong>{formatMoney(adminCurrency, totalRiderGrossRevenue)}</strong>
+            <small>Gross completed rider trip value</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <Bike size={22} />
+            <span>Trip Earnings</span>
+            <strong>{formatMoney(adminCurrency, totalRiderEarnings)}</strong>
             <small>Completed fares minus commission</small>
           </article>
           <article className="admin-dark-kpi">
             <FileText size={22} />
-            <span>Commission</span>
-            <strong>{formatMoney(adminCurrency, riderFinancialRows.reduce((sum, row) => sum + row.commission, 0))}</strong>
+            <span>Total Commissions</span>
+            <strong>-{formatMoney(adminCurrency, totalRiderCommission)}</strong>
             <small>Platform share from rider trips</small>
           </article>
           <article className="admin-dark-kpi">
@@ -3240,63 +3427,248 @@ export function AdminConsolePage({
           </article>
           <article className="admin-dark-kpi">
             <Download size={22} />
-            <span>Payout Requested</span>
-            <strong>{formatMoney(adminCurrency, riderPayoutRequests.reduce((sum, request) => sum + parseNumber(request.amount), 0))}</strong>
+            <span>Net Earnings</span>
+            <strong>{formatMoney(adminCurrency, totalRiderEarnings)}</strong>
             <small>All rider payout requests</small>
           </article>
-          <article className="admin-dark-kpi">
-            <Clock size={22} />
-            <span>Pending Payouts</span>
-            <strong>{riderPayoutRequests.filter((request) => request.status.toLowerCase() === "requested").length}</strong>
-            <small>Awaiting finance review</small>
+        </section>
+
+        <section className="admin-rider-dashboard-grid earnings">
+          <article className="admin-dark-card admin-rider-chart-card">
+            <div className="admin-dark-cardhead">
+              <div>
+                <h3>Earnings Overview</h3>
+                <p>Trip earnings and commission trend from completed rides.</p>
+              </div>
+              <span>This month</span>
+            </div>
+            <div className="admin-rider-bars multi">
+              {riderEarningBuckets.map((bucket) => (
+                <div key={bucket.key} className="admin-rider-bar-cluster">
+                  <i className="yellow" style={{ height: `${Math.max(5, (bucket.earnings / riderChartMax) * 100)}%` }} />
+                  <i className="green" style={{ height: `${Math.max(5, (bucket.trips / riderChartMax) * 100)}%` }} />
+                  <i className="red" style={{ height: `${Math.max(5, (bucket.commission / riderChartMax) * 100)}%` }} />
+                  <span>{bucket.label}</span>
+                </div>
+              ))}
+            </div>
+            <div className="admin-rider-legend compact">
+              <span><i className="yellow" /> Trip Earnings</span>
+              <span><i className="green" /> Trips</span>
+              <span><i className="red" /> Commission</span>
+            </div>
+          </article>
+
+          <article className="admin-dark-card">
+            <div className="admin-dark-cardhead">
+              <div>
+                <h3>Earnings Breakdown</h3>
+                <p>Current split between rider earnings and platform commission.</p>
+              </div>
+            </div>
+            <div className="admin-rider-donut-wrap">
+              <div
+                className="admin-rider-donut"
+                style={{
+                  background:
+                    totalRiderGrossRevenue === 0
+                      ? "#1f2937"
+                      : `conic-gradient(#ffc107 0 ${(totalRiderEarnings / Math.max(1, totalRiderGrossRevenue)) * 100}%, #ef4444 ${(totalRiderEarnings / Math.max(1, totalRiderGrossRevenue)) * 100}% 100%)`
+                }}
+              >
+                <div>
+                  <strong>{formatMoney(adminCurrency, totalRiderGrossRevenue)}</strong>
+                  <span>Total Earnings</span>
+                </div>
+              </div>
+              <ul className="admin-rider-breakdown-list">
+                <li><span>Trip earnings</span><strong>{formatMoney(adminCurrency, totalRiderEarnings)}</strong></li>
+                <li><span>Commissions</span><strong>-{formatMoney(adminCurrency, totalRiderCommission)}</strong></li>
+                <li><span>Payout requested</span><strong>{formatMoney(adminCurrency, totalRiderPayoutValue)}</strong></li>
+              </ul>
+            </div>
+          </article>
+
+          <article className="admin-dark-card admin-rider-side-list">
+            <div className="admin-dark-cardhead">
+              <div>
+                <h3>Top Earning Riders</h3>
+                <p>Sorted by net estimated earnings.</p>
+              </div>
+              <a href="/admin/riders/wallet">Wallet</a>
+            </div>
+            <ul className="admin-rider-ranking">
+              {riderFinancialRows
+                .slice()
+                .sort((left, right) => right.earnings - left.earnings)
+                .slice(0, 5)
+                .map((row, index) => (
+                  <li key={row.rider.id}>
+                    <b>{index + 1}</b>
+                    <div>
+                      <strong>{row.rider.user.fullName}</strong>
+                      <span>{row.completedCount} trips</span>
+                    </div>
+                    <em>{formatMoney(adminCurrency, row.earnings)}</em>
+                  </li>
+                ))}
+            </ul>
           </article>
         </section>
 
         <section className="admin-dark-card">
           <div className="admin-dark-cardhead">
             <div>
-              <h3>Rider earnings ledger</h3>
+              <h3>Earnings Summary</h3>
               <p>Grouped estimated earnings from completed rides.</p>
             </div>
             <a href="/admin/riders/payouts">Open payouts</a>
           </div>
-          <div className="table-wrapper admin-rider-subset-table">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Rider</th>
-                  <th>Completed Trips</th>
-                  <th>Gross Revenue</th>
-                  <th>Commission</th>
-                  <th>Estimated Earnings</th>
-                  <th>Payout Requests</th>
-                </tr>
-              </thead>
-              <tbody>
-                {riderFinancialRows.map((row) => (
-                  <tr key={row.rider.id}>
-                    <td>
-                      <strong>{row.rider.user.fullName}</strong>
-                      <div>{row.rider.displayCode}</div>
-                    </td>
-                    <td>{row.completedCount}</td>
-                    <td>{formatMoney(adminCurrency, row.revenue)}</td>
-                    <td>{formatMoney(adminCurrency, row.commission)}</td>
-                    <td>{formatMoney(adminCurrency, row.earnings)}</td>
-                    <td>{formatMoney(adminCurrency, row.payoutTotal)}</td>
+          {riderFinancialRows.length === 0 ? (
+            <EmptyCard title="No rider earnings yet." body="Earnings appear after rider profiles and completed trips exist." />
+          ) : (
+            <div className="table-wrapper admin-rider-subset-table">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Rider</th>
+                    <th>Completed Trips</th>
+                    <th>Gross Revenue</th>
+                    <th>Commission</th>
+                    <th>Net Earnings</th>
+                    <th>Payout Requests</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {riderFinancialRows.map((row) => (
+                    <tr key={row.rider.id}>
+                      <td>
+                        <strong>{row.rider.user.fullName}</strong>
+                        <div>{row.rider.displayCode}</div>
+                      </td>
+                      <td>{row.completedCount}</td>
+                      <td>{formatMoney(adminCurrency, row.revenue)}</td>
+                      <td>-{formatMoney(adminCurrency, row.commission)}</td>
+                      <td>{formatMoney(adminCurrency, row.earnings)}</td>
+                      <td>{formatMoney(adminCurrency, row.payoutTotal)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
       </div>
     ) : screen === "riderWallet" ? (
       <div className="admin-reference-dark admin-rider-subset-page">
+        <section className="admin-rider-subset-kpis">
+          <article className="admin-dark-kpi">
+            <CreditCard size={22} />
+            <span>Wallet Balance</span>
+            <strong>{formatMoney(adminCurrency, riderWalletAvailableBalance)}</strong>
+            <small>Estimated available balance from posted movement</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <CheckCircle size={22} />
+            <span>Total Earnings</span>
+            <strong>{formatMoney(adminCurrency, totalRiderEarnings)}</strong>
+            <small>Completed trips minus commission</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <Download size={22} />
+            <span>Total Payouts</span>
+            <strong>{formatMoney(adminCurrency, totalRiderPayoutValue)}</strong>
+            <small>{riderPayoutRequests.length} rider requests</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <Clock size={22} />
+            <span>Pending Payouts</span>
+            <strong>{formatMoney(adminCurrency, requestedRiderPayouts.reduce((sum, request) => sum + parseNumber(request.amount), 0))}</strong>
+            <small>{requestedRiderPayouts.length} transactions</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <ShieldAlert size={22} />
+            <span>Locked Balance</span>
+            <strong>{formatMoney(adminCurrency, riderWalletLockedBalance)}</strong>
+            <small>Under review or held</small>
+          </article>
+        </section>
+
+        <section className="admin-rider-dashboard-grid wallet">
+          <article className="admin-dark-card">
+            <div className="admin-dark-cardhead">
+              <div>
+                <h3>Wallet Actions</h3>
+                <p>Operational shortcuts for rider settlement review.</p>
+              </div>
+            </div>
+            <div className="admin-rider-action-list">
+              <a href="/admin/riders/payouts"><Download size={16} /><span><strong>Cash Out</strong><small>Review rider payout requests</small></span></a>
+              <a href="/admin/finance"><CreditCard size={16} /><span><strong>Add Funds</strong><small>Open platform finance ledger</small></span></a>
+              <a href="/admin/riders/wallet"><FileText size={16} /><span><strong>Transaction History</strong><small>View rider wallet movement</small></span></a>
+              <a href="/admin/riders/earnings"><Bike size={16} /><span><strong>Earnings Summary</strong><small>View earnings breakdown</small></span></a>
+            </div>
+          </article>
+
+          <article className="admin-dark-card">
+            <div className="admin-dark-cardhead">
+              <div>
+                <h3>Balance Breakdown</h3>
+                <p>Available, pending, locked, and bonus movement.</p>
+              </div>
+            </div>
+            <div className="admin-rider-donut-wrap">
+              <div
+                className="admin-rider-donut"
+                style={{
+                  background:
+                    riderWalletAvailableBalance + riderWalletLockedBalance === 0
+                      ? "#1f2937"
+                      : `conic-gradient(#ffc107 0 ${(riderWalletAvailableBalance / Math.max(1, riderWalletAvailableBalance + riderWalletLockedBalance)) * 100}%, #8b5cf6 ${(riderWalletAvailableBalance / Math.max(1, riderWalletAvailableBalance + riderWalletLockedBalance)) * 100}% 100%)`
+                }}
+              >
+                <div>
+                  <strong>{formatMoney(adminCurrency, riderWalletAvailableBalance)}</strong>
+                  <span>Total Balance</span>
+                </div>
+              </div>
+              <ul className="admin-rider-breakdown-list">
+                <li><span>Available Balance</span><strong>{formatMoney(adminCurrency, riderWalletAvailableBalance)}</strong></li>
+                <li><span>Pending Balance</span><strong>{formatMoney(adminCurrency, requestedRiderPayouts.reduce((sum, request) => sum + parseNumber(request.amount), 0))}</strong></li>
+                <li><span>Locked Balance</span><strong>{formatMoney(adminCurrency, riderWalletLockedBalance)}</strong></li>
+                <li><span>Bonus Balance</span><strong>{formatMoney(adminCurrency, 0)}</strong></li>
+              </ul>
+            </div>
+          </article>
+
+          <article className="admin-dark-card admin-rider-side-list">
+            <div className="admin-dark-cardhead">
+              <div>
+                <h3>Latest Payout Source</h3>
+                <p>Recent rider wallet activity.</p>
+              </div>
+              <a href="/admin/finance">View all</a>
+            </div>
+            {riderWalletTransactions.length === 0 ? (
+              <EmptyCard title="No earnings yet." body="Rider wallet activity will appear after transactions are posted." />
+            ) : (
+              <ul className="admin-rider-activity-list">
+                {riderWalletTransactions.slice(0, 4).map((transaction) => (
+                  <li key={transaction.id}>
+                    <span>{formatEnumLabel(transaction.type)}</span>
+                    <strong>{formatMoney(transaction.currency, parseNumber(transaction.amount))}</strong>
+                    <em className={`status-chip ${statusTone(transaction.status)}`}>{formatEnumLabel(transaction.status)}</em>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </article>
+        </section>
+
         <section className="admin-dark-card">
           <div className="admin-dark-cardhead">
             <div>
-              <h3>Rider wallet transactions</h3>
+              <h3>Transaction History</h3>
               <p>Admin payment ledger filtered to rider wallet owners.</p>
             </div>
             <a href="/admin/finance">Open full finance</a>
@@ -3340,94 +3712,249 @@ export function AdminConsolePage({
       </div>
     ) : screen === "riderPayouts" ? (
       <div className="admin-reference-dark admin-rider-subset-page">
-        <section className="admin-dark-card">
-          <div className="admin-dark-cardhead">
-            <div>
-              <h3>Rider payout requests</h3>
-              <p>Rider settlement requests with current finance review state.</p>
+        <section className="admin-rider-subset-kpis">
+          <article className="admin-dark-kpi">
+            <Download size={22} />
+            <span>Total Payouts</span>
+            <strong>{formatMoney(adminCurrency, totalRiderPayoutValue)}</strong>
+            <small>{riderPayoutRequests.length} payout requests</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <CheckCircle size={22} />
+            <span>Successful Payouts</span>
+            <strong>{formatMoney(adminCurrency, paidRiderPayouts.reduce((sum, request) => sum + parseNumber(request.amount), 0))}</strong>
+            <small>{paidRiderPayouts.length} approved or paid</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <Clock size={22} />
+            <span>Pending Payouts</span>
+            <strong>{formatMoney(adminCurrency, requestedRiderPayouts.reduce((sum, request) => sum + parseNumber(request.amount), 0))}</strong>
+            <small>{requestedRiderPayouts.length} awaiting review</small>
+          </article>
+          <article className="admin-dark-kpi danger">
+            <XCircle size={22} />
+            <span>Failed Payouts</span>
+            <strong>{formatMoney(adminCurrency, failedRiderPayouts.reduce((sum, request) => sum + parseNumber(request.amount), 0))}</strong>
+            <small>{failedRiderPayouts.length} failed, rejected, or cancelled</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <Users size={22} />
+            <span>Total Riders Paid</span>
+            <strong>{new Set(paidRiderPayouts.map((request) => request.rider.id)).size}</strong>
+            <small>Distinct riders with paid requests</small>
+          </article>
+        </section>
+
+        <section className="admin-rider-dashboard-grid payouts">
+          <article className="admin-dark-card admin-rider-wide-table">
+            <div className="admin-dark-cardhead">
+              <div>
+                <h3>All Payouts</h3>
+                <p>Rider settlement requests with current finance review state.</p>
+              </div>
+              <a href="/admin/finance">Manage payouts</a>
             </div>
-            <a href="/admin/finance">Manage payouts</a>
-          </div>
-          {riderPayoutRequests.length === 0 ? (
-            <EmptyCard title="No rider payout requests." body="Payout requests will appear here after riders request settlement." />
-          ) : (
-            <div className="table-wrapper admin-rider-subset-table">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Rider</th>
-                    <th>Method</th>
-                    <th>Destination</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                    <th>Requested</th>
-                    <th>Reviewed</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {riderPayoutRequests.map((request) => (
-                    <tr key={request.id}>
-                      <td>
-                        <strong>{request.rider.user.fullName}</strong>
-                        <div>{request.rider.displayCode}</div>
-                      </td>
-                      <td>{formatEnumLabel(request.method)}</td>
-                      <td>{request.destinationLabel}</td>
-                      <td>{formatMoney(request.currency, parseNumber(request.amount))}</td>
-                      <td><span className={`status-chip ${statusTone(request.status)}`}>{formatEnumLabel(request.status)}</span></td>
-                      <td>{formatDateTime(request.requestedAt)}</td>
-                      <td>{request.reviewedAt ? formatDateTime(request.reviewedAt) : "Pending review"}</td>
+            {riderPayoutRequests.length === 0 ? (
+              <EmptyCard title="No rider payout requests." body="Payout requests will appear here after riders request settlement." />
+            ) : (
+              <div className="table-wrapper admin-rider-subset-table">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Rider</th>
+                      <th>Payout Method</th>
+                      <th>Amount</th>
+                      <th>Net Amount</th>
+                      <th>Reference ID</th>
+                      <th>Status</th>
+                      <th>Payout Date</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  </thead>
+                  <tbody>
+                    {riderPayoutRequests.map((request) => (
+                      <tr key={request.id}>
+                        <td>
+                          <strong>{request.rider.user.fullName}</strong>
+                          <div>{request.rider.displayCode}</div>
+                        </td>
+                        <td>{formatEnumLabel(request.method)}</td>
+                        <td>{formatMoney(request.currency, parseNumber(request.amount))}</td>
+                        <td>{formatMoney(request.currency, parseNumber(request.amount))}</td>
+                        <td>{request.id.slice(-12).toUpperCase()}</td>
+                        <td><span className={`status-chip ${statusTone(request.status)}`}>{formatEnumLabel(request.status)}</span></td>
+                        <td>{request.paidAt ? formatDateTime(request.paidAt) : request.reviewedAt ? formatDateTime(request.reviewedAt) : "Pending"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </article>
+
+          <aside className="admin-rider-side-stack">
+            <article className="admin-dark-card">
+              <div className="admin-dark-cardhead">
+                <div>
+                  <h3>Payout Methods Breakdown</h3>
+                  <p>Settlement amount by method.</p>
+                </div>
+              </div>
+              <div className="admin-rider-donut-wrap compact">
+                <div
+                  className="admin-rider-donut small"
+                  style={{
+                    background:
+                      riderPayoutMethodTotal === 0
+                        ? "#1f2937"
+                        : `conic-gradient(#ffc107 0 ${((riderPayoutMethodSnapshot[0]?.[1] ?? 0) / Math.max(1, riderPayoutMethodTotal)) * 100}%, #ef4444 ${((riderPayoutMethodSnapshot[0]?.[1] ?? 0) / Math.max(1, riderPayoutMethodTotal)) * 100}% ${(((riderPayoutMethodSnapshot[0]?.[1] ?? 0) + (riderPayoutMethodSnapshot[1]?.[1] ?? 0)) / Math.max(1, riderPayoutMethodTotal)) * 100}%, #3b82f6 ${(((riderPayoutMethodSnapshot[0]?.[1] ?? 0) + (riderPayoutMethodSnapshot[1]?.[1] ?? 0)) / Math.max(1, riderPayoutMethodTotal)) * 100}% 100%)`
+                  }}
+                >
+                  <div />
+                </div>
+                <ul className="admin-rider-breakdown-list">
+                  {riderPayoutMethodSnapshot.length === 0 ? (
+                    <li><span>No method data</span><strong>0</strong></li>
+                  ) : (
+                    riderPayoutMethodSnapshot.map(([method, amount]) => (
+                      <li key={method}>
+                        <span>{formatEnumLabel(method)}</span>
+                        <strong>{formatMoney(adminCurrency, amount)}</strong>
+                      </li>
+                    ))
+                  )}
+                </ul>
+              </div>
+            </article>
+
+            <article className="admin-dark-card">
+              <div className="admin-dark-cardhead">
+                <div>
+                  <h3>Payout Overview</h3>
+                  <p>Current settlement health.</p>
+                </div>
+              </div>
+              <ul className="admin-rider-breakdown-list loose">
+                <li><span>Average payout</span><strong>{formatMoney(adminCurrency, riderPayoutRequests.length === 0 ? 0 : totalRiderPayoutValue / riderPayoutRequests.length)}</strong></li>
+                <li><span>Highest payout</span><strong>{formatMoney(adminCurrency, Math.max(0, ...riderPayoutRequests.map((request) => parseNumber(request.amount))))}</strong></li>
+                <li><span>Lowest payout</span><strong>{formatMoney(adminCurrency, riderPayoutRequests.length === 0 ? 0 : Math.min(...riderPayoutRequests.map((request) => parseNumber(request.amount))))}</strong></li>
+                <li><span>Success rate</span><strong>{riderPayoutRequests.length === 0 ? "0.0%" : `${((paidRiderPayouts.length / riderPayoutRequests.length) * 100).toFixed(1)}%`}</strong></li>
+              </ul>
+            </article>
+          </aside>
         </section>
       </div>
     ) : screen === "riderComplaints" ? (
       <div className="admin-reference-dark admin-rider-subset-page">
-        <section className="admin-dark-card">
-          <div className="admin-dark-cardhead">
-            <div>
-              <h3>Rider-linked complaints</h3>
-              <p>Support incidents attached to rider profiles.</p>
+        <section className="admin-rider-subset-kpis">
+          <article className="admin-dark-kpi">
+            <Headphones size={22} />
+            <span>Total Tickets</span>
+            <strong>{riderIncidents.length}</strong>
+            <small>Support incidents attached to riders</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <Clock size={22} />
+            <span>Open Tickets</span>
+            <strong>{riderComplaintOpen.length}</strong>
+            <small>New or open rider issues</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <ShieldAlert size={22} />
+            <span>In Progress</span>
+            <strong>{riderComplaintInProgress.length}</strong>
+            <small>Assigned or under review</small>
+          </article>
+          <article className="admin-dark-kpi">
+            <CheckCircle size={22} />
+            <span>Resolved</span>
+            <strong>{riderComplaintResolved.length}</strong>
+            <small>Resolved or closed tickets</small>
+          </article>
+          <article className="admin-dark-kpi danger">
+            <XCircle size={22} />
+            <span>High Severity</span>
+            <strong>{riderIncidents.filter((incident) => incident.severity.toLowerCase() === "high").length}</strong>
+            <small>Requires immediate attention</small>
+          </article>
+        </section>
+
+        <section className="admin-rider-dashboard-grid complaints">
+          <article className="admin-dark-card admin-rider-wide-table">
+            <div className="admin-dark-cardhead">
+              <div>
+                <h3>All Tickets</h3>
+                <p>Support incidents attached to rider profiles.</p>
+              </div>
+              <a href="/admin/support">Open support center</a>
             </div>
-            <a href="/admin/support">Open support center</a>
-          </div>
-          {riderIncidents.length === 0 ? (
-            <EmptyCard title="No rider complaints." body="Rider-linked incidents will appear after passengers or admins submit reports." />
-          ) : (
-            <div className="table-wrapper admin-rider-subset-table">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Rider</th>
-                    <th>Category</th>
-                    <th>Severity</th>
-                    <th>Status</th>
-                    <th>Reporter</th>
-                    <th>Created</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {riderIncidents.map((incident) => (
-                    <tr key={incident.id}>
-                      <td>
-                        <strong>{incident.rider?.user.fullName ?? "Unknown rider"}</strong>
-                        <div>{incident.rider?.displayCode ?? "No rider code"}</div>
-                      </td>
-                      <td>{formatEnumLabel(incident.category)}</td>
-                      <td>{formatEnumLabel(incident.severity)}</td>
-                      <td><span className={`status-chip ${statusTone(incident.status)}`}>{formatEnumLabel(incident.status)}</span></td>
-                      <td>{incident.reporter.fullName}</td>
-                      <td>{formatDateTime(incident.createdAt)}</td>
+            {riderIncidents.length === 0 ? (
+              <EmptyCard title="No rider complaints." body="Rider-linked incidents will appear after passengers or admins submit reports." />
+            ) : (
+              <div className="table-wrapper admin-rider-subset-table">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Ticket ID</th>
+                      <th>Rider</th>
+                      <th>Category</th>
+                      <th>Subject</th>
+                      <th>Priority</th>
+                      <th>Status</th>
+                      <th>Created</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  </thead>
+                  <tbody>
+                    {riderIncidents.map((incident) => (
+                      <tr key={incident.id}>
+                        <td>#{incident.id.slice(-10).toUpperCase()}</td>
+                        <td>
+                          <strong>{incident.rider?.user.fullName ?? "Unknown rider"}</strong>
+                          <div>{incident.rider?.displayCode ?? "No rider code"}</div>
+                        </td>
+                        <td>{formatEnumLabel(incident.category)}</td>
+                        <td>{incident.description.slice(0, 68)}{incident.description.length > 68 ? "..." : ""}</td>
+                        <td><span className={`status-chip ${incident.severity.toLowerCase() === "high" ? "danger" : statusTone(incident.severity)}`}>{formatEnumLabel(incident.severity)}</span></td>
+                        <td><span className={`status-chip ${statusTone(incident.status)}`}>{formatEnumLabel(incident.status)}</span></td>
+                        <td>{formatDateTime(incident.createdAt)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </article>
+
+          <aside className="admin-rider-side-stack">
+            <article className="admin-dark-card">
+              <div className="admin-dark-cardhead">
+                <div>
+                  <h3>Ticket Details</h3>
+                  <p>Latest rider support case.</p>
+                </div>
+              </div>
+              {riderIncidents.length === 0 ? (
+                <EmptyCard title="No ticket selected." body="Latest rider complaint details will appear here." />
+              ) : (
+                <div className="admin-rider-ticket-detail">
+                  <strong>#{riderIncidents[0].id.slice(-10).toUpperCase()}</strong>
+                  <span className={`status-chip ${statusTone(riderIncidents[0].status)}`}>{formatEnumLabel(riderIncidents[0].status)}</span>
+                  <p>{riderIncidents[0].description}</p>
+                  <div>
+                    <span>Rider</span>
+                    <strong>{riderIncidents[0].rider?.user.fullName ?? "Unknown rider"}</strong>
+                  </div>
+                  <div>
+                    <span>Reporter</span>
+                    <strong>{riderIncidents[0].reporter.fullName}</strong>
+                  </div>
+                  <div>
+                    <span>Priority</span>
+                    <strong>{formatEnumLabel(riderIncidents[0].severity)}</strong>
+                  </div>
+                </div>
+              )}
+            </article>
+          </aside>
         </section>
       </div>
     ) : screen === "riderActivity" ? (

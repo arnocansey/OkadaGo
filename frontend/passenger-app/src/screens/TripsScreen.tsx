@@ -35,7 +35,7 @@ export function TripsScreen({ rides, deliveries }: { rides: Ride[]; deliveries: 
           ))}
           </>
         ) : (
-          <EmptyState title="No activity yet." body="Trips and deliveries will appear here after your first backend request." />
+          <EmptyState title="No activity yet." body="Trips and deliveries will appear here after your first request." />
         )}
       </Card>
     </>

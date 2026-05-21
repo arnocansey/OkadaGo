@@ -7920,6 +7920,328 @@ body {
   background: linear-gradient(180deg, #ffc107, #1a6b3c);
 }
 
+.admin-rider-dashboard-grid {
+  display: grid;
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.admin-rider-dashboard-grid.performance,
+.admin-rider-dashboard-grid.earnings {
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.85fr) minmax(260px, 0.72fr);
+}
+
+.admin-rider-dashboard-grid.wallet {
+  grid-template-columns: minmax(260px, 0.78fr) minmax(320px, 1.05fr) minmax(260px, 0.78fr);
+}
+
+.admin-rider-dashboard-grid.payouts,
+.admin-rider-dashboard-grid.complaints {
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.34fr);
+}
+
+.admin-rider-dashboard-grid.lower {
+  grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.58fr);
+}
+
+.admin-rider-wide-table {
+  min-width: 0;
+}
+
+.admin-rider-chart-card {
+  min-height: 280px;
+}
+
+.admin-rider-bars {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+  min-height: 190px;
+  padding: 14px 10px 8px;
+  border-radius: 18px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    rgba(0, 0, 0, 0.16);
+  background-size: 100% 25%, 42px 100%;
+  overflow: hidden;
+}
+
+.admin-rider-bar-cluster {
+  flex: 1;
+  min-width: 18px;
+  height: 178px;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 3px;
+  position: relative;
+  padding-bottom: 22px;
+}
+
+.admin-rider-bar-cluster i {
+  display: block;
+  width: 5px;
+  min-height: 5px;
+  border-radius: 999px 999px 0 0;
+  box-shadow: 0 0 18px currentColor;
+}
+
+.admin-rider-bar-cluster .yellow,
+.admin-rider-legend .yellow {
+  background: #ffc107;
+  color: rgba(255, 193, 7, 0.35);
+}
+
+.admin-rider-bar-cluster .green,
+.admin-rider-legend .green {
+  background: #22c55e;
+  color: rgba(34, 197, 94, 0.35);
+}
+
+.admin-rider-bar-cluster .red,
+.admin-rider-legend .red {
+  background: #ef4444;
+  color: rgba(239, 68, 68, 0.35);
+}
+
+.admin-rider-bar-cluster span {
+  position: absolute;
+  bottom: 0;
+  color: #94a3b8;
+  font-size: 0.64rem;
+  white-space: nowrap;
+  transform: rotate(-20deg);
+}
+
+.admin-rider-legend {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.admin-rider-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #cbd5e1;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.admin-rider-legend i {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+}
+
+.admin-rider-map {
+  min-height: 238px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #080b11;
+}
+
+.admin-rider-map .map-shell,
+.admin-rider-map .leaflet-container {
+  min-height: 238px;
+  height: 238px;
+}
+
+.admin-rider-ranking,
+.admin-rider-activity-list,
+.admin-rider-breakdown-list,
+.admin-rider-action-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-rider-ranking,
+.admin-rider-activity-list,
+.admin-rider-breakdown-list,
+.admin-rider-action-list,
+.admin-rider-side-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-rider-ranking li,
+.admin-rider-activity-list li,
+.admin-rider-breakdown-list li,
+.admin-rider-action-list a {
+  display: grid;
+  align-items: center;
+  gap: 10px;
+  border-radius: 14px;
+  padding: 11px 12px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.admin-rider-ranking li {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.admin-rider-ranking b {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  background: #ffc107;
+  color: #111827;
+  font-size: 0.75rem;
+}
+
+.admin-rider-ranking strong,
+.admin-rider-ranking span,
+.admin-rider-ranking em,
+.admin-rider-activity-list span,
+.admin-rider-activity-list strong,
+.admin-rider-breakdown-list span,
+.admin-rider-breakdown-list strong,
+.admin-rider-action-list strong,
+.admin-rider-action-list small {
+  display: block;
+  font-style: normal;
+}
+
+.admin-rider-ranking strong,
+.admin-rider-activity-list strong,
+.admin-rider-breakdown-list strong,
+.admin-rider-action-list strong {
+  color: #ffffff;
+  font-size: 0.82rem;
+}
+
+.admin-rider-ranking span,
+.admin-rider-activity-list span,
+.admin-rider-breakdown-list span,
+.admin-rider-action-list small {
+  color: #94a3b8;
+  font-size: 0.72rem;
+}
+
+.admin-rider-ranking em {
+  color: #ffc107;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.admin-rider-donut-wrap {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+}
+
+.admin-rider-donut-wrap.compact {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.admin-rider-donut {
+  width: 168px;
+  height: 168px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.24), 0 18px 44px rgba(0, 0, 0, 0.24);
+}
+
+.admin-rider-donut.small {
+  width: 112px;
+  height: 112px;
+}
+
+.admin-rider-donut > div {
+  width: 58%;
+  height: 58%;
+  border-radius: 999px;
+  background: #10141b;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 10px;
+}
+
+.admin-rider-donut strong {
+  color: #ffffff;
+  font-size: 0.76rem;
+  line-height: 1.15;
+}
+
+.admin-rider-donut span {
+  color: #94a3b8;
+  font-size: 0.62rem;
+}
+
+.admin-rider-breakdown-list li,
+.admin-rider-activity-list li {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.admin-rider-activity-list li {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.admin-rider-breakdown-list.loose li {
+  padding: 9px 0;
+  border-radius: 0;
+  border-width: 0 0 1px;
+  background: transparent;
+}
+
+.admin-rider-action-list a {
+  grid-template-columns: auto minmax(0, 1fr);
+  text-decoration: none;
+  color: inherit;
+}
+
+.admin-rider-action-list svg {
+  color: #ffc107;
+}
+
+.admin-rider-ticket-detail {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-rider-ticket-detail > strong {
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.admin-rider-ticket-detail p {
+  margin: 0;
+  color: #cbd5e1;
+  line-height: 1.55;
+  font-size: 0.82rem;
+}
+
+.admin-rider-ticket-detail div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-rider-ticket-detail span {
+  color: #94a3b8;
+  font-size: 0.72rem;
+}
+
+.admin-rider-ticket-detail div strong {
+  color: #ffffff;
+  font-size: 0.78rem;
+}
+
 .admin-request-tabs {
   display: flex;
   align-items: center;

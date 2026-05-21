@@ -12,7 +12,7 @@ export function LiveTrackingScreen({ ride, onComplete, onBack }: { ride?: Ride; 
           <Card>
             <Pill label={ride.status} tone={ride.status === "COMPLETED" ? "success" : "warning"} />
             <Text style={styles.emptyTitle}>Current status: {ride.status}</Text>
-            <Text style={styles.muted}>Live GPS positions will replace this route preview when the backend exposes ride location streaming.</Text>
+            <Text style={styles.muted}>Live GPS positions will appear here as your trip updates.</Text>
             <PrimaryButton label={ride.status === "COMPLETED" ? "View receipt" : "Back to dashboard"} onPress={ride.status === "COMPLETED" ? onComplete : onBack} />
           </Card>
         </>

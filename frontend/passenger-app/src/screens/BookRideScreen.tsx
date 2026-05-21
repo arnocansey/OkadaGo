@@ -90,7 +90,12 @@ export function BookRideScreen({ session, zones, onCreated }: { session: Session
   return (
     <>
       <SectionTitle kicker={bookingType === "delivery" ? "Book delivery" : "Book ride"} title="Set your route" />
-      <MapPanel title={route ? `${route.distanceKm} km - ${route.durationMinutes} min` : "Live route map"} subtitle={pickup && destination ? `${pickup.label} to ${destination.label}` : "Enter pickup and destination to calculate the trip."} />
+      <MapPanel
+        title={route ? `${route.distanceKm} km - ${route.durationMinutes} min` : "Route map"}
+        subtitle={pickup && destination ? `${pickup.label} to ${destination.label}` : "Enter pickup and destination to calculate the trip."}
+        start={pickup ? { latitude: pickup.latitude, longitude: pickup.longitude, label: pickup.label } : null}
+        end={destination ? { latitude: destination.latitude, longitude: destination.longitude, label: destination.label } : null}
+      />
       <Card>
         <Pill label={bookingType === "delivery" ? "parcel mode" : "ride mode"} tone="warning" />
         <View style={{ flexDirection: "row", gap: 10 }}>

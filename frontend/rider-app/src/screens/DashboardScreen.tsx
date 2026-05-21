@@ -39,7 +39,7 @@ export function DashboardScreen({
             ? `${activeRide.pickupAddress} to ${activeRide.destinationAddress}`
             : activeDelivery
               ? `${activeDelivery.packageDescription}: ${activeDelivery.pickupAddress} to ${activeDelivery.dropoffAddress}`
-              : "Go online to receive backend-assigned trips and deliveries."
+              : "Go online to receive trips and deliveries."
         }
       />
       <View style={styles.grid}>

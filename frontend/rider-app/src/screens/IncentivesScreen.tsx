@@ -12,7 +12,7 @@ export function IncentivesScreen({ rides }: { rides: Ride[] }) {
         <Text style={styles.muted}>Rewards are calculated from live completed ride records. No dummy bonus data is shown.</Text>
         <StatCard label="Completed rides" value={`${completedCount}`} />
       </Card>
-      <EmptyState title="No active incentive campaign." body="Admin-created incentive campaigns will appear here when the backend exposes them." />
+      <EmptyState title="No active incentive campaign." body="Bonus campaigns will appear here when they are available." />
     </>
   );
 }

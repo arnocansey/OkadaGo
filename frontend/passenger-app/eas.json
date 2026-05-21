@@ -1,6 +1,6 @@
 {
   "cli": {
-    "version": ">= 13.0.0",
+    "version": ">= 16.20.0",
     "appVersionSource": "remote"
   },
   "build": {
@@ -12,6 +12,7 @@
         "buildType": "apk"
       },
       "env": {
+        "EXPO_USE_UPDATES": "1",
         "EXPO_PUBLIC_API_BASE_URL": "https://okadago-backend.onrender.com/v1"
       }
     },
@@ -22,17 +23,18 @@
         "buildType": "apk"
       },
       "env": {
+        "EXPO_USE_UPDATES": "1",
         "EXPO_PUBLIC_API_BASE_URL": "https://okadago-backend.onrender.com/v1"
       }
     },
     "production": {
-      "distribution": "internal",
       "channel": "production",
       "autoIncrement": true,
       "android": {
-        "buildType": "apk"
+        "buildType": "app-bundle"
       },
       "env": {
+        "EXPO_USE_UPDATES": "1",
         "EXPO_PUBLIC_API_BASE_URL": "https://okadago-backend.onrender.com/v1"
       }
     }

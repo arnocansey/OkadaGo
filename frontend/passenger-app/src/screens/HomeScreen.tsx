@@ -48,7 +48,7 @@ export function HomeScreen({
       </Card>
       <Card>
         <SectionTitle kicker="Saved places" title="Your saved pickup points" />
-        <EmptyState title="No saved places yet." body="Saved places will show here once the backend exposes passenger address storage." />
+        <EmptyState title="No saved places yet." body="Your favorite pickup and drop-off places will appear here." />
         <PrimaryButton label="Open menu" onPress={onMenu} dark />
       </Card>
     </>

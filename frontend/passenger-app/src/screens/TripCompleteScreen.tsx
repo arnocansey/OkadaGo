@@ -13,7 +13,7 @@ export function TripCompleteScreen({ ride, onDone }: { ride?: Ride; onDone: () =
           <Text style={styles.emptyTitle}>{money(ride.finalFare ?? ride.estimatedFare, ride.currency ?? "GHS")}</Text>
           <ListRow title="Pickup" body={ride.pickupAddress} meta={compactDate(ride.createdAt)} />
           <ListRow title="Drop-off" body={ride.destinationAddress} meta="Destination" />
-          <Text style={styles.muted}>Ratings can be submitted when the backend exposes passenger ride rating endpoints for the mobile apps.</Text>
+          <Text style={styles.muted}>Your trip is complete. Rating and feedback will appear here after review is enabled.</Text>
           <PrimaryButton label="Done" onPress={onDone} />
         </Card>
       ) : (

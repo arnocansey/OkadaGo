@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
-import { API_BASE_URL, api, phoneParts } from "../api";
+import { KeyboardAvoidingView, Platform, Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
+import { api, phoneParts } from "../api";
 import { Card, Field, PrimaryButton, styles } from "../components/ui";
 import type { AuthMode, Session } from "../types";
 
@@ -35,37 +35,38 @@ export function AuthScreen({ onSession }: { onSession: (session: Session) => voi
 
   return (
     <SafeAreaView style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.authContent}>
-        <View style={styles.authHero}>
-          <View style={styles.brandMarkLarge}><Text style={styles.brandIconLarge}>O</Text></View>
-          <Text style={styles.kicker}>OKADAGO RIDER</Text>
-          <Text style={styles.authTitle}>Earn, settle, and manage every trip.</Text>
-          <Text style={styles.muted}>Live rider auth, trip records, wallets, payouts, and availability.</Text>
-        </View>
-        <Card>
-          <View style={styles.modeTabs}>
-            {(["login", "signup"] as const).map((item) => (
-              <Pressable key={item} onPress={() => setMode(item)} style={[styles.modeTab, mode === item && styles.modeTabActive]}>
-                <Text style={[styles.modeTabText, mode === item && styles.modeTabTextActive]}>{item === "login" ? "Login" : "Join fleet"}</Text>
-              </Pressable>
-            ))}
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.screen}>
+        <ScrollView contentContainerStyle={styles.authContent} keyboardShouldPersistTaps="handled">
+          <View style={styles.authHero}>
+            <View style={styles.brandMarkLarge}><Text style={styles.brandIconLarge}>O</Text></View>
+            <Text style={styles.kicker}>OKADAGO RIDER</Text>
+            <Text style={styles.authTitle}>Earn, settle, and manage every trip.</Text>
+            <Text style={styles.muted}>Sign in to receive trips, track earnings, and manage payouts.</Text>
           </View>
-          {mode === "signup" ? (
-            <>
-              <Field label="Full name" value={fullName} onChangeText={setFullName} placeholder="Your full name" />
-              <Field label="Email" value={email} onChangeText={setEmail} placeholder="name@email.com" keyboardType="email-address" />
-              <Field label="Vehicle make" value={vehicleMake} onChangeText={setVehicleMake} placeholder="Vehicle manufacturer" />
-              <Field label="Vehicle model" value={vehicleModel} onChangeText={setVehicleModel} placeholder="Vehicle model" />
-              <Field label="Vehicle plate" value={vehiclePlate} onChangeText={setVehiclePlate} placeholder="Optional plate number" />
-            </>
-          ) : null}
-          <Field label="Phone number" value={phone} onChangeText={setPhone} placeholder="0240000000" keyboardType="phone-pad" />
-          <Field label="Password" value={password} onChangeText={setPassword} placeholder="Minimum 8 characters" secureTextEntry />
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
-          <PrimaryButton label={busy ? "Please wait..." : mode === "login" ? "Login" : "Create rider account"} onPress={submit} disabled={busy} />
-          <Text style={styles.apiText}>{API_BASE_URL}</Text>
-        </Card>
-      </ScrollView>
+          <Card>
+            <View style={styles.modeTabs}>
+              {(["login", "signup"] as const).map((item) => (
+                <Pressable key={item} onPress={() => setMode(item)} style={[styles.modeTab, mode === item && styles.modeTabActive]}>
+                  <Text style={[styles.modeTabText, mode === item && styles.modeTabTextActive]}>{item === "login" ? "Login" : "Join fleet"}</Text>
+                </Pressable>
+              ))}
+            </View>
+            {mode === "signup" ? (
+              <>
+                <Field label="Full name" value={fullName} onChangeText={setFullName} placeholder="Your full name" />
+                <Field label="Email" value={email} onChangeText={setEmail} placeholder="name@email.com" keyboardType="email-address" autoCapitalize="none" />
+                <Field label="Vehicle make" value={vehicleMake} onChangeText={setVehicleMake} placeholder="Vehicle manufacturer" />
+                <Field label="Vehicle model" value={vehicleModel} onChangeText={setVehicleModel} placeholder="Vehicle model" />
+                <Field label="Vehicle plate" value={vehiclePlate} onChangeText={setVehiclePlate} placeholder="Optional plate number" autoCapitalize="characters" />
+              </>
+            ) : null}
+            <Field label="Phone number" value={phone} onChangeText={setPhone} placeholder="0240000000" keyboardType="phone-pad" />
+            <Field label="Password" value={password} onChangeText={setPassword} placeholder="Minimum 8 characters" secureTextEntry />
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+            <PrimaryButton label={busy ? "Please wait..." : mode === "login" ? "Login" : "Create rider account"} onPress={submit} disabled={busy} />
+          </Card>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

@@ -13,7 +13,7 @@ export function TripCompletedScreen({ ride, onDone }: { ride?: Ride; onDone: () 
           <Text style={styles.emptyTitle}>{money(ride.riderEarnings ?? 0, ride.currency ?? "GHS")}</Text>
           <ListRow title="Pickup" body={ride.pickupAddress} meta="Start point" />
           <ListRow title="Drop-off" body={ride.destinationAddress} meta="Destination" />
-          <Text style={styles.muted}>The settlement wallet updates from the backend after the trip is finalized.</Text>
+          <Text style={styles.muted}>Your settlement wallet updates after the trip is finalized.</Text>
           <PrimaryButton label="Back to dashboard" onPress={onDone} />
         </Card>
       ) : (
