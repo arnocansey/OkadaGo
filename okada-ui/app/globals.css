@@ -3479,14 +3479,22 @@ body.immersive-mode {
   color: #6f887a;
 }
 
-.exact-admin-nav a {
+.exact-admin-nav a,
+.exact-admin-nav-toggle {
   display: flex;
   align-items: center;
   gap: 12px;
+  width: 100%;
   padding: 12px 14px;
   border-radius: 14px;
   color: #8ea998;
   font-weight: 600;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  text-decoration: none;
 }
 
 .exact-admin-navcopy {
@@ -3511,7 +3519,8 @@ body.immersive-mode {
   font-weight: 500;
 }
 
-.exact-admin-nav a em {
+.exact-admin-nav a em,
+.exact-admin-nav-toggle em {
   min-width: 28px;
   height: 28px;
   padding: 0 8px;
@@ -3527,14 +3536,27 @@ body.immersive-mode {
 }
 
 .exact-admin-nav a.active,
-.exact-admin-nav a:hover {
+.exact-admin-nav a:hover,
+.exact-admin-nav-toggle.active,
+.exact-admin-nav-toggle:hover {
   background: #1a6b3c;
   color: white;
 }
 
 .exact-admin-nav a.active .exact-admin-navcopy small,
-.exact-admin-nav a:hover .exact-admin-navcopy small {
+.exact-admin-nav a:hover .exact-admin-navcopy small,
+.exact-admin-nav-toggle.active .exact-admin-navcopy small,
+.exact-admin-nav-toggle:hover .exact-admin-navcopy small {
   color: rgba(255, 255, 255, 0.72);
+}
+
+.exact-admin-nav-chevron {
+  flex: 0 0 auto;
+  transition: transform 160ms ease;
+}
+
+.exact-admin-nav-toggle.is-open .exact-admin-nav-chevron {
+  transform: rotate(180deg);
 }
 
 .exact-admin-subnav {
@@ -4233,7 +4255,8 @@ body.immersive-mode {
   gap: 7px;
 }
 
-.exact-admin-nav a {
+.exact-admin-nav a,
+.exact-admin-nav-toggle {
   min-height: 48px;
   padding: 13px 14px;
   border-radius: 10px;
@@ -4241,12 +4264,14 @@ body.immersive-mode {
   transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
 }
 
-.exact-admin-nav a:hover {
+.exact-admin-nav a:hover,
+.exact-admin-nav-toggle:hover {
   background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
 }
 
-.exact-admin-nav a.active {
+.exact-admin-nav a.active,
+.exact-admin-nav-toggle.active {
   background: #ffc107;
   color: #080b10;
   box-shadow: 0 12px 26px rgba(255, 193, 7, 0.24);
@@ -4260,7 +4285,8 @@ body.immersive-mode {
   font-size: 0.88rem;
 }
 
-.exact-admin-nav a em {
+.exact-admin-nav a em,
+.exact-admin-nav-toggle em {
   display: none;
 }
 

@@ -598,6 +598,7 @@ export function AdminConsolePage({
   >("all");
   const [userTypeView, setUserTypeView] = useState<"all" | "riders" | "customers" | "vendors" | "admins">("all");
   const [adminSearchTerm, setAdminSearchTerm] = useState("");
+  const [expandedNavSections, setExpandedNavSections] = useState<Record<string, boolean>>({});
 
   const ridesQuery = useQuery({
     queryKey: ["rides"],
@@ -6615,18 +6616,42 @@ export function AdminConsolePage({
                     const Icon = item.icon;
                     const isActive =
                       item.screen === screen || Boolean(item.children?.some((child) => child.screen === screen));
+                    const hasChildren = Boolean(item.children?.length);
+                    const isExpanded = hasChildren ? expandedNavSections[item.label] ?? isActive : false;
 
                     return (
                       <div key={item.label} className="exact-admin-navitem">
-                        <a href={item.href} className={isActive ? "active" : ""}>
-                          <Icon size={18} />
-                          <div className="exact-admin-navcopy">
-                            <strong>{item.label}</strong>
-                            <small>{item.hint}</small>
-                          </div>
-                          {item.badge ? <em>{item.badge}</em> : null}
-                        </a>
-                        {item.children ? (
+                        {hasChildren ? (
+                          <button
+                            type="button"
+                            className={`exact-admin-nav-toggle ${isActive ? "active" : ""} ${isExpanded ? "is-open" : ""}`}
+                            aria-expanded={isExpanded}
+                            onClick={() =>
+                              setExpandedNavSections((current) => ({
+                                ...current,
+                                [item.label]: !(current[item.label] ?? isActive)
+                              }))
+                            }
+                          >
+                            <Icon size={18} />
+                            <div className="exact-admin-navcopy">
+                              <strong>{item.label}</strong>
+                              <small>{item.hint}</small>
+                            </div>
+                            {item.badge ? <em>{item.badge}</em> : null}
+                            <ChevronDown className="exact-admin-nav-chevron" size={15} />
+                          </button>
+                        ) : (
+                          <a href={item.href} className={isActive ? "active" : ""}>
+                            <Icon size={18} />
+                            <div className="exact-admin-navcopy">
+                              <strong>{item.label}</strong>
+                              <small>{item.hint}</small>
+                            </div>
+                            {item.badge ? <em>{item.badge}</em> : null}
+                          </a>
+                        )}
+                        {item.children && isExpanded ? (
                           <div className="exact-admin-subnav">
                             {item.children.map((child) => (
                               <a
