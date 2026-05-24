@@ -12,6 +12,7 @@ node_modules
 **/android/build/
 **/ios/build/
 **/build/
+frontend/apks/*.apk
 dist
 coverage
 .env
