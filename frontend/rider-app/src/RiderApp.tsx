@@ -2,6 +2,7 @@ import { StatusBar } from "expo-status-bar";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { api } from "./api";
 import { AvailabilityToggle } from "./components/AvailabilityToggle";
 import { BottomNav } from "./components/BottomNav";
@@ -24,6 +25,14 @@ import { clearSavedSession, loadSavedSession, saveSession } from "./session-stor
 import type { Delivery, PayoutRequest, Ride, RiderScreen, ServiceZone, Session, Wallet, WalletTransaction } from "./types";
 
 export default function RiderApp() {
+  return (
+    <SafeAreaProvider>
+      <RiderAppContent />
+    </SafeAreaProvider>
+  );
+}
+
+function RiderAppContent() {
   const [session, setSession] = useState<Session | null>(null);
   const [activeScreen, setActiveScreen] = useState<RiderScreen>("dashboard");
   const [flowScreen, setFlowScreen] = useState<"request" | "way" | "arrived" | "progress" | "completed" | "incentives" | "documents" | "settings" | null>(null);
@@ -59,7 +68,11 @@ export default function RiderApp() {
 
   async function handleSession(nextSession: Session) {
     setSession(nextSession);
-    await saveSession(nextSession);
+    try {
+      await saveSession(nextSession);
+    } catch {
+      setMessage("You are signed in, but this device could not save the session.");
+    }
   }
 
   async function logout() {
@@ -83,16 +96,18 @@ export default function RiderApp() {
         api<ServiceZone[]>("/bootstrap/service-zones?limit=30"),
         api<PayoutRequest[]>("/wallets/rider/payout-requests", { token: current.token }).catch(() => []),
       ]);
-      setWallets(walletData);
-      setTransactions(txData);
-      setRides(rideData.filter((ride) => ride.rider?.id === current.user.riderProfileId));
+      setWallets(Array.isArray(walletData) ? walletData : []);
+      setTransactions(Array.isArray(txData) ? txData : []);
+      setRides((Array.isArray(rideData) ? rideData : []).filter((ride) => ride.rider?.id === current.user.riderProfileId));
       setDeliveries(
-        deliveryData.filter(
-          (delivery) => delivery.rider?.id === current.user.riderProfileId || delivery.status.toLowerCase() === "searching"
+        (Array.isArray(deliveryData) ? deliveryData : []).filter(
+          (delivery) =>
+            delivery.rider?.id === current.user.riderProfileId ||
+            (delivery.status ?? "").toLowerCase() === "searching"
         )
       );
-      setZones(zoneData);
-      setPayouts(payoutData);
+      setZones(Array.isArray(zoneData) ? zoneData : []);
+      setPayouts(Array.isArray(payoutData) ? payoutData : []);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to load rider data.");
     } finally {
@@ -130,12 +145,14 @@ export default function RiderApp() {
   }
 
   const activeSession = session;
-  const activeRide = rides.find((ride) => !["COMPLETED", "CANCELLED"].includes(ride.status));
+  const activeRide = rides.find((ride) => !["completed", "cancelled"].includes((ride.status ?? "").toLowerCase()));
   const activeDelivery = deliveries.find(
-    (delivery) => delivery.rider?.id === activeSession.user.riderProfileId && !["DELIVERED", "CANCELLED"].includes(delivery.status)
+    (delivery) =>
+      delivery.rider?.id === activeSession.user.riderProfileId &&
+      !["delivered", "cancelled"].includes((delivery.status ?? "").toLowerCase())
   );
   const completedRide = [...rides]
-    .filter((ride) => ride.status === "COMPLETED")
+    .filter((ride) => (ride.status ?? "").toLowerCase() === "completed")
     .sort((left, right) => Date.parse(right.createdAt ?? "0") - Date.parse(left.createdAt ?? "0"))[0];
 
   async function toggleAvailability() {

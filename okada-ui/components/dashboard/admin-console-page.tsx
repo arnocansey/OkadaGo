@@ -1417,6 +1417,17 @@ export function AdminConsolePage({
   const topRiderPerformanceRows = riderFinancialRows
     .slice()
     .sort((left, right) => right.completedCount - left.completedCount || right.earnings - left.earnings);
+  const selectedActivityRow =
+    riderFinancialRows.find((row) => row.rider.onlineStatus) ?? riderFinancialRows[0] ?? null;
+  const activityRows = riderFinancialRows
+    .slice()
+    .sort(
+      (left, right) =>
+        Number(right.rider.onlineStatus) - Number(left.rider.onlineStatus) ||
+        right.activeCount - left.activeCount ||
+        right.completedCount - left.completedCount
+    );
+  const selectedSuspendedRider = suspendedRiders[0] ?? null;
   const totalRiderGrossRevenue = riderFinancialRows.reduce((sum, row) => sum + row.revenue, 0);
   const totalRiderEarnings = riderFinancialRows.reduce((sum, row) => sum + row.earnings, 0);
   const totalRiderCommission = riderFinancialRows.reduce((sum, row) => sum + row.commission, 0);
@@ -3960,108 +3971,274 @@ export function AdminConsolePage({
       </div>
     ) : screen === "riderActivity" ? (
       <div className="admin-reference-dark admin-rider-subset-page">
-        <section className="admin-dark-card">
-          <div className="admin-dark-cardhead">
-            <div>
-              <h3>Rider activity tracking</h3>
-              <p>Current online state, location feed readiness, zone, and active ride load.</p>
-            </div>
-            <a href="/admin/riders">Open rider map</a>
-          </div>
-          {riders.length === 0 ? (
-            <EmptyCard title="No rider activity yet." body="Activity tracking starts once rider profiles are created." />
-          ) : (
-            <div className="table-wrapper admin-rider-subset-table">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Rider</th>
-                    <th>Status</th>
-                    <th>Location Signal</th>
-                    <th>City</th>
-                    <th>Zone</th>
-                    <th>Active Trips</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {riderFinancialRows.map((row) => {
-                    const hasLocation =
-                      row.rider.currentLatitude !== null && row.rider.currentLongitude !== null;
+        <section className="admin-rider-subset-kpis">
+          <article className="admin-dark-kpi"><Users /><span>Total active riders</span><strong>{activeRiders.length}</strong><small>{riders.length} rider profiles monitored</small></article>
+          <article className="admin-dark-kpi"><Bike /><span>Total trips</span><strong>{rides.length}</strong><small>{completedTrips.length} completed trips</small></article>
+          <article className="admin-dark-kpi"><MapPin /><span>Location signals</span><strong>{ridersWithCoords.length}</strong><small>{activeRiders.length} riders online now</small></article>
+          <article className="admin-dark-kpi"><Clock /><span>Active trip load</span><strong>{activeTrips.length}</strong><small>{ridesAwaitingPickup.length + ridesInProgress.length} in motion</small></article>
+          <article className="admin-dark-kpi"><CheckCircle /><span>Completed today</span><strong>{completedTrips.length}</strong><small>{formatMoney(adminCurrency, totalRevenue)} captured</small></article>
+        </section>
 
-                    return (
-                      <tr key={row.rider.id}>
-                        <td>
-                          <strong>{row.rider.user.fullName}</strong>
-                          <div>{row.rider.displayCode}</div>
-                        </td>
-                        <td>
-                          <span className={`status-chip ${row.rider.onlineStatus ? "success" : "neutral"}`}>
-                            {row.rider.onlineStatus ? "Online" : "Offline"}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`status-chip ${hasLocation ? "success" : "warning"}`}>
-                            {hasLocation ? "Live coordinates" : "No coordinates"}
-                          </span>
-                        </td>
-                        <td>{row.rider.city ?? "No city"}</td>
-                        <td>{row.rider.serviceZone?.name ?? "No zone"}</td>
-                        <td>{row.activeCount}</td>
+        <section className="admin-rider-activity-layout">
+          <div className="admin-rider-activity-main">
+            <article className="admin-dark-card">
+              <div className="admin-rider-tabs">
+                <span className="active">Live Map</span>
+                <span>Rider Activity Feed</span>
+                <span>Geofence Zones</span>
+                <span>Heatmap</span>
+              </div>
+              <div className="admin-rider-activity-map">
+                <OperationsMap
+                  center={mapMarkers[0]?.position ?? [5.6037, -0.187]}
+                  zoom={12}
+                  bare
+                  markers={mapMarkers}
+                  emptyTitle="No live rider coordinates"
+                  emptyDescription="Rider locations appear here after the mobile app sends current latitude and longitude."
+                />
+                <div className="admin-rider-map-legend">
+                  <span><i className="green" /> High Activity</span>
+                  <span><i className="yellow" /> Medium Activity</span>
+                  <span><i className="red" /> Low Activity</span>
+                  <span><i className="neutral" /> Offline</span>
+                </div>
+              </div>
+            </article>
+
+            <article className="admin-dark-card">
+              <div className="admin-dark-cardhead">
+                <div>
+                  <h3>Active Riders (Live)</h3>
+                  <p>Online state, location readiness, service zone and active ride load from backend records.</p>
+                </div>
+                <span>Showing {activityRows.length} riders</span>
+              </div>
+              {activityRows.length === 0 ? (
+                <EmptyCard title="No rider activity yet." body="Activity tracking starts once rider profiles are created." />
+              ) : (
+                <div className="table-wrapper admin-rider-subset-table">
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Rider</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Trips</th>
+                        <th>Distance signal</th>
+                        <th>Earnings</th>
+                        <th>Actions</th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+                    </thead>
+                    <tbody>
+                      {activityRows.map((row) => {
+                        const hasLocation =
+                          row.rider.currentLatitude !== null && row.rider.currentLongitude !== null;
+
+                        return (
+                          <tr key={row.rider.id}>
+                            <td>
+                              <strong>{row.rider.user.fullName}</strong>
+                              <div>{row.rider.displayCode}</div>
+                            </td>
+                            <td>
+                              <strong>{row.rider.city ?? row.rider.serviceZone?.name ?? "No location"}</strong>
+                              <div>{hasLocation ? "Live coordinates available" : "No coordinates yet"}</div>
+                            </td>
+                            <td>
+                              <span className={`status-chip ${row.rider.onlineStatus ? "success" : "neutral"}`}>
+                                {row.rider.onlineStatus ? "Online" : "Offline"}
+                              </span>
+                            </td>
+                            <td>{row.rideCount}</td>
+                            <td>{hasLocation ? `${row.rider.currentLatitude}, ${row.rider.currentLongitude}` : "Waiting"}</td>
+                            <td>{formatMoney(adminCurrency, row.earnings)}</td>
+                            <td><a className="admin-rider-mini-action" href="/admin/riders">View</a></td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </article>
+          </div>
+
+          <aside className="admin-rider-side-stack">
+            <article className="admin-dark-card">
+              <div className="admin-dark-cardhead">
+                <div>
+                  <h3>Selected Rider</h3>
+                  <p>{selectedActivityRow ? "Highest priority live rider snapshot." : "No rider selected."}</p>
+                </div>
+                {selectedActivityRow ? (
+                  <span className={`status-chip ${selectedActivityRow.rider.onlineStatus ? "success" : "neutral"}`}>
+                    {selectedActivityRow.rider.onlineStatus ? "Online" : "Offline"}
+                  </span>
+                ) : null}
+              </div>
+              {selectedActivityRow ? (
+                <div className="admin-rider-selected-card">
+                  <div className="admin-rider-selected-head">
+                    <div className="exact-avatar">{selectedActivityRow.rider.user.fullName.slice(0, 2).toUpperCase()}</div>
+                    <div>
+                      <strong>{selectedActivityRow.rider.user.fullName}</strong>
+                      <span>{selectedActivityRow.rider.displayCode}</span>
+                      <small>{selectedActivityRow.rider.user.phoneE164}</small>
+                    </div>
+                  </div>
+                  <div className="admin-rider-selected-stats">
+                    <span><strong>{selectedActivityRow.rideCount}</strong>Trips</span>
+                    <span><strong>{selectedActivityRow.completedCount}</strong>Completed</span>
+                    <span><strong>{formatMoney(adminCurrency, selectedActivityRow.earnings)}</strong>Earnings</span>
+                  </div>
+                  <div className="admin-rider-selected-location">
+                    <MapPin size={15} />
+                    <span>{selectedActivityRow.rider.city ?? selectedActivityRow.rider.serviceZone?.name ?? "No current location"}</span>
+                  </div>
+                  <a className="button" href="/admin/riders">View Rider Profile</a>
+                </div>
+              ) : (
+                <EmptyCard title="No rider selected." body="Create or approve riders to populate the live activity panel." />
+              )}
+            </article>
+
+            <article className="admin-dark-card">
+              <div className="admin-dark-cardhead">
+                <div>
+                  <h3>Recent Activity</h3>
+                  <p>Latest rides, deliveries, registrations and rider state changes.</p>
+                </div>
+              </div>
+              <ul className="admin-rider-activity-feed">
+                {liveActivityItems.map((item) => (
+                  <li key={item.id}>
+                    <span className={`admin-rider-feed-dot ${item.tone}`} />
+                    <div>
+                      <strong>{item.title}</strong>
+                      <span>{item.body}</span>
+                    </div>
+                    <small>{item.meta}</small>
+                  </li>
+                ))}
+              </ul>
+            </article>
+
+            <article className="admin-dark-card">
+              <div className="admin-dark-cardhead"><h3>Quick Filters</h3></div>
+              <div className="admin-rider-filter-grid">
+                <button type="button" className="active">All Riders</button>
+                <button type="button">Online</button>
+                <button type="button">Offline</button>
+                <button type="button">High Activity</button>
+                <button type="button">Low Activity</button>
+              </div>
+            </article>
+          </aside>
         </section>
       </div>
     ) : screen === "riderSuspensions" ? (
       <div className="admin-reference-dark admin-rider-subset-page">
-        <section className="admin-dark-card">
-          <div className="admin-dark-cardhead">
-            <div>
-              <h3>Suspended and blocked riders</h3>
-              <p>Riders whose account status contains blocked, suspended, or rejected.</p>
+        <section className="admin-rider-subset-kpis suspensions">
+          <article className="admin-dark-kpi danger"><ShieldAlert /><span>Total suspended riders</span><strong>{suspendedRiders.length}</strong><small>Blocked, suspended, or rejected accounts</small></article>
+          <article className="admin-dark-kpi danger"><Clock /><span>Currently suspended</span><strong>{suspendedRiders.length}</strong><small>Real-time account status flags</small></article>
+          <article className="admin-dark-kpi"><CheckCircle /><span>Clear accounts</span><strong>{Math.max(0, riders.length - suspendedRiders.length)}</strong><small>{riders.length} rider profiles checked</small></article>
+          <article className="admin-dark-kpi"><Users /><span>Online while flagged</span><strong>{suspendedRiders.filter((rider) => rider.onlineStatus).length}</strong><small>Should be reviewed immediately</small></article>
+        </section>
+
+        <section className="admin-rider-suspension-layout">
+          <article className="admin-dark-card">
+            <div className="admin-rider-tabs">
+              <span className="active">All Suspensions</span>
+              <span>Active Suspensions</span>
+              <span>Expired Suspensions</span>
+              <span>Reinstated</span>
             </div>
-            <a href="/admin/riders/verification">Open verification</a>
-          </div>
-          {suspendedRiders.length === 0 ? (
-            <EmptyCard
-              title="No suspended riders."
-              body="Suspended, blocked, or rejected riders will appear here when the backend account status reflects it."
-            />
-          ) : (
-            <div className="table-wrapper admin-rider-subset-table">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Rider</th>
-                    <th>Account Status</th>
-                    <th>Phone</th>
-                    <th>City</th>
-                    <th>Zone</th>
-                    <th>Online</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {suspendedRiders.map((rider) => (
-                    <tr key={rider.id}>
-                      <td>
-                        <strong>{rider.user.fullName}</strong>
-                        <div>{rider.displayCode}</div>
-                      </td>
-                      <td><span className="status-chip danger">{rider.user.accountStatus ?? "Flagged"}</span></td>
-                      <td>{rider.user.phoneE164}</td>
-                      <td>{rider.city ?? "No city"}</td>
-                      <td>{rider.serviceZone?.name ?? "No zone"}</td>
-                      <td>{rider.onlineStatus ? "Online" : "Offline"}</td>
+            <div className="admin-rider-suspension-filters">
+              <div><Search size={15} /><span>Search by rider name, ID or phone number...</span></div>
+              <button type="button">All Reasons <ChevronDown size={14} /></button>
+              <button type="button">All Status <ChevronDown size={14} /></button>
+              <button type="button">All Durations <ChevronDown size={14} /></button>
+              <button type="button" className="active">Apply</button>
+            </div>
+            {suspendedRiders.length === 0 ? (
+              <EmptyCard
+                title="No suspended riders."
+                body="Suspended, blocked, or rejected riders will appear here when the backend account status reflects it."
+              />
+            ) : (
+              <div className="table-wrapper admin-rider-subset-table">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Rider</th>
+                      <th>Reason</th>
+                      <th>Status</th>
+                      <th>Phone</th>
+                      <th>City</th>
+                      <th>Zone</th>
+                      <th>Online</th>
+                      <th>Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  </thead>
+                  <tbody>
+                    {suspendedRiders.map((rider) => (
+                      <tr key={rider.id} className={selectedSuspendedRider?.id === rider.id ? "selected" : ""}>
+                        <td>
+                          <strong>{rider.user.fullName}</strong>
+                          <div>{rider.displayCode}</div>
+                        </td>
+                        <td>{formatEnumLabel(rider.user.accountStatus ?? "Flagged account")}</td>
+                        <td><span className="status-chip danger">{rider.user.accountStatus ?? "Flagged"}</span></td>
+                        <td>{rider.user.phoneE164}</td>
+                        <td>{rider.city ?? "No city"}</td>
+                        <td>{rider.serviceZone?.name ?? "No zone"}</td>
+                        <td>{rider.onlineStatus ? "Online" : "Offline"}</td>
+                        <td><button className="admin-rider-row-menu" type="button">...</button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </article>
+
+          <aside className="admin-rider-side-stack">
+            <article className="admin-dark-card">
+              <div className="admin-dark-cardhead">
+                <div>
+                  <h3>Suspension Details</h3>
+                  <p>{selectedSuspendedRider ? "Selected flagged rider account." : "No rider selected."}</p>
+                </div>
+                <span className="status-chip danger">{selectedSuspendedRider?.user.accountStatus ?? "None"}</span>
+              </div>
+              {selectedSuspendedRider ? (
+                <div className="admin-rider-suspension-detail">
+                  <div className="admin-rider-selected-head">
+                    <div className="exact-avatar">{selectedSuspendedRider.user.fullName.slice(0, 2).toUpperCase()}</div>
+                    <div>
+                      <strong>{selectedSuspendedRider.user.fullName}</strong>
+                      <span>{selectedSuspendedRider.user.phoneE164}</span>
+                      <small>{selectedSuspendedRider.displayCode}</small>
+                    </div>
+                  </div>
+                  <dl>
+                    <div><dt>Status</dt><dd>{selectedSuspendedRider.user.accountStatus ?? "Flagged"}</dd></div>
+                    <div><dt>Reason</dt><dd>{formatEnumLabel(selectedSuspendedRider.user.accountStatus ?? "Suspended")}</dd></div>
+                    <div><dt>Current Location</dt><dd>{selectedSuspendedRider.city ?? selectedSuspendedRider.serviceZone?.name ?? "No location"}</dd></div>
+                    <div><dt>Vehicle</dt><dd>{selectedSuspendedRider.vehicle?.plateNumber ?? "No vehicle on file"}</dd></div>
+                    <div><dt>Online</dt><dd>{selectedSuspendedRider.onlineStatus ? "Yes" : "No"}</dd></div>
+                  </dl>
+                  <div className="admin-rider-suspension-actions">
+                    <a href="/admin/riders/verification">Open verification</a>
+                    <a href="/admin/riders/complaints">View complaints</a>
+                  </div>
+                </div>
+              ) : (
+                <EmptyCard title="No suspension selected." body="Flagged rider details appear here when account statuses are blocked, suspended, or rejected." />
+              )}
+            </article>
+          </aside>
         </section>
       </div>
     ) : screen === "passengers" ? (

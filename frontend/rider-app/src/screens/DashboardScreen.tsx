@@ -23,13 +23,21 @@ export function DashboardScreen({
   onOpenDocuments: () => void;
 }) {
   const settlementWallet = wallets.find((wallet) => wallet.type === "RIDER_SETTLEMENT") ?? wallets[0];
-  const activeRide = rides.find((ride) => !["COMPLETED", "CANCELLED"].includes(ride.status));
-  const activeDelivery = deliveries.find((delivery) => delivery.rider?.id === session.user.riderProfileId && !["DELIVERED", "CANCELLED"].includes(delivery.status));
-  const openDeliveryCount = deliveries.filter((delivery) => delivery.status.toLowerCase() === "searching").length;
-  const todayEarnings = rides.filter((ride) => ride.status === "COMPLETED" && new Date(ride.createdAt ?? 0).toDateString() === new Date().toDateString()).reduce((sum, ride) => sum + Number(ride.riderEarnings ?? 0), 0);
+  const activeRide = rides.find((ride) => !["completed", "cancelled"].includes((ride.status ?? "").toLowerCase()));
+  const activeDelivery = deliveries.find(
+    (delivery) =>
+      delivery.rider?.id === session.user.riderProfileId &&
+      !["delivered", "cancelled"].includes((delivery.status ?? "").toLowerCase())
+  );
+  const openDeliveryCount = deliveries.filter((delivery) => (delivery.status ?? "").toLowerCase() === "searching").length;
+  const todayEarnings = rides
+    .filter((ride) => (ride.status ?? "").toLowerCase() === "completed" && new Date(ride.createdAt ?? 0).toDateString() === new Date().toDateString())
+    .reduce((sum, ride) => sum + Number(ride.riderEarnings ?? 0), 0);
+  const riderName = session.user.fullName || "Rider";
+
   return (
     <>
-      <Text style={styles.hello}>Welcome back, {session.user.fullName.split(" ")[0] || "Rider"}</Text>
+      <Text style={styles.hello}>Welcome back, {riderName.split(" ")[0] || "Rider"}</Text>
       <Text style={styles.pageTitle}>{online ? "Ready for work" : "Go online to earn"}</Text>
       <Pill label={online ? "Online" : "Offline"} tone={online ? "success" : "danger"} />
       <MapPanel

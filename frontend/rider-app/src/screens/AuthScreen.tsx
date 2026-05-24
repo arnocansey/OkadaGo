@@ -4,7 +4,7 @@ import { api, phoneParts } from "../api";
 import { Card, Field, PrimaryButton, styles } from "../components/ui";
 import type { AuthMode, Session } from "../types";
 
-export function AuthScreen({ onSession }: { onSession: (session: Session) => void }) {
+export function AuthScreen({ onSession }: { onSession: (session: Session) => void | Promise<void> }) {
   const [mode, setMode] = useState<AuthMode>("login");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -25,7 +25,7 @@ export function AuthScreen({ onSession }: { onSession: (session: Session) => voi
         ? { phoneE164: phonePayload.phoneE164, phoneLocal: phonePayload.phoneLocal, password, device: { platform: "mobile" } }
         : { fullName, email: email.trim() || undefined, preferredCurrency: "GHS", password, ...phonePayload, device: { platform: "mobile" }, vehicle: vehiclePlate.trim() && vehicleMake.trim() && vehicleModel.trim() ? { make: vehicleMake.trim(), model: vehicleModel.trim(), plateNumber: vehiclePlate.trim() } : undefined };
       const session = await api<Session>(mode === "login" ? "/auth/rider/login" : "/auth/rider/signup", { method: "POST", body: payload });
-      onSession(session);
+      await onSession(session);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed.");
     } finally {

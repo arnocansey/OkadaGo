@@ -8268,6 +8268,355 @@ body {
   font-size: 0.78rem;
 }
 
+.admin-rider-activity-layout,
+.admin-rider-suspension-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.36fr);
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.admin-rider-activity-main {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.admin-rider-tabs {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin: -2px -2px 14px;
+  padding: 0 0 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  overflow-x: auto;
+}
+
+.admin-rider-tabs span {
+  position: relative;
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.admin-rider-tabs span.active {
+  color: #ffc107;
+}
+
+.admin-rider-tabs span.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -13px;
+  height: 2px;
+  border-radius: 999px;
+  background: #ffc107;
+}
+
+.admin-rider-activity-map {
+  position: relative;
+  min-height: 330px;
+  overflow: hidden;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 55% 30%, rgba(255, 193, 7, 0.14), transparent 12%),
+    radial-gradient(circle at 68% 42%, rgba(34, 197, 94, 0.12), transparent 10%),
+    #080b11;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-rider-activity-map .map-shell,
+.admin-rider-activity-map .leaflet-container {
+  min-height: 330px;
+  height: 330px;
+  border: 0;
+}
+
+.admin-rider-map-legend {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 500;
+  display: grid;
+  gap: 7px;
+  padding: 11px 12px;
+  border-radius: 13px;
+  background: rgba(8, 11, 17, 0.84);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.admin-rider-map-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #e2e8f0;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.admin-rider-map-legend i,
+.admin-rider-feed-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.admin-rider-map-legend .green,
+.admin-rider-feed-dot.success {
+  background: #22c55e;
+}
+
+.admin-rider-map-legend .yellow,
+.admin-rider-feed-dot.warning {
+  background: #ffc107;
+}
+
+.admin-rider-map-legend .red,
+.admin-rider-feed-dot.danger {
+  background: #ef4444;
+}
+
+.admin-rider-map-legend .neutral,
+.admin-rider-feed-dot.neutral {
+  background: #94a3b8;
+}
+
+.admin-rider-mini-action,
+.admin-rider-row-menu {
+  border-radius: 10px;
+  border: 1px solid rgba(255, 193, 7, 0.4);
+  background: rgba(255, 193, 7, 0.08);
+  color: #ffc107;
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 7px 12px;
+  text-decoration: none;
+}
+
+.admin-rider-selected-card,
+.admin-rider-suspension-detail {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-rider-selected-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.admin-rider-selected-head strong,
+.admin-rider-selected-head span,
+.admin-rider-selected-head small {
+  display: block;
+}
+
+.admin-rider-selected-head strong {
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.admin-rider-selected-head span,
+.admin-rider-selected-head small {
+  color: #94a3b8;
+  font-size: 0.74rem;
+  margin-top: 3px;
+}
+
+.admin-rider-selected-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-rider-selected-stats span {
+  min-width: 0;
+  padding: 10px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #94a3b8;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.admin-rider-selected-stats strong {
+  display: block;
+  color: #ffffff;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+}
+
+.admin-rider-selected-location {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.admin-rider-selected-card .button {
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+}
+
+.admin-rider-activity-feed {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-rider-activity-feed li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-rider-activity-feed li:last-child {
+  border-bottom: 0;
+}
+
+.admin-rider-activity-feed strong,
+.admin-rider-activity-feed span,
+.admin-rider-activity-feed small {
+  display: block;
+}
+
+.admin-rider-activity-feed strong {
+  color: #ffffff;
+  font-size: 0.78rem;
+}
+
+.admin-rider-activity-feed span,
+.admin-rider-activity-feed small {
+  color: #94a3b8;
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.admin-rider-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.admin-rider-filter-grid button,
+.admin-rider-suspension-filters button {
+  min-height: 38px;
+  border-radius: 11px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+  color: #cbd5e1;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.admin-rider-filter-grid button.active,
+.admin-rider-suspension-filters button.active {
+  background: #ffc107;
+  border-color: #ffc107;
+  color: #111827;
+}
+
+.admin-rider-suspension-filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) repeat(4, auto);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.admin-rider-suspension-filters div,
+.admin-rider-suspension-filters button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-rider-suspension-filters div {
+  min-height: 40px;
+  padding: 0 13px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.admin-rider-subset-table .table tbody tr.selected {
+  outline: 1px solid rgba(255, 193, 7, 0.68);
+  outline-offset: -1px;
+  background: rgba(255, 193, 7, 0.045);
+}
+
+.admin-rider-row-menu {
+  width: 34px;
+  padding: 6px 0;
+}
+
+.admin-rider-suspension-detail dl {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.admin-rider-suspension-detail dl div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-rider-suspension-detail dt {
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.admin-rider-suspension-detail dd {
+  margin: 0;
+  color: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-align: right;
+}
+
+.admin-rider-suspension-actions {
+  display: grid;
+  gap: 9px;
+}
+
+.admin-rider-suspension-actions a {
+  min-height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+  color: #111827;
+  background: #ffc107;
+  font-weight: 900;
+  font-size: 0.76rem;
+}
+
+.admin-rider-suspension-actions a:last-child {
+  color: #ffffff;
+  background: #ef4444;
+}
+
 .admin-request-tabs {
   display: flex;
   align-items: center;

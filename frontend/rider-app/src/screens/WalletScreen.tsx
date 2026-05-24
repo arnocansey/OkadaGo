@@ -35,7 +35,7 @@ export function WalletScreen({ session, wallets, payouts, transactions, onRefres
         <Pill label={method.replace("_", " ")} tone="warning" />
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
           {(["MOBILE_MONEY", "BANK_ACCOUNT"] as const).map((item) => (
-            <Pressable key={item} style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: method === item ? "#F5B800" : "#111111", borderWidth: 1, borderColor: method === item ? "#F5B800" : "#2C2C2C" }} onPress={() => setMethod(item)}>
+            <Pressable key={item} style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: method === item ? "#FF7A00" : "#111111", borderWidth: 1, borderColor: method === item ? "#FFD22E" : "#3A2815" }} onPress={() => setMethod(item)}>
               <Text style={{ color: method === item ? "#111111" : "#DDE0E7", fontWeight: "900", fontSize: 12 }}>{item.replace("_", " ")}</Text>
             </Pressable>
           ))}

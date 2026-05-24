@@ -2,6 +2,7 @@ import { StatusBar } from "expo-status-bar";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { api } from "./api";
 import { BottomNav } from "./components/BottomNav";
 import { styles } from "./components/ui";
@@ -17,9 +18,17 @@ import { TripCompleteScreen } from "./screens/TripCompleteScreen";
 import { TripsScreen } from "./screens/TripsScreen";
 import { WalletScreen } from "./screens/WalletScreen";
 import { clearSavedSession, loadSavedSession, saveSession } from "./session-storage";
-import type { Delivery, PassengerScreen, Ride, ServiceZone, Session, Wallet, WalletTransaction } from "./types";
+import type { Delivery, PassengerScreen, Ride, ServiceZone, Session, SessionUser, Wallet, WalletTransaction } from "./types";
 
 export default function PassengerApp() {
+  return (
+    <SafeAreaProvider>
+      <PassengerAppContent />
+    </SafeAreaProvider>
+  );
+}
+
+function PassengerAppContent() {
   const [session, setSession] = useState<Session | null>(null);
   const [authStep, setAuthStep] = useState<"splash" | "auth">("splash");
   const [activeScreen, setActiveScreen] = useState<PassengerScreen>("home");
@@ -58,6 +67,13 @@ export default function PassengerApp() {
   async function handleSession(nextSession: Session) {
     setSession(nextSession);
     setAuthStep("auth");
+    await saveSession(nextSession);
+  }
+
+  async function updateUser(nextUser: SessionUser) {
+    if (!session) return;
+    const nextSession = { ...session, user: nextUser };
+    setSession(nextSession);
     await saveSession(nextSession);
   }
 
@@ -195,7 +211,14 @@ export default function PassengerApp() {
   function ProfileRoute() {
     return (
       <Chrome showNav>
-        <ProfileScreen user={activeSession.user} wallets={wallets} rides={rides} deliveries={deliveries} onLogout={logout} />
+        <ProfileScreen
+          user={activeSession.user}
+          wallets={wallets}
+          rides={rides}
+          deliveries={deliveries}
+          onSaveUser={updateUser}
+          onLogout={logout}
+        />
       </Chrome>
     );
   }

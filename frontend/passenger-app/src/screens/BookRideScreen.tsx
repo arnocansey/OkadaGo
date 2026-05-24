@@ -89,20 +89,23 @@ export function BookRideScreen({ session, zones, onCreated }: { session: Session
 
   return (
     <>
-      <SectionTitle kicker={bookingType === "delivery" ? "Book delivery" : "Book ride"} title="Set your route" />
-      <MapPanel
-        title={route ? `${route.distanceKm} km - ${route.durationMinutes} min` : "Route map"}
-        subtitle={pickup && destination ? `${pickup.label} to ${destination.label}` : "Enter pickup and destination to calculate the trip."}
-        start={pickup ? { latitude: pickup.latitude, longitude: pickup.longitude, label: pickup.label } : null}
-        end={destination ? { latitude: destination.latitude, longitude: destination.longitude, label: destination.label } : null}
-      />
-      <Card>
+      <View style={styles.bookMapHero}>
+        <MapPanel
+          title={route ? `${route.distanceKm} km - ${route.durationMinutes} min` : "Where are you going?"}
+          subtitle={pickup && destination ? `${pickup.label} to ${destination.label}` : "Enter pickup and destination to calculate the trip."}
+          start={pickup ? { latitude: pickup.latitude, longitude: pickup.longitude, label: pickup.label } : null}
+          end={destination ? { latitude: destination.latitude, longitude: destination.longitude, label: destination.label } : null}
+          style={styles.bookMapHeroPanel}
+        />
+      </View>
+      <Card style={styles.bookFloatingCard}>
+        <SectionTitle kicker={bookingType === "delivery" ? "Book delivery" : "Book ride"} title="Set your route" />
         <Pill label={bookingType === "delivery" ? "parcel mode" : "ride mode"} tone="warning" />
         <View style={{ flexDirection: "row", gap: 10 }}>
           {(["ride", "delivery"] as const).map((type) => (
             <Pressable
               key={type}
-              style={{ flex: 1, borderRadius: 16, paddingVertical: 12, alignItems: "center", backgroundColor: bookingType === type ? "#F5B800" : "#111111", borderWidth: 1, borderColor: bookingType === type ? "#F5B800" : "#2C2C2C" }}
+              style={{ flex: 1, borderRadius: 16, paddingVertical: 12, alignItems: "center", backgroundColor: bookingType === type ? "#FF7A00" : "#111111", borderWidth: 1, borderColor: bookingType === type ? "#FFD22E" : "#3A2815" }}
               onPress={() => setBookingType(type)}
             >
               <Text style={{ color: bookingType === type ? "#111111" : "#DDE0E7", fontWeight: "900", textTransform: "capitalize" }}>{type}</Text>
@@ -129,7 +132,7 @@ export function BookRideScreen({ session, zones, onCreated }: { session: Session
           <ServiceTile icon="PAY" title="Payment" body={paymentMethod.replace("_", " ")} />
         </View>
         {bookingType === "delivery" ? (
-          <View style={{ backgroundColor: "#0D1117", borderRadius: 22, padding: 14, gap: 8, borderWidth: 1, borderColor: "#303846" }}>
+          <View style={{ backgroundColor: "#17120B", borderRadius: 22, padding: 14, gap: 8, borderWidth: 1, borderColor: "#3A2815" }}>
             <Text style={{ color: "#FFFFFF", fontWeight: "900" }}>{packageDescription || "Package not described yet"}</Text>
             <Text style={styles.muted}>{recipientName || "Recipient name"} - {recipientPhone || "Recipient phone"}</Text>
           </View>
@@ -138,7 +141,7 @@ export function BookRideScreen({ session, zones, onCreated }: { session: Session
           {(["cash", "wallet", "mobile_money"] as const).map((method) => (
             <Pressable
               key={method}
-              style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: paymentMethod === method ? "#F5B800" : "#111111", borderWidth: 1, borderColor: paymentMethod === method ? "#F5B800" : "#2C2C2C" }}
+              style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: paymentMethod === method ? "#FF7A00" : "#111111", borderWidth: 1, borderColor: paymentMethod === method ? "#FFD22E" : "#3A2815" }}
               onPress={() => setPaymentMethod(method)}
             >
               <Text style={{ color: paymentMethod === method ? "#111111" : "#DDE0E7", fontWeight: "900", textTransform: "capitalize" }}>{method.replace("_", " ")}</Text>
