@@ -171,15 +171,27 @@ function RiderAppContent() {
     }
   }
 
-  function Chrome({ children, showNav = false, onBack }: { children: ReactNode; showNav?: boolean; onBack?: () => void }) {
+  function Chrome({
+    children,
+    hideTopBar = false,
+    showNav = false,
+    onBack,
+    mapMode = false,
+  }: {
+    children: ReactNode;
+    hideTopBar?: boolean;
+    showNav?: boolean;
+    onBack?: () => void;
+    mapMode?: boolean;
+  }) {
     return (
       <SafeAreaView style={styles.screen}>
         <StatusBar style="light" />
-        <View style={styles.liveStrip}>
+        {!hideTopBar ? <View style={styles.liveStrip}>
           <Text style={styles.liveStripText}>{online ? "LIVE RIDER DASHBOARD - ONLINE" : "LIVE RIDER DASHBOARD - OFFLINE"}</Text>
           <View style={[styles.liveDot, online ? styles.liveDotOnline : styles.liveDotOffline]} />
-        </View>
-        <View style={styles.topBar}>
+        </View> : null}
+        {!hideTopBar ? <View style={styles.topBar}>
           {onBack ? (
             <Pressable style={styles.backButton} onPress={onBack}>
               <Text style={styles.backButtonText}>Back</Text>
@@ -193,11 +205,15 @@ function RiderAppContent() {
             <Text style={styles.logoSub}>Rider app</Text>
           </View>
           <AvailabilityToggle online={online} disabled={!activeSession.user.riderProfileId} onToggle={toggleAvailability} />
-        </View>
+        </View> : null}
         {message ? <Text style={styles.inlineError}>{message}</Text> : null}
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-          {children}
-        </ScrollView>
+        {mapMode ? (
+          <View style={styles.mapChromeContent}>{children}</View>
+        ) : (
+          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+            {children}
+          </ScrollView>
+        )}
         {loading ? (
           <View style={styles.syncPill}>
             <Text style={styles.syncPillText}>Syncing...</Text>
@@ -224,13 +240,16 @@ function RiderAppContent() {
 
   function DashboardRoute() {
     return (
-      <Chrome showNav>
+      <Chrome showNav hideTopBar>
         <DashboardScreen
           session={activeSession}
           wallets={wallets}
           rides={rides}
           deliveries={deliveries}
           online={online}
+          onToggleOnline={toggleAvailability}
+          onOpenProfile={() => setActiveScreen("profile")}
+          onRefresh={() => refresh()}
           onOpenActiveTrip={openTripFlow}
           onOpenIncentives={() => setFlowScreen("incentives")}
           onOpenDocuments={() => setFlowScreen("documents")}
@@ -271,6 +290,7 @@ function RiderAppContent() {
           zones={zones}
           onDocuments={() => setFlowScreen("documents")}
           onSettings={() => setFlowScreen("settings")}
+          onWallet={() => setActiveScreen("wallet")}
           onLogout={logout}
         />
       </Chrome>
@@ -288,7 +308,13 @@ function RiderAppContent() {
   function RideRequestRoute() {
     return (
       <Chrome onBack={() => setFlowScreen(null)}>
-        <RideRequestScreen session={activeSession} ride={activeRide} onRefresh={() => refresh()} onAccepted={() => setFlowScreen("way")} />
+        <RideRequestScreen
+          session={activeSession}
+          ride={activeRide}
+          onRefresh={() => refresh()}
+          onAccepted={() => setFlowScreen("way")}
+          onDeclined={() => setFlowScreen(null)}
+        />
       </Chrome>
     );
   }

@@ -11,6 +11,7 @@ export default async function AdminScreenPage({
 }) {
   const { screen } = await params;
   const screenAliases: Record<string, AdminConsoleScreen> = {
+    "request-dashboard": "rides",
     requests: "rides",
     rides: "rides",
     riders: "riders",
@@ -24,10 +25,13 @@ export default async function AdminScreenPage({
     "rider-activity": "riderActivity",
     "rider-suspensions": "riderSuspensions",
     documents: "riderDocuments",
+    "users-management": "passengers",
     users: "passengers",
     passengers: "passengers",
     finance: "payments",
+    "earnings-payouts": "payments",
     payments: "payments",
+    "reports-analytics": "ratings",
     support: "ratings",
     ratings: "ratings",
     promotions: "promotions",
@@ -48,7 +52,7 @@ export default async function AdminScreenPage({
     riderActivity: "/admin/riders/activity-tracking",
     riderSuspensions: "/admin/riders/suspensions",
     payments: "/admin/finance",
-    ratings: "/admin/support"
+    ratings: "/admin/reports-analytics"
   };
   const resolvedScreen = screenAliases[screen];
 

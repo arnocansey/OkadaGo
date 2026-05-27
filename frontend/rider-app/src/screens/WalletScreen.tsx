@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
+import { Building2, CheckCircle2, ShieldCheck, Smartphone } from "lucide-react-native";
 import { api, compactDate, money } from "../api";
 import { Card, EmptyState, Field, ListRow, Pill, PrimaryButton, SectionTitle, StatCard, styles } from "../components/ui";
 import type { PayoutRequest, Session, Wallet, WalletTransaction } from "../types";
@@ -24,19 +25,55 @@ export function WalletScreen({ session, wallets, payouts, transactions, onRefres
       setBusy(false);
     }
   }
+  const settlementWallet = wallets.find((wallet) => wallet.type === "RIDER_SETTLEMENT") ?? wallets[0];
+  const availableBalance = money(settlementWallet?.availableBalance ?? 0, settlementWallet?.currency ?? session.user.preferredCurrency);
+
   return (
     <>
-      <SectionTitle kicker="Wallet" title="Payouts and settlement" />
+      <Text style={styles.pageTitle}>Wallet</Text>
+      <Card style={styles.riderWalletHero}>
+        <ShieldCheck size={88} color="rgba(17,17,17,0.12)" style={styles.riderWalletWatermark} />
+        <Text style={styles.riderWalletLabel}>Available Balance</Text>
+        <Text style={styles.riderWalletAmount}>{availableBalance}</Text>
+        <PrimaryButton label="Request payout" onPress={requestPayout} disabled={busy || !Number(amount) || !destination.trim()} dark />
+      </Card>
+
+      <Card>
+        <View style={styles.blockHeaderSplit}>
+          <Text style={styles.blockTitle}>Payout Methods</Text>
+          <Pressable onPress={() => setMethod(method === "MOBILE_MONEY" ? "BANK_ACCOUNT" : "MOBILE_MONEY")}>
+            <Text style={styles.linkText}>+ Add New</Text>
+          </Pressable>
+        </View>
+        <Pressable style={[styles.payoutMethodActive, method !== "MOBILE_MONEY" && styles.payoutMethodRow]} onPress={() => setMethod("MOBILE_MONEY")}>
+          <View style={styles.payoutMethodIcon}><Smartphone size={20} color="#FF6B00" /></View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.payoutMethodTitle}>Mobile Money</Text>
+            <Text style={styles.payoutMethodMeta}>{destination || "Add destination below"}</Text>
+          </View>
+          {method === "MOBILE_MONEY" ? <CheckCircle2 size={22} color="#FF6B00" /> : null}
+        </Pressable>
+        <Pressable style={[styles.payoutMethodRow, method === "BANK_ACCOUNT" && styles.payoutMethodActive]} onPress={() => setMethod("BANK_ACCOUNT")}>
+          <View style={styles.payoutMethodIcon}><Building2 size={20} color="#60A5FA" /></View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.payoutMethodTitle}>Bank Transfer</Text>
+            <Text style={styles.payoutMethodMeta}>Available for payout requests</Text>
+          </View>
+          {method === "BANK_ACCOUNT" ? <CheckCircle2 size={22} color="#FF6B00" /> : null}
+        </Pressable>
+      </Card>
+
       <View style={styles.grid}>
-        {wallets.length ? wallets.map((wallet) => <StatCard key={wallet.id} label={wallet.type.replaceAll("_", " ")} value={money(wallet.availableBalance, wallet.currency)} />) : <StatCard label="Settlement" value={money(0, session.user.preferredCurrency)} />}
+        {wallets.length ? wallets.slice(0, 2).map((wallet) => <StatCard key={wallet.id} label={wallet.type.replaceAll("_", " ")} value={money(wallet.availableBalance, wallet.currency)} />) : <StatCard label="Settlement" value={money(0, session.user.preferredCurrency)} />}
       </View>
+
       <Card>
         <SectionTitle kicker="Payout" title="Request withdrawal" />
         <Pill label={method.replace("_", " ")} tone="warning" />
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+        <View style={styles.segmentedRow}>
           {(["MOBILE_MONEY", "BANK_ACCOUNT"] as const).map((item) => (
-            <Pressable key={item} style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: method === item ? "#FF7A00" : "#111111", borderWidth: 1, borderColor: method === item ? "#FFD22E" : "#3A2815" }} onPress={() => setMethod(item)}>
-              <Text style={{ color: method === item ? "#111111" : "#DDE0E7", fontWeight: "900", fontSize: 12 }}>{item.replace("_", " ")}</Text>
+            <Pressable key={item} style={[styles.segmentedButton, method === item && styles.segmentedButtonActive]} onPress={() => setMethod(item)}>
+              <Text style={[styles.segmentedText, method === item && styles.segmentedTextActive]}>{item.replace("_", " ")}</Text>
             </Pressable>
           ))}
         </View>

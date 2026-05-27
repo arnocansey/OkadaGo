@@ -1,11 +1,24 @@
-import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Pressable, ScrollView, Text, View } from "react-native";
+import { ArrowLeft, Bike, Package, WalletCards } from "lucide-react-native";
 import { api } from "../api";
-import { Card, Field, MapPanel, Pill, PrimaryButton, SectionTitle, ServiceTile, styles } from "../components/ui";
+import { Field, MapPanel, PrimaryButton, SectionTitle, styles } from "../components/ui";
 import type { LocationResult, RoutePreview, ServiceZone, Session } from "../types";
 
-export function BookRideScreen({ session, zones, onCreated }: { session: Session; zones: ServiceZone[]; onCreated: () => void }) {
-  const [bookingType, setBookingType] = useState<"ride" | "delivery">("ride");
+export function BookRideScreen({
+  session,
+  zones,
+  initialBookingType = "ride",
+  onBack,
+  onCreated,
+}: {
+  session: Session;
+  zones: ServiceZone[];
+  initialBookingType?: "ride" | "delivery";
+  onBack: () => void;
+  onCreated: () => void;
+}) {
+  const [bookingType, setBookingType] = useState<"ride" | "delivery">(initialBookingType);
   const [pickupText, setPickupText] = useState("");
   const [destinationText, setDestinationText] = useState("");
   const [recipientName, setRecipientName] = useState("");
@@ -19,6 +32,10 @@ export function BookRideScreen({ session, zones, onCreated }: { session: Session
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const zone = zones[0];
+
+  useEffect(() => {
+    setBookingType(initialBookingType);
+  }, [initialBookingType]);
 
   async function resolveRoute() {
     if (!pickupText.trim() || !destinationText.trim()) {
@@ -88,77 +105,112 @@ export function BookRideScreen({ session, zones, onCreated }: { session: Session
   }
 
   return (
-    <>
-      <View style={styles.bookMapHero}>
-        <MapPanel
-          title={route ? `${route.distanceKm} km - ${route.durationMinutes} min` : "Where are you going?"}
-          subtitle={pickup && destination ? `${pickup.label} to ${destination.label}` : "Enter pickup and destination to calculate the trip."}
-          start={pickup ? { latitude: pickup.latitude, longitude: pickup.longitude, label: pickup.label } : null}
-          end={destination ? { latitude: destination.latitude, longitude: destination.longitude, label: destination.label } : null}
-          style={styles.bookMapHeroPanel}
-        />
-      </View>
-      <Card style={styles.bookFloatingCard}>
-        <SectionTitle kicker={bookingType === "delivery" ? "Book delivery" : "Book ride"} title="Set your route" />
-        <Pill label={bookingType === "delivery" ? "parcel mode" : "ride mode"} tone="warning" />
-        <View style={{ flexDirection: "row", gap: 10 }}>
-          {(["ride", "delivery"] as const).map((type) => (
-            <Pressable
-              key={type}
-              style={{ flex: 1, borderRadius: 16, paddingVertical: 12, alignItems: "center", backgroundColor: bookingType === type ? "#FF7A00" : "#111111", borderWidth: 1, borderColor: bookingType === type ? "#FFD22E" : "#3A2815" }}
-              onPress={() => setBookingType(type)}
-            >
-              <Text style={{ color: bookingType === type ? "#111111" : "#DDE0E7", fontWeight: "900", textTransform: "capitalize" }}>{type}</Text>
-            </Pressable>
-          ))}
-        </View>
-        <Field label="Pickup" value={pickupText} onChangeText={setPickupText} placeholder="Type pickup address" />
-        <Field label={bookingType === "delivery" ? "Dropoff" : "Destination"} value={destinationText} onChangeText={setDestinationText} placeholder={bookingType === "delivery" ? "Type dropoff address" : "Type destination address"} />
-        {bookingType === "delivery" ? (
-          <>
-            <Field label="Recipient name" value={recipientName} onChangeText={setRecipientName} placeholder="Who receives the package?" />
-            <Field label="Recipient phone" value={recipientPhone} onChangeText={setRecipientPhone} placeholder="+233..." keyboardType="phone-pad" />
-            <Field label="Package type" value={packageType} onChangeText={setPackageType} placeholder="Parcel, food, documents" />
-            <Field label="Package description" value={packageDescription} onChangeText={setPackageDescription} placeholder="Describe the item" />
-          </>
-        ) : null}
-        <PrimaryButton label={busy ? "Checking route..." : "Preview route"} onPress={resolveRoute} disabled={busy} />
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
-      </Card>
-      <Card>
-        <SectionTitle kicker="Checkout" title={bookingType === "delivery" ? "Confirm parcel details" : "Choose payment method"} />
-        <View style={styles.grid}>
-          <ServiceTile icon={bookingType === "delivery" ? "SEND" : "BIKE"} title={bookingType === "delivery" ? "Delivery" : "Ride"} body={route ? `${route.distanceKm} km route` : "Route not calculated"} />
-          <ServiceTile icon="PAY" title="Payment" body={paymentMethod.replace("_", " ")} />
-        </View>
-        {bookingType === "delivery" ? (
-          <View style={{ backgroundColor: "#17120B", borderRadius: 22, padding: 14, gap: 8, borderWidth: 1, borderColor: "#3A2815" }}>
-            <Text style={{ color: "#FFFFFF", fontWeight: "900" }}>{packageDescription || "Package not described yet"}</Text>
-            <Text style={styles.muted}>{recipientName || "Recipient name"} - {recipientPhone || "Recipient phone"}</Text>
+    <View style={styles.mapExperience}>
+      <MapPanel
+        title={route ? `${route.distanceKm} km - ${route.durationMinutes} min` : "Where are you going?"}
+        subtitle={pickup && destination ? `${pickup.label} to ${destination.label}` : "Enter pickup and destination to calculate the trip."}
+        start={pickup ? { latitude: pickup.latitude, longitude: pickup.longitude, label: pickup.label } : null}
+        end={destination ? { latitude: destination.latitude, longitude: destination.longitude, label: destination.label } : null}
+        style={styles.mapBackdrop}
+        mode="backdrop"
+      />
+      <View style={styles.mapShade} />
+      <View style={styles.mapTopOverlay}>
+        <Pressable style={styles.mapBackCircle} onPress={onBack}>
+          <ArrowLeft size={20} color="#FFFFFF" />
+        </Pressable>
+        <View style={styles.routeInputCard}>
+          <View style={styles.routeInputRow}>
+            <View style={[styles.routeDot, { backgroundColor: "#FF6B00" }]} />
+            <Text style={styles.routeInputText}>{pickupText || "Pickup location"}</Text>
           </View>
-        ) : null}
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-          {(["cash", "wallet", "mobile_money"] as const).map((method) => (
-            <Pressable
-              key={method}
-              style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: paymentMethod === method ? "#FF7A00" : "#111111", borderWidth: 1, borderColor: paymentMethod === method ? "#FFD22E" : "#3A2815" }}
-              onPress={() => setPaymentMethod(method)}
-            >
-              <Text style={{ color: paymentMethod === method ? "#111111" : "#DDE0E7", fontWeight: "900", textTransform: "capitalize" }}>{method.replace("_", " ")}</Text>
-            </Pressable>
-          ))}
+          <View style={styles.routeDivider} />
+          <View style={styles.routeInputRow}>
+            <View style={[styles.routeDot, { backgroundColor: "#EF4444" }]} />
+            <Text style={styles.routeInputText}>{destinationText || "Destination"}</Text>
+          </View>
         </View>
-        <Text style={styles.muted}>{zone ? `${zone.name}, ${zone.city}` : "No service zone available yet."}</Text>
-        <PrimaryButton
-          label={busy ? "Requesting..." : bookingType === "delivery" ? "Confirm delivery" : "Confirm ride"}
-          onPress={requestRide}
-          disabled={
-            busy ||
-            !zone ||
-            (bookingType === "delivery" && (!recipientName.trim() || !recipientPhone.trim() || !packageDescription.trim()))
-          }
-        />
-      </Card>
-    </>
+        <View style={styles.mapStatusRow}>
+          <View style={styles.mapStatusPill}>
+            <Text style={styles.mapStatusText}>{bookingType === "delivery" ? "Delivery mode" : "Ride mode"}</Text>
+          </View>
+          <View style={styles.mapStatusPill}>
+            <Text style={styles.mapStatusText}>{paymentMethod.replace("_", " ")}</Text>
+          </View>
+        </View>
+      </View>
+      <View style={styles.mapCenterPin}>
+        <Text style={styles.mapCenterPinText}>{bookingType === "delivery" ? "D" : "O"}</Text>
+      </View>
+      <View style={styles.mapBottomSheet}>
+        <View style={styles.mapSheetHandle} />
+        <ScrollView style={styles.mapSheetScroll} contentContainerStyle={styles.mapSheetContent} showsVerticalScrollIndicator={false}>
+          <SectionTitle kicker={bookingType === "delivery" ? "Book delivery" : "Book ride"} title="Choose a ride" />
+          <View style={styles.segmentedRow}>
+            {(["ride", "delivery"] as const).map((type) => (
+              <Pressable
+                key={type}
+                style={[styles.segmentedButton, bookingType === type && styles.segmentedButtonActive]}
+                onPress={() => setBookingType(type)}
+              >
+                <Text style={[styles.segmentedText, bookingType === type && styles.segmentedTextActive]}>{type === "ride" ? "OkadaGo" : "Delivery"}</Text>
+              </Pressable>
+            ))}
+          </View>
+          <Field label="Pickup" value={pickupText} onChangeText={setPickupText} placeholder="Type pickup address" />
+          <Field label={bookingType === "delivery" ? "Dropoff" : "Destination"} value={destinationText} onChangeText={setDestinationText} placeholder={bookingType === "delivery" ? "Type dropoff address" : "Type destination address"} />
+          {bookingType === "delivery" ? (
+            <>
+              <Field label="Recipient name" value={recipientName} onChangeText={setRecipientName} placeholder="Who receives the package?" />
+              <Field label="Recipient phone" value={recipientPhone} onChangeText={setRecipientPhone} placeholder="+233..." keyboardType="phone-pad" />
+              <Field label="Package type" value={packageType} onChangeText={setPackageType} placeholder="Parcel, food, documents" />
+              <Field label="Package description" value={packageDescription} onChangeText={setPackageDescription} placeholder="Describe the item" />
+            </>
+          ) : null}
+          <View style={styles.grid}>
+            <View style={styles.rideOptionCard}>
+              {bookingType === "delivery" ? <Package size={24} color="#FF6B00" /> : <Bike size={24} color="#FF6B00" />}
+              <View style={{ flex: 1 }}>
+                <Text style={styles.rideOptionTitle}>{bookingType === "delivery" ? "Delivery" : "OkadaGo"}</Text>
+                <Text style={styles.rideOptionMeta}>{route ? `${route.durationMinutes} min` : "Preview needed"}</Text>
+              </View>
+              <Text style={styles.rideOptionPrice}>{route ? `GHS ${Math.max(Number(route.distanceKm) * 3, 12).toFixed(0)}` : "--"}</Text>
+            </View>
+            <View style={styles.rideOptionCard}>
+              <WalletCards size={24} color="#FF6B00" />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.rideOptionTitle}>Payment</Text>
+                <Text style={styles.rideOptionMeta}>{paymentMethod.replace("_", " ")}</Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.paymentSegmentRow}>
+            {(["cash", "wallet", "mobile_money"] as const).map((method) => (
+              <Pressable
+                key={method}
+                style={[styles.paymentChip, paymentMethod === method && styles.paymentChipActive]}
+                onPress={() => setPaymentMethod(method)}
+              >
+                <Text style={[styles.paymentChipText, paymentMethod === method && styles.paymentChipTextActive]}>{method.replace("_", " ")}</Text>
+              </Pressable>
+            ))}
+          </View>
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          <Text style={styles.muted}>{zone ? `${zone.name}, ${zone.city}` : "No service zone available yet."}</Text>
+          <PrimaryButton label={busy ? "Checking route..." : "Preview route"} onPress={resolveRoute} disabled={busy} />
+          <PrimaryButton
+            label={busy ? "Requesting..." : bookingType === "delivery" ? "Confirm delivery" : "Confirm ride"}
+            onPress={requestRide}
+            disabled={
+              busy ||
+              !zone ||
+              !route ||
+              (bookingType === "delivery" && (!recipientName.trim() || !recipientPhone.trim() || !packageDescription.trim()))
+            }
+            dark={!route}
+          />
+        </ScrollView>
+      </View>
+    </View>
   );
 }

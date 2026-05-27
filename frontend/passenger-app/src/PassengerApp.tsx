@@ -33,6 +33,7 @@ function PassengerAppContent() {
   const [authStep, setAuthStep] = useState<"splash" | "auth">("splash");
   const [activeScreen, setActiveScreen] = useState<PassengerScreen>("home");
   const [flowScreen, setFlowScreen] = useState<"book" | "track" | "live" | "complete" | "menu" | null>(null);
+  const [bookMode, setBookMode] = useState<"ride" | "delivery">("ride");
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
   const [rides, setRides] = useState<Ride[]>([]);
@@ -139,9 +140,22 @@ function PassengerAppContent() {
     .filter((ride) => ride.status === "COMPLETED")
     .sort((left, right) => Date.parse(right.createdAt ?? "0") - Date.parse(left.createdAt ?? "0"))[0];
 
-  function Chrome({ children, showNav = false, onBack }: { children: ReactNode; showNav?: boolean; onBack?: () => void }) {
+  function Chrome({
+    children,
+    hideTopBar = false,
+    showNav = false,
+    onBack,
+    mapMode = false,
+  }: {
+    children: ReactNode;
+    hideTopBar?: boolean;
+    showNav?: boolean;
+    onBack?: () => void;
+    mapMode?: boolean;
+  }) {
     function changeTab(nextScreen: PassengerScreen) {
-      if (nextScreen === "book") {
+    if (nextScreen === "book") {
+        setBookMode("ride");
         setFlowScreen("book");
         return;
       }
@@ -151,7 +165,7 @@ function PassengerAppContent() {
     return (
       <SafeAreaView style={styles.screen}>
         <StatusBar style="light" />
-        <View style={styles.topBar}>
+        {!mapMode && !hideTopBar ? <View style={styles.topBar}>
           {onBack ? (
             <Pressable style={styles.backButton} onPress={onBack}>
               <Text style={styles.backButtonText}>Back</Text>
@@ -167,11 +181,15 @@ function PassengerAppContent() {
           <Pressable style={styles.refreshButton} onPress={() => refresh()}>
             <Text style={styles.refreshText}>{loading ? "..." : "Sync"}</Text>
           </Pressable>
-        </View>
+        </View> : null}
         {message ? <Text style={styles.inlineError}>{message}</Text> : null}
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-          {children}
-        </ScrollView>
+        {mapMode ? (
+          <View style={styles.mapChromeContent}>{children}</View>
+        ) : (
+          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+            {children}
+          </ScrollView>
+        )}
         {showNav ? <BottomNav active={activeScreen} onChange={changeTab} /> : null}
       </SafeAreaView>
     );
@@ -179,13 +197,21 @@ function PassengerAppContent() {
 
   function HomeRoute() {
     return (
-      <Chrome showNav>
+      <Chrome showNav hideTopBar>
         <HomeScreen
           user={activeSession.user}
           wallets={wallets}
           rides={rides}
-          onBook={() => setFlowScreen("book")}
+          onBook={() => {
+            setBookMode("ride");
+            setFlowScreen("book");
+          }}
+          onBookDelivery={() => {
+            setBookMode("delivery");
+            setFlowScreen("book");
+          }}
           onTrack={() => setFlowScreen("track")}
+          onWallet={() => setActiveScreen("wallet")}
           onMenu={() => setFlowScreen("menu")}
         />
       </Chrome>
@@ -194,7 +220,7 @@ function PassengerAppContent() {
 
   function TripsRoute() {
     return (
-      <Chrome showNav>
+      <Chrome showNav hideTopBar>
         <TripsScreen rides={rides} deliveries={deliveries} />
       </Chrome>
     );
@@ -202,7 +228,7 @@ function PassengerAppContent() {
 
   function WalletRoute() {
     return (
-      <Chrome showNav>
+      <Chrome showNav hideTopBar>
         <WalletScreen session={activeSession} wallets={wallets} transactions={transactions} onRefresh={() => refresh()} />
       </Chrome>
     );
@@ -210,13 +236,20 @@ function PassengerAppContent() {
 
   function ProfileRoute() {
     return (
-      <Chrome showNav>
+      <Chrome showNav hideTopBar>
         <ProfileScreen
           user={activeSession.user}
           wallets={wallets}
           rides={rides}
           deliveries={deliveries}
           onSaveUser={updateUser}
+          onTrips={() => setActiveScreen("trips")}
+          onWallet={() => setActiveScreen("wallet")}
+          onBookDelivery={() => {
+            setBookMode("delivery");
+            setFlowScreen("book");
+          }}
+          onMenu={() => setFlowScreen("menu")}
           onLogout={logout}
         />
       </Chrome>
@@ -232,10 +265,12 @@ function PassengerAppContent() {
 
   function BookRideRoute() {
     return (
-      <Chrome onBack={() => setFlowScreen(null)}>
+      <Chrome onBack={() => setFlowScreen(null)} mapMode>
         <BookRideScreen
           session={activeSession}
           zones={zones}
+          initialBookingType={bookMode}
+          onBack={() => setFlowScreen(null)}
           onCreated={() => {
             refresh();
             setActiveScreen("trips");

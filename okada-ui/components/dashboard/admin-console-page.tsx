@@ -1536,7 +1536,7 @@ export function AdminConsolePage({
         badge: `${activeTrips.length}`
       },
       {
-        label: "Requests",
+        label: "Request Dashboard",
         href: "/admin/requests",
         icon: Bike,
         screen: "rides",
@@ -1596,7 +1596,7 @@ export function AdminConsolePage({
             badge: `${riderPayoutRequests.filter((request) => request.status.toLowerCase() === "requested").length}`
           },
           {
-            label: "Complaints",
+            label: "Complaints & Support",
             href: "/admin/riders/complaints",
             screen: "riderComplaints",
             badge: `${riderIncidents.length}`
@@ -1634,12 +1634,12 @@ export function AdminConsolePage({
         badge: `${pendingPayoutRequests.length}`
       },
       {
-        label: "Support Center",
-        href: "/admin/support",
-        icon: Headphones,
+        label: "Reports & Analytics",
+        href: "/admin/reports-analytics",
+        icon: FileText,
         screen: "ratings",
         group: "finance",
-        hint: "Submission verification",
+        hint: "Ratings and insights",
         badge: `${ratings.length}`
       },
       {
@@ -1711,7 +1711,7 @@ export function AdminConsolePage({
     },
     rides: {
       eyebrow: "Dispatch operations",
-      title: "Requests",
+      title: "Request Dashboard",
       description: "Track live, completed, and cancelled ride requests from the persisted dispatch feed.",
       searchLabel: "Search ride codes, riders, or passengers...",
       quickActionLabel: "See rider supply",
@@ -1783,11 +1783,11 @@ export function AdminConsolePage({
     },
     riderComplaints: {
       eyebrow: "Riders management",
-      title: "Rider Complaints",
+      title: "Complaints & Support",
       description: "Review rider-linked incidents and complaint reports from support operations.",
       searchLabel: "Search rider complaints...",
-      quickActionLabel: "Open support",
-      quickActionHref: "/admin/support",
+      quickActionLabel: "Open reports",
+      quickActionHref: "/admin/reports-analytics",
       quickActionNote: "Complaints are pulled from support incidents that are linked to a rider."
     },
     riderActivity: {
@@ -1822,13 +1822,13 @@ export function AdminConsolePage({
       title: "Finance",
       description: "Review revenue flow from completed rides and active trip value moving through the platform.",
       searchLabel: "Search payment and fare records...",
-      quickActionLabel: "Open ratings",
-      quickActionHref: "/admin/support",
+      quickActionLabel: "Open reports",
+      quickActionHref: "/admin/reports-analytics",
       quickActionNote: "Cross-check payment records against verified rider rating submissions."
     },
     ratings: {
       eyebrow: "Quality operations",
-      title: "Support Center",
+      title: "Reports & Analytics",
       description: "Verify passenger rating submissions with rider, ride, and date-level filters.",
       searchLabel: "Search rider, ride, or rating records...",
       quickActionLabel: "View payments",
@@ -2398,9 +2398,9 @@ export function AdminConsolePage({
             <Tag size={18} />
             <span>Create Promo</span>
           </a>
-          <a href="/admin/support">
+          <a href="/admin/reports-analytics">
             <Headphones size={18} />
-            <span>Support Tickets</span>
+            <span>Reports & Analytics</span>
           </a>
           <a href="/admin/finance">
             <CreditCard size={18} />
@@ -3897,7 +3897,7 @@ export function AdminConsolePage({
                 <h3>All Tickets</h3>
                 <p>Support incidents attached to rider profiles.</p>
               </div>
-              <a href="/admin/support">Open support center</a>
+              <a href="/admin/reports-analytics">Open reports</a>
             </div>
             {riderIncidents.length === 0 ? (
               <EmptyCard title="No rider complaints." body="Rider-linked incidents will appear after passengers or admins submit reports." />
@@ -6779,7 +6779,7 @@ export function AdminConsolePage({
           <div className="exact-admin-brand">
             <div>
               <strong>Okada<span>Go</span></strong>
-              <small>Move - Deliver</small>
+              <small>Move - Deliver - Earn</small>
             </div>
           </div>
 

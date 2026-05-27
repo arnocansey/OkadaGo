@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Text, View } from "react-native";
+import { Alert, Pressable, Text, View } from "react-native";
+import { ChevronRight, CreditCard, Gift, HelpCircle, List, LogOut, MapPin, Settings, ShieldAlert, Tag, Wallet as WalletIcon } from "lucide-react-native";
 import { money } from "../api";
-import { Card, Field, IconBadge, ListRow, Pill, PrimaryButton, SectionTitle, StatCard, styles } from "../components/ui";
+import { Card, Field, ListRow, Pill, PrimaryButton, StatCard, styles } from "../components/ui";
 import type { Delivery, Ride, SessionUser, Wallet } from "../types";
 
 export function ProfileScreen({
@@ -10,6 +11,10 @@ export function ProfileScreen({
   rides,
   deliveries,
   onSaveUser,
+  onTrips,
+  onWallet,
+  onBookDelivery,
+  onMenu,
   onLogout,
 }: {
   user: SessionUser;
@@ -17,6 +22,10 @@ export function ProfileScreen({
   rides: Ride[];
   deliveries: Delivery[];
   onSaveUser: (user: SessionUser) => void | Promise<void>;
+  onTrips: () => void;
+  onWallet: () => void;
+  onBookDelivery: () => void;
+  onMenu: () => void;
   onLogout: () => void;
 }) {
   const wallet = wallets.find((item) => item.type === "PASSENGER_CASHLESS") ?? wallets[0];
@@ -41,18 +50,42 @@ export function ProfileScreen({
     setMessage("Profile updated on this device.");
   }
 
+  const initials = (user.fullName || "Passenger")
+    .split(" ")
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+  const unavailable = (label: string) => Alert.alert(label, "This section is not connected to the backend yet.");
+  const menuItems = [
+    { label: "My Trips", icon: List, meta: `${completedTrips} completed`, action: onTrips },
+    { label: "My Wallet", icon: WalletIcon, meta: money(wallet?.availableBalance, wallet?.currency ?? user.preferredCurrency), action: onWallet },
+    { label: "Payment Methods", icon: CreditCard, meta: user.preferredCurrency, action: onWallet },
+    { label: "Promo Codes", icon: Tag, meta: "Coming soon", action: () => unavailable("Promo Codes") },
+    { label: "Saved Places", icon: MapPin, meta: "Use booking map", action: onBookDelivery },
+    { label: "Refer & Earn", icon: Gift, meta: "Coming soon", action: () => unavailable("Refer & Earn") },
+    { label: "Safety Center", icon: ShieldAlert, meta: "OkadaGo standards", action: onMenu },
+    { label: "Help & Support", icon: HelpCircle, meta: "Account shortcuts", action: onMenu },
+    { label: "Settings", icon: Settings, meta: "Account preferences", action: onMenu },
+  ];
+
   return (
     <>
-      <SectionTitle kicker="Profile" title={user.fullName} />
+      <View style={styles.profileHero}>
+        <View style={styles.profileAvatar}>
+          <Text style={styles.profileAvatarText}>{initials}</Text>
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.profileName}>{user.fullName}</Text>
+          <Text style={styles.profilePhone}>{user.phoneE164}</Text>
+          <Pressable style={styles.profileEditPill} onPress={() => setEditing(true)}>
+            <Text style={styles.profileEditText}>Edit Profile</Text>
+          </Pressable>
+        </View>
+      </View>
+
       <Card>
         <Pill label="Passenger account" tone="success" />
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-          <IconBadge label={(user.fullName || "P").slice(0, 2).toUpperCase()} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.emptyTitle}>{user.fullName}</Text>
-            <Text style={styles.muted}>{user.email ?? user.phoneE164}</Text>
-          </View>
-        </View>
         <View style={styles.grid}>
           <StatCard label="Wallet" value={money(wallet?.availableBalance, wallet?.currency ?? user.preferredCurrency)} />
           <StatCard label="Trips" value={`${completedTrips}`} />
@@ -69,16 +102,36 @@ export function ProfileScreen({
           </>
         ) : (
           <>
-            <ListRow title="Phone" body={user.phoneE164} meta="Primary contact" />
             <ListRow title="Email" body={user.email ?? "No email added"} meta="Account contact" />
-            <ListRow title="Currency" body={user.preferredCurrency} meta="Default wallet currency" />
             <ListRow title="Deliveries" body={`${activeDeliveries} active`} meta="Current package requests" />
             {message ? <Text style={styles.muted}>{message}</Text> : null}
-            <PrimaryButton label="Edit profile" onPress={() => setEditing(true)} />
           </>
         )}
-        <PrimaryButton label="Logout" onPress={onLogout} />
       </Card>
+
+      <View style={styles.profileMenu}>
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <Pressable key={item.label} style={styles.profileMenuRow} onPress={item.action}>
+              <View style={styles.profileMenuIcon}>
+                <Icon size={20} color="#9CA3AF" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.profileMenuTitle}>{item.label}</Text>
+                <Text style={styles.profileMenuMeta}>{item.meta}</Text>
+              </View>
+              <ChevronRight size={20} color="#6B7280" />
+            </Pressable>
+          );
+        })}
+        <Pressable style={styles.profileMenuRow} onPress={onLogout}>
+          <View style={styles.profileMenuIcon}>
+            <LogOut size={20} color="#EF4444" />
+          </View>
+          <Text style={styles.profileLogoutText}>Logout</Text>
+        </Pressable>
+      </View>
     </>
   );
 }
