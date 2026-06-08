@@ -7,16 +7,16 @@ import { useAuth } from "@/lib/auth";
 import {
   ResponsiveFlowScreen,
   resolveResponsiveFlowSlug,
-  useIsDesktop
+  useIsDesktop,
 } from "@/components/showcase/responsive-mockup-screen";
 import {
   getFlowScreen,
-  type FlowArea
+  type FlowArea,
 } from "@/components/showcase/flow-config";
 
 export function FlowScreenPage({
   area,
-  screen
+  screen,
 }: {
   area: FlowArea;
   screen: string;
@@ -46,9 +46,15 @@ export function FlowScreenPage({
     (area === "rider" && session.user.role === "rider") ||
     (area === "admin" && session.user.role === "admin");
   const requiresAuth = current.protected;
-  const showAuthWarning = requiresAuth && (status !== "authenticated" || !roleMatches);
+  const showAuthWarning =
+    requiresAuth && (status !== "authenticated" || !roleMatches);
   const resolvedSlug = resolveResponsiveFlowSlug(area, screen, isDesktop);
-  const loginHref = area === "admin" ? "/admin/login" : area === "rider" ? "/rider/login" : "/login";
+  const loginHref =
+    area === "admin"
+      ? "/admin/login"
+      : area === "rider"
+        ? "/rider/login"
+        : "/login";
 
   if (resolvedSlug.join("/") !== `${area}/${screen}` && !showAuthWarning) {
     return (

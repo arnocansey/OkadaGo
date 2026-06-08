@@ -18,19 +18,20 @@ type PassengerWalletSummary = {
 
 type PassengerTab = "home" | "history" | "wallet" | "service" | "settings";
 
-const passengerTabs: Array<{ key: PassengerTab; href: string; label: string }> = [
-  { key: "home", href: "/passenger", label: "Home" },
-  { key: "history", href: "/passenger/history", label: "History" },
-  { key: "wallet", href: "/passenger/wallet", label: "Wallet" },
-  { key: "service", href: "/passenger/service", label: "Service" },
-  { key: "settings", href: "/passenger/settings", label: "Settings" }
-];
+const passengerTabs: Array<{ key: PassengerTab; href: string; label: string }> =
+  [
+    { key: "home", href: "/passenger", label: "Home" },
+    { key: "history", href: "/passenger/history", label: "History" },
+    { key: "wallet", href: "/passenger/wallet", label: "Wallet" },
+    { key: "service", href: "/passenger/service", label: "Service" },
+    { key: "settings", href: "/passenger/settings", label: "Settings" },
+  ];
 
 export function PassengerAccessState({
   title,
   body,
   actionLabel,
-  actionHref
+  actionHref,
 }: {
   title: string;
   body: string;
@@ -60,7 +61,7 @@ export function PassengerShell({
   preferredWallet,
   activeTab,
   signOut,
-  children
+  children,
 }: {
   session: PassengerRoleSession;
   preferredWallet: PassengerWalletSummary;
@@ -79,7 +80,11 @@ export function PassengerShell({
             <span className="exact-wordmark">OkadaGo</span>
             <nav className="exact-passenger-links">
               {passengerTabs.map((tab) => (
-                <Link key={tab.key} href={tab.href} className={activeTab === tab.key ? "active" : ""}>
+                <Link
+                  key={tab.key}
+                  href={tab.href}
+                  className={activeTab === tab.key ? "active" : ""}
+                >
                   {tab.label}
                 </Link>
               ))}

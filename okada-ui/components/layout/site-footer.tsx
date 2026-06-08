@@ -11,8 +11,9 @@ export function SiteFooter() {
             </div>
           </div>
           <p className="note" style={{ marginTop: 16 }}>
-            This repository now contains the product blueprint, relational schema, API contract outline,
-            and a PWA-ready Next.js UI shell using TanStack Query/Table and Leaflet.
+            This repository now contains the product blueprint, relational
+            schema, API contract outline, and a PWA-ready Next.js UI shell using
+            TanStack Query/Table and Leaflet.
           </p>
         </div>
 

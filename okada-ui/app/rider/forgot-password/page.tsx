@@ -1,7 +1,7 @@
 import { AuthPages } from "@/okada-ui/screens/okada-auth/AuthPages";
 
 export const metadata = {
-  title: "Rider Forgot Password | OkadaGo"
+  title: "Rider Forgot Password | OkadaGo",
 };
 
 export default function RiderForgotPasswordPage() {

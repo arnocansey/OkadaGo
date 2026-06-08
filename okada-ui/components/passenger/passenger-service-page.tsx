@@ -5,7 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchJson } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { currencySymbol, formatMoney } from "@/lib/currency";
-import { PassengerAccessState, PassengerShell } from "@/components/passenger/passenger-shell";
+import {
+  PassengerAccessState,
+  PassengerShell,
+} from "@/components/passenger/passenger-shell";
 
 type ServiceZoneRecord = {
   id: string;
@@ -40,24 +43,27 @@ export function PassengerServicePage() {
 
   const zonesQuery = useQuery({
     queryKey: ["service-zones"],
-    queryFn: () => fetchJson<ServiceZoneRecord[]>("/bootstrap/service-zones?limit=100"),
-    enabled: status === "authenticated"
+    queryFn: () =>
+      fetchJson<ServiceZoneRecord[]>("/bootstrap/service-zones?limit=100"),
+    enabled: status === "authenticated",
   });
 
   const ridersQuery = useQuery({
     queryKey: ["riders"],
     queryFn: () => fetchJson<RiderRecord[]>("/bootstrap/riders?limit=100"),
-    enabled: status === "authenticated"
+    enabled: status === "authenticated",
   });
 
   const walletsQuery = useQuery({
     queryKey: ["wallets", userId],
     queryFn: () => fetchJson<WalletRecord[]>(`/wallets/users/${userId}`),
-    enabled: status === "authenticated" && Boolean(userId)
+    enabled: status === "authenticated" && Boolean(userId),
   });
 
   const preferredWallet =
-    (walletsQuery.data ?? []).find((wallet) => wallet.currency === session?.user.preferredCurrency) ??
+    (walletsQuery.data ?? []).find(
+      (wallet) => wallet.currency === session?.user.preferredCurrency,
+    ) ??
     walletsQuery.data?.[0] ??
     null;
 
@@ -66,10 +72,10 @@ export function PassengerServicePage() {
       (zonesQuery.data ?? []).map((zone) => ({
         ...zone,
         onlineRiders: (ridersQuery.data ?? []).filter(
-          (rider) => rider.onlineStatus && rider.serviceZoneId === zone.id
-        ).length
+          (rider) => rider.onlineStatus && rider.serviceZoneId === zone.id,
+        ).length,
       })),
-    [ridersQuery.data, zonesQuery.data]
+    [ridersQuery.data, zonesQuery.data],
   );
 
   if (status === "loading") {
@@ -107,16 +113,20 @@ export function PassengerServicePage() {
             <p className="kicker">Service coverage</p>
             <h1>Zones, pricing, and availability</h1>
             <p className="body-muted">
-              This page shows the live service zones, Ghana-first pricing, and rider supply used by the passenger booking flow.
+              This page shows the live service zones, Ghana-first pricing, and
+              rider supply used by the passenger booking flow.
             </p>
           </div>
         </div>
 
-        {(zonesWithSupply.length === 0) ? (
+        {zonesWithSupply.length === 0 ? (
           <section className="exact-passenger-panel">
             <div className="empty-state">
               <strong>No service zones are configured yet.</strong>
-              <p>Create or import a live Ghana service zone from the operator tools and it will show up here.</p>
+              <p>
+                Create or import a live Ghana service zone from the operator
+                tools and it will show up here.
+              </p>
             </div>
           </section>
         ) : (
@@ -124,7 +134,9 @@ export function PassengerServicePage() {
             {zonesWithSupply.map((zone) => (
               <article key={zone.id} className="exact-passenger-panel">
                 <div className="workbench-header">
-                  <p className="kicker">{zone.countryCode === "GH" ? "Ghana" : "Regional"}</p>
+                  <p className="kicker">
+                    {zone.countryCode === "GH" ? "Ghana" : "Regional"}
+                  </p>
                   <h4>{zone.name}</h4>
                   <p className="body-muted">{zone.city} service coverage</p>
                 </div>
@@ -139,7 +151,9 @@ export function PassengerServicePage() {
                   </div>
                   <div>
                     <span>Minimum</span>
-                    <strong>{formatMoney(zone.currency, zone.minimumFare)}</strong>
+                    <strong>
+                      {formatMoney(zone.currency, zone.minimumFare)}
+                    </strong>
                   </div>
                   <div>
                     <span>Live riders</span>
@@ -147,7 +161,10 @@ export function PassengerServicePage() {
                   </div>
                 </div>
                 <p className="body-muted" style={{ marginTop: 18 }}>
-                  Currency: <strong>{currencySymbol(zone.currency)}</strong>. Waiting fee {formatMoney(zone.currency, zone.waitingFeePerMin)} per minute.
+                  Currency: <strong>{currencySymbol(zone.currency)}</strong>.
+                  Waiting fee{" "}
+                  {formatMoney(zone.currency, zone.waitingFeePerMin)} per
+                  minute.
                 </p>
               </article>
             ))}

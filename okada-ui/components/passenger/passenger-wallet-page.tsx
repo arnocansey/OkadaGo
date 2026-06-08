@@ -7,7 +7,10 @@ import { CreditCard, History, Phone, Plus, Wallet } from "lucide-react";
 import { fetchJson, requestJson } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { formatMoney } from "@/lib/currency";
-import { PassengerAccessState, PassengerShell } from "@/components/passenger/passenger-shell";
+import {
+  PassengerAccessState,
+  PassengerShell,
+} from "@/components/passenger/passenger-shell";
 
 type WalletRecord = {
   id: string;
@@ -66,7 +69,7 @@ function formatTransactionTitle(transaction: WalletTransactionRecord) {
 function formatTransactionTime(value: string) {
   return new Intl.DateTimeFormat("en-GH", {
     dateStyle: "medium",
-    timeStyle: "short"
+    timeStyle: "short",
   }).format(new Date(value));
 }
 
@@ -88,17 +91,22 @@ export function PassengerWalletPage() {
   const walletsQuery = useQuery({
     queryKey: ["wallets", userId],
     queryFn: () => fetchJson<WalletRecord[]>(`/wallets/users/${userId}`),
-    enabled: status === "authenticated" && Boolean(userId)
+    enabled: status === "authenticated" && Boolean(userId),
   });
 
   const transactionsQuery = useQuery({
     queryKey: ["wallet-transactions", userId],
-    queryFn: () => fetchJson<WalletTransactionRecord[]>(`/wallets/users/${userId}/transactions`),
-    enabled: status === "authenticated" && Boolean(userId)
+    queryFn: () =>
+      fetchJson<WalletTransactionRecord[]>(
+        `/wallets/users/${userId}/transactions`,
+      ),
+    enabled: status === "authenticated" && Boolean(userId),
   });
 
   const preferredWallet =
-    (walletsQuery.data ?? []).find((wallet) => wallet.currency === session?.user.preferredCurrency) ??
+    (walletsQuery.data ?? []).find(
+      (wallet) => wallet.currency === session?.user.preferredCurrency,
+    ) ??
     walletsQuery.data?.[0] ??
     null;
 
@@ -111,7 +119,7 @@ export function PassengerWalletPage() {
             : Number(wallet.availableBalance ?? 0);
         return sum + (Number.isFinite(amount) ? amount : 0);
       }, 0),
-    [walletsQuery.data]
+    [walletsQuery.data],
   );
 
   const topUpMutation = useMutation({
@@ -125,19 +133,22 @@ export function PassengerWalletPage() {
         throw new Error("Enter a valid amount before continuing to Paystack.");
       }
 
-      return requestJson<{ authorizationUrl: string }>("/wallets/top-up/paystack/initialize", {
-        method: "POST",
-        token: session.token,
-        body: JSON.stringify({
-          amount,
-          currency: session?.user.preferredCurrency ?? "GHS",
-          walletType: "passenger_cashless"
-        })
-      });
+      return requestJson<{ authorizationUrl: string }>(
+        "/wallets/top-up/paystack/initialize",
+        {
+          method: "POST",
+          token: session.token,
+          body: JSON.stringify({
+            amount,
+            currency: session?.user.preferredCurrency ?? "GHS",
+            walletType: "passenger_cashless",
+          }),
+        },
+      );
     },
     onSuccess: (payload) => {
       window.location.href = payload.authorizationUrl;
-    }
+    },
   });
 
   const topUpStatus = searchParams.get("topup");
@@ -180,7 +191,8 @@ export function PassengerWalletPage() {
             Wallet & Payments
           </h1>
           <p className="body-muted mt-2 max-w-2xl">
-            Manage your passenger balance and review the real payment activity tied to your account.
+            Manage your passenger balance and review the real payment activity
+            tied to your account.
           </p>
         </div>
 
@@ -189,7 +201,9 @@ export function PassengerWalletPage() {
             <div className="absolute right-0 top-0 h-32 w-32 -translate-y-6 translate-x-6 rounded-full bg-white/10 blur-2xl" />
             <div className="relative space-y-5">
               <div>
-                <p className="text-sm font-medium text-emerald-100">Available balance</p>
+                <p className="text-sm font-medium text-emerald-100">
+                  Available balance
+                </p>
                 <h2 className="mt-2 text-4xl font-bold">
                   {formatMoney(session.user.preferredCurrency, totalAvailable)}
                 </h2>
@@ -215,7 +229,9 @@ export function PassengerWalletPage() {
               ) : null}
 
               <div className="space-y-3">
-                <label className="block text-sm font-medium text-emerald-100">Top-up amount</label>
+                <label className="block text-sm font-medium text-emerald-100">
+                  Top-up amount
+                </label>
                 <input
                   className="min-h-12 w-full rounded-2xl border border-white/20 bg-white/10 px-4 text-white outline-none placeholder:text-emerald-100/80"
                   value={topUpAmount}
@@ -229,7 +245,9 @@ export function PassengerWalletPage() {
                   disabled={topUpMutation.isPending}
                 >
                   <Plus className="h-4 w-4" />
-                  {topUpMutation.isPending ? "Redirecting..." : "Continue to Paystack"}
+                  {topUpMutation.isPending
+                    ? "Redirecting..."
+                    : "Continue to Paystack"}
                 </button>
               </div>
 
@@ -244,17 +262,26 @@ export function PassengerWalletPage() {
           <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
               <div>
-                <h3 className="text-lg font-semibold text-slate-900">Wallet accounts</h3>
-                <p className="mt-1 text-sm text-slate-500">Live balances and locked amounts across your account.</p>
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Wallet accounts
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Live balances and locked amounts across your account.
+                </p>
               </div>
             </div>
 
             {(walletsQuery.data ?? []).length === 0 ? (
-              <div className="px-6 py-8 text-sm text-slate-500">No wallet accounts have been created yet.</div>
+              <div className="px-6 py-8 text-sm text-slate-500">
+                No wallet accounts have been created yet.
+              </div>
             ) : (
               <div className="divide-y divide-slate-200">
                 {(walletsQuery.data ?? []).map((wallet) => (
-                  <div key={wallet.id} className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-slate-50">
+                  <div
+                    key={wallet.id}
+                    className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-slate-50"
+                  >
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
                         {wallet.type === "PROMO_CREDIT" ? (
@@ -266,9 +293,12 @@ export function PassengerWalletPage() {
                         )}
                       </div>
                       <div>
-                        <p className="font-medium text-slate-900">{formatWalletType(wallet.type)}</p>
+                        <p className="font-medium text-slate-900">
+                          {formatWalletType(wallet.type)}
+                        </p>
                         <p className="text-xs text-slate-500">
-                          Locked {formatMoney(wallet.currency, wallet.lockedBalance)}
+                          Locked{" "}
+                          {formatMoney(wallet.currency, wallet.lockedBalance)}
                         </p>
                       </div>
                     </div>
@@ -277,7 +307,9 @@ export function PassengerWalletPage() {
                       <p className="font-semibold text-slate-900">
                         {formatMoney(wallet.currency, wallet.availableBalance)}
                       </p>
-                      <p className="text-xs text-slate-500">{wallet.currency}</p>
+                      <p className="text-xs text-slate-500">
+                        {wallet.currency}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -288,13 +320,16 @@ export function PassengerWalletPage() {
 
         <section className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-200 px-6 py-5">
-            <h3 className="text-lg font-semibold text-slate-900">Recent transactions</h3>
+            <h3 className="text-lg font-semibold text-slate-900">
+              Recent transactions
+            </h3>
           </div>
 
           <div className="px-6 py-5">
             {(transactionsQuery.data ?? []).length === 0 ? (
               <div className="text-sm text-slate-500">
-                Wallet activity will appear here after top-ups, ride payments, or credits are posted.
+                Wallet activity will appear here after top-ups, ride payments,
+                or credits are posted.
               </div>
             ) : (
               <div className="space-y-4">
@@ -310,7 +345,9 @@ export function PassengerWalletPage() {
                       <div className="flex items-center gap-3">
                         <div
                           className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                            isCredit ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600"
+                            isCredit
+                              ? "bg-emerald-100 text-emerald-700"
+                              : "bg-slate-100 text-slate-600"
                           }`}
                         >
                           <TransactionIcon className="h-5 w-5" />
@@ -324,16 +361,22 @@ export function PassengerWalletPage() {
                           </p>
                           {transaction.ride ? (
                             <p className="mt-1 text-xs text-slate-400">
-                              {transaction.ride.pickupAddress} to {transaction.ride.destinationAddress}
+                              {transaction.ride.pickupAddress} to{" "}
+                              {transaction.ride.destinationAddress}
                             </p>
                           ) : null}
                         </div>
                       </div>
 
                       <div className="text-right">
-                        <div className={`font-semibold ${isCredit ? "text-emerald-700" : "text-slate-900"}`}>
+                        <div
+                          className={`font-semibold ${isCredit ? "text-emerald-700" : "text-slate-900"}`}
+                        >
                           {isCredit ? "+" : "-"}
-                          {formatMoney(transaction.currency, transaction.amount)}
+                          {formatMoney(
+                            transaction.currency,
+                            transaction.amount,
+                          )}
                         </div>
                         <div className="text-xs uppercase tracking-wide text-slate-400">
                           {transaction.status}

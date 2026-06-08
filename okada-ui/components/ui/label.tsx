@@ -8,7 +8,10 @@ export function Label({
   ...props
 }: LabelHTMLAttributes<HTMLLabelElement>) {
   return (
-    <label className={`block text-sm font-medium text-slate-700 ${className}`.trim()} {...props}>
+    <label
+      className={`block text-sm font-medium text-slate-700 ${className}`.trim()}
+      {...props}
+    >
       {children}
     </label>
   );

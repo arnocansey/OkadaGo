@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { requestJson } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { PassengerAccessState, PassengerShell } from "@/components/passenger/passenger-shell";
+import {
+  PassengerAccessState,
+  PassengerShell,
+} from "@/components/passenger/passenger-shell";
 
 type WalletRecord = {
   id: string;
@@ -55,22 +58,23 @@ export function PassengerSettingsPage() {
     fullName: "",
     email: "",
     defaultServiceCity: "",
-    preferredPayment: "cash"
+    preferredPayment: "cash",
   });
 
   const walletsQuery = useQuery({
     queryKey: ["wallets", userId],
     queryFn: () => requestJson<WalletRecord[]>(`/wallets/users/${userId}`),
-    enabled: status === "authenticated" && Boolean(userId)
+    enabled: status === "authenticated" && Boolean(userId),
   });
 
   const settingsQuery = useQuery({
     queryKey: ["passenger-settings", session?.token],
     queryFn: () =>
       requestJson<PassengerSettingsResponse>("/auth/passenger/settings", {
-        token: session?.token
+        token: session?.token,
       }),
-    enabled: status === "authenticated" && isPassenger && Boolean(session?.token)
+    enabled:
+      status === "authenticated" && isPassenger && Boolean(session?.token),
   });
 
   useEffect(() => {
@@ -82,12 +86,14 @@ export function PassengerSettingsPage() {
       fullName: settingsQuery.data.fullName,
       email: settingsQuery.data.email ?? "",
       defaultServiceCity: settingsQuery.data.defaultServiceCity ?? "",
-      preferredPayment: settingsQuery.data.preferredPayment ?? "cash"
+      preferredPayment: settingsQuery.data.preferredPayment ?? "cash",
     });
   }, [settingsQuery.data]);
 
   const preferredWallet =
-    (walletsQuery.data ?? []).find((wallet) => wallet.currency === session?.user.preferredCurrency) ??
+    (walletsQuery.data ?? []).find(
+      (wallet) => wallet.currency === session?.user.preferredCurrency,
+    ) ??
     walletsQuery.data?.[0] ??
     null;
 
@@ -100,18 +106,21 @@ export function PassengerSettingsPage() {
           fullName: form.fullName.trim(),
           email: form.email.trim() || null,
           defaultServiceCity: form.defaultServiceCity.trim() || null,
-          preferredPayment: form.preferredPayment || null
-        })
+          preferredPayment: form.preferredPayment || null,
+        }),
       }),
     onSuccess: async (payload) => {
       setSession({
         token: payload.token,
         expiresAt: payload.expiresAt,
-        user: payload.user
+        user: payload.user,
       });
-      queryClient.setQueryData(["passenger-settings", payload.token], payload.settings);
+      queryClient.setQueryData(
+        ["passenger-settings", payload.token],
+        payload.settings,
+      );
       await queryClient.invalidateQueries({ queryKey: ["wallets", userId] });
-    }
+    },
   });
 
   if (status === "loading") {
@@ -149,7 +158,8 @@ export function PassengerSettingsPage() {
             <p className="kicker">Settings</p>
             <h1>Your passenger account</h1>
             <p className="body-muted">
-              Update the account details and ride preferences that drive your passenger experience.
+              Update the account details and ride preferences that drive your
+              passenger experience.
             </p>
           </div>
         </div>
@@ -157,15 +167,22 @@ export function PassengerSettingsPage() {
         <div className="exact-passenger-summary-grid">
           <article className="exact-passenger-summary-card">
             <span>Phone</span>
-            <strong>{settingsQuery.data?.phoneE164 ?? session.user.phoneE164}</strong>
+            <strong>
+              {settingsQuery.data?.phoneE164 ?? session.user.phoneE164}
+            </strong>
           </article>
           <article className="exact-passenger-summary-card">
             <span>Currency</span>
-            <strong>{settingsQuery.data?.preferredCurrency ?? session.user.preferredCurrency}</strong>
+            <strong>
+              {settingsQuery.data?.preferredCurrency ??
+                session.user.preferredCurrency}
+            </strong>
           </article>
           <article className="exact-passenger-summary-card">
             <span>Referral code</span>
-            <strong>{settingsQuery.data?.referralCode ?? "Not assigned"}</strong>
+            <strong>
+              {settingsQuery.data?.referralCode ?? "Not assigned"}
+            </strong>
           </article>
         </div>
 
@@ -173,7 +190,10 @@ export function PassengerSettingsPage() {
           <div className="workbench-header">
             <p className="kicker">Profile</p>
             <h4>Identity and contact</h4>
-            <p className="body-muted">These details are used across booking, wallet receipts, and support.</p>
+            <p className="body-muted">
+              These details are used across booking, wallet receipts, and
+              support.
+            </p>
           </div>
 
           <div className="two-up" style={{ marginTop: 18 }}>
@@ -182,7 +202,12 @@ export function PassengerSettingsPage() {
               <input
                 className="input"
                 value={form.fullName}
-                onChange={(event) => setForm((current) => ({ ...current, fullName: event.target.value }))}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    fullName: event.target.value,
+                  }))
+                }
                 placeholder="Your full name"
               />
             </div>
@@ -192,7 +217,12 @@ export function PassengerSettingsPage() {
                 className="input"
                 type="email"
                 value={form.email}
-                onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    email: event.target.value,
+                  }))
+                }
                 placeholder="name@example.com"
               />
             </div>
@@ -201,13 +231,20 @@ export function PassengerSettingsPage() {
           <div className="two-up" style={{ marginTop: 18 }}>
             <div className="field-group">
               <label className="field-label">Phone number</label>
-              <input className="input" value={settingsQuery.data?.phoneE164 ?? session.user.phoneE164} readOnly />
+              <input
+                className="input"
+                value={settingsQuery.data?.phoneE164 ?? session.user.phoneE164}
+                readOnly
+              />
             </div>
             <div className="field-group">
               <label className="field-label">Preferred currency</label>
               <input
                 className="input"
-                value={settingsQuery.data?.preferredCurrency ?? session.user.preferredCurrency}
+                value={
+                  settingsQuery.data?.preferredCurrency ??
+                  session.user.preferredCurrency
+                }
                 readOnly
               />
             </div>
@@ -218,7 +255,10 @@ export function PassengerSettingsPage() {
           <div className="workbench-header">
             <p className="kicker">Ride preferences</p>
             <h4>Booking defaults</h4>
-            <p className="body-muted">These defaults help us preload the right city and payment experience.</p>
+            <p className="body-muted">
+              These defaults help us preload the right city and payment
+              experience.
+            </p>
           </div>
 
           <div className="two-up" style={{ marginTop: 18 }}>
@@ -228,7 +268,10 @@ export function PassengerSettingsPage() {
                 className="input"
                 value={form.defaultServiceCity}
                 onChange={(event) =>
-                  setForm((current) => ({ ...current, defaultServiceCity: event.target.value }))
+                  setForm((current) => ({
+                    ...current,
+                    defaultServiceCity: event.target.value,
+                  }))
                 }
                 placeholder="Accra"
               />
@@ -241,7 +284,11 @@ export function PassengerSettingsPage() {
                 onChange={(event) =>
                   setForm((current) => ({
                     ...current,
-                    preferredPayment: event.target.value as "cash" | "card" | "wallet" | "mobile_money"
+                    preferredPayment: event.target.value as
+                      | "cash"
+                      | "card"
+                      | "wallet"
+                      | "mobile_money",
                   }))
                 }
               >
@@ -272,7 +319,10 @@ export function PassengerSettingsPage() {
           ) : null}
 
           {saveMutation.isSuccess ? (
-            <div className="exact-passenger-inline-success" style={{ marginTop: 18 }}>
+            <div
+              className="exact-passenger-inline-success"
+              style={{ marginTop: 18 }}
+            >
               Your passenger settings were updated successfully.
             </div>
           ) : null}

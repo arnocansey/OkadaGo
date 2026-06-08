@@ -8,12 +8,12 @@ import { AppShell } from "@/components/layout/app-shell";
 
 const bodyFont = Inter({
   subsets: ["latin"],
-  variable: "--font-body"
+  variable: "--font-body",
 });
 
 const displayFont = Space_Grotesk({
   subsets: ["latin"],
-  variable: "--font-display"
+  variable: "--font-display",
 });
 
 export const metadata: Metadata = {
@@ -23,18 +23,21 @@ export const metadata: Metadata = {
   applicationName: "OkadaGo",
   metadataBase: new URL("https://okadago.local"),
   icons: {
-    icon: "/icon.svg"
-  }
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
-  children
+  children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
-      <body className={`${bodyFont.variable} ${displayFont.variable}`} suppressHydrationWarning>
+      <body
+        className={`${bodyFont.variable} ${displayFont.variable}`}
+        suppressHydrationWarning
+      >
         <QueryProvider>
           <PwaProvider />
           <AppShell>{children}</AppShell>

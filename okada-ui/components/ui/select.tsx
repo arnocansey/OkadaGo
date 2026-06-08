@@ -2,19 +2,27 @@
 
 import type { HTMLAttributes, ReactNode } from "react";
 
-export function Select({ children }: { children: ReactNode; defaultValue?: string }) {
+export function Select({
+  children,
+}: {
+  children: ReactNode;
+  defaultValue?: string;
+}) {
   return <div className="relative">{children}</div>;
 }
 
 export function SelectTrigger({
   className = "",
-  children
+  children,
 }: {
   className?: string;
   children?: ReactNode;
 }) {
   return (
-    <button type="button" className={`inline-flex items-center justify-between ${className}`.trim()}>
+    <button
+      type="button"
+      className={`inline-flex items-center justify-between ${className}`.trim()}
+    >
       {children}
     </button>
   );
@@ -26,7 +34,7 @@ export function SelectValue({ placeholder }: { placeholder?: string }) {
 
 export function SelectContent({
   className = "",
-  children
+  children,
 }: {
   className?: string;
   children?: ReactNode;
@@ -36,7 +44,7 @@ export function SelectContent({
 
 export function SelectItem({
   className = "",
-  children
+  children,
 }: {
   className?: string;
   children?: ReactNode;

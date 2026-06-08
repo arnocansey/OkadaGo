@@ -4,7 +4,7 @@ const navItems = [
   { href: "/", label: "Overview" },
   { href: "/passenger", label: "Passenger" },
   { href: "/rider", label: "Rider" },
-  { href: "/admin", label: "Admin" }
+  { href: "/admin", label: "Admin" },
 ];
 
 export function SiteHeader() {

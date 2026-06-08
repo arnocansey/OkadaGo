@@ -7,7 +7,7 @@ export function Switch({
   defaultChecked = false,
   checked,
   id,
-  onCheckedChange
+  onCheckedChange,
 }: {
   className?: string;
   defaultChecked?: boolean;
