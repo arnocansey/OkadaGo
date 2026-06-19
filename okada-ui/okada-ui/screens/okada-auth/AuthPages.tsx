@@ -325,7 +325,7 @@ export function AuthPages({
       </div>
 
       {/* Right side form column */}
-      <div className="relative flex flex-1 flex-col items-center justify-center overflow-y-auto bg-white px-5 py-8 sm:px-8 sm:py-10 md:p-12">
+      <div className="relative flex flex-1 flex-col items-center justify-center overflow-y-auto bg-white text-foreground px-5 py-8 sm:px-8 sm:py-10 md:p-12">
         <div className="w-full max-w-md md:max-w-lg">
           <div className="mb-6 flex justify-start">
             <Link
