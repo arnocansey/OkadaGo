@@ -3,6 +3,7 @@ import { Alert, Pressable, Text, View } from "react-native";
 import { ChevronRight, CreditCard, Gift, HelpCircle, List, LogOut, MapPin, Settings, ShieldAlert, Tag, Wallet as WalletIcon } from "lucide-react-native";
 import { money } from "../api";
 import { Card, Field, ListRow, Pill, PrimaryButton, StatCard, styles } from "../components/ui";
+import { BottomSheet } from "../components/BottomSheet";
 import type { Delivery, Ride, SessionUser, Wallet } from "../types";
 
 export function ProfileScreen({
@@ -89,25 +90,21 @@ export function ProfileScreen({
         <View style={styles.grid}>
           <StatCard label="Wallet" value={money(wallet?.availableBalance, wallet?.currency ?? user.preferredCurrency)} />
           <StatCard label="Trips" value={`${completedTrips}`} />
-        </View>
-        {editing ? (
-          <>
-            <Field label="Full name" value={fullName} onChangeText={setFullName} placeholder="Your name" />
-            <Field label="Email" value={email} onChangeText={setEmail} placeholder="name@email.com" keyboardType="email-address" autoCapitalize="none" />
-            <Field label="Phone" value={phone} onChangeText={setPhone} placeholder="+233..." keyboardType="phone-pad" />
-            <View style={styles.grid}>
-              <PrimaryButton label="Save profile" onPress={saveProfile} />
-              <PrimaryButton label="Cancel" dark onPress={() => setEditing(false)} />
-            </View>
-          </>
-        ) : (
-          <>
-            <ListRow title="Email" body={user.email ?? "No email added"} meta="Account contact" />
-            <ListRow title="Deliveries" body={`${activeDeliveries} active`} meta="Current package requests" />
-            {message ? <Text style={styles.muted}>{message}</Text> : null}
-          </>
-        )}
+         </View>
+        <ListRow title="Email" body={user.email ?? "No email added"} meta="Account contact" />
+        <ListRow title="Deliveries" body={`${activeDeliveries} active`} meta="Current package requests" />
+        {message ? <Text style={styles.muted}>{message}</Text> : null}
       </Card>
+
+      <BottomSheet visible={editing} onClose={() => setEditing(false)} title="Edit Profile">
+        <Field label="Full name" value={fullName} onChangeText={setFullName} placeholder="Your name" />
+        <Field label="Email" value={email} onChangeText={setEmail} placeholder="name@email.com" keyboardType="email-address" autoCapitalize="none" />
+        <Field label="Phone" value={phone} onChangeText={setPhone} placeholder="+233..." keyboardType="phone-pad" />
+        <View style={styles.grid}>
+          <PrimaryButton label="Save profile" onPress={saveProfile} />
+          <PrimaryButton label="Cancel" dark onPress={() => setEditing(false)} />
+        </View>
+      </BottomSheet>
 
       <View style={styles.profileMenu}>
         {menuItems.map((item) => {

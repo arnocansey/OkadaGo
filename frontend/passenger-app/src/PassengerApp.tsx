@@ -19,6 +19,10 @@ import { TripsScreen } from "./screens/TripsScreen";
 import { WalletScreen } from "./screens/WalletScreen";
 import { clearSavedSession, loadSavedSession, saveSession } from "./session-storage";
 import type { Delivery, PassengerScreen, Ride, ServiceZone, Session, SessionUser, Wallet, WalletTransaction } from "./types";
+import { PassengerWebSocketService } from "./services/websocket";
+import { useToast, useConfirm } from "./hooks/useToastAndConfirm";
+
+const ws = new PassengerWebSocketService();
 
 export default function PassengerApp() {
   return (
@@ -29,6 +33,8 @@ export default function PassengerApp() {
 }
 
 function PassengerAppContent() {
+  const { showToast, ToastComponent } = useToast();
+  const { confirm, ConfirmComponent } = useConfirm();
   const [session, setSession] = useState<Session | null>(null);
   const [authStep, setAuthStep] = useState<"splash" | "auth">("splash");
   const [activeScreen, setActiveScreen] = useState<PassengerScreen>("home");
@@ -116,6 +122,54 @@ function PassengerAppContent() {
     }
   }, [session?.token]);
 
+  useEffect(() => {
+    if (session?.token) {
+      ws.connect(session.token).catch((err) => {
+        console.error("Failed to connect WebSocket:", err);
+      });
+
+      ws.on("ride:assigned", (data: any) => {
+        refresh();
+        showToast("Rider assigned to your trip!", "success");
+      });
+
+      ws.on("ride:status-update", (data: any) => {
+        setRides((prev) =>
+          prev.map((r) => (r.id === data.id ? { ...r, ...data } : r))
+        );
+        showToast(`Trip status: ${data.status}`, "info");
+      });
+
+      ws.on("delivery:status-update", (data: any) => {
+        setDeliveries((prev) =>
+          prev.map((d) => (d.id === data.id ? { ...d, ...data } : d))
+        );
+        showToast(`Delivery status: ${data.status}`, "info");
+      });
+
+      ws.on("notification", (data: any) => {
+        showToast(data.message || "New notification received", "info");
+      });
+    }
+
+    return () => {
+      ws.disconnect();
+    };
+  }, [session?.token]);
+
+  async function handleLogout() {
+    const confirmed = await confirm({
+      title: "Sign Out",
+      message: "Are you sure you want to sign out?",
+      confirmText: "Sign Out",
+      isDangerous: true,
+    });
+    if (confirmed) {
+      await logout();
+      showToast("Signed out successfully", "success");
+    }
+  }
+
   if (restoring) {
     return (
       <>
@@ -191,6 +245,8 @@ function PassengerAppContent() {
           </ScrollView>
         )}
         {showNav ? <BottomNav active={activeScreen} onChange={changeTab} /> : null}
+        {ToastComponent}
+        {ConfirmComponent}
       </SafeAreaView>
     );
   }
@@ -221,7 +277,7 @@ function PassengerAppContent() {
   function TripsRoute() {
     return (
       <Chrome showNav hideTopBar>
-        <TripsScreen rides={rides} deliveries={deliveries} />
+        <TripsScreen rides={rides} deliveries={deliveries} loading={loading} onRefresh={() => refresh()} />
       </Chrome>
     );
   }
@@ -250,7 +306,7 @@ function PassengerAppContent() {
             setFlowScreen("book");
           }}
           onMenu={() => setFlowScreen("menu")}
-          onLogout={logout}
+          onLogout={handleLogout}
         />
       </Chrome>
     );
@@ -322,7 +378,7 @@ function PassengerAppContent() {
             setActiveScreen("profile");
             setFlowScreen(null);
           }}
-          onLogout={logout}
+          onLogout={handleLogout}
         />
       </Chrome>
     );

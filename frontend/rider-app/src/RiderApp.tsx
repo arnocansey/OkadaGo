@@ -23,6 +23,10 @@ import { TripProgressScreen } from "./screens/TripProgressScreen";
 import { WalletScreen } from "./screens/WalletScreen";
 import { clearSavedSession, loadSavedSession, saveSession } from "./session-storage";
 import type { Delivery, PayoutRequest, Ride, RiderScreen, ServiceZone, Session, Wallet, WalletTransaction } from "./types";
+import { RiderWebSocketService } from "./services/websocket";
+import { useToast, useConfirm } from "./hooks/useToastAndConfirm";
+
+const ws = new RiderWebSocketService();
 
 export default function RiderApp() {
   return (
@@ -33,6 +37,8 @@ export default function RiderApp() {
 }
 
 function RiderAppContent() {
+  const { showToast, ToastComponent } = useToast();
+  const { confirm, ConfirmComponent } = useConfirm();
   const [session, setSession] = useState<Session | null>(null);
   const [activeScreen, setActiveScreen] = useState<RiderScreen>("dashboard");
   const [flowScreen, setFlowScreen] = useState<"request" | "way" | "arrived" | "progress" | "completed" | "incentives" | "documents" | "settings" | null>(null);
@@ -116,7 +122,39 @@ function RiderAppContent() {
   }
 
   useEffect(() => {
-    if (session) refresh(session);
+    if (session) {
+      refresh(session);
+    }
+  }, [session?.token]);
+
+  useEffect(() => {
+    if (session?.token) {
+      ws.connect(session.token).catch((err) => {
+        console.error("Failed to connect WebSocket:", err);
+      });
+
+      ws.on("ride:status-update", (data: any) => {
+        setRides((prev) =>
+          prev.map((r) => (r.id === data.id ? { ...r, ...data } : r))
+        );
+        showToast(`Ride status updated to ${data.status}`, "info");
+      });
+
+      ws.on("delivery:status-update", (data: any) => {
+        setDeliveries((prev) =>
+          prev.map((d) => (d.id === data.id ? { ...d, ...data } : d))
+        );
+        showToast(`Delivery status updated to ${data.status}`, "info");
+      });
+
+      ws.on("notification", (data: any) => {
+        showToast(data.message || "New notification received", "info");
+      });
+    }
+
+    return () => {
+      ws.disconnect();
+    };
   }, [session?.token]);
 
   if (restoring) {
@@ -158,6 +196,17 @@ function RiderAppContent() {
   async function toggleAvailability() {
     if (!activeSession.user.riderProfileId) return;
     const nextOnline = !online;
+    
+    if (online) {
+      const confirmed = await confirm({
+        title: "Go Offline?",
+        message: "Are you sure you want to stop accepting new ride and delivery requests?",
+        confirmText: "Go Offline",
+        isDangerous: true,
+      });
+      if (!confirmed) return;
+    }
+    
     setMessage("");
     try {
       await api(`/riders/${activeSession.user.riderProfileId}/availability`, {
@@ -165,9 +214,23 @@ function RiderAppContent() {
         body: { onlineStatus: nextOnline, serviceZoneId: zones[0]?.id },
       });
       setOnline(nextOnline);
+      showToast(nextOnline ? "You are now online!" : "You are now offline", "success");
     } catch (error) {
       setOnline(false);
       setMessage(error instanceof Error ? error.message : "Could not update availability.");
+    }
+  }
+
+  async function handleLogout() {
+    const confirmed = await confirm({
+      title: "Sign Out",
+      message: "Are you sure you want to sign out?",
+      confirmText: "Sign Out",
+      isDangerous: true,
+    });
+    if (confirmed) {
+      await logout();
+      showToast("Signed out successfully", "success");
     }
   }
 
@@ -220,6 +283,8 @@ function RiderAppContent() {
           </View>
         ) : null}
         {showNav ? <BottomNav active={activeScreen} onChange={setActiveScreen} /> : null}
+        {ToastComponent}
+        {ConfirmComponent}
       </SafeAreaView>
     );
   }
@@ -253,6 +318,9 @@ function RiderAppContent() {
           onOpenActiveTrip={openTripFlow}
           onOpenIncentives={() => setFlowScreen("incentives")}
           onOpenDocuments={() => setFlowScreen("documents")}
+          onOpenEarnings={() => setActiveScreen("earnings")}
+          onOpenWallet={() => setActiveScreen("wallet")}
+          onSimulateRequest={() => setFlowScreen("request")}
         />
       </Chrome>
     );
@@ -269,7 +337,7 @@ function RiderAppContent() {
   function TripsRoute() {
     return (
       <Chrome showNav>
-        <TripsScreen session={activeSession} rides={rides} deliveries={deliveries} onRefresh={() => refresh()} />
+        <TripsScreen session={activeSession} rides={rides} deliveries={deliveries} loading={loading} onRefresh={() => refresh()} />
       </Chrome>
     );
   }
@@ -291,7 +359,7 @@ function RiderAppContent() {
           onDocuments={() => setFlowScreen("documents")}
           onSettings={() => setFlowScreen("settings")}
           onWallet={() => setActiveScreen("wallet")}
-          onLogout={logout}
+          onLogout={handleLogout}
         />
       </Chrome>
     );
@@ -370,7 +438,7 @@ function RiderAppContent() {
   function SettingsRoute() {
     return (
       <Chrome onBack={() => setFlowScreen(null)}>
-        <SettingsScreen user={activeSession.user} onLogout={logout} />
+        <SettingsScreen user={activeSession.user} onLogout={handleLogout} />
       </Chrome>
     );
   }

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { RiderPortalPage, type RiderPortalScreen } from "@/components/rider/rider-portal-page";
+import type { RiderPortalScreen } from "@/components/rider/rider-portal-page";
+import RiderScreenClient from "./rider-screen-client";
 
 export default async function RiderScreenPage({
   params
@@ -21,5 +22,5 @@ export default async function RiderScreenPage({
     notFound();
   }
 
-  return <RiderPortalPage screen={riderScreen} />;
+  return <RiderScreenClient screen={riderScreen} />;
 }

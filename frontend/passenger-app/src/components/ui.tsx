@@ -46,12 +46,10 @@ export const palette = {
   panel: "#1C1C1E",
   panelRaised: "#252525",
   stroke: "#252525",
-  muted: "#9CA3AF",
+  muted: "#A3A3A3",
   yellow: "#FACC15",
   orange: "#FF6B00",
-  deepOrange: "#D95F00",
-  goldWash: "#FFF2B8",
-  green: "#D96A00",
+  green: "#22C55E",
   red: "#DC3C2E",
 };
 
@@ -73,7 +71,15 @@ export function Field(props: React.ComponentProps<typeof TextInput> & { label: s
   return (
     <View style={styles.fieldWrap}>
       <Text style={styles.fieldLabel}>{label}</Text>
-      <TextInput placeholderTextColor="#8B8F98" style={styles.input} {...rest} />
+      <TextInput
+        placeholderTextColor="#8B8F98"
+        style={styles.input}
+        accessible={true}
+        accessibilityLabel={label}
+        accessibilityRole="text"
+        accessibilityHint={rest.placeholder?.toString()}
+        {...rest}
+      />
     </View>
   );
 }
@@ -94,6 +100,9 @@ export function PrimaryButton({
       style={[styles.primaryButton, dark && styles.primaryButtonDark, disabled && styles.disabledButton]}
       onPress={onPress}
       disabled={disabled}
+      accessible={true}
+      accessibilityRole="button"
+      accessibilityLabel={label}
     >
       <Text style={[styles.primaryButtonText, dark && styles.primaryButtonTextDark]}>{label}</Text>
     </Pressable>
@@ -105,24 +114,6 @@ export function StatCard({ label, value }: { label: string; value: string }) {
     <View style={styles.statCard}>
       <Text style={styles.statLabel}>{label}</Text>
       <Text style={styles.statValue}>{value}</Text>
-    </View>
-  );
-}
-
-export function IconBadge({ label, tone = "yellow" }: { label: string; tone?: "yellow" | "green" | "dark" }) {
-  return (
-    <View style={[styles.iconBadge, tone === "green" && styles.iconBadgeGreen, tone === "dark" && styles.iconBadgeDark]}>
-      <Text style={[styles.iconBadgeText, tone === "dark" && styles.iconBadgeTextLight]}>{label}</Text>
-    </View>
-  );
-}
-
-export function ServiceTile({ icon, title, body }: { icon: string; title: string; body: string }) {
-  return (
-    <View style={styles.serviceTile}>
-      <IconBadge label={icon} />
-      <Text style={styles.serviceTitle}>{title}</Text>
-      <Text style={styles.serviceBody}>{body}</Text>
     </View>
   );
 }
@@ -218,6 +209,49 @@ export function EmptyState({ title, body }: { title: string; body: string }) {
   );
 }
 
+export function ErrorCard({ error, onRetry, dismissible, onDismiss }: { error: string; onRetry?: () => void; dismissible?: boolean; onDismiss?: () => void }) {
+  return (
+    <View style={styles.errorCard}>
+      <View style={styles.errorContent}>
+        <Text style={styles.errorCardTitle}>Error</Text>
+        <Text style={styles.errorCardMessage}>{error}</Text>
+      </View>
+      <View style={styles.errorActions}>
+        {onRetry && (
+          <Pressable style={styles.errorRetryButton} onPress={onRetry} accessible={true} accessibilityRole="button" accessibilityLabel="Retry">
+            <Text style={styles.errorRetryButtonText}>Retry</Text>
+          </Pressable>
+        )}
+        {dismissible && onDismiss && (
+          <Pressable style={styles.errorDismissButton} onPress={onDismiss} accessible={true} accessibilityRole="button" accessibilityLabel="Dismiss error">
+            <Text style={styles.errorDismissButtonText}>×</Text>
+          </Pressable>
+        )}
+      </View>
+    </View>
+  );
+}
+
+export function ConfirmDialog({ visible, title, message, confirmText, cancelText, onConfirm, onCancel, isDangerous }: { visible: boolean; title: string; message: string; confirmText: string; cancelText?: string; onConfirm: () => void; onCancel?: () => void; isDangerous?: boolean }) {
+  if (!visible) return null;
+  return (
+    <View style={styles.confirmDialogOverlay}>
+      <View style={styles.confirmDialog}>
+        <Text style={styles.confirmDialogTitle}>{title}</Text>
+        <Text style={styles.confirmDialogMessage}>{message}</Text>
+        <View style={styles.confirmDialogActions}>
+          <Pressable style={styles.confirmDialogCancelButton} onPress={onCancel} accessible={true} accessibilityRole="button" accessibilityLabel={cancelText || "Cancel"}>
+            <Text style={styles.confirmDialogCancelButtonText}>{cancelText || "Cancel"}</Text>
+          </Pressable>
+          <Pressable style={[styles.confirmDialogConfirmButton, isDangerous && styles.confirmDialogDangerButton]} onPress={onConfirm} accessible={true} accessibilityRole="button" accessibilityLabel={confirmText}>
+            <Text style={[styles.confirmDialogConfirmButtonText, isDangerous && styles.confirmDialogDangerButtonText]}>{confirmText}</Text>
+          </Pressable>
+        </View>
+      </View>
+    </View>
+  );
+}
+
 export const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: palette.ink },
   content: { padding: 16, paddingBottom: 126, gap: 14 },
@@ -251,21 +285,13 @@ export const styles = StyleSheet.create({
   heroTitle: { color: "#111111", fontSize: 28, lineHeight: 32, fontWeight: "900" },
   heroCopy: { color: "#3A2500", fontSize: 15, lineHeight: 22 },
   grid: { flexDirection: "row", gap: 10 },
-  serviceTile: { flex: 1, backgroundColor: "#160B02", borderRadius: 24, padding: 15, gap: 9, borderWidth: 1, borderColor: "#4B2907" },
-  serviceTitle: { color: "#FFFFFF", fontSize: 16, fontWeight: "900" },
-  serviceBody: { color: "#A8ADB6", fontSize: 13, lineHeight: 18 },
-  iconBadge: { width: 42, height: 42, borderRadius: 16, backgroundColor: palette.yellow, alignItems: "center", justifyContent: "center" },
-  iconBadgeGreen: { backgroundColor: palette.orange },
-  iconBadgeDark: { backgroundColor: "#241505", borderWidth: 1, borderColor: "#7A4209" },
-  iconBadgeText: { color: "#111111", fontSize: 14, fontWeight: "900" },
-  iconBadgeTextLight: { color: "#FFFFFF" },
   statCard: { flex: 1, backgroundColor: palette.panelRaised, borderRadius: 24, padding: 16, borderWidth: 1, borderColor: palette.stroke, gap: 8 },
   statLabel: { color: "#9096A0", fontSize: 12, fontWeight: "800", textTransform: "uppercase" },
   statValue: { color: "#FFFFFF", fontSize: 20, fontWeight: "900" },
   sectionHead: { gap: 6 },
   kicker: { color: palette.orange, fontSize: 12, fontWeight: "900", letterSpacing: 1.5, textTransform: "uppercase" },
   sectionTitle: { color: "#FFFFFF", fontSize: 22, fontWeight: "900", letterSpacing: -0.4 },
-  muted: { color: "#A8ADB6", fontSize: 14, lineHeight: 20 },
+  muted: { color: palette.muted, fontSize: 14, lineHeight: 20 },
   centerHeader: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8, marginBottom: 4 },
   centerHeaderTitle: { color: "#FFFFFF", fontSize: 18, fontWeight: "900" },
   blockHeaderSplit: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
@@ -279,6 +305,26 @@ export const styles = StyleSheet.create({
   primaryButtonTextDark: { color: "#FFFFFF" },
   disabledButton: { opacity: 0.55 },
   errorText: { color: "#FFB4A8", fontSize: 13, fontWeight: "700", lineHeight: 19 },
+  errorCard: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: 16, backgroundColor: "#3D1712", borderWidth: 1, borderColor: "#A9362C" },
+  errorContent: { flex: 1 },
+  errorCardTitle: { color: "#FFFFFF", fontSize: 14, fontWeight: "900" },
+  errorCardMessage: { color: "#FFB4A8", fontSize: 12, fontWeight: "700", marginTop: 4, lineHeight: 16 },
+  errorActions: { flexDirection: "row", gap: 8, alignItems: "center" },
+  errorRetryButton: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: "#252525", borderWidth: 1, borderColor: "#A9362C" },
+  errorRetryButtonText: { color: "#FFB4A8", fontSize: 12, fontWeight: "900" },
+  errorDismissButton: { width: 28, height: 28, borderRadius: 14, backgroundColor: "#252525", alignItems: "center", justifyContent: "center" },
+  errorDismissButtonText: { color: "#FFB4A8", fontSize: 18, fontWeight: "900", lineHeight: 20 },
+  confirmDialogOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.6)", alignItems: "center", justifyContent: "center", zIndex: 1000 },
+  confirmDialog: { backgroundColor: palette.panel, borderRadius: 20, padding: 20, width: "85%", maxWidth: 320, gap: 16, borderWidth: 1, borderColor: palette.stroke },
+  confirmDialogTitle: { color: "#FFFFFF", fontSize: 18, fontWeight: "900" },
+  confirmDialogMessage: { color: palette.muted, fontSize: 14, fontWeight: "700", lineHeight: 20 },
+  confirmDialogActions: { flexDirection: "row", gap: 12 },
+  confirmDialogCancelButton: { flex: 1, minHeight: 44, borderRadius: 12, backgroundColor: "#252525", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: palette.stroke },
+  confirmDialogCancelButtonText: { color: "#FFFFFF", fontSize: 14, fontWeight: "900" },
+  confirmDialogConfirmButton: { flex: 1, minHeight: 44, borderRadius: 12, backgroundColor: palette.yellow, alignItems: "center", justifyContent: "center" },
+  confirmDialogConfirmButtonText: { color: "#111111", fontSize: 14, fontWeight: "900" },
+  confirmDialogDangerButton: { backgroundColor: palette.red },
+  confirmDialogDangerButtonText: { color: "#FFFFFF" },
   emptyState: { borderWidth: 1, borderColor: "#323232", borderStyle: "dashed", borderRadius: 22, padding: 16, gap: 6 },
   emptyTitle: { color: "#FFFFFF", fontSize: 16, fontWeight: "900" },
   homeTopRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 8 },
@@ -291,12 +337,12 @@ export const styles = StyleSheet.create({
   orangeHeroTitle: { color: "#111111", fontSize: 25, lineHeight: 29, fontWeight: "900", width: "72%" },
   compactWalletCard: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14 },
   walletIconShell: { width: 48, height: 48, borderRadius: 24, backgroundColor: "#252525", alignItems: "center", justifyContent: "center" },
-  walletLabel: { color: "#9CA3AF", fontSize: 12, fontWeight: "800" },
+  walletLabel: { color: palette.muted, fontSize: 12, fontWeight: "800" },
   walletAmount: { color: "#FFFFFF", fontSize: 18, fontWeight: "900", marginTop: 2 },
   walletBalanceHero: { alignItems: "center", paddingVertical: 24, overflow: "hidden" },
   walletGlowTop: { position: "absolute", top: -40, right: -30, width: 140, height: 140, borderRadius: 70, backgroundColor: "rgba(255,107,0,0.08)" },
   walletGlowBottom: { position: "absolute", bottom: -50, left: -30, width: 140, height: 140, borderRadius: 70, backgroundColor: "rgba(255,107,0,0.08)" },
-  walletHeroLabel: { color: "#9CA3AF", fontSize: 14, fontWeight: "800", marginBottom: 8 },
+  walletHeroLabel: { color: palette.muted, fontSize: 14, fontWeight: "800", marginBottom: 8 },
   walletHeroAmount: { color: "#FFFFFF", fontSize: 38, lineHeight: 43, fontWeight: "900", letterSpacing: -1.1, marginBottom: 22 },
   walletActionRow: { flexDirection: "row", justifyContent: "center", gap: 14 },
   walletAction: { alignItems: "center", gap: 8 },
@@ -306,21 +352,21 @@ export const styles = StyleSheet.create({
   walletTxRow: { flexDirection: "row", alignItems: "center", gap: 13, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: "#252525" },
   walletTxIcon: { width: 46, height: 46, borderRadius: 23, backgroundColor: "#252525", alignItems: "center", justifyContent: "center" },
   walletTxTitle: { color: "#FFFFFF", fontSize: 15, fontWeight: "900" },
-  walletTxDate: { color: "#9CA3AF", fontSize: 12, fontWeight: "700", marginTop: 3 },
+  walletTxDate: { color: palette.muted, fontSize: 12, fontWeight: "700", marginTop: 3 },
   walletTxAmount: { color: "#FFFFFF", fontSize: 14, fontWeight: "900" },
   walletTxAmountCredit: { color: "#22C55E" },
   profileHero: { flexDirection: "row", alignItems: "center", gap: 16, marginTop: 12, marginBottom: 4 },
   profileAvatar: { width: 78, height: 78, borderRadius: 39, backgroundColor: palette.orange, borderWidth: 4, borderColor: "#252525", alignItems: "center", justifyContent: "center", shadowColor: palette.orange, shadowOpacity: 0.28, shadowRadius: 16 },
   profileAvatarText: { color: "#111111", fontSize: 24, fontWeight: "900" },
   profileName: { color: "#FFFFFF", fontSize: 25, fontWeight: "900", letterSpacing: -0.6 },
-  profilePhone: { color: "#9CA3AF", fontSize: 14, fontWeight: "700", marginTop: 3 },
+  profilePhone: { color: palette.muted, fontSize: 14, fontWeight: "700", marginTop: 3 },
   profileEditPill: { alignSelf: "flex-start", marginTop: 9, borderRadius: 999, paddingHorizontal: 13, paddingVertical: 7, backgroundColor: "#1C1C1E", borderWidth: 1, borderColor: "rgba(255,107,0,0.35)" },
   profileEditText: { color: palette.orange, fontSize: 12, fontWeight: "900" },
   profileMenu: { gap: 9 },
   profileMenuRow: { minHeight: 58, flexDirection: "row", alignItems: "center", gap: 13, paddingHorizontal: 14, paddingVertical: 12, borderRadius: 15, backgroundColor: "#1C1C1E", borderWidth: 1, borderColor: "#252525" },
   profileMenuIcon: { width: 30, alignItems: "center" },
   profileMenuTitle: { color: "#FFFFFF", fontSize: 15, fontWeight: "900" },
-  profileMenuMeta: { color: "#9CA3AF", fontSize: 12, fontWeight: "700", marginTop: 2 },
+  profileMenuMeta: { color: palette.muted, fontSize: 12, fontWeight: "700", marginTop: 2 },
   profileLogoutText: { color: "#EF4444", fontSize: 15, fontWeight: "900" },
   blockHeaderRow: { marginTop: 2 },
   blockTitle: { color: "#FFFFFF", fontSize: 19, fontWeight: "900" },
@@ -332,7 +378,7 @@ export const styles = StyleSheet.create({
   placeRow: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16, borderBottomWidth: 1, borderBottomColor: "#252525" },
   placeIcon: { width: 42, height: 42, borderRadius: 21, backgroundColor: "#252525", alignItems: "center", justifyContent: "center" },
   placeTitle: { color: "#FFFFFF", fontSize: 15, fontWeight: "900" },
-  placeSubtitle: { color: "#9CA3AF", fontSize: 12, marginTop: 3, fontWeight: "700" },
+  placeSubtitle: { color: palette.muted, fontSize: 12, marginTop: 3, fontWeight: "700" },
   addPlaceText: { color: palette.orange, fontSize: 15, fontWeight: "900" },
   mapPanel: { height: 235, borderRadius: 28, overflow: "hidden", backgroundColor: "#111111", borderWidth: 1, borderColor: "#252525" },
   mapExperience: { flex: 1, minHeight: 680, backgroundColor: "#111111" },
@@ -387,16 +433,16 @@ export const styles = StyleSheet.create({
   segmentedRow: { flexDirection: "row", gap: 10 },
   segmentedButton: { flex: 1, borderRadius: 16, paddingVertical: 13, alignItems: "center", backgroundColor: "#111111", borderWidth: 1, borderColor: "#252525" },
   segmentedButtonActive: { backgroundColor: "#252525", borderColor: palette.orange },
-  segmentedText: { color: "#9CA3AF", fontWeight: "900" },
+  segmentedText: { color: palette.muted, fontWeight: "900" },
   segmentedTextActive: { color: "#FFFFFF" },
   rideOptionCard: { flex: 1, minHeight: 78, backgroundColor: "#111111", borderRadius: 18, borderWidth: 1, borderColor: "#252525", padding: 12, gap: 8 },
   rideOptionTitle: { color: "#FFFFFF", fontSize: 15, fontWeight: "900" },
-  rideOptionMeta: { color: "#9CA3AF", fontSize: 12, fontWeight: "700", textTransform: "capitalize" },
+  rideOptionMeta: { color: palette.muted, fontSize: 12, fontWeight: "700", textTransform: "capitalize" },
   rideOptionPrice: { color: "#FFFFFF", fontSize: 14, fontWeight: "900" },
   paymentSegmentRow: { flexDirection: "row", gap: 10 },
   paymentChip: { flex: 1, borderRadius: 15, paddingVertical: 12, alignItems: "center", backgroundColor: "transparent", borderWidth: 1, borderColor: "#252525" },
   paymentChipActive: { backgroundColor: "#252525", borderColor: "#252525" },
-  paymentChipText: { color: "#9CA3AF", fontWeight: "900", textTransform: "capitalize", fontSize: 12 },
+  paymentChipText: { color: palette.muted, fontWeight: "900", textTransform: "capitalize", fontSize: 12 },
   paymentChipTextActive: { color: palette.orange },
   listRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: "#3D2207" },
   listGlyph: { width: 42, height: 42, borderRadius: 17, backgroundColor: "#2B1808", borderWidth: 1, borderColor: "#7A3200" },
@@ -408,8 +454,8 @@ export const styles = StyleSheet.create({
   bottomNav: { position: "absolute", left: 12, right: 12, flexDirection: "row", gap: 6, padding: 7, borderRadius: 30, backgroundColor: "rgba(18,9,0,0.96)", borderWidth: 1, borderColor: "#7A4209" },
   bottomNavItem: { flex: 1, alignItems: "center", justifyContent: "center", gap: 3, paddingVertical: 9, borderRadius: 22 },
   bottomNavItemActive: { backgroundColor: palette.yellow },
-  bottomNavIcon: { color: "#9EA4AE", fontSize: 13, fontWeight: "900" },
+  bottomNavIcon: { color: palette.muted, fontSize: 13, fontWeight: "900" },
   bottomNavIconActive: { color: "#111111" },
-  bottomNavText: { color: "#9EA4AE", fontSize: 10, fontWeight: "900" },
+  bottomNavText: { color: palette.muted, fontSize: 10, fontWeight: "900" },
   bottomNavTextActive: { color: "#111111" },
 });

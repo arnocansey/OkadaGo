@@ -1,10 +1,118 @@
-import { View } from "react-native";
+import { Linking, Pressable, View } from "react-native";
 import { compactDate, money } from "../api";
-import { Card, EmptyState, ListRow, Pill, SectionTitle } from "../components/ui";
+import { Card, EmptyState, ListRow, Pill, PrimaryButton, SectionTitle } from "../components/ui";
+import { SkeletonCard } from "../components/Skeleton";
+import { RideStatusBadge } from "../components/RideStatusBadge";
+import { TripTimeline, TimelineStep } from "../components/TripTimeline";
+import { ContextMenu, ContextMenuAction } from "../components/ContextMenu";
+import { useState } from "react";
 import type { Delivery, Ride } from "../types";
 
-export function TripsScreen({ rides, deliveries }: { rides: Ride[]; deliveries: Delivery[] }) {
+function mapStatusToBadge(status: string): "completed" | "in_progress" | "pending" | "cancelled" {
+  const s = (status || "").toLowerCase();
+  if (s === "completed" || s === "delivered") return "completed";
+  if (["started", "arriving", "arrived", "en_route", "in_progress", "picked_up", "assigned"].includes(s)) return "in_progress";
+  if (s === "cancelled") return "cancelled";
+  return "pending";
+}
+
+function getRideTimelineSteps(status: string): TimelineStep[] {
+  const currentStatus = (status || "").toLowerCase();
+  return [
+    { status: "Request Created", isCompleted: true, isActive: false },
+    { 
+      status: "Rider Assigned", 
+      isCompleted: ["assigned", "arriving", "arrived", "started", "completed"].includes(currentStatus), 
+      isActive: currentStatus === "assigned" 
+    },
+    { 
+      status: "Rider Arrived", 
+      isCompleted: ["arrived", "started", "completed"].includes(currentStatus), 
+      isActive: currentStatus === "arrived" || currentStatus === "arriving" 
+    },
+    { 
+      status: "Trip Started", 
+      isCompleted: ["started", "completed"].includes(currentStatus), 
+      isActive: currentStatus === "started" 
+    },
+    { 
+      status: "Trip Completed", 
+      isCompleted: currentStatus === "completed", 
+      isActive: false 
+    }
+  ];
+}
+
+function getDeliveryTimelineSteps(status: string): TimelineStep[] {
+  const currentStatus = (status || "").toLowerCase();
+  return [
+    { status: "Delivery Requested", isCompleted: true, isActive: false },
+    { 
+      status: "Rider Assigned", 
+      isCompleted: ["assigned", "picked_up", "delivered"].includes(currentStatus), 
+      isActive: currentStatus === "assigned" 
+    },
+    { 
+      status: "Package Picked Up", 
+      isCompleted: ["picked_up", "delivered"].includes(currentStatus), 
+      isActive: currentStatus === "picked_up" 
+    },
+    { 
+      status: "Package Delivered", 
+      isCompleted: currentStatus === "delivered" || currentStatus === "completed", 
+      isActive: false 
+    }
+  ];
+}
+
+export function TripsScreen({
+  rides,
+  deliveries,
+  loading,
+  onRefresh,
+}: {
+  rides: Ride[];
+  deliveries: Delivery[];
+  loading?: boolean;
+  onRefresh?: () => void;
+}) {
+  const [visibleLimit, setVisibleLimit] = useState(5);
+  const [selectedItem, setSelectedItem] = useState<{ type: "ride" | "delivery"; address: string; label: string } | null>(null);
+  const [menuVisible, setMenuVisible] = useState(false);
+
   const hasHistory = rides.length > 0 || deliveries.length > 0;
+
+  if (loading && !hasHistory) {
+    return (
+      <>
+        <SectionTitle kicker="My trips" title="Trip and delivery history" />
+        <View style={{ gap: 14 }}>
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </View>
+      </>
+    );
+  }
+
+  const visibleRides = rides.slice(0, visibleLimit);
+  const visibleDeliveries = deliveries.slice(0, visibleLimit);
+  const hasMore = rides.length > visibleLimit || deliveries.length > visibleLimit;
+
+  const contextMenuActions: ContextMenuAction[] = selectedItem ? [
+    {
+      title: "Open Destination in Maps",
+      onPress: () => {
+        Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedItem.address)}`);
+      }
+    },
+    {
+      title: "Alert Address Details",
+      onPress: () => {
+        alert(`Location Address: ${selectedItem.address}`);
+      }
+    }
+  ] : [];
 
   return (
     <>
@@ -12,32 +120,72 @@ export function TripsScreen({ rides, deliveries }: { rides: Ride[]; deliveries: 
       <Card>
         {hasHistory ? (
           <>
-          <Pill label={`${rides.length} rides`} />
-          {rides.map((ride) => (
-            <ListRow
+          {visibleRides.length > 0 && <Pill label={`${rides.length} rides`} />}
+          {visibleRides.map((ride) => (
+            <Pressable
               key={ride.id}
-              title={ride.pickupAddress}
-              body={ride.destinationAddress}
-              meta={`${ride.status} - ${compactDate(ride.createdAt)}`}
-              amount={money(ride.finalFare ?? ride.estimatedFare, ride.currency ?? "GHS")}
-            />
+              onLongPress={() => {
+                setSelectedItem({ type: "ride", address: ride.destinationAddress, label: `Trip to ${ride.destinationAddress}` });
+                setMenuVisible(true);
+              }}
+              delayLongPress={400}
+              style={{ gap: 12, borderBottomWidth: 1, borderBottomColor: "#2A2A2A", paddingBottom: 14, paddingTop: 10 }}
+            >
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                <RideStatusBadge status={mapStatusToBadge(ride.status)} />
+              </View>
+              <ListRow
+                title={ride.pickupAddress}
+                body={ride.destinationAddress}
+                meta={`Created: ${compactDate(ride.createdAt)} (Hold for actions)`}
+                amount={money(ride.finalFare ?? ride.estimatedFare, ride.currency ?? "GHS")}
+              />
+              <TripTimeline steps={getRideTimelineSteps(ride.status)} />
+            </Pressable>
           ))}
-          <View style={{ height: 8 }} />
-          <Pill label={`${deliveries.length} deliveries`} />
-          {deliveries.map((delivery) => (
-            <ListRow
+          <View style={{ height: 16 }} />
+          {visibleDeliveries.length > 0 && <Pill label={`${deliveries.length} deliveries`} />}
+          {visibleDeliveries.map((delivery) => (
+            <Pressable
               key={delivery.id}
-              title={delivery.packageDescription}
-              body={`${delivery.pickupAddress} to ${delivery.dropoffAddress}`}
-              meta={`${delivery.status} - ${compactDate(delivery.createdAt)}`}
-              amount={money(delivery.finalFee ?? delivery.estimatedFee, delivery.currency ?? "GHS")}
-            />
+              onLongPress={() => {
+                setSelectedItem({ type: "delivery", address: delivery.dropoffAddress, label: `Delivery to ${delivery.dropoffAddress}` });
+                setMenuVisible(true);
+              }}
+              delayLongPress={400}
+              style={{ gap: 12, borderBottomWidth: 1, borderBottomColor: "#2A2A2A", paddingBottom: 14, paddingTop: 10 }}
+            >
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                <RideStatusBadge status={mapStatusToBadge(delivery.status)} />
+              </View>
+              <ListRow
+                title={delivery.packageDescription}
+                body={`${delivery.pickupAddress} to ${delivery.dropoffAddress}`}
+                meta={`Created: ${compactDate(delivery.createdAt)} (Hold for actions)`}
+                amount={money(delivery.finalFee ?? delivery.estimatedFee, delivery.currency ?? "GHS")}
+              />
+              <TripTimeline steps={getDeliveryTimelineSteps(delivery.status)} />
+            </Pressable>
           ))}
+          {hasMore && (
+            <View style={{ marginTop: 12 }}>
+              <PrimaryButton label="Load More Trips" onPress={() => setVisibleLimit(prev => prev + 5)} dark />
+            </View>
+          )}
           </>
         ) : (
           <EmptyState title="No activity yet." body="Trips and deliveries will appear here after your first request." />
         )}
       </Card>
+
+      <ContextMenu
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+        actions={contextMenuActions}
+        title={selectedItem?.label}
+      />
     </>
   );
 }
+
+

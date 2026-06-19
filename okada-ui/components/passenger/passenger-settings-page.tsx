@@ -178,37 +178,43 @@ export function PassengerSettingsPage() {
 
           <div className="two-up" style={{ marginTop: 18 }}>
             <div className="field-group">
-              <label className="field-label">Full name</label>
+              <label className="field-label" htmlFor="settings-fullname">Full name</label>
               <input
+                id="settings-fullname"
                 className="input"
                 value={form.fullName}
                 onChange={(event) => setForm((current) => ({ ...current, fullName: event.target.value }))}
                 placeholder="Your full name"
+                aria-label="Full name"
               />
             </div>
             <div className="field-group">
-              <label className="field-label">Email</label>
+              <label className="field-label" htmlFor="settings-email">Email</label>
               <input
+                id="settings-email"
                 className="input"
                 type="email"
                 value={form.email}
                 onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
                 placeholder="name@example.com"
+                aria-label="Email address"
               />
             </div>
           </div>
 
           <div className="two-up" style={{ marginTop: 18 }}>
             <div className="field-group">
-              <label className="field-label">Phone number</label>
-              <input className="input" value={settingsQuery.data?.phoneE164 ?? session.user.phoneE164} readOnly />
+              <label className="field-label" htmlFor="settings-phone">Phone number</label>
+              <input id="settings-phone" className="input" value={settingsQuery.data?.phoneE164 ?? session.user.phoneE164} readOnly aria-label="Phone number" />
             </div>
             <div className="field-group">
-              <label className="field-label">Preferred currency</label>
+              <label className="field-label" htmlFor="settings-currency">Preferred currency</label>
               <input
+                id="settings-currency"
                 className="input"
                 value={settingsQuery.data?.preferredCurrency ?? session.user.preferredCurrency}
                 readOnly
+                aria-label="Preferred currency"
               />
             </div>
           </div>
@@ -223,19 +229,22 @@ export function PassengerSettingsPage() {
 
           <div className="two-up" style={{ marginTop: 18 }}>
             <div className="field-group">
-              <label className="field-label">Default service city</label>
+              <label className="field-label" htmlFor="settings-city">Default service city</label>
               <input
+                id="settings-city"
                 className="input"
                 value={form.defaultServiceCity}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, defaultServiceCity: event.target.value }))
                 }
                 placeholder="Accra"
+                aria-label="Default service city"
               />
             </div>
             <div className="field-group">
-              <label className="field-label">Preferred payment</label>
+              <label className="field-label" htmlFor="settings-payment">Preferred payment</label>
               <select
+                id="settings-payment"
                 className="select"
                 value={form.preferredPayment}
                 onChange={(event) =>
@@ -244,6 +253,7 @@ export function PassengerSettingsPage() {
                     preferredPayment: event.target.value as "cash" | "card" | "wallet" | "mobile_money"
                   }))
                 }
+                aria-label="Preferred payment method"
               >
                 <option value="cash">Cash</option>
                 <option value="wallet">Wallet</option>

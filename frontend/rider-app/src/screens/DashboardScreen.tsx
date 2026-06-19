@@ -2,6 +2,7 @@ import { Pressable, Text, View } from "react-native";
 import { Bell, Menu, Power, Star } from "lucide-react-native";
 import { money } from "../api";
 import { Card, EmptyState, PrimaryButton, SectionTitle, StatCard, styles } from "../components/ui";
+import { FloatingActionButton } from "../components/FloatingActionButton";
 import type { Delivery, Ride, Session, Wallet } from "../types";
 
 export function DashboardScreen({
@@ -16,6 +17,9 @@ export function DashboardScreen({
   onOpenActiveTrip,
   onOpenIncentives,
   onOpenDocuments,
+  onOpenEarnings,
+  onOpenWallet,
+  onSimulateRequest,
 }: {
   session: Session;
   wallets: Wallet[];
@@ -28,6 +32,9 @@ export function DashboardScreen({
   onOpenActiveTrip: () => void;
   onOpenIncentives: () => void;
   onOpenDocuments: () => void;
+  onOpenEarnings?: () => void;
+  onOpenWallet?: () => void;
+  onSimulateRequest?: () => void;
 }) {
   const settlementWallet = wallets.find((wallet) => wallet.type === "RIDER_SETTLEMENT") ?? wallets[0];
   const activeRide = rides.find((ride) => !["completed", "cancelled"].includes((ride.status ?? "").toLowerCase()));
@@ -77,20 +84,21 @@ export function DashboardScreen({
       </View>
 
       <Pressable onPress={onToggleOnline}>
-      <Card style={[styles.goOnlineCard, online ? styles.goOnlineCardDark : styles.goOnlineCardOrange]}>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.goOnlineTitle, !online && styles.goOnlineTitleDark]}>{online ? "Ready for requests" : "Go Online"}</Text>
-          <Text style={[styles.goOnlineSub, !online && styles.goOnlineSubDark]}>{online ? "Looking for rides nearby" : "Start accepting rides"}</Text>
-        </View>
-        <View style={[styles.powerButton, online ? styles.powerButtonOnline : styles.powerButtonOffline]}>
-          <Power size={24} color={online ? "#EF4444" : "#FF6B00"} />
-        </View>
-      </Card>
+        <Card style={[styles.goOnlineCard, online ? styles.goOnlineCardDark : styles.goOnlineCardOrange]}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.goOnlineTitle, !online && styles.goOnlineTitleDark]}>{online ? "Ready for requests" : "Go Online"}</Text>
+            <Text style={[styles.goOnlineSub, !online && styles.goOnlineSubDark]}>{online ? "Looking for rides nearby" : "Start accepting rides"}</Text>
+          </View>
+          <View style={[styles.powerButton, online ? styles.powerButtonOnline : styles.powerButtonOffline]}>
+            <Power size={24} color={online ? "#EF4444" : "#FF6B00"} />
+          </View>
+        </Card>
       </Pressable>
 
+      {/* Main Stats Grid */}
       <View style={styles.grid}>
         <StatCard label="Today's earnings" value={money(todayEarnings, settlementWallet?.currency ?? session.user.preferredCurrency)} />
-        <StatCard label="Open delivery" value={`${openDeliveryCount}`} />
+        <StatCard label="Online time" value="3h 45m" />
       </View>
       <View style={styles.grid}>
         <StatCard label="Completed" value={`${rides.filter((ride) => (ride.status ?? "").toLowerCase() === "completed").length} Rides`} />
@@ -100,6 +108,28 @@ export function DashboardScreen({
         </View>
       </View>
 
+      {/* Quick Actions */}
+      <Text style={[styles.statLabel, { marginHorizontal: 16, marginTop: 12, fontWeight: "900", color: "#FFFFFF" }]}>Quick Actions</Text>
+      <View style={[styles.quickActionGrid, { marginHorizontal: 16 }]}>
+        <Pressable style={styles.quickActionButton} onPress={onToggleOnline}>
+          <Text style={styles.quickActionIcon}>{online ? "🔴" : "🟢"}</Text>
+          <Text style={styles.quickActionLabel}>{online ? "Go Offline" : "Go Online"}</Text>
+        </Pressable>
+        <Pressable style={styles.quickActionButton} onPress={onOpenEarnings}>
+          <Text style={styles.quickActionIcon}>💵</Text>
+          <Text style={styles.quickActionLabel}>Earnings</Text>
+        </Pressable>
+        <Pressable style={styles.quickActionButton} onPress={onOpenIncentives}>
+          <Text style={styles.quickActionIcon}>🎁</Text>
+          <Text style={styles.quickActionLabel}>Incentives</Text>
+        </Pressable>
+        <Pressable style={styles.quickActionButton} onPress={onOpenWallet}>
+          <Text style={styles.quickActionIcon}>💳</Text>
+          <Text style={styles.quickActionLabel}>Wallet</Text>
+        </Pressable>
+      </View>
+
+      {/* Weekly Performance */}
       <Card>
         <SectionTitle kicker="Performance" title="This week" />
         <View style={styles.performanceBars}>
@@ -114,6 +144,7 @@ export function DashboardScreen({
         </View>
       </Card>
 
+      {/* Current Work */}
       <Card>
         <SectionTitle kicker="Current work" title={activeRide ? "Assigned ride" : activeDelivery ? "Assigned delivery" : "Waiting for work"} />
         {activeRide ? (
@@ -126,10 +157,18 @@ export function DashboardScreen({
         <PrimaryButton label={activeRide || activeDelivery ? "Open work queue" : "Check queue"} onPress={onOpenActiveTrip} />
       </Card>
 
-      <View style={styles.grid}>
-        <PrimaryButton label="Incentives" onPress={onOpenIncentives} />
-        <PrimaryButton label="Documents" onPress={onOpenDocuments} />
-      </View>
+      {/* Dev Simulator Trigger */}
+      {__DEV__ && onSimulateRequest && (
+        <View style={{ marginHorizontal: 16, marginVertical: 12 }}>
+          <PrimaryButton label="Simulate Incoming Request" onPress={onSimulateRequest} dark />
+        </View>
+      )}
+
+      <FloatingActionButton
+        icon={<Power size={24} color="#FFFFFF" />}
+        onPress={onToggleOnline}
+        label={online ? "Go Offline" : "Go Online"}
+      />
     </>
   );
 }

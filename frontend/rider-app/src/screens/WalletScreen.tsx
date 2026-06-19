@@ -45,21 +45,41 @@ export function WalletScreen({ session, wallets, payouts, transactions, onRefres
             <Text style={styles.linkText}>+ Add New</Text>
           </Pressable>
         </View>
-        <Pressable style={[styles.payoutMethodActive, method !== "MOBILE_MONEY" && styles.payoutMethodRow]} onPress={() => setMethod("MOBILE_MONEY")}>
-          <View style={styles.payoutMethodIcon}><Smartphone size={20} color="#FF6B00" /></View>
+        <Pressable
+          style={[styles.payoutMethodRow, method === "MOBILE_MONEY" && destination.includes("024") && styles.payoutMethodActive]}
+          onPress={() => { setMethod("MOBILE_MONEY"); setDestination("024 123 4567"); }}
+        >
+          <View style={styles.payoutMethodIcon}><Smartphone size={20} color="#FACC15" /></View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.payoutMethodTitle}>Mobile Money</Text>
-            <Text style={styles.payoutMethodMeta}>{destination || "Add destination below"}</Text>
+            <Text style={styles.payoutMethodTitle}>MTN Mobile Money</Text>
+            <Text style={styles.payoutMethodMeta}>024 123 4567</Text>
           </View>
-          {method === "MOBILE_MONEY" ? <CheckCircle2 size={22} color="#FF6B00" /> : null}
+          {method === "MOBILE_MONEY" && destination.includes("024") ? <CheckCircle2 size={22} color="#FACC15" /> : null}
         </Pressable>
-        <Pressable style={[styles.payoutMethodRow, method === "BANK_ACCOUNT" && styles.payoutMethodActive]} onPress={() => setMethod("BANK_ACCOUNT")}>
+        <Pressable
+          style={[styles.payoutMethodRow, method === "MOBILE_MONEY" && destination.includes("020") && styles.payoutMethodActive]}
+          onPress={() => { setMethod("MOBILE_MONEY"); setDestination("020 123 4567"); }}
+        >
+          <View style={styles.payoutMethodIcon}><Smartphone size={20} color="#FACC15" /></View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.payoutMethodTitle}>Vodafone Cash</Text>
+            <Text style={styles.payoutMethodMeta}>020 123 4567</Text>
+          </View>
+          {method === "MOBILE_MONEY" && destination.includes("020") ? <CheckCircle2 size={22} color="#FACC15" /> : null}
+        </Pressable>
+        <Pressable
+          style={[styles.payoutMethodRow, method === "BANK_ACCOUNT" && styles.payoutMethodActive]}
+          onPress={() => { setMethod("BANK_ACCOUNT"); setDestination("•••• 4242"); }}
+        >
           <View style={styles.payoutMethodIcon}><Building2 size={20} color="#60A5FA" /></View>
           <View style={{ flex: 1 }}>
             <Text style={styles.payoutMethodTitle}>Bank Transfer</Text>
-            <Text style={styles.payoutMethodMeta}>Available for payout requests</Text>
+            <Text style={styles.payoutMethodMeta}>•••• 4242</Text>
           </View>
-          {method === "BANK_ACCOUNT" ? <CheckCircle2 size={22} color="#FF6B00" /> : null}
+          {method === "BANK_ACCOUNT" ? <CheckCircle2 size={22} color="#FACC15" /> : null}
+        </Pressable>
+        <Pressable style={styles.payoutMethodDashed}>
+          <Text style={styles.payoutMethodDashedText}>+ Add Payout Method</Text>
         </Pressable>
       </Card>
 

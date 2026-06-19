@@ -1,0 +1,10 @@
+"use client";
+
+export function EmptyCard({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="empty-state">
+      <strong>{title}</strong>
+      <p>{body}</p>
+    </div>
+  );
+}

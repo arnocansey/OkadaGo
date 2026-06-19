@@ -46,7 +46,7 @@ export const palette = {
   panel: "#1C1C1E",
   panelRaised: "#252525",
   stroke: "#252525",
-  muted: "#9CA3AF",
+  muted: "#A3A3A3",
   yellow: "#FACC15",
   orange: "#FF6B00",
   green: "#22C55E",
@@ -71,14 +71,29 @@ export function Field(props: React.ComponentProps<typeof TextInput> & { label: s
   return (
     <View style={styles.fieldWrap}>
       <Text style={styles.fieldLabel}>{label}</Text>
-      <TextInput placeholderTextColor="#8B8F98" style={styles.input} {...rest} />
+      <TextInput
+        placeholderTextColor="#8B8F98"
+        style={styles.input}
+        accessible={true}
+        accessibilityLabel={label}
+        accessibilityRole="text"
+        accessibilityHint={rest.placeholder?.toString()}
+        {...rest}
+      />
     </View>
   );
 }
 
 export function PrimaryButton({ label, onPress, disabled, dark }: { label: string; onPress: () => void; disabled?: boolean; dark?: boolean }) {
   return (
-    <Pressable style={[styles.primaryButton, dark && styles.primaryButtonDark, disabled && styles.disabledButton]} onPress={onPress} disabled={disabled}>
+    <Pressable
+      style={[styles.primaryButton, dark && styles.primaryButtonDark, disabled && styles.disabledButton]}
+      onPress={onPress}
+      disabled={disabled}
+      accessible={true}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+    >
       <Text style={[styles.primaryButtonText, dark && styles.primaryButtonTextDark]}>{label}</Text>
     </Pressable>
   );
@@ -120,6 +135,49 @@ export function EmptyState({ title, body }: { title: string; body: string }) {
     <View style={styles.emptyState}>
       <Text style={styles.emptyTitle}>{title}</Text>
       <Text style={styles.muted}>{body}</Text>
+    </View>
+  );
+}
+
+export function ErrorCard({ error, onRetry, dismissible, onDismiss }: { error: string; onRetry?: () => void; dismissible?: boolean; onDismiss?: () => void }) {
+  return (
+    <View style={styles.errorCard}>
+      <View style={styles.errorContent}>
+        <Text style={styles.errorCardTitle}>Error</Text>
+        <Text style={styles.errorCardMessage}>{error}</Text>
+      </View>
+      <View style={styles.errorActions}>
+        {onRetry && (
+          <Pressable style={styles.errorRetryButton} onPress={onRetry} accessible={true} accessibilityRole="button" accessibilityLabel="Retry">
+            <Text style={styles.errorRetryButtonText}>Retry</Text>
+          </Pressable>
+        )}
+        {dismissible && onDismiss && (
+          <Pressable style={styles.errorDismissButton} onPress={onDismiss} accessible={true} accessibilityRole="button" accessibilityLabel="Dismiss error">
+            <Text style={styles.errorDismissButtonText}>×</Text>
+          </Pressable>
+        )}
+      </View>
+    </View>
+  );
+}
+
+export function ConfirmDialog({ visible, title, message, confirmText, cancelText, onConfirm, onCancel, isDangerous }: { visible: boolean; title: string; message: string; confirmText: string; cancelText?: string; onConfirm: () => void; onCancel?: () => void; isDangerous?: boolean }) {
+  if (!visible) return null;
+  return (
+    <View style={styles.confirmDialogOverlay}>
+      <View style={styles.confirmDialog}>
+        <Text style={styles.confirmDialogTitle}>{title}</Text>
+        <Text style={styles.confirmDialogMessage}>{message}</Text>
+        <View style={styles.confirmDialogActions}>
+          <Pressable style={styles.confirmDialogCancelButton} onPress={onCancel} accessible={true} accessibilityRole="button" accessibilityLabel={cancelText || "Cancel"}>
+            <Text style={styles.confirmDialogCancelButtonText}>{cancelText || "Cancel"}</Text>
+          </Pressable>
+          <Pressable style={[styles.confirmDialogConfirmButton, isDangerous && styles.confirmDialogDangerButton]} onPress={onConfirm} accessible={true} accessibilityRole="button" accessibilityLabel={confirmText}>
+            <Text style={[styles.confirmDialogConfirmButtonText, isDangerous && styles.confirmDialogDangerButtonText]}>{confirmText}</Text>
+          </Pressable>
+        </View>
+      </View>
     </View>
   );
 }
@@ -217,7 +275,7 @@ export const styles = StyleSheet.create({
   sectionHead: { gap: 6 },
   kicker: { color: palette.orange, fontSize: 12, fontWeight: "900", letterSpacing: 1.5, textTransform: "uppercase" },
   sectionTitle: { color: "#FFFFFF", fontSize: 22, fontWeight: "900", letterSpacing: -0.4 },
-  muted: { color: "#A8ADB6", fontSize: 14, lineHeight: 20 },
+  muted: { color: palette.muted, fontSize: 14, lineHeight: 20 },
   blockHeaderSplit: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   blockTitle: { color: "#FFFFFF", fontSize: 18, fontWeight: "900" },
   linkText: { color: palette.orange, fontSize: 13, fontWeight: "900" },
@@ -230,6 +288,26 @@ export const styles = StyleSheet.create({
   primaryButtonTextDark: { color: palette.orange },
   disabledButton: { opacity: 0.55 },
   errorText: { color: "#FFB4A8", fontSize: 13, fontWeight: "700", lineHeight: 19 },
+  errorCard: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: 16, backgroundColor: "#3D1712", borderWidth: 1, borderColor: "#A9362C" },
+  errorContent: { flex: 1 },
+  errorCardTitle: { color: "#FFFFFF", fontSize: 14, fontWeight: "900" },
+  errorCardMessage: { color: "#FFB4A8", fontSize: 12, fontWeight: "700", marginTop: 4, lineHeight: 16 },
+  errorActions: { flexDirection: "row", gap: 8, alignItems: "center" },
+  errorRetryButton: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: "#252525", borderWidth: 1, borderColor: "#A9362C" },
+  errorRetryButtonText: { color: "#FFB4A8", fontSize: 12, fontWeight: "900" },
+  errorDismissButton: { width: 28, height: 28, borderRadius: 14, backgroundColor: "#252525", alignItems: "center", justifyContent: "center" },
+  errorDismissButtonText: { color: "#FFB4A8", fontSize: 18, fontWeight: "900", lineHeight: 20 },
+  confirmDialogOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.6)", alignItems: "center", justifyContent: "center", zIndex: 1000 },
+  confirmDialog: { backgroundColor: palette.panel, borderRadius: 20, padding: 20, width: "85%", maxWidth: 320, gap: 16, borderWidth: 1, borderColor: palette.stroke },
+  confirmDialogTitle: { color: "#FFFFFF", fontSize: 18, fontWeight: "900" },
+  confirmDialogMessage: { color: palette.muted, fontSize: 14, fontWeight: "700", lineHeight: 20 },
+  confirmDialogActions: { flexDirection: "row", gap: 12 },
+  confirmDialogCancelButton: { flex: 1, minHeight: 44, borderRadius: 12, backgroundColor: "#252525", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: palette.stroke },
+  confirmDialogCancelButtonText: { color: "#FFFFFF", fontSize: 14, fontWeight: "900" },
+  confirmDialogConfirmButton: { flex: 1, minHeight: 44, borderRadius: 12, backgroundColor: palette.orange, alignItems: "center", justifyContent: "center" },
+  confirmDialogConfirmButtonText: { color: "#111111", fontSize: 14, fontWeight: "900" },
+  confirmDialogDangerButton: { backgroundColor: palette.red },
+  confirmDialogDangerButtonText: { color: "#FFFFFF" },
   emptyState: { borderWidth: 1, borderColor: "#323232", borderStyle: "dashed", borderRadius: 22, padding: 16, gap: 6 },
   emptyTitle: { color: "#FFFFFF", fontSize: 16, fontWeight: "900" },
   circleButton: { width: 42, height: 42, borderRadius: 21, backgroundColor: "#27272A", borderWidth: 1, borderColor: "#252525", alignItems: "center", justifyContent: "center" },
@@ -253,7 +331,7 @@ export const styles = StyleSheet.create({
   goOnlineCardOrange: { backgroundColor: palette.orange, borderColor: palette.orange },
   goOnlineTitle: { color: "#FFFFFF", fontSize: 21, fontWeight: "900" },
   goOnlineTitleDark: { color: "#111111" },
-  goOnlineSub: { color: "#9CA3AF", fontSize: 14, fontWeight: "700", marginTop: 4 },
+  goOnlineSub: { color: palette.muted, fontSize: 14, fontWeight: "700", marginTop: 4 },
   goOnlineSubDark: { color: "rgba(17,17,17,0.78)" },
   powerButton: { width: 56, height: 56, borderRadius: 28, alignItems: "center", justifyContent: "center" },
   powerButtonOnline: { backgroundColor: "rgba(239,68,68,0.18)" },
@@ -268,12 +346,12 @@ export const styles = StyleSheet.create({
   earningsTabs: { flexDirection: "row", padding: 4, borderRadius: 12, backgroundColor: "#27272A", gap: 4 },
   earningsTab: { flex: 1, alignItems: "center", borderRadius: 9, paddingVertical: 9 },
   earningsTabActive: { backgroundColor: "#111111" },
-  earningsTabText: { color: "#9CA3AF", fontSize: 13, fontWeight: "900" },
+  earningsTabText: { color: palette.muted, fontSize: 13, fontWeight: "900" },
   earningsTabTextActive: { color: "#FFFFFF" },
   earningsDateRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   earningsDateText: { color: "#FFFFFF", fontSize: 16, fontWeight: "900" },
   earningsHero: { alignItems: "center", backgroundColor: "#27272A", paddingVertical: 24 },
-  earningsHeroLabel: { color: "#9CA3AF", fontSize: 12, fontWeight: "900", textTransform: "uppercase", letterSpacing: 1 },
+  earningsHeroLabel: { color: palette.muted, fontSize: 12, fontWeight: "900", textTransform: "uppercase", letterSpacing: 1 },
   earningsHeroAmount: { color: palette.orange, fontSize: 38, lineHeight: 44, fontWeight: "900", letterSpacing: -1.1, marginTop: 7 },
   earningsRideCount: { marginTop: 8, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: "#111111" },
   earningsRideCountText: { color: "#FFFFFF", fontSize: 12, fontWeight: "900" },
@@ -290,13 +368,13 @@ export const styles = StyleSheet.create({
   requestStops: { gap: 16 },
   requestStopRow: { flexDirection: "row", alignItems: "flex-start", gap: 14 },
   requestStopTitle: { color: "#FFFFFF", fontSize: 15, fontWeight: "900" },
-  requestStopMeta: { color: "#9CA3AF", fontSize: 13, fontWeight: "700", marginTop: 4 },
+  requestStopMeta: { color: palette.muted, fontSize: 13, fontWeight: "700", marginTop: 4 },
   requestActions: { flexDirection: "row", gap: 12 },
   declineButton: { flex: 1, minHeight: 56, borderRadius: 16, borderWidth: 2, borderColor: "#252525", alignItems: "center", justifyContent: "center" },
   declineButtonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "900" },
   acceptButton: { flex: 2, minHeight: 56, borderRadius: 16, backgroundColor: palette.orange, alignItems: "center", justifyContent: "center" },
   acceptButtonText: { color: "#111111", fontSize: 16, fontWeight: "900" },
-  walletLabel: { color: "#9CA3AF", fontSize: 13, fontWeight: "800" },
+  walletLabel: { color: palette.muted, fontSize: 13, fontWeight: "800" },
   riderWalletHero: { backgroundColor: palette.orange, borderColor: palette.orange, overflow: "hidden", padding: 22 },
   riderWalletWatermark: { position: "absolute", right: -12, bottom: -12 },
   riderWalletLabel: { color: "rgba(17,17,17,0.72)", fontSize: 12, fontWeight: "900", letterSpacing: 0.8, textTransform: "uppercase" },
@@ -305,23 +383,25 @@ export const styles = StyleSheet.create({
   payoutMethodRow: { flexDirection: "row", alignItems: "center", gap: 12, borderRadius: 16, padding: 14, backgroundColor: "#27272A", borderWidth: 1, borderColor: "#252525" },
   payoutMethodIcon: { width: 42, height: 42, borderRadius: 21, backgroundColor: "#111111", alignItems: "center", justifyContent: "center" },
   payoutMethodTitle: { color: "#FFFFFF", fontSize: 15, fontWeight: "900" },
-  payoutMethodMeta: { color: "#9CA3AF", fontSize: 12, fontWeight: "700", marginTop: 3 },
+  payoutMethodMeta: { color: palette.muted, fontSize: 12, fontWeight: "700", marginTop: 3 },
   segmentedRow: { flexDirection: "row", gap: 10 },
   segmentedButton: { flex: 1, borderRadius: 14, paddingVertical: 12, alignItems: "center", backgroundColor: "#111111", borderWidth: 1, borderColor: "#252525" },
   segmentedButtonActive: { backgroundColor: "#252525", borderColor: palette.orange },
-  segmentedText: { color: "#9CA3AF", fontSize: 11, fontWeight: "900" },
+  segmentedText: { color: palette.muted, fontSize: 11, fontWeight: "900" },
   segmentedTextActive: { color: "#FFFFFF" },
   profileHero: { flexDirection: "row", alignItems: "center", gap: 16, marginTop: 12, marginBottom: 4 },
   profileAvatar: { width: 78, height: 78, borderRadius: 39, backgroundColor: palette.orange, borderWidth: 4, borderColor: "#252525", alignItems: "center", justifyContent: "center", shadowColor: palette.orange, shadowOpacity: 0.28, shadowRadius: 16 },
   profileAvatarText: { color: "#111111", fontSize: 24, fontWeight: "900" },
   profileName: { color: "#FFFFFF", fontSize: 25, fontWeight: "900", letterSpacing: -0.6 },
-  profilePhone: { color: "#9CA3AF", fontSize: 14, fontWeight: "700", marginTop: 3, marginBottom: 8 },
+  profilePhone: { color: palette.muted, fontSize: 14, fontWeight: "700", marginTop: 3, marginBottom: 8 },
   profileMenu: { gap: 9 },
   profileMenuRow: { minHeight: 58, flexDirection: "row", alignItems: "center", gap: 13, paddingHorizontal: 14, paddingVertical: 12, borderRadius: 15, backgroundColor: "#1C1C1E", borderWidth: 1, borderColor: "#252525" },
   profileMenuIcon: { width: 30, alignItems: "center" },
   profileMenuTitle: { color: "#FFFFFF", fontSize: 15, fontWeight: "900" },
-  profileMenuMeta: { color: "#9CA3AF", fontSize: 12, fontWeight: "700", marginTop: 2 },
+  profileMenuMeta: { color: palette.muted, fontSize: 12, fontWeight: "700", marginTop: 2 },
   profileLogoutText: { color: "#EF4444", fontSize: 15, fontWeight: "900" },
+  profileEditPill: { borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: "#252525" },
+  profileEditText: { color: "#FFFFFF", fontSize: 12, fontWeight: "700" },
   mapPanel: { height: 235, borderRadius: 28, overflow: "hidden", backgroundColor: "#1E2633", borderWidth: 1, borderColor: "#3A4657" },
   mapExperience: { flex: 1, minHeight: 680, backgroundColor: "#2A1805" },
   mapBackdrop: { ...StyleSheet.absoluteFillObject, height: undefined, borderRadius: 0, borderWidth: 0 },
@@ -378,4 +458,22 @@ export const styles = StyleSheet.create({
   bottomNavIconActive: { color: "#111111" },
   bottomNavText: { color: "#9EA4AE", fontSize: 10, fontWeight: "900" },
   bottomNavTextActive: { color: "#111111" },
+  quickActionGrid: { flexDirection: "row", gap: 10, marginVertical: 12 },
+  quickActionButton: { flex: 1, backgroundColor: "#1C1C1E", borderWidth: 1, borderColor: "#252525", borderRadius: 16, paddingVertical: 14, paddingHorizontal: 6, alignItems: "center", justifyContent: "center", gap: 6 },
+  quickActionIcon: { fontSize: 22 },
+  quickActionLabel: { color: "#BBBBBB", fontSize: 10, fontWeight: "600", textAlign: "center" },
+  incentiveCard: { padding: 16, backgroundColor: "#1C1C1E", borderWidth: 1, borderColor: "#252525", borderRadius: 16, gap: 8, marginBottom: 12 },
+  incentiveHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  incentiveTitle: { color: "#FFFFFF", fontSize: 14, fontWeight: "900" },
+  incentiveReward: { color: "#FACC15", fontSize: 14, fontWeight: "900" },
+  incentiveDesc: { color: "#A3A3A3", fontSize: 12 },
+  progressBarTrack: { height: 6, backgroundColor: "#252525", borderRadius: 999, overflow: "hidden", marginVertical: 4 },
+  progressBarFill: { height: "100%", backgroundColor: "#FACC15", borderRadius: 999 },
+  incentiveProgressText: { color: "#A3A3A3", fontSize: 11, fontWeight: "700" },
+  payoutMethodDashed: { borderStyle: "dashed", borderWidth: 1.5, borderColor: "#252525", borderRadius: 16, padding: 14, alignItems: "center", justifyContent: "center", marginTop: 12 },
+  payoutMethodDashedText: { color: "#FACC15", fontSize: 13, fontWeight: "600" },
+  rowSetting: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 15, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: "#252525" },
+  rowSettingText: { color: "#FFFFFF", fontSize: 14 },
+  rowSettingRight: { flexDirection: "row", alignItems: "center", gap: 6 },
+  rowSettingVal: { color: "#A3A3A3", fontSize: 13 },
 });

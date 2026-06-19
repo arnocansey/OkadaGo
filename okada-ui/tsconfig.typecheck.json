@@ -8,6 +8,7 @@
   "exclude": [
     "node_modules",
     ".next",
-    "okada-ui"
+    "okada-ui/shadcn-ui",
+    "okada-ui/ui"
   ]
 }

@@ -1,8 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import {
-  AdminConsolePage,
   type AdminConsoleScreen
 } from "@/components/dashboard/admin-console-page";
+import AdminScreenClient from "./admin-screen-client";
 
 export default async function AdminScreenPage({
   params
@@ -66,5 +66,5 @@ export default async function AdminScreenPage({
     redirect(canonicalPath);
   }
 
-  return <AdminConsolePage screen={resolvedScreen} />;
+  return <AdminScreenClient screen={resolvedScreen} />;
 }
