@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
+import { useMemo, useRef, useEffect } from "react";
 import { Animated, Modal, PanResponder, Pressable, StyleSheet, View, type ViewStyle } from "react-native";
-import { useEffect, useRef } from "react";
-import { colors, radius, shadows, spacing } from "@/theme/tokens";
+import { useTheme } from "@/context/ThemeContext";
+import { radius, shadows, spacing } from "@/theme/tokens";
 
 type Props = {
   visible: boolean;
@@ -12,7 +13,39 @@ type Props = {
 };
 
 export function Sheet({ visible, onClose, children, snapHeight = 420, style }: Props) {
+  const { colors } = useTheme();
   const translateY = useRef(new Animated.Value(snapHeight)).current;
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        backdrop: {
+          ...StyleSheet.absoluteFillObject,
+          backgroundColor: colors.overlay,
+        },
+        sheet: {
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: colors.background,
+          borderTopLeftRadius: radius.xxl,
+          borderTopRightRadius: radius.xxl,
+          paddingBottom: spacing.xxxl,
+          maxHeight: "92%",
+        },
+        handle: {
+          alignSelf: "center",
+          width: 40,
+          height: 4,
+          borderRadius: 2,
+          backgroundColor: colors.borderStrong,
+          marginTop: spacing.md,
+          marginBottom: spacing.lg,
+        },
+        content: { paddingHorizontal: spacing.xl },
+      }),
+    [colors],
+  );
 
   useEffect(() => {
     Animated.spring(translateY, {
@@ -52,31 +85,3 @@ export function Sheet({ visible, onClose, children, snapHeight = 420, style }: P
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: colors.overlay,
-  },
-  sheet: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: colors.background,
-    borderTopLeftRadius: radius.xxl,
-    borderTopRightRadius: radius.xxl,
-    paddingBottom: spacing.xxxl,
-    maxHeight: "92%",
-  },
-  handle: {
-    alignSelf: "center",
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.borderStrong,
-    marginTop: spacing.md,
-    marginBottom: spacing.lg,
-  },
-  content: { paddingHorizontal: spacing.xl },
-});

@@ -9,6 +9,7 @@ export type SessionUser = {
   phoneE164: string;
   phoneLocal: string;
   preferredCurrency: "GHS" | "NGN";
+  isPhoneVerified?: boolean;
   riderProfileId?: string | null;
   riderApprovalStatus?: string | null;
 };
@@ -45,6 +46,13 @@ export type PayoutRequest = {
   destinationLabel: string;
   requestedAt?: string;
   rejectionReason?: string | null;
+};
+
+export type RoutePreview = {
+  distanceKm: number;
+  durationMinutes: number;
+  provider?: string;
+  route?: Array<[number, number]>;
 };
 
 export type Ride = {

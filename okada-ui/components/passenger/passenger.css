@@ -904,6 +904,34 @@
   background: #f1f5f9;
 }
 
+.exact-passenger-recenter {
+  position: absolute;
+  right: 22px;
+  bottom: 80px;
+  z-index: 14;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
+  color: #0f172a;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.exact-passenger-recenter:hover {
+  background: #f1f5f9;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.18);
+}
+
+.exact-passenger-recenter:active {
+  transform: scale(0.95);
+}
+
 .exact-passenger-map-bubble {
   position: absolute;
   top: 50%;

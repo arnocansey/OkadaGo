@@ -88,3 +88,12 @@ export const passengerSettingsUpdateSchema = z.object({
   defaultServiceCity: z.string().max(120).nullable(),
   preferredPayment: z.enum(["cash", "card", "wallet", "mobile_money"]).nullable()
 });
+
+export const otpRequestSchema = z.object({
+  phoneE164: z.string().min(8).max(24)
+});
+
+export const otpVerifySchema = z.object({
+  phoneE164: z.string().min(8).max(24),
+  code: z.string().trim().length(6)
+});

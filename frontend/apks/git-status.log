@@ -1,0 +1,117 @@
+﻿ M backend/.env.example
+ M backend/package.json
+ M backend/pnpm-lock.yaml
+ M backend/src/common/config.ts
+ M backend/src/generated/prisma/internal/class.ts
+ M backend/src/generated/prisma/internal/prismaNamespace.ts
+ M backend/src/main.ts
+ M backend/src/modules/auth/auth.routes.ts
+ M backend/src/modules/auth/auth.schemas.ts
+ M backend/src/modules/auth/auth.service.ts
+ M backend/src/modules/deliveries/delivery.service.ts
+ M backend/src/modules/index.ts
+ M backend/src/modules/ratings/rating.routes.ts
+ M backend/src/modules/ratings/rating.service.ts
+ M backend/src/modules/rides/ride.schemas.ts
+ M backend/src/modules/rides/ride.service.ts
+ M backend/src/modules/safety/safety.routes.ts
+ M backend/src/modules/safety/safety.schemas.ts
+ M backend/src/modules/safety/safety.service.ts
+ M frontend/passenger-app/.env.example
+ M frontend/passenger-app/app.json
+ M frontend/passenger-app/app/(auth)/login.tsx
+ M frontend/passenger-app/app/(main)/index.tsx
+ M frontend/passenger-app/app/(main)/profile.tsx
+ M frontend/passenger-app/app/(main)/trips.tsx
+ M frontend/passenger-app/app/(main)/wallet.tsx
+ M frontend/passenger-app/app/food/[id].tsx
+ M frontend/passenger-app/app/food/checkout.tsx
+ M frontend/passenger-app/app/food/index.tsx
+ M frontend/passenger-app/app/index.tsx
+ M frontend/passenger-app/app/ride/book.tsx
+ M frontend/passenger-app/app/ride/track/[id].tsx
+ M frontend/passenger-app/package.json
+ M frontend/passenger-app/pnpm-lock.yaml
+ M frontend/passenger-app/src/components/TripTimeline.tsx
+ M frontend/passenger-app/src/components/ui/Avatar.tsx
+ M frontend/passenger-app/src/components/ui/Badge.tsx
+ M frontend/passenger-app/src/components/ui/EmptyState.tsx
+ M frontend/passenger-app/src/components/ui/Input.tsx
+ M frontend/passenger-app/src/components/ui/Sheet.tsx
+ M frontend/passenger-app/src/components/ui/Skeleton.tsx
+ M frontend/passenger-app/src/context/AppContext.tsx
+ M frontend/passenger-app/src/lib/api.ts
+ M frontend/passenger-app/src/types/index.ts
+ M frontend/rider-app/app.json
+ M frontend/rider-app/app/(auth)/login.tsx
+ M frontend/rider-app/app/(main)/earnings.tsx
+ M frontend/rider-app/app/(main)/profile.tsx
+ M frontend/rider-app/app/(main)/trips.tsx
+ M frontend/rider-app/app/(main)/wallet.tsx
+ M frontend/rider-app/app/documents.tsx
+ M frontend/rider-app/app/index.tsx
+ M frontend/rider-app/app/request/[id].tsx
+ M frontend/rider-app/app/trip/[id].tsx
+ M frontend/rider-app/package.json
+ M frontend/rider-app/pnpm-lock.yaml
+ M frontend/rider-app/src/components/TripTimeline.tsx
+ M frontend/rider-app/src/components/ui/Avatar.tsx
+ M frontend/rider-app/src/components/ui/Badge.tsx
+ M frontend/rider-app/src/components/ui/EmptyState.tsx
+ M frontend/rider-app/src/components/ui/Input.tsx
+ M frontend/rider-app/src/components/ui/Sheet.tsx
+ M frontend/rider-app/src/components/ui/Skeleton.tsx
+ M frontend/rider-app/src/context/AppContext.tsx
+ M frontend/rider-app/src/lib/api.ts
+ M frontend/rider-app/src/types/index.ts
+ M okada-ui/app/admin/[screen]/page.tsx
+ M okada-ui/app/globals.css
+ M okada-ui/components/dashboard/admin-console-page.tsx
+ M okada-ui/components/dashboard/admin/AdminShell.tsx
+ M okada-ui/components/dashboard/admin/types.ts
+ M okada-ui/components/maps/leaflet-map.tsx
+ M okada-ui/components/maps/operations-map.tsx
+ M okada-ui/components/maps/passenger-route-map-impl.tsx
+ M okada-ui/components/passenger/passenger-map-panel.tsx
+ M okada-ui/components/passenger/passenger.css
+ M okada-ui/lib/place-search.ts
+?? backend/src/modules/auth/otp-store.ts
+?? backend/src/modules/auth/otp.schemas.ts
+?? backend/src/modules/devices/
+?? backend/src/modules/documents/
+?? backend/src/modules/notifications/
+?? backend/src/modules/places/
+?? backend/src/modules/promotions/
+?? backend/src/modules/realtime/
+?? backend/src/modules/referrals/
+?? backend/src/modules/tickets/
+?? frontend/apks/git-status.log
+?? frontend/apks/okada-ui-typecheck.log
+?? frontend/apks/passenger-eas-status.log
+?? frontend/apks/passenger-eas-submit-retry.log
+?? frontend/apks/rider-eas-submit-retry.log
+?? frontend/passenger-app/app/(auth)/verify-phone.tsx
+?? frontend/passenger-app/app/emergency-contacts.tsx
+?? frontend/passenger-app/app/saved-places.tsx
+?? frontend/passenger-app/app/support.tsx
+?? frontend/passenger-app/src/hooks/useLiveRoutePreview.ts
+?? frontend/passenger-app/src/hooks/usePassengerTripRealtime.ts
+?? frontend/passenger-app/src/hooks/usePushRegistration.ts
+?? frontend/passenger-app/src/hooks/useTripRefresh.ts
+?? frontend/rider-app/app/(auth)/verify-phone.tsx
+?? frontend/rider-app/app/support.tsx
+?? frontend/rider-app/src/hooks/useLiveRoutePreview.ts
+?? frontend/rider-app/src/hooks/usePushRegistration.ts
+?? frontend/rider-app/src/hooks/useRideLocationReporter.ts
+?? frontend/rider-app/src/hooks/useRiderLocation.ts
+?? frontend/rider-app/src/hooks/useRiderTripRealtime.ts
+?? frontend/rider-app/src/hooks/useTripRefresh.ts
+?? frontend/rider-app/src/lib/navigation.ts
+?? frontend/rider-app/src/lib/push.ts
+?? okada-ui/components/dashboard/admin/PromoCodesManagement.tsx
+?? okada-ui/components/dashboard/admin/SupportTicketsManagement.tsx
+?? okada-ui/components/maps/map-error-boundary.tsx
+?? okada-ui/components/passenger/map-panel-cards.tsx
+?? okada-ui/components/passenger/passenger-types.ts
+?? okada-ui/lib/cache.ts
+?? okada-ui/lib/timing.ts

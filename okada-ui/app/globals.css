@@ -771,8 +771,17 @@ main {
 .map-empty-note-card p {
   margin: 0;
   color: #475569;
+  font-size: 0.84rem;
   line-height: 1.5;
-  font-size: 0.9rem;
+}
+
+.map-error-boundary {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  background: #f8fafc;
 }
 
 .map-tile-warning {
@@ -781,6 +790,9 @@ main {
   right: 18px;
   bottom: 18px;
   z-index: 12;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 12px 14px;
   border-radius: 16px;
   border: 1px solid rgba(245, 158, 11, 0.28);
@@ -788,8 +800,45 @@ main {
   color: #92400e;
   backdrop-filter: blur(10px);
   box-shadow: 0 14px 30px rgba(15, 23, 42, 0.12);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   line-height: 1.45;
+  animation: tile-warning-in 0.3s ease-out;
+}
+
+.map-tile-warning-icon {
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+
+@keyframes tile-warning-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.map-skeleton {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  overflow: hidden;
+  background: linear-gradient(135deg, #e2e8f0 0%, #f1f5f9 50%, #e2e8f0 100%);
+}
+
+.map-skeleton-pulse {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 .status-chip {

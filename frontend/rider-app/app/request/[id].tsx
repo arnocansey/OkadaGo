@@ -5,14 +5,69 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AppMap } from "@/components/AppMap";
 import { api, money } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
+import { useTheme } from "@/context/ThemeContext";
 import { markersForDelivery, markersForRide } from "@/lib/tripMap";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { colors, radius, spacing, typography, stackHeaderOptions } from "@/theme/tokens";
+import { radius, spacing } from "@/theme/tokens";
 
 export default function RequestScreen() {
   const { id, kind } = useLocalSearchParams<{ id: string; kind?: string }>();
   const { session, rides, deliveries, refresh } = useApp();
+  const { colors, typography, stackHeaderOptions } = useTheme();
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        screen: { flex: 1, backgroundColor: colors.background },
+        body: { padding: spacing.xl, gap: spacing.lg },
+        progressTrack: { height: 4, backgroundColor: colors.surface },
+        progressBar: { height: 4, backgroundColor: colors.accent },
+        headerRow: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" },
+        kicker: { ...typography.label, color: colors.textMuted },
+        title: { ...typography.h1, marginTop: 4, color: colors.text },
+        farePill: {
+          backgroundColor: colors.primary,
+          borderRadius: radius.full,
+          paddingHorizontal: spacing.lg,
+          paddingVertical: spacing.sm,
+          alignSelf: "flex-start",
+          marginTop: 4,
+        },
+        fareText: { ...typography.bodySemibold, color: colors.textOnPrimary },
+        timerRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
+        timerBadge: {
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          backgroundColor: colors.accentLight,
+          borderWidth: 2,
+          borderColor: colors.accent,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        timerText: { ...typography.label, color: colors.primary },
+        timerLabel: { ...typography.caption, color: colors.textMuted },
+        routeCard: {
+          flexDirection: "row",
+          gap: spacing.md,
+          backgroundColor: colors.surface,
+          borderRadius: radius.lg,
+          padding: spacing.lg,
+        },
+        routeLine: { alignItems: "center", paddingTop: 4, gap: 0 },
+        dot: { width: 12, height: 12, borderRadius: 6 },
+        dotStart: { backgroundColor: colors.primary },
+        dotEnd: { backgroundColor: colors.danger },
+        connector: { flex: 1, width: 2, backgroundColor: colors.border, minHeight: 32, marginVertical: 4 },
+        routeLabels: { flex: 1, justifyContent: "space-between", gap: spacing.lg },
+        routeItem: {},
+        routeItemEnd: {},
+        routeLabel: { ...typography.caption, color: colors.textMuted },
+        routeAddress: { ...typography.bodySemibold, marginTop: 2, color: colors.text },
+        actions: { gap: spacing.md },
+      }),
+    [colors, typography],
+  );
   const isRide = kind === "ride";
   const trip = isRide ? rides.find((r) => r.id === id) : deliveries.find((d) => d.id === id);
 
@@ -180,62 +235,3 @@ export default function RequestScreen() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  body: { padding: spacing.xl, gap: spacing.lg },
-
-  // Countdown progress bar
-  progressTrack: { height: 4, backgroundColor: colors.surface },
-  progressBar: { height: 4, backgroundColor: colors.accent },
-
-  // Header with fare pill
-  headerRow: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" },
-  kicker: { ...typography.label, color: colors.textMuted },
-  title: { ...typography.h1, marginTop: 4 },
-  farePill: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.full,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    alignSelf: "flex-start",
-    marginTop: 4,
-  },
-  fareText: { ...typography.bodySemibold, color: colors.textOnPrimary },
-
-  // Countdown timer badge
-  timerRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
-  timerBadge: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.accentLight,
-    borderWidth: 2,
-    borderColor: colors.accent,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  timerText: { ...typography.label, color: colors.primary },
-  timerLabel: { ...typography.caption, color: colors.textMuted },
-
-  // Route card
-  routeCard: {
-    flexDirection: "row",
-    gap: spacing.md,
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-  },
-  routeLine: { alignItems: "center", paddingTop: 4, gap: 0 },
-  dot: { width: 12, height: 12, borderRadius: 6 },
-  dotStart: { backgroundColor: colors.primary },
-  dotEnd: { backgroundColor: colors.danger },
-  connector: { flex: 1, width: 2, backgroundColor: colors.border, minHeight: 32, marginVertical: 4 },
-  routeLabels: { flex: 1, justifyContent: "space-between", gap: spacing.lg },
-  routeItem: {},
-  routeItemEnd: {},
-  routeLabel: { ...typography.caption, color: colors.textMuted },
-  routeAddress: { ...typography.bodySemibold, marginTop: 2, color: colors.text },
-
-  actions: { gap: spacing.md },
-});

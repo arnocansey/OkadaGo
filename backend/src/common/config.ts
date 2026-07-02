@@ -38,12 +38,28 @@ const configSchema = z.object({
   GOOGLE_MAPS_API_KEY: emptyStringToUndefined(z.string().min(1)),
   GEOCODING_BASE_URL: z.string().url().default("https://nominatim.openstreetmap.org"),
   GEOCODING_USER_AGENT: emptyStringToUndefined(z.string().min(1)),
-  GEOCODING_CONTACT_EMAIL: emptyStringToUndefined(z.string().email())
+  GEOCODING_CONTACT_EMAIL: emptyStringToUndefined(z.string().email()),
+  SMS_PROVIDER: emptyStringToUndefined(z.enum(["termii", "twilio", "none"])),
+  TERMII_API_KEY: emptyStringToUndefined(z.string().min(1)),
+  TERMII_SENDER_ID: emptyStringToUndefined(z.string().min(1)),
+  TERMII_BASE_URL: z.string().url().default("https://api.ng.termii.com"),
+  TWILIO_ACCOUNT_SID: emptyStringToUndefined(z.string().min(1)),
+  TWILIO_AUTH_TOKEN: emptyStringToUndefined(z.string().min(1)),
+  TWILIO_FROM_NUMBER: emptyStringToUndefined(z.string().min(1))
 });
 
 const parsed = configSchema.parse(process.env);
 const defaultAppWebUrl = parsed.CORS_ORIGIN.split(",")[0]?.trim() || "http://localhost:3000";
 const apiPublicUrl = parsed.API_PUBLIC_URL?.replace(/\/$/, "") ?? `http://localhost:${parsed.PORT}`;
+const hasTermiiConfig = Boolean(parsed.TERMII_API_KEY && parsed.TERMII_SENDER_ID);
+const hasTwilioConfig = Boolean(
+  parsed.TWILIO_ACCOUNT_SID && parsed.TWILIO_AUTH_TOKEN && parsed.TWILIO_FROM_NUMBER
+);
+const smsProvider =
+  parsed.SMS_PROVIDER === "none"
+    ? undefined
+    : parsed.SMS_PROVIDER ??
+      (hasTermiiConfig ? ("termii" as const) : hasTwilioConfig ? ("twilio" as const) : undefined);
 
 export const appConfig = {
   nodeEnv: parsed.NODE_ENV,
@@ -68,5 +84,12 @@ export const appConfig = {
   geocodingBaseUrl: parsed.GEOCODING_BASE_URL.replace(/\/$/, ""),
   geocodingUserAgent:
     parsed.GEOCODING_USER_AGENT?.trim() || `OkadaGo/0.1 (${defaultAppWebUrl})`,
-  geocodingContactEmail: parsed.GEOCODING_CONTACT_EMAIL
+  geocodingContactEmail: parsed.GEOCODING_CONTACT_EMAIL,
+  smsProvider,
+  termiiApiKey: parsed.TERMII_API_KEY,
+  termiiSenderId: parsed.TERMII_SENDER_ID,
+  termiiBaseUrl: parsed.TERMII_BASE_URL.replace(/\/$/, ""),
+  twilioAccountSid: parsed.TWILIO_ACCOUNT_SID,
+  twilioAuthToken: parsed.TWILIO_AUTH_TOKEN,
+  twilioFromNumber: parsed.TWILIO_FROM_NUMBER
 } as const;

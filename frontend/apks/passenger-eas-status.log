@@ -1,0 +1,49 @@
+﻿pnpm : Γÿà eas-cli@20.5.1 is now available.
+At C:\Users\arnoc\AppData\Local\Temp\ps-script-d3d237fc-4048-43c5-bf2e-f51f95efc615.ps1:114 char:438
++ ... S_NO_VCS=1; pnpm dlx eas-cli@16.20.0 build:view 4986976e-e1dc-4dd9-aa ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Γÿà eas-cli@20.5.1 is now available.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+To upgrade, run:
+npm install -g eas-cli
+Proceeding with outdated version.
+
+Using EAS CLI without version control system is not recommended, use this mode only if you know what you are doing.
+- Fetching the buildΓÇª
+ΓêÜ Found a matching build for the project @whoisarnold/okadago-passenger
+{
+  "id": "4986976e-e1dc-4dd9-aa0e-c42137ad129f",
+  "status": "IN_QUEUE",
+  "platform": "ANDROID",
+  "artifacts": {},
+  "fingerprint": {
+    "id": "019f22e6-8543-70ca-bd0f-df4466afac10",
+    "hash": "bb400baffab466b990d6cec37271b1758e9068ce"
+  },
+  "initiatingActor": {
+    "id": "bf46a398-90b0-4ea5-865a-db7a6d0d0e3f",
+    "displayName": "whoisarnold"
+  },
+  "project": {
+    "id": "94c07182-c892-4106-8b44-3a4ebc25f853",
+    "name": "okadago-passenger",
+    "slug": "okadago-passenger",
+    "ownerAccount": {
+      "id": "f0ce5390-5483-417e-815e-1c6222a8740f",
+      "name": "whoisarnold"
+    }
+  },
+  "channel": "production",
+  "distribution": "STORE",
+  "buildProfile": "production-apk",
+  "sdkVersion": "54.0.0",
+  "appVersion": "1.0.0",
+  "appBuildVersion": "30",
+  "runtimeVersion": "1.0.0",
+  "priority": "NORMAL",
+  "createdAt": "2026-07-02T12:56:00.536Z",
+  "updatedAt": "2026-07-02T12:56:06.556Z",
+  "expirationDate": "2026-08-01T12:56:00.570Z",
+  "isForIosSimulator": false
+}

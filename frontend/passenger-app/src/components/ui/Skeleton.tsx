@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Animated, Easing, StyleSheet, View, type ViewStyle } from "react-native";
-import { colors, radius } from "@/theme/tokens";
+import { useTheme } from "@/context/ThemeContext";
+import { radius } from "@/theme/tokens";
 
 type Props = {
   width?: number | `${number}%`;
@@ -10,7 +11,18 @@ type Props = {
 };
 
 export function Skeleton({ width = "100%", height = 16, style, rounded }: Props) {
+  const { colors } = useTheme();
   const opacity = useRef(new Animated.Value(0.4)).current;
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        base: { backgroundColor: colors.border },
+        list: { gap: 12 },
+        row: { flexDirection: "row", gap: 12, alignItems: "center" },
+        col: { flex: 1, gap: 8 },
+      }),
+    [colors],
+  );
 
   useEffect(() => {
     const loop = Animated.loop(
@@ -35,6 +47,18 @@ export function Skeleton({ width = "100%", height = 16, style, rounded }: Props)
 }
 
 export function SkeletonList({ count = 3 }: { count?: number }) {
+  const { colors } = useTheme();
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        base: { backgroundColor: colors.border },
+        list: { gap: 12 },
+        row: { flexDirection: "row", gap: 12, alignItems: "center" },
+        col: { flex: 1, gap: 8 },
+      }),
+    [colors],
+  );
+
   return (
     <View style={styles.list}>
       {Array.from({ length: count }).map((_, i) => (
@@ -49,10 +73,3 @@ export function SkeletonList({ count = 3 }: { count?: number }) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  base: { backgroundColor: colors.border },
-  list: { gap: 12 },
-  row: { flexDirection: "row", gap: 12, alignItems: "center" },
-  col: { flex: 1, gap: 8 },
-});

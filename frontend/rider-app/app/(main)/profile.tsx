@@ -2,7 +2,7 @@ import { router } from "expo-router";
 import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ChevronRight, FileText, Settings } from "lucide-react-native";
+import { ChevronRight, FileText, Headphones, PhoneCall, Settings } from "lucide-react-native";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -54,7 +54,19 @@ export default function ProfileScreen() {
           <Text style={styles.menuLabel}>Documents</Text>
           <ChevronRight size={18} color={colors.textMuted} />
         </Pressable>
-        <Pressable style={styles.menuRow} onPress={() => router.push("/settings")}>
+        <Pressable style={styles.menuRow} onPress={() => router.push("/support")}>
+          <Headphones size={20} color={colors.text} />
+          <Text style={styles.menuLabel}>Support tickets</Text>
+          <ChevronRight size={18} color={colors.textMuted} />
+        </Pressable>
+        {user.isPhoneVerified === false ? (
+          <Pressable style={styles.menuRow} onPress={() => router.push("/(auth)/verify-phone")}>
+            <PhoneCall size={20} color={colors.text} />
+            <Text style={styles.menuLabel}>Verify phone number</Text>
+            <ChevronRight size={18} color={colors.textMuted} />
+          </Pressable>
+        ) : null}
+        <Pressable style={[styles.menuRow, { borderBottomWidth: 0 }]} onPress={() => router.push("/settings")}>
           <Settings size={20} color={colors.text} />
           <Text style={styles.menuLabel}>Settings</Text>
           <ChevronRight size={18} color={colors.textMuted} />

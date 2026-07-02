@@ -353,7 +353,8 @@ function mapApprovalStatus(status: CreateRiderInput["approvalStatus"]) {
   }[status];
 }
 
-const PLACES_BASE = "https://maps.googleapis.com/maps/api/place";
+const PLACES_API_V1 = "https://places.googleapis.com/v1";
+const LEGACY_PLACES_API = "https://maps.googleapis.com/maps/api/place";
 const NEARBY_RADIUS_M = 5000;
 
 const PLACES_CATEGORY_SEARCH_TYPES: Record<string, string[]> = {
@@ -374,6 +375,36 @@ const PLACES_ALL_SEARCH_TYPES = [
   "grocery_or_supermarket"
 ];
 
+/** Field mask for Nearby Search (New) — maps to legacy `GooglePlaceResult` shape. */
+const PLACES_NEARBY_FIELD_MASK = [
+  "places.id",
+  "places.displayName",
+  "places.formattedAddress",
+  "places.shortFormattedAddress",
+  "places.location",
+  "places.rating",
+  "places.types",
+  "places.currentOpeningHours",
+  "places.photos",
+  "places.businessStatus"
+].join(",");
+
+/** Field mask for Place Details (New) — maps to `PlaceDetailsResult`. */
+const PLACES_DETAILS_FIELD_MASK = [
+  "id",
+  "displayName",
+  "formattedAddress",
+  "shortFormattedAddress",
+  "location",
+  "rating",
+  "types",
+  "nationalPhoneNumber",
+  "currentOpeningHours",
+  "regularOpeningHours",
+  "photos",
+  "businessStatus"
+].join(",");
+
 type GooglePlaceResult = {
   place_id: string;
   name: string;
@@ -387,10 +418,37 @@ type GooglePlaceResult = {
   business_status?: string;
 };
 
-type NearbySearchResponse = {
+type PlacesApiNewPlace = {
+  id?: string;
+  displayName?: { text?: string };
+  formattedAddress?: string;
+  shortFormattedAddress?: string;
+  location?: { latitude?: number; longitude?: number };
+  rating?: number;
+  types?: string[];
+  currentOpeningHours?: { openNow?: boolean };
+  regularOpeningHours?: { weekdayDescriptions?: string[] };
+  photos?: Array<{ name?: string }>;
+  businessStatus?: string;
+  nationalPhoneNumber?: string;
+};
+
+type PlacesApiNewError = {
+  error?: {
+    code?: number;
+    message?: string;
+    status?: string;
+  };
+};
+
+type LegacyPlacesResponse = {
   status: string;
-  results: GooglePlaceResult[];
   error_message?: string;
+  results?: GooglePlaceResult[];
+  result?: GooglePlaceResult & {
+    formatted_phone_number?: string;
+    opening_hours?: { open_now?: boolean; weekday_text?: string[] };
+  };
 };
 
 export type PlaceDetailsResult = {
@@ -431,16 +489,16 @@ function getGooglePlacesApiKey() {
 }
 
 function placesApiErrorMessage(status: string, errorMessage?: string) {
-  if (status === "REQUEST_DENIED") {
+  if (status === "REQUEST_DENIED" || status === "PERMISSION_DENIED") {
     return (
-      "Google Places API access denied. Enable Places API (legacy) for your server API key " +
-      "in Google Cloud Console, then restart the backend."
+      "Google Places API access denied. Enable Places API (New) and/or legacy Places API " +
+      "for your server API key (GOOGLE_PLACES_API_KEY) in Google Cloud Console, ensure billing is enabled, then restart the backend."
     );
   }
-  if (status === "OVER_QUERY_LIMIT") {
+  if (status === "OVER_QUERY_LIMIT" || status === "RESOURCE_EXHAUSTED") {
     return "Google Places quota exceeded. Try again later or check billing in Google Cloud Console.";
   }
-  if (status === "INVALID_REQUEST") {
+  if (status === "INVALID_REQUEST" || status === "INVALID_ARGUMENT") {
     return errorMessage ?? "Invalid Places API request.";
   }
   if (status === "ZERO_RESULTS") {
@@ -449,41 +507,258 @@ function placesApiErrorMessage(status: string, errorMessage?: string) {
   return errorMessage ?? `Places API error: ${status}`;
 }
 
+function normalizePlacesApiStatus(status?: string) {
+  if (!status) return "UNKNOWN";
+  if (status === "PERMISSION_DENIED") return "REQUEST_DENIED";
+  if (status === "RESOURCE_EXHAUSTED") return "OVER_QUERY_LIMIT";
+  if (status === "INVALID_ARGUMENT") return "INVALID_REQUEST";
+  return status;
+}
+
+function stripPlaceResourceId(id: string) {
+  return id.startsWith("places/") ? id.slice("places/".length) : id;
+}
+
+function toPlaceResourceId(placeId: string) {
+  return placeId.startsWith("places/") ? placeId : `places/${placeId}`;
+}
+
+function mapNewPlaceToGooglePlaceResult(place: PlacesApiNewPlace): GooglePlaceResult | null {
+  if (!place.id || !place.displayName?.text || !place.location) {
+    return null;
+  }
+
+  const latitude = place.location.latitude;
+  const longitude = place.location.longitude;
+  if (typeof latitude !== "number" || typeof longitude !== "number") {
+    return null;
+  }
+
+  return {
+    place_id: stripPlaceResourceId(place.id),
+    name: place.displayName.text,
+    vicinity: place.shortFormattedAddress,
+    formatted_address: place.formattedAddress,
+    geometry: { location: { lat: latitude, lng: longitude } },
+    rating: place.rating,
+    types: place.types,
+    opening_hours:
+      place.currentOpeningHours?.openNow == null
+        ? undefined
+        : { open_now: place.currentOpeningHours.openNow },
+    photos: place.photos
+      ?.filter((photo) => Boolean(photo.name))
+      .map((photo) => ({ photo_reference: photo.name! })),
+    business_status: place.businessStatus
+  };
+}
+
+async function readPlacesApiError(response: Response): Promise<PlacesApiNewError> {
+  try {
+    return (await response.json()) as PlacesApiNewError;
+  } catch {
+    return {};
+  }
+}
+
+function throwPlacesApiError(status: string, errorMessage?: string) {
+  const normalizedStatus = normalizePlacesApiStatus(status);
+  const message = placesApiErrorMessage(normalizedStatus, errorMessage);
+  if (message) {
+    throw new AppError(message, 502, "PLACES_API_ERROR", { status: normalizedStatus });
+  }
+}
+
+function logPlacesFallback(operation: string, error: unknown) {
+  const message =
+    error instanceof AppError
+      ? error.message
+      : error instanceof Error
+        ? error.message
+        : String(error);
+  console.warn(
+    `[places] ${operation}: Places API (New) failed (${message}), falling back to legacy Places API`
+  );
+}
+
 function searchTypesForCategory(categoryId?: string | null, type?: string | null) {
   if (type) return [type];
   if (!categoryId) return PLACES_ALL_SEARCH_TYPES;
   return PLACES_CATEGORY_SEARCH_TYPES[categoryId] ?? ["restaurant"];
 }
 
-async function nearbySearchByType(
+async function nearbySearchNew(
   latitude: number,
   longitude: number,
-  type: string,
+  includedTypes: string[],
   apiKey: string
 ): Promise<GooglePlaceResult[]> {
-  const params = new URLSearchParams({
-    location: `${latitude},${longitude}`,
-    radius: `${NEARBY_RADIUS_M}`,
-    type,
-    key: apiKey
+  const response = await fetch(`${PLACES_API_V1}/places:searchNearby`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Goog-Api-Key": apiKey,
+      "X-Goog-FieldMask": PLACES_NEARBY_FIELD_MASK
+    },
+    body: JSON.stringify({
+      includedTypes,
+      maxResultCount: 20,
+      languageCode: "en",
+      locationRestriction: {
+        circle: {
+          center: { latitude, longitude },
+          radius: NEARBY_RADIUS_M
+        }
+      }
+    })
   });
 
-  const response = await fetch(`${PLACES_BASE}/nearbysearch/json?${params.toString()}`);
   if (!response.ok) {
-    throw new AppError(`Places API HTTP ${response.status}`, 502, "PLACES_UPSTREAM_ERROR");
+    const payload = await readPlacesApiError(response);
+    const status = payload.error?.status ?? `HTTP_${response.status}`;
+    throwPlacesApiError(status, payload.error?.message ?? `Places API HTTP ${response.status}`);
   }
 
-  const data = (await response.json()) as NearbySearchResponse;
-  if (data.status === "ZERO_RESULTS") return [];
-  if (data.status !== "OK") {
-    const message = placesApiErrorMessage(data.status, data.error_message);
-    if (message) {
-      throw new AppError(message, 502, "PLACES_API_ERROR", { status: data.status });
+  const data = (await response.json()) as { places?: PlacesApiNewPlace[] };
+  return (data.places ?? [])
+    .map(mapNewPlaceToGooglePlaceResult)
+    .filter((place): place is GooglePlaceResult => place != null)
+    .filter((place) => place.business_status !== "CLOSED_PERMANENTLY");
+}
+
+async function nearbySearchLegacy(
+  latitude: number,
+  longitude: number,
+  includedTypes: string[],
+  apiKey: string
+): Promise<GooglePlaceResult[]> {
+  const byId = new Map<string, GooglePlaceResult>();
+
+  for (const type of includedTypes) {
+    const url = new URL(`${LEGACY_PLACES_API}/nearbysearch/json`);
+    url.searchParams.set("location", `${latitude},${longitude}`);
+    url.searchParams.set("radius", `${NEARBY_RADIUS_M}`);
+    url.searchParams.set("type", type);
+    url.searchParams.set("key", apiKey);
+
+    const response = await fetch(url);
+    const data = (await response.json()) as LegacyPlacesResponse;
+
+    if (data.status === "ZERO_RESULTS") {
+      continue;
     }
-    return [];
+
+    if (data.status !== "OK") {
+      throwPlacesApiError(data.status, data.error_message);
+    }
+
+    for (const place of data.results ?? []) {
+      if (place.business_status === "CLOSED_PERMANENTLY" || byId.has(place.place_id)) {
+        continue;
+      }
+      byId.set(place.place_id, place);
+    }
   }
 
-  return data.results.filter((place) => place.business_status !== "CLOSED_PERMANENTLY");
+  return Array.from(byId.values());
+}
+
+async function nearbySearch(
+  latitude: number,
+  longitude: number,
+  includedTypes: string[],
+  apiKey: string
+): Promise<GooglePlaceResult[]> {
+  try {
+    return await nearbySearchNew(latitude, longitude, includedTypes, apiKey);
+  } catch (error) {
+    logPlacesFallback("nearbySearch", error);
+    return nearbySearchLegacy(latitude, longitude, includedTypes, apiKey);
+  }
+}
+
+async function placeDetailsNew(placeId: string, apiKey: string): Promise<PlaceDetailsResult> {
+  const resourceId = toPlaceResourceId(placeId);
+
+  const response = await fetch(`${PLACES_API_V1}/${resourceId}`, {
+    headers: {
+      "Content-Type": "application/json",
+      "X-Goog-Api-Key": apiKey,
+      "X-Goog-FieldMask": PLACES_DETAILS_FIELD_MASK
+    }
+  });
+
+  if (!response.ok) {
+    const payload = await readPlacesApiError(response);
+    const status = payload.error?.status ?? `HTTP_${response.status}`;
+    throwPlacesApiError(status, payload.error?.message ?? `Place Details HTTP ${response.status}`);
+  }
+
+  const place = (await response.json()) as PlacesApiNewPlace;
+  const mapped = mapNewPlaceToGooglePlaceResult(place);
+  if (!mapped) {
+    throw new AppError("Could not load place details.", 502, "PLACES_API_ERROR");
+  }
+
+  return {
+    placeId: mapped.place_id,
+    name: mapped.name,
+    address: mapped.formatted_address ?? mapped.vicinity ?? "",
+    latitude: mapped.geometry.location.lat,
+    longitude: mapped.geometry.location.lng,
+    rating: mapped.rating ?? 0,
+    types: mapped.types ?? [],
+    phone: place.nationalPhoneNumber,
+    openNow: mapped.opening_hours?.open_now,
+    weekdayText: place.regularOpeningHours?.weekdayDescriptions,
+    photoReference: mapped.photos?.[0]?.photo_reference
+  };
+}
+
+async function placeDetailsLegacy(placeId: string, apiKey: string): Promise<PlaceDetailsResult> {
+  const url = new URL(`${LEGACY_PLACES_API}/details/json`);
+  url.searchParams.set("place_id", stripPlaceResourceId(placeId));
+  url.searchParams.set(
+    "fields",
+    "place_id,name,formatted_address,geometry,rating,types,formatted_phone_number,opening_hours,photos,business_status"
+  );
+  url.searchParams.set("key", apiKey);
+
+  const response = await fetch(url);
+  const data = (await response.json()) as LegacyPlacesResponse;
+
+  if (data.status !== "OK" || !data.result) {
+    throwPlacesApiError(data.status, data.error_message);
+    throw new AppError("Could not load place details.", 502, "PLACES_API_ERROR");
+  }
+
+  const place = data.result;
+  if (!place.geometry?.location) {
+    throw new AppError("Could not load place details.", 502, "PLACES_API_ERROR");
+  }
+
+  return {
+    placeId: place.place_id,
+    name: place.name,
+    address: place.formatted_address ?? "",
+    latitude: place.geometry.location.lat,
+    longitude: place.geometry.location.lng,
+    rating: place.rating ?? 0,
+    types: place.types ?? [],
+    phone: place.formatted_phone_number,
+    openNow: place.opening_hours?.open_now,
+    weekdayText: place.opening_hours?.weekday_text,
+    photoReference: place.photos?.[0]?.photo_reference
+  };
+}
+
+async function placeDetailsWithFallback(placeId: string, apiKey: string): Promise<PlaceDetailsResult> {
+  try {
+    return await placeDetailsNew(placeId, apiKey);
+  } catch (error) {
+    logPlacesFallback("placeDetails", error);
+    return placeDetailsLegacy(placeId, apiKey);
+  }
 }
 
 export class BootstrapService {
@@ -952,18 +1227,12 @@ export class BootstrapService {
   }): Promise<{ results: GooglePlaceResult[] }> {
     const apiKey = getGooglePlacesApiKey();
     const types = searchTypesForCategory(input.categoryId, input.type);
-    const batches = await Promise.all(
-      types.map((type) =>
-        nearbySearchByType(input.latitude, input.longitude, type, apiKey)
-      )
-    );
+    const batch = await nearbySearch(input.latitude, input.longitude, types, apiKey);
 
     const byId = new Map<string, GooglePlaceResult>();
-    for (const batch of batches) {
-      for (const place of batch) {
-        if (!byId.has(place.place_id)) {
-          byId.set(place.place_id, place);
-        }
+    for (const place of batch) {
+      if (!byId.has(place.place_id)) {
+        byId.set(place.place_id, place);
       }
     }
 
@@ -988,69 +1257,24 @@ export class BootstrapService {
 
   async placeDetails(placeId: string): Promise<PlaceDetailsResult> {
     const apiKey = getGooglePlacesApiKey();
-    const fields = [
-      "place_id",
-      "name",
-      "formatted_address",
-      "vicinity",
-      "geometry",
-      "rating",
-      "types",
-      "formatted_phone_number",
-      "opening_hours",
-      "photos"
-    ].join(",");
-
-    const params = new URLSearchParams({
-      place_id: placeId,
-      fields,
-      key: apiKey
-    });
-
-    const response = await fetch(`${PLACES_BASE}/details/json?${params.toString()}`);
-    if (!response.ok) {
-      throw new AppError(`Place Details HTTP ${response.status}`, 502, "PLACES_UPSTREAM_ERROR");
-    }
-
-    const data = (await response.json()) as {
-      status: string;
-      result?: GooglePlaceResult & {
-        formatted_phone_number?: string;
-        opening_hours?: { open_now?: boolean; weekday_text?: string[] };
-      };
-      error_message?: string;
-    };
-
-    if (data.status !== "OK" || !data.result) {
-      const message = placesApiErrorMessage(data.status, data.error_message);
-      throw new AppError(message || "Could not load place details.", 502, "PLACES_API_ERROR", {
-        status: data.status
-      });
-    }
-
-    const place = data.result;
-    return {
-      placeId: place.place_id,
-      name: place.name,
-      address: place.formatted_address ?? place.vicinity ?? "",
-      latitude: place.geometry.location.lat,
-      longitude: place.geometry.location.lng,
-      rating: place.rating ?? 0,
-      types: place.types ?? [],
-      phone: place.formatted_phone_number,
-      openNow: place.opening_hours?.open_now,
-      weekdayText: place.opening_hours?.weekday_text,
-      photoReference: place.photos?.[0]?.photo_reference
-    };
+    return placeDetailsWithFallback(placeId, apiKey);
   }
 
   placePhotoUrl(photoReference: string, maxWidth = 400) {
     const apiKey = getGooglePlacesApiKey();
+    if (photoReference.startsWith("places/")) {
+      const params = new URLSearchParams({
+        maxWidthPx: `${maxWidth}`,
+        key: apiKey
+      });
+      return `${PLACES_API_V1}/${photoReference}/media?${params.toString()}`;
+    }
+
     const params = new URLSearchParams({
       maxwidth: `${maxWidth}`,
       photoreference: photoReference,
       key: apiKey
     });
-    return `${PLACES_BASE}/photo?${params.toString()}`;
+    return `${LEGACY_PLACES_API}/photo?${params.toString()}`;
   }
 }

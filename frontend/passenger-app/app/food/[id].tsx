@@ -1,5 +1,5 @@
 import { Stack, router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -18,10 +18,86 @@ import { formatDistanceKm } from "@/lib/geo";
 import { fetchPlaceDetails } from "@/services/googlePlaces";
 import type { NearbyRestaurant } from "@/services/nearbyPlaces";
 import { Button } from "@/components/ui/Button";
-import { colors, radius, spacing, typography, stackHeaderOptions } from "@/theme/tokens";
+import { useTheme } from "@/context/ThemeContext";
+import { radius, spacing } from "@/theme/tokens";
 
 export default function RestaurantScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { colors, typography, stackHeaderOptions } = useTheme();
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        screen: { flex: 1, backgroundColor: colors.background },
+        loader: { marginTop: spacing.xxxl },
+        notFound: { ...typography.body, color: colors.textMuted, textAlign: "center", marginTop: spacing.xxxl },
+        hero: { padding: spacing.xl, borderRadius: radius.lg, margin: spacing.xl, marginBottom: spacing.md, gap: 6 },
+        heroTitle: { ...typography.h2, color: colors.textOnPrimary },
+        heroSub: { ...typography.caption, color: "rgba(255,255,255,0.85)" },
+        heroAddress: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 },
+        heroAddressText: { ...typography.caption, color: "rgba(255,255,255,0.85)", flex: 1 },
+        heroMeta: { ...typography.caption, color: "rgba(255,255,255,0.85)" },
+        phoneRow: { flexDirection: "row", alignItems: "center", gap: 4 },
+        notesBlock: { paddingHorizontal: spacing.xl, gap: spacing.sm, marginBottom: spacing.lg },
+        notesLabel: { ...typography.bodySemibold, color: colors.text },
+        notesInput: {
+          ...typography.body,
+          color: colors.text,
+          minHeight: 88,
+          borderWidth: 1,
+          borderColor: colors.border,
+          borderRadius: radius.md,
+          padding: spacing.md,
+          backgroundColor: colors.surface,
+          textAlignVertical: "top",
+        },
+        notesHint: { ...typography.caption, color: colors.textMuted },
+        sectionTitle: { ...typography.bodySemibold, color: colors.text, paddingHorizontal: spacing.xl, marginBottom: spacing.sm },
+        list: { paddingHorizontal: spacing.xl, paddingBottom: 120 },
+        item: {
+          flexDirection: "row",
+          gap: spacing.lg,
+          paddingVertical: spacing.lg,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        },
+        itemBody: { flex: 1, gap: 4 },
+        itemName: { ...typography.bodySemibold, color: colors.text },
+        itemDesc: { ...typography.caption, color: colors.textSecondary },
+        itemPrice: { ...typography.captionMedium, color: colors.text, marginTop: 4 },
+        qty: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
+        qtyBtn: {
+          width: 32,
+          height: 32,
+          borderRadius: 16,
+          backgroundColor: colors.surface,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        qtyVal: { ...typography.bodySemibold, color: colors.text, minWidth: 20, textAlign: "center" },
+        deliveryNote: {
+          flexDirection: "row",
+          gap: spacing.sm,
+          paddingVertical: spacing.lg,
+          alignItems: "flex-start",
+        },
+        deliveryNoteText: { ...typography.caption, color: colors.textMuted, flex: 1 },
+        footer: {
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          padding: spacing.xl,
+          backgroundColor: colors.background,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        },
+        total: { ...typography.h3, color: colors.text },
+      }),
+    [colors, typography],
+  );
   const { getRestaurant, loadRestaurant, loading } = useNearbyRestaurants();
   const [restaurant, setRestaurant] = useState<NearbyRestaurant | undefined>(() =>
     getRestaurant(id ?? ""),
@@ -238,73 +314,3 @@ export default function RestaurantScreen() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  loader: { marginTop: spacing.xxxl },
-  notFound: { ...typography.body, color: colors.textMuted, textAlign: "center", marginTop: spacing.xxxl },
-  hero: { padding: spacing.xl, borderRadius: radius.lg, margin: spacing.xl, marginBottom: spacing.md, gap: 6 },
-  heroTitle: { ...typography.h2, color: colors.text },
-  heroSub: { ...typography.caption, color: "rgba(255,255,255,0.85)" },
-  heroAddress: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 },
-  heroAddressText: { ...typography.caption, color: "rgba(255,255,255,0.85)", flex: 1 },
-  heroMeta: { ...typography.caption, color: "rgba(255,255,255,0.85)" },
-  phoneRow: { flexDirection: "row", alignItems: "center", gap: 4 },
-  notesBlock: { paddingHorizontal: spacing.xl, gap: spacing.sm, marginBottom: spacing.lg },
-  notesLabel: { ...typography.bodySemibold },
-  notesInput: {
-    ...typography.body,
-    minHeight: 88,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    backgroundColor: colors.surface,
-    textAlignVertical: "top",
-  },
-  notesHint: { ...typography.caption, color: colors.textMuted },
-  sectionTitle: { ...typography.bodySemibold, paddingHorizontal: spacing.xl, marginBottom: spacing.sm },
-  list: { paddingHorizontal: spacing.xl, paddingBottom: 120 },
-  item: {
-    flexDirection: "row",
-    gap: spacing.lg,
-    paddingVertical: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  itemBody: { flex: 1, gap: 4 },
-  itemName: { ...typography.bodySemibold },
-  itemDesc: { ...typography.caption, color: colors.textSecondary },
-  itemPrice: { ...typography.captionMedium, marginTop: 4 },
-  qty: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
-  qtyBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.surface,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  qtyVal: { ...typography.bodySemibold, minWidth: 20, textAlign: "center" },
-  deliveryNote: {
-    flexDirection: "row",
-    gap: spacing.sm,
-    paddingVertical: spacing.lg,
-    alignItems: "flex-start",
-  },
-  deliveryNoteText: { ...typography.caption, color: colors.textMuted, flex: 1 },
-  footer: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    padding: spacing.xl,
-    backgroundColor: colors.background,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  total: { ...typography.h3 },
-});

@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { api } from "@/lib/api";
 import { clearSavedSession, loadSavedSession, saveSession } from "@/lib/session-storage";
 import { passengerWs } from "@/lib/websocket";
+import { usePushRegistration } from "@/hooks/usePushRegistration";
 import type { Delivery, Ride, ServiceZone, Session, SessionUser, Wallet, WalletTransaction } from "@/types";
 
 type AppState = {
@@ -17,6 +18,7 @@ type AppState = {
   signIn: (session: Session) => Promise<void>;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
+  refreshSession: () => Promise<void>;
   updateUser: (user: SessionUser) => Promise<void>;
   setMessage: (message: string) => void;
   activeRide: Ride | undefined;
@@ -138,6 +140,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => passengerWs.disconnect();
   }, [session?.token, refresh]);
 
+  usePushRegistration(session?.token);
+
+  async function refreshSession() {
+    if (!session?.token) return;
+    const data = await api<{ user: SessionUser }>("/auth/session", { token: session.token });
+    const next = { ...session, user: data.user };
+    setSession(next);
+    await saveSession(next);
+  }
+
   async function signIn(next: Session) {
     setSession(next);
     await saveSession(next);
@@ -172,12 +184,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       signIn,
       signOut,
       refresh,
+      refreshSession,
       updateUser,
       setMessage,
       activeRide,
       activeDelivery,
     }),
-    [session, restoring, loading, message, wallets, transactions, rides, deliveries, zones, refresh, activeRide, activeDelivery],
+    [session, restoring, loading, message, wallets, transactions, rides, deliveries, zones, refresh, refreshSession, activeRide, activeDelivery],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

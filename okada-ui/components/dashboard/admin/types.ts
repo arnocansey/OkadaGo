@@ -17,6 +17,7 @@ export type AdminConsoleScreen =
   | "payments"
   | "ratings"
   | "promotions"
+  | "supportTickets"
   | "settings"
   | "admins";
 

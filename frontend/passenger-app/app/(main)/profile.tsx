@@ -1,19 +1,35 @@
 import { router } from "expo-router";
-import { useMemo } from "react";
-import { ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { Alert, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Moon, Sun } from "lucide-react-native";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
+import { api } from "@/lib/api";
 import { radius, spacing } from "@/theme/tokens";
+
+type PassengerSettings = {
+  referralCode?: string | null;
+};
 
 export default function ProfileScreen() {
   const { session, signOut, zones } = useApp();
   const { colors, typography, isDark, setTheme } = useTheme();
   const user = session!.user;
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [friendCode, setFriendCode] = useState("");
+  const [applyingReferral, setApplyingReferral] = useState(false);
+
+  useEffect(() => {
+    if (!session?.token) return;
+    api<PassengerSettings>("/auth/passenger/settings", { token: session.token })
+      .then((settings) => setReferralCode(settings.referralCode ?? null))
+      .catch(() => setReferralCode(null));
+  }, [session?.token]);
 
   const styles = useMemo(
     () =>
@@ -54,9 +70,28 @@ export default function ProfileScreen() {
         darkIconBg: { backgroundColor: colors.borderStrong },
         themeLabel: { ...typography.bodySemibold, color: colors.text },
         themeHint: { ...typography.caption, color: colors.textMuted, marginTop: 2 },
+        referralHint: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.md },
       }),
     [colors, typography],
   );
+
+  async function applyReferral() {
+    if (!session || !friendCode.trim()) return;
+    setApplyingReferral(true);
+    try {
+      await api("/referrals/apply", {
+        method: "POST",
+        token: session.token,
+        body: { referralCode: friendCode.trim() },
+      });
+      Alert.alert("Referral applied", "Your referral code was linked successfully.");
+      setFriendCode("");
+    } catch (e) {
+      Alert.alert("Referral failed", e instanceof Error ? e.message : "Could not apply referral code.");
+    } finally {
+      setApplyingReferral(false);
+    }
+  }
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -72,10 +107,31 @@ export default function ProfileScreen() {
             <Text style={styles.infoLabel}>Preferred currency</Text>
             <Text style={styles.infoValue}>{user.preferredCurrency}</Text>
           </View>
-          <View style={[styles.infoRow, styles.noBorder]}>
+          <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Service zone</Text>
             <Text style={styles.infoValue}>{zones[0]?.name ?? "Accra"}</Text>
           </View>
+          <View style={[styles.infoRow, styles.noBorder]}>
+            <Text style={styles.infoLabel}>Your referral code</Text>
+            <Text style={styles.infoValue}>{referralCode ?? "—"}</Text>
+          </View>
+        </Card>
+
+        <Card>
+          <Text style={styles.themeLabel}>Safety & account</Text>
+          <Button label="Emergency contacts" variant="outline" fullWidth onPress={() => router.push("/emergency-contacts")} />
+          <Button label="Saved places" variant="outline" fullWidth onPress={() => router.push("/saved-places")} />
+          <Button label="Support tickets" variant="outline" fullWidth onPress={() => router.push("/support")} />
+          {user.isPhoneVerified === false ? (
+            <Button label="Verify phone number" fullWidth onPress={() => router.push("/(auth)/verify-phone")} />
+          ) : null}
+        </Card>
+
+        <Card>
+          <Text style={styles.themeLabel}>Have a friend's code?</Text>
+          <Text style={styles.referralHint}>Enter a referral code to unlock rewards.</Text>
+          <Input label="Referral code" value={friendCode} onChangeText={setFriendCode} autoCapitalize="characters" />
+          <Button label="Apply referral" loading={applyingReferral} onPress={applyReferral} fullWidth />
         </Card>
 
         <Card style={styles.themeCard}>

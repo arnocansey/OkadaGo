@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import L, { type LatLngExpression } from "leaflet";
 import {
   CircleMarker,
@@ -8,26 +8,37 @@ import {
   Marker,
   Polyline,
   TileLayer,
-  Tooltip
+  Tooltip,
+  useMap
 } from "react-leaflet";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim();
 
-interface LeafletMapProps {
+export type MapMarkerVariant = "default" | "pickup" | "destination" | "driver";
+
+export interface LeafletMapMarker {
+  id: string;
+  position: LatLngExpression;
+  label: string;
+  variant?: MapMarkerVariant;
+  permanentLabel?: boolean;
+}
+
+export interface LeafletMapCurrentPosition {
+  position: LatLngExpression;
+  label?: string;
+}
+
+export interface LeafletMapProps {
   center: LatLngExpression;
   zoom?: number;
-  markers?: Array<{
-    id: string;
-    position: LatLngExpression;
-    label: string;
-    variant?: "default" | "pickup" | "destination" | "driver";
-    permanentLabel?: boolean;
-  }>;
+  markers?: LeafletMapMarker[];
   route?: Array<[number, number]>;
-  currentPosition?: {
-    position: LatLngExpression;
-    label?: string;
-  } | null;
+  currentPosition?: LeafletMapCurrentPosition | null;
+  viewportSync?: boolean;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
 const pickupIcon = L.divIcon({
@@ -69,9 +80,7 @@ type TileConfig = {
   subdomains?: string[];
 };
 
-function resolveMarkerIcon(
-  variant: "default" | "pickup" | "destination" | "driver" | undefined
-) {
+function resolveMarkerIcon(variant: MapMarkerVariant | undefined) {
   switch (variant) {
     case "pickup":
       return pickupIcon;
@@ -107,60 +116,119 @@ function getTileConfig(mode: TileMode): TileConfig {
   };
 }
 
+function normalizePosition(position: LatLngExpression): [number, number] {
+  if (Array.isArray(position)) {
+    return [Number(position[0]), Number(position[1])];
+  }
+
+  if ("lat" in position && "lng" in position) {
+    return [position.lat, position.lng];
+  }
+
+  return [5.6037, -0.187];
+}
+
+function MapViewportSync({
+  center,
+  zoom
+}: {
+  center: [number, number];
+  zoom: number;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    map.invalidateSize();
+  }, [map]);
+
+  useEffect(() => {
+    const currentCenter = map.getCenter();
+    const latitudeChanged = Math.abs(currentCenter.lat - center[0]) > 0.0001;
+    const longitudeChanged = Math.abs(currentCenter.lng - center[1]) > 0.0001;
+    const zoomChanged = map.getZoom() !== zoom;
+
+    if (latitudeChanged || longitudeChanged || zoomChanged) {
+      map.setView(center, zoom, { animate: false });
+    }
+
+    map.invalidateSize();
+  }, [center, map, zoom]);
+
+  return null;
+}
+
+function MapTileLoader() {
+  const map = useMap();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [map]);
+
+  return null;
+}
+
 export function LeafletMap({
   center,
   zoom = 12,
   markers = [],
   route = [],
-  currentPosition = null
+  currentPosition = null,
+  viewportSync = false,
+  className = "leaflet-map-surface",
+  style = { width: "100%", height: "100%", minHeight: 440 }
 }: LeafletMapProps) {
+  const isMobile = useIsMobile();
   const [tileMode, setTileMode] = useState<TileMode>(googleMapsKey ? "google" : "osm");
   const [tileWarning, setTileWarning] = useState<string | null>(null);
+  const [tilesLoaded, setTilesLoaded] = useState(false);
 
-  const normalizedCenter = useMemo(() => {
-    if (Array.isArray(center)) {
-      return [Number(center[0]), Number(center[1])] as [number, number];
-    }
-
-    if ("lat" in center && "lng" in center) {
-      return [center.lat, center.lng] as [number, number];
-    }
-
-    return [5.6037, -0.187] as [number, number];
-  }, [center]);
-
+  const normalizedCenter = useMemo(() => normalizePosition(center), [center]);
   const tileConfig = useMemo(() => getTileConfig(tileMode), [tileMode]);
-
   const mapKey = `${tileMode}:${normalizedCenter[0].toFixed(5)}:${normalizedCenter[1].toFixed(5)}:${zoom}`;
 
   function handleTileError() {
     if (tileMode === "google") {
       setTileMode("osm");
       setTileWarning(
-        "Google Maps tiles could not be loaded right now, so the map switched to OpenStreetMap."
+        "Google Maps tiles could not be loaded, so the map switched to OpenStreetMap."
       );
       return;
     }
-
     setTileWarning("OpenStreetMap tiles could not be loaded right now.");
+  }
+
+  function handleTileLoad() {
+    if (!tilesLoaded) {
+      setTilesLoaded(true);
+    }
   }
 
   return (
     <>
+      {!tilesLoaded && (
+        <div className="map-skeleton" aria-hidden="true">
+          <div className="map-skeleton-pulse" />
+        </div>
+      )}
       <MapContainer
         key={mapKey}
         center={normalizedCenter}
         zoom={zoom}
-        scrollWheelZoom
-        zoomControl
+        scrollWheelZoom={!isMobile}
+        zoomControl={!isMobile}
         dragging
-        doubleClickZoom
+        doubleClickZoom={!isMobile}
         touchZoom
-        boxZoom
-        keyboard
-        className="leaflet-map-surface"
-        style={{ width: "100%", height: "100%", minHeight: 440 }}
+        boxZoom={!isMobile}
+        keyboard={!isMobile}
+        className={className}
+        style={style}
       >
+        <MapTileLoader />
+        {viewportSync && <MapViewportSync center={normalizedCenter} zoom={zoom} />}
         <TileLayer
           attribution={tileConfig.attribution}
           url={tileConfig.url}
@@ -168,9 +236,8 @@ export function LeafletMap({
           zoomOffset={tileConfig.zoomOffset}
           subdomains={tileConfig.subdomains}
           eventHandlers={{
-            tileerror: () => {
-              handleTileError();
-            }
+            tileerror: () => handleTileError(),
+            tileload: () => handleTileLoad()
           }}
         />
         {route.length > 1 ? (
@@ -197,7 +264,6 @@ export function LeafletMap({
         ) : null}
         {markers.map((marker) => {
           const icon = resolveMarkerIcon(marker.variant);
-
           return (
             <Marker
               key={marker.id}
@@ -211,7 +277,14 @@ export function LeafletMap({
           );
         })}
       </MapContainer>
-      {tileWarning ? <div className="map-tile-warning">{tileWarning}</div> : null}
+      {tileWarning ? (
+        <div className="map-tile-warning" role="status">
+          <span className="map-tile-warning-icon" aria-hidden="true">
+            {tileConfig.isGoogle ? "🌐" : "🗺️"}
+          </span>
+          {tileWarning}
+        </div>
+      ) : null}
     </>
   );
 }

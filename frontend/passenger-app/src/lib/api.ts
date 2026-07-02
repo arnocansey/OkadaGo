@@ -77,6 +77,7 @@ export type AuthResponse = {
     phoneE164: string;
     phoneLocal: string;
     preferredCurrency: "GHS" | "NGN";
+    isPhoneVerified?: boolean;
     passengerProfileId?: string | null;
     riderProfileId?: string | null;
     riderApprovalStatus?: string | null;

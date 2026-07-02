@@ -1,22 +1,47 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
+import { useTheme } from "@/context/ThemeContext";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/Input";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { compactDate, money } from "@/lib/api";
-import { colors, spacing, typography } from "@/theme/tokens";
+import { spacing } from "@/theme/tokens";
 
 export default function WalletScreen() {
   const { session, wallets, transactions, payouts, loading, refresh, setMessage } = useApp();
+  const { colors, typography } = useTheme();
   const [amount, setAmount] = useState("");
   const [destination, setDestination] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const wallet = wallets[0];
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        screen: { flex: 1, backgroundColor: colors.background, padding: spacing.xl },
+        title: { ...typography.h1, marginBottom: spacing.xl, color: colors.text },
+        hero: { backgroundColor: colors.accentLight, borderColor: colors.accent, marginBottom: spacing.lg },
+        heroLabel: { ...typography.captionMedium, color: colors.textSecondary },
+        heroAmount: { ...typography.hero, color: colors.text, marginTop: spacing.sm },
+        form: { gap: spacing.md, marginBottom: spacing.xxl },
+        section: { ...typography.h3, marginBottom: spacing.lg, color: colors.text },
+        tx: {
+          flexDirection: "row",
+          justifyContent: "space-between",
+          paddingVertical: spacing.md,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        },
+        txTitle: { ...typography.bodyMedium, color: colors.text },
+        txSub: { ...typography.caption, color: colors.textMuted },
+        txAmount: { ...typography.bodySemibold, color: colors.primary },
+      }),
+    [colors, typography],
+  );
 
   async function requestPayout() {
     setSubmitting(true);
@@ -83,17 +108,3 @@ export default function WalletScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background, padding: spacing.xl },
-  title: { ...typography.h1, marginBottom: spacing.xl },
-  hero: { backgroundColor: colors.accentLight, borderColor: colors.accent, marginBottom: spacing.lg },
-  heroLabel: { ...typography.captionMedium, color: colors.textSecondary },
-  heroAmount: { ...typography.hero, color: colors.text, marginTop: spacing.sm },
-  form: { gap: spacing.md, marginBottom: spacing.xxl },
-  section: { ...typography.h3, marginBottom: spacing.lg },
-  tx: { flexDirection: "row", justifyContent: "space-between", paddingVertical: spacing.md, borderBottomWidth: 1, borderBottomColor: colors.border },
-  txTitle: { ...typography.bodyMedium },
-  txSub: { ...typography.caption, color: colors.textMuted },
-  txAmount: { ...typography.bodySemibold, color: colors.primary },
-});

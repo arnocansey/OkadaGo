@@ -12,6 +12,15 @@ import {
 } from "../../generated/prisma/enums.js";
 import { FareService } from "../pricing/fare.service.js";
 import { MatchingService } from "../matching/matching.service.js";
+import { pushService } from "../notifications/push.service.js";
+import { promotionService } from "../promotions/promotion.service.js";
+import { referralService } from "../referrals/referral.service.js";
+import {
+  emitRideAssigned,
+  emitRideStatusUpdate,
+  emitRiderLocationUpdate,
+  serializeRideForRealtime
+} from "../realtime/realtime.service.js";
 import type {
   createRideRequestSchema,
   matchingPreviewSchema,
@@ -267,6 +276,14 @@ export class RideService {
       throw new AppError("Passenger profile was not found", 404, "PASSENGER_NOT_FOUND");
     }
 
+    if (!passenger.user.isPhoneVerified) {
+      throw new AppError(
+        "Verify your phone number before requesting a ride",
+        403,
+        "PHONE_NOT_VERIFIED"
+      );
+    }
+
     const serviceZone = await prisma.serviceZone.findUnique({
       where: {
         id: input.serviceZoneId
@@ -326,6 +343,44 @@ export class RideService {
       : undefined;
     const commissionPercent = selectedRider ? Number(selectedRider.commissionPercent) : 12;
 
+    let promoDiscount = input.promoDiscount;
+    let promoCodeId: string | undefined;
+
+    if (input.promoCode) {
+      const prePromoFare = this.fareService.compute({
+        countryCode: serviceZone.countryCode as "GH" | "NG",
+        currency: serviceZone.currency as "GHS" | "NGN",
+        rideType: input.rideType,
+        baseFare: Number(serviceZone.baseFare),
+        perKmFee: Number(serviceZone.perKmFee),
+        perMinuteFee: Number(serviceZone.perMinuteFee),
+        minimumFare: Number(serviceZone.minimumFare),
+        cancellationFee: Number(serviceZone.cancellationFee),
+        waitingFeePerMinute: Number(serviceZone.waitingFeePerMin),
+        commissionPercent,
+        surgeMultiplier: input.surgeMultiplier,
+        zoneFee: 0,
+        promoDiscount: 0,
+        referralDiscount: input.referralDiscount,
+        estimatedDistanceKm: input.estimatedDistanceKm,
+        estimatedDurationMinutes: input.estimatedDurationMinutes,
+        waitingMinutes: input.waitingMinutes
+      }).totalFare;
+
+      const applied = await promotionService.applyPromoCode(
+        {
+          code: input.promoCode,
+          estimatedFare: prePromoFare,
+          currency: serviceZone.currency as "GHS" | "NGN",
+          city: serviceZone.city
+        },
+        passenger.id
+      );
+
+      promoDiscount = applied.discountAmount;
+      promoCodeId = applied.promoCodeId;
+    }
+
     const pricing = this.fareService.compute({
       countryCode: serviceZone.countryCode as "GH" | "NG",
       currency: serviceZone.currency as "GHS" | "NGN",
@@ -339,7 +394,7 @@ export class RideService {
       commissionPercent,
       surgeMultiplier: input.surgeMultiplier,
       zoneFee: 0,
-      promoDiscount: input.promoDiscount,
+      promoDiscount,
       referralDiscount: input.referralDiscount,
       estimatedDistanceKm: input.estimatedDistanceKm,
       estimatedDurationMinutes: input.estimatedDurationMinutes,
@@ -352,6 +407,7 @@ export class RideService {
           passengerId: passenger.id,
           riderId: selectedRider?.id,
           serviceZoneId: serviceZone.id,
+          promoCodeId,
           status: selectedRider ? RideStatus.ASSIGNED : RideStatus.SEARCHING,
           paymentMethod: apiToDbPaymentMethod[input.paymentMethod],
           pickupAddress: input.pickup.address,
@@ -364,7 +420,7 @@ export class RideService {
           estimatedDurationMinutes: input.estimatedDurationMinutes,
           estimatedFare: pricing.totalFare,
           finalFare: pricing.totalFare,
-          promoDiscount: input.promoDiscount,
+          promoDiscount,
           referralDiscount: input.referralDiscount,
           surgeAmount: pricing.surgeAmount,
           waitingAmount: pricing.waitingAmount,
@@ -440,7 +496,45 @@ export class RideService {
         });
       }
 
+      if (input.promoCode && promoCodeId) {
+        await tx.promoRedemption.create({
+          data: {
+            promoCodeId,
+            passengerId: passenger.id,
+            rideId: createdRide.id,
+            discountAmount: promoDiscount
+          }
+        });
+      }
+
       return createdRide;
+    });
+
+    const realtimeRide = serializeRideForRealtime(ride);
+    if (ride.rider?.userId) {
+      emitRideAssigned({
+        ride: realtimeRide,
+        passengerUserId: passenger.userId,
+        riderUserId: ride.rider.userId
+      });
+      void pushService.sendToUser(ride.rider.userId, {
+        title: "New ride assigned",
+        body: `Pickup: ${ride.pickupAddress}`,
+        data: { rideId: ride.id, type: "ride_assigned" }
+      });
+    } else {
+      emitRideStatusUpdate({
+        ride: realtimeRide,
+        passengerUserId: passenger.userId
+      });
+    }
+
+    void pushService.sendToUser(passenger.userId, {
+      title: ride.rider ? "Rider assigned" : "Ride requested",
+      body: ride.rider
+        ? `${ride.rider.user.fullName} is on the way`
+        : "Searching for a nearby rider",
+      data: { rideId: ride.id, type: "ride_requested" }
     });
 
     return {
@@ -567,7 +661,16 @@ export class RideService {
       });
     });
 
-    return this.getRide(rideId);
+    const updatedRide = await this.getRide(rideId);
+    emitRiderLocationUpdate({
+      rideId,
+      latitude,
+      longitude,
+      passengerUserId: ride.passenger.userId,
+      riderUserId: ride.rider?.userId
+    });
+
+    return updatedRide;
   }
 
   private async findRiderForAssignment(
@@ -711,7 +814,7 @@ export class RideService {
         ? await this.findRiderForAssignment(ride, input.riderProfileId)
         : undefined;
 
-    return prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       const updatedRide = await tx.ride.update({
         where: {
           id: rideId
@@ -976,7 +1079,84 @@ export class RideService {
         }
       }
 
+      if (input.nextStatus === "cancelled" && input.actorRole === "passenger") {
+        const cancellationFee = Number(updatedRide.cancellationFee ?? 0);
+        const chargeableStatuses: RideStatus[] = [
+          RideStatus.ASSIGNED,
+          RideStatus.ARRIVING,
+          RideStatus.ARRIVED
+        ];
+
+        if (cancellationFee > 0 && chargeableStatuses.includes(ride.status)) {
+          const passengerWallet = await tx.wallet.upsert({
+            where: {
+              userId_type_currency: {
+                userId: updatedRide.passenger.userId,
+                type: WalletType.PASSENGER_CASHLESS,
+                currency: updatedRide.currency
+              }
+            },
+            update: {},
+            create: {
+              userId: updatedRide.passenger.userId,
+              type: WalletType.PASSENGER_CASHLESS,
+              currency: updatedRide.currency
+            }
+          });
+
+          await tx.wallet.update({
+            where: { id: passengerWallet.id },
+            data: {
+              availableBalance: { decrement: cancellationFee }
+            }
+          });
+
+          await tx.walletTransaction.create({
+            data: {
+              walletId: passengerWallet.id,
+              rideId,
+              type: WalletTransactionType.DEBIT,
+              status: WalletTransactionStatus.POSTED,
+              amount: cancellationFee,
+              currency: updatedRide.currency,
+              direction: "debit",
+              reference: `RIDE-CANCEL-FEE-${rideId}`,
+              description: "Ride cancellation fee",
+              postedAt: new Date()
+            }
+          });
+        }
+      }
+
       return updatedRide;
     });
+
+    const refreshedRide = await this.getRide(rideId);
+    const realtimeRide = serializeRideForRealtime(refreshedRide);
+    emitRideStatusUpdate({
+      ride: realtimeRide,
+      passengerUserId: refreshedRide.passenger.userId,
+      riderUserId: refreshedRide.rider?.userId
+    });
+
+    void pushService.sendToUser(refreshedRide.passenger.userId, {
+      title: "Ride update",
+      body: `Status: ${input.nextStatus.replace(/_/g, " ")}`,
+      data: { rideId, type: "ride_status", status: input.nextStatus }
+    });
+
+    if (refreshedRide.rider?.userId) {
+      void pushService.sendToUser(refreshedRide.rider.userId, {
+        title: "Ride update",
+        body: `Status: ${input.nextStatus.replace(/_/g, " ")}`,
+        data: { rideId, type: "ride_status", status: input.nextStatus }
+      });
+    }
+
+    if (input.nextStatus === "completed") {
+      void referralService.settleReferralForCompletedRide(rideId);
+    }
+
+    return refreshedRide;
   }
 }

@@ -1,5 +1,6 @@
 import { AppError } from "../../common/errors.js";
 import { hashPassword, makeSessionToken, verifyPassword } from "../../common/auth.js";
+import { appConfig } from "../../common/config.js";
 import { prisma } from "../../common/prisma.js";
 import { makeReferralCode, makeRiderCode } from "../../common/codes.js";
 import {
@@ -14,6 +15,8 @@ import type {
   adminLoginSchema,
   adminPromoteSchema,
   adminRegisterSchema,
+  otpRequestSchema,
+  otpVerifySchema,
   passengerLoginSchema,
   passengerSettingsUpdateSchema,
   passengerSignupSchema,
@@ -21,6 +24,8 @@ import type {
   riderSignupSchema
 } from "./auth.schemas.js";
 import type { z } from "zod";
+import { hasSmsConfig, smsService } from "../notifications/sms.service.js";
+import { makeOtpCode, storeOtp, verifyStoredOtp } from "./otp-store.js";
 
 type PassengerSignupInput = z.infer<typeof passengerSignupSchema>;
 type RiderSignupInput = z.infer<typeof riderSignupSchema>;
@@ -30,6 +35,8 @@ type RiderLoginInput = z.infer<typeof riderLoginSchema>;
 type AdminLoginInput = z.infer<typeof adminLoginSchema>;
 type AdminPromoteInput = z.infer<typeof adminPromoteSchema>;
 type PassengerSettingsUpdateInput = z.infer<typeof passengerSettingsUpdateSchema>;
+type OtpRequestInput = z.infer<typeof otpRequestSchema>;
+type OtpVerifyInput = z.infer<typeof otpVerifySchema>;
 type UserWithProfiles = {
   id: string;
   role: { toLowerCase(): string };
@@ -88,7 +95,7 @@ export class AuthService {
         phoneE164: input.phoneE164,
         passwordHash,
         preferredCurrency: input.preferredCurrency,
-        isPhoneVerified: true,
+        isPhoneVerified: false,
         passengerProfile: {
           create: {
             referralCode: makeReferralCode(),
@@ -134,7 +141,7 @@ export class AuthService {
         phoneE164: input.phoneE164,
         passwordHash,
         preferredCurrency: input.preferredCurrency,
-        isPhoneVerified: true,
+        isPhoneVerified: false,
         riderProfile: {
           create: {
             displayCode: makeRiderCode(),
@@ -328,7 +335,7 @@ export class AuthService {
         phoneE164: input.phoneE164,
         passwordHash,
         preferredCurrency: input.preferredCurrency,
-        isPhoneVerified: true,
+        isPhoneVerified: false,
         isEmailVerified: true,
         adminProfile: {
           create: {
@@ -468,6 +475,65 @@ export class AuthService {
 
     return {
       revoked: true
+    };
+  }
+
+  async requestPhoneOtp(input: OtpRequestInput) {
+    const user = await prisma.user.findFirst({
+      where: {
+        phoneE164: input.phoneE164,
+        deletedAt: null
+      },
+      select: { id: true }
+    });
+
+    const code = makeOtpCode();
+    storeOtp(input.phoneE164, code, user?.id);
+
+    if (appConfig.nodeEnv === "production") {
+      if (!hasSmsConfig()) {
+        throw new AppError(
+          "SMS delivery is not configured for production OTP requests",
+          503,
+          "SMS_NOT_CONFIGURED"
+        );
+      }
+
+      await smsService.sendOtpSms({ to: input.phoneE164, code });
+    } else {
+      console.info(`[otp] ${input.phoneE164} -> ${code}`);
+    }
+
+    return {
+      sent: true,
+      expiresInSeconds: 600,
+      ...(appConfig.nodeEnv !== "production" ? { debugCode: code } : {})
+    };
+  }
+
+  async verifyPhoneOtp(input: OtpVerifyInput) {
+    const entry = verifyStoredOtp(input.phoneE164, input.code);
+    if (!entry) {
+      throw new AppError("Invalid or expired verification code", 400, "OTP_INVALID");
+    }
+
+    const user = await prisma.user.findFirst({
+      where: {
+        phoneE164: input.phoneE164,
+        deletedAt: null
+      }
+    });
+
+    if (user) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { isPhoneVerified: true }
+      });
+    }
+
+    return {
+      verified: true,
+      userId: user?.id ?? entry.userId ?? null
     };
   }
 
@@ -631,6 +697,7 @@ export class AuthService {
       phoneLocal: user.phoneLocal,
       phoneE164: user.phoneE164,
       preferredCurrency: user.preferredCurrency,
+      isPhoneVerified: (user as { isPhoneVerified?: boolean }).isPhoneVerified ?? false,
       passengerProfileId: user.passengerProfile?.id ?? null,
       riderProfileId: user.riderProfile?.id ?? null,
       riderApprovalStatus: user.riderProfile?.approvalStatus.toLowerCase() ?? null,

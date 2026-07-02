@@ -1,0 +1,199 @@
+import { AppError } from "../../common/errors.js";
+import { prisma } from "../../common/prisma.js";
+import { TicketStatus, UserRole } from "../../generated/prisma/enums.js";
+import type {
+  adminTicketsQuerySchema,
+  adminUpdateTicketSchema,
+  createSupportTicketSchema
+} from "./ticket.schemas.js";
+import type { z } from "zod";
+
+type CreateTicketInput = z.infer<typeof createSupportTicketSchema>;
+type AdminTicketsQuery = z.infer<typeof adminTicketsQuerySchema>;
+type AdminUpdateTicketInput = z.infer<typeof adminUpdateTicketSchema>;
+
+export class TicketService {
+  private async getActiveSession(token: string) {
+    const session = await prisma.userSession.findUnique({
+      where: { refreshTokenId: token },
+      include: { user: true }
+    });
+
+    if (!session || session.revokedAt || session.expiresAt < new Date()) {
+      throw new AppError("Session is invalid or expired", 401, "SESSION_INVALID");
+    }
+
+    return session;
+  }
+
+  private async requireAdmin(token: string) {
+    const session = await this.getActiveSession(token);
+
+    if (session.user.role !== UserRole.ADMIN) {
+      throw new AppError("Admin access is required", 403, "ADMIN_ACCESS_REQUIRED");
+    }
+
+    return session;
+  }
+
+  async createTicket(token: string, input: CreateTicketInput) {
+    const session = await this.getActiveSession(token);
+
+    if (session.user.role !== UserRole.PASSENGER && session.user.role !== UserRole.RIDER) {
+      throw new AppError("Passenger or rider access is required", 403, "TICKET_ACCESS_FORBIDDEN");
+    }
+
+    if (input.rideId) {
+      const ride = await prisma.ride.findUnique({
+        where: { id: input.rideId },
+        include: {
+          passenger: { select: { userId: true } },
+          rider: { select: { userId: true } }
+        }
+      });
+
+      if (!ride) {
+        throw new AppError("Ride not found", 404, "RIDE_NOT_FOUND");
+      }
+
+      const canAccess =
+        ride.passenger.userId === session.user.id ||
+        ride.rider?.userId === session.user.id;
+
+      if (!canAccess) {
+        throw new AppError("You cannot link this ride to a ticket", 403, "RIDE_ACCESS_FORBIDDEN");
+      }
+    }
+
+    return prisma.supportTicket.create({
+      data: {
+        createdById: session.user.id,
+        rideId: input.rideId,
+        title: input.title,
+        category: input.category,
+        description: input.description,
+        priority: input.priority,
+        status: TicketStatus.OPEN
+      },
+      include: {
+        ride: {
+          select: {
+            id: true,
+            status: true,
+            pickupAddress: true,
+            destinationAddress: true
+          }
+        }
+      }
+    });
+  }
+
+  async listMyTickets(token: string) {
+    const session = await this.getActiveSession(token);
+
+    return prisma.supportTicket.findMany({
+      where: {
+        createdById: session.user.id,
+        deletedAt: null
+      },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      include: {
+        ride: {
+          select: {
+            id: true,
+            status: true,
+            pickupAddress: true,
+            destinationAddress: true
+          }
+        },
+        _count: { select: { messages: true } }
+      }
+    });
+  }
+
+  async listAdminTickets(token: string, query: AdminTicketsQuery) {
+    await this.requireAdmin(token);
+
+    return prisma.supportTicket.findMany({
+      where: {
+        deletedAt: null,
+        ...(query.status ? { status: query.status } : {}),
+        ...(query.priority ? { priority: query.priority } : {})
+      },
+      orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
+      take: query.limit,
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            phoneE164: true,
+            role: true
+          }
+        },
+        assignedTo: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true
+          }
+        },
+        ride: {
+          select: {
+            id: true,
+            status: true,
+            pickupAddress: true,
+            destinationAddress: true
+          }
+        },
+        _count: { select: { messages: true } }
+      }
+    });
+  }
+
+  async updateAdminTicket(token: string, ticketId: string, input: AdminUpdateTicketInput) {
+    await this.requireAdmin(token);
+
+    const ticket = await prisma.supportTicket.findUnique({ where: { id: ticketId } });
+
+    if (!ticket || ticket.deletedAt) {
+      throw new AppError("Support ticket not found", 404, "TICKET_NOT_FOUND");
+    }
+
+    const closedStatuses: TicketStatus[] = [TicketStatus.RESOLVED, TicketStatus.CLOSED];
+
+    return prisma.supportTicket.update({
+      where: { id: ticketId },
+      data: {
+        ...(input.status ? { status: input.status } : {}),
+        ...(input.priority ? { priority: input.priority } : {}),
+        ...(input.assignedToId !== undefined ? { assignedToId: input.assignedToId } : {}),
+        ...(input.status && closedStatuses.includes(input.status)
+          ? { closedAt: new Date() }
+          : input.status
+            ? { closedAt: null }
+            : {})
+      },
+      include: {
+        createdBy: {
+          select: { id: true, fullName: true, email: true, phoneE164: true, role: true }
+        },
+        assignedTo: {
+          select: { id: true, fullName: true, email: true }
+        },
+        ride: {
+          select: {
+            id: true,
+            status: true,
+            pickupAddress: true,
+            destinationAddress: true
+          }
+        }
+      }
+    });
+  }
+}
+
+export const ticketService = new TicketService();

@@ -1,5 +1,7 @@
 export type AuthMode = "login" | "signup";
 
+export type PaymentMethod = "cash" | "card" | "wallet" | "mobile_money";
+
 export type SessionUser = {
   id: string;
   role: string;
@@ -8,6 +10,7 @@ export type SessionUser = {
   phoneE164: string;
   phoneLocal: string;
   preferredCurrency: "GHS" | "NGN";
+  isPhoneVerified?: boolean;
   passengerProfileId?: string | null;
 };
 
@@ -40,7 +43,23 @@ export type ServiceZone = {
   id: string;
   name: string;
   city: string;
+  countryCode?: "GH" | "NG";
   currency: "GHS" | "NGN";
+  baseFare?: string | number;
+  perKmFee?: string | number;
+  perMinuteFee?: string | number;
+  minimumFare?: string | number;
+  cancellationFee?: string | number;
+  waitingFeePerMin?: string | number;
+};
+
+export type SavedPlace = {
+  id: string;
+  label: string;
+  address: string;
+  latitude: string | number;
+  longitude: string | number;
+  notes?: string | null;
 };
 
 export type LocationResult = {
@@ -71,7 +90,10 @@ export type Ride = {
   estimatedFare?: string | number | null;
   finalFare?: string | number | null;
   currency?: string;
+  paymentMethod?: string | null;
+  promoDiscount?: string | number | null;
   createdAt?: string;
+  completedAt?: string | null;
   passenger?: { id: string; user?: { fullName: string } };
   rider?: {
     id?: string;
@@ -99,6 +121,9 @@ export type Delivery = {
   finalFee?: string | number | null;
   currency?: string;
   createdAt?: string;
+  completedAt?: string;
+  paymentMethod?: string;
+  promoDiscount?: string | number | null;
   passenger?: { id: string; user?: { fullName: string } };
   rider?: {
     id?: string;

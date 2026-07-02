@@ -32,9 +32,10 @@ export default async function AdminScreenPage({
     "earnings-payouts": "payments",
     payments: "payments",
     "reports-analytics": "ratings",
-    support: "ratings",
     ratings: "ratings",
     promotions: "promotions",
+    "support-tickets": "supportTickets",
+    support: "supportTickets",
     settings: "settings",
     locations: "settings",
     admins: "admins"
@@ -52,7 +53,8 @@ export default async function AdminScreenPage({
     riderActivity: "/admin/riders/activity-tracking",
     riderSuspensions: "/admin/riders/suspensions",
     payments: "/admin/finance",
-    ratings: "/admin/reports-analytics"
+    ratings: "/admin/reports-analytics",
+    supportTickets: "/admin/support-tickets"
   };
   const resolvedScreen = screenAliases[screen];
 

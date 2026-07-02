@@ -49,7 +49,8 @@ export const createRideRequestSchema = z.object({
   promoDiscount: z.number().nonnegative().default(0),
   referralDiscount: z.number().nonnegative().default(0),
   waitingMinutes: z.number().int().nonnegative().default(0),
-  surgeMultiplier: z.number().min(1).default(1)
+  surgeMultiplier: z.number().min(1).default(1),
+  promoCode: z.string().trim().min(2).max(40).optional()
 });
 
 export const rideLifecycleValidationSchema = z.object({

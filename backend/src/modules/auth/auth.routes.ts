@@ -3,6 +3,8 @@ import { AppError } from "../../common/errors.js";
 import { parseBody } from "../../common/validation.js";
 import {
   adminLoginSchema,
+  otpRequestSchema,
+  otpVerifySchema,
   passengerLoginSchema,
   passengerSettingsUpdateSchema,
   passengerSignupSchema,
@@ -68,5 +70,15 @@ export const authRoutes: FastifyPluginAsync = async (server) => {
   server.post("/auth/logout", async (request) => {
     const token = extractBearerToken(request.headers.authorization);
     return authService.logout(token);
+  });
+
+  server.post("/auth/otp/request", async (request) => {
+    const input = parseBody(request, otpRequestSchema);
+    return authService.requestPhoneOtp(input);
+  });
+
+  server.post("/auth/otp/verify", async (request) => {
+    const input = parseBody(request, otpVerifySchema);
+    return authService.verifyPhoneOtp(input);
   });
 };

@@ -1,14 +1,15 @@
 import { router } from "expo-router";
-import { useMemo, useRef, useState } from "react";
-import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MapPin, Package, Search, UtensilsCrossed } from "lucide-react-native";
+import { Home, MapPin, Package, Search, UtensilsCrossed } from "lucide-react-native";
 import { AppMap } from "@/components/AppMap";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUserLocation } from "@/hooks/useUserLocation";
+import { api } from "@/lib/api";
 import { radius, shadows, spacing } from "@/theme/tokens";
-import type { HomeService } from "@/types";
+import type { HomeService, SavedPlace } from "@/types";
 
 const SERVICES: Array<{ id: HomeService; label: string; icon: typeof Search }> = [
   { id: "ride", label: "Ride", icon: MapPin },
@@ -16,7 +17,6 @@ const SERVICES: Array<{ id: HomeService; label: string; icon: typeof Search }> =
   { id: "send", label: "Send", icon: Package },
 ];
 
-// Avatar background colors keyed by first char code mod 6
 const AVATAR_COLORS = ["#FFC107", "#3B82F6", "#A855F7", "#EC4899", "#F59E0B", "#FF3B30"];
 
 function avatarColor(name: string) {
@@ -28,8 +28,8 @@ export default function HomeScreen() {
   const { colors, typography, isDark } = useTheme();
   const { latitude, longitude } = useUserLocation();
   const [service, setService] = useState<HomeService>("ride");
+  const [savedPlaces, setSavedPlaces] = useState<SavedPlace[]>([]);
 
-  // Pulse animation for active trip banner
   const pulseAnim = useRef(new Animated.Value(1)).current;
   if (activeRide || activeDelivery) {
     Animated.loop(
@@ -40,12 +40,25 @@ export default function HomeScreen() {
     ).start();
   }
 
-  function openService() {
+  useEffect(() => {
+    if (!session?.token) return;
+    api<SavedPlace[]>("/places/saved", { token: session.token })
+      .then(setSavedPlaces)
+      .catch(() => setSavedPlaces([]));
+  }, [session?.token]);
+
+  function openService(placeId?: string) {
     if (service === "food") {
       router.push("/food");
       return;
     }
-    router.push({ pathname: "/ride/book", params: { mode: service === "send" ? "delivery" : "ride" } });
+    router.push({
+      pathname: "/ride/book",
+      params: {
+        mode: service === "send" ? "delivery" : "ride",
+        ...(placeId ? { placeId } : {}),
+      },
+    });
   }
 
   const bgColor = avatarColor(session?.user.fullName ?? "A");
@@ -134,6 +147,21 @@ export default function HomeScreen() {
           borderColor: colors.border,
         },
         searchPlaceholder: { ...typography.body, color: colors.textMuted, flex: 1 },
+        savedSection: { gap: spacing.sm },
+        savedTitle: { ...typography.captionMedium, color: colors.textMuted },
+        savedRow: { flexDirection: "row", gap: spacing.sm },
+        savedChip: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: spacing.xs,
+          paddingHorizontal: spacing.md,
+          paddingVertical: spacing.sm,
+          borderRadius: radius.md,
+          backgroundColor: colors.surface,
+          borderWidth: 1,
+          borderColor: colors.border,
+        },
+        savedLabel: { ...typography.captionMedium, color: colors.text },
       }),
     [colors, typography, isDark],
   );
@@ -153,7 +181,6 @@ export default function HomeScreen() {
       />
 
       <SafeAreaView style={styles.overlay} pointerEvents="box-none">
-        {/* Frosted-glass top bar */}
         <View style={styles.topBarWrap}>
           <View style={styles.topBar}>
             <View>
@@ -169,7 +196,6 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Active trip banner */}
         {(activeRide || activeDelivery) && (
           <Animated.View style={[styles.activeTripWrap, { transform: [{ scale: pulseAnim }] }]}>
             <Pressable
@@ -193,7 +219,6 @@ export default function HomeScreen() {
           </Animated.View>
         )}
 
-        {/* Bottom sheet */}
         <View style={styles.sheet}>
           <View style={styles.serviceTabs}>
             {SERVICES.map(({ id, label, icon: Icon }) => (
@@ -208,12 +233,26 @@ export default function HomeScreen() {
             ))}
           </View>
 
-          <Pressable style={styles.searchBar} onPress={openService}>
+          <Pressable style={styles.searchBar} onPress={() => openService()}>
             <Search size={20} color={colors.textMuted} />
             <Text style={styles.searchPlaceholder}>
               {service === "ride" ? "Search destination" : service === "food" ? "Restaurants & groceries" : "Send a package"}
             </Text>
           </Pressable>
+
+          {savedPlaces.length > 0 ? (
+            <View style={styles.savedSection}>
+              <Text style={styles.savedTitle}>Saved places</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.savedRow}>
+                {savedPlaces.map((place) => (
+                  <Pressable key={place.id} style={styles.savedChip} onPress={() => openService(place.id)}>
+                    <Home size={14} color={colors.primary} />
+                    <Text style={styles.savedLabel}>{place.label}</Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
+          ) : null}
         </View>
       </SafeAreaView>
     </View>

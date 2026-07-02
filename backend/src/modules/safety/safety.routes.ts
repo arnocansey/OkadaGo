@@ -10,6 +10,7 @@ import {
   requestSafetyContactVerificationSchema,
   safetyIncidentParamsSchema,
   safetyContactParamsSchema,
+  updateSafetyContactSchema,
   verifySafetyContactOtpSchema
 } from "./safety.schemas.js";
 import { SafetyService } from "./safety.service.js";
@@ -35,6 +36,13 @@ export const safetyRoutes: FastifyPluginAsync = async (server) => {
     const input = parseBody(request, createSafetyContactSchema);
     const result = await safetyService.createSafetyContact(token, input);
     return reply.status(201).send(result);
+  });
+
+  server.patch("/safety/contacts/:contactId", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, safetyContactParamsSchema);
+    const input = parseBody(request, updateSafetyContactSchema);
+    return safetyService.updateSafetyContact(token, params.contactId, input);
   });
 
   server.delete("/safety/contacts/:contactId", async (request) => {

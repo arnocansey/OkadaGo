@@ -8,6 +8,7 @@ import {
   ChevronDown,
   CreditCard,
   FileText,
+  Headphones,
   LayoutDashboard,
   LogOut,
   MapPin,
@@ -42,6 +43,7 @@ export type AdminShellBadgeData = {
   zonesActiveCount: number;
   adminAccountsCount: number;
   ratingsCount: number;
+  openSupportTicketsCount: number;
 };
 
 export type AdminShellProps = {
@@ -209,6 +211,15 @@ const screenMeta: Record<AdminConsoleScreen, AdminScreenMeta> = {
     quickActionLabel: "View finance",
     quickActionHref: "/admin/finance",
     quickActionNote: "See how incentives are affecting platform cashflow."
+  },
+  supportTickets: {
+    eyebrow: "Support operations",
+    title: "Support Tickets",
+    description: "Review and update support tickets submitted from the passenger and rider apps.",
+    searchLabel: "Search tickets, reporters, or ride IDs...",
+    quickActionLabel: "View rider complaints",
+    quickActionHref: "/admin/riders/complaints",
+    quickActionNote: "Cross-check app support tickets with rider-linked incident reports."
   },
   settings: {
     eyebrow: "Platform controls",
@@ -383,6 +394,15 @@ export function AdminShell({
         group: "finance",
         hint: "Discounts and referrals",
         badge: `${badgeData.promoAdjustedTripsCount}`
+      },
+      {
+        label: "Support Tickets",
+        href: "/admin/support-tickets",
+        icon: Headphones,
+        screen: "supportTickets",
+        group: "system",
+        hint: "Passenger and rider cases",
+        badge: `${badgeData.openSupportTicketsCount}`
       },
       {
         label: "Settings",

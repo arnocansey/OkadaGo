@@ -1,5 +1,5 @@
 import { Stack, router } from "expo-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -13,10 +13,100 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { MapPin, Star } from "lucide-react-native";
 import { FOOD_CATEGORIES } from "@/data/foodCatalog";
 import { useNearbyRestaurants } from "@/hooks/useNearbyRestaurants";
+import { useTheme } from "@/context/ThemeContext";
 import { formatDistanceKm } from "@/lib/geo";
-import { colors, radius, spacing, typography, stackHeaderOptions } from "@/theme/tokens";
+import { radius, spacing } from "@/theme/tokens";
 
 export default function FoodHomeScreen() {
+  const { colors, typography, stackHeaderOptions } = useTheme();
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        screen: { flex: 1, backgroundColor: colors.background },
+        list: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxxl },
+        sectionHeader: { paddingTop: spacing.lg, paddingBottom: spacing.md, gap: 2 },
+        sectionTitle: { ...typography.h3, color: colors.text },
+        sectionSub: { ...typography.caption, color: colors.textMuted },
+        categories: {
+          flexDirection: "row",
+          flexWrap: "wrap",
+          gap: spacing.sm,
+          paddingBottom: spacing.lg,
+        },
+        category: {
+          paddingHorizontal: spacing.md,
+          paddingVertical: spacing.sm,
+          borderRadius: radius.full,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 6,
+          backgroundColor: colors.surface,
+          borderWidth: 1,
+          borderColor: colors.border,
+        },
+        categoryActive: {
+          backgroundColor: colors.primary,
+          borderColor: colors.primary,
+        },
+        categoryActiveRing: {
+          borderWidth: 2,
+          borderColor: colors.primary,
+        },
+        categoryEmoji: { fontSize: 14 },
+        categoryLabel: { ...typography.captionMedium, color: colors.text },
+        categoryLabelActive: { color: colors.textOnPrimary },
+        statusRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: spacing.sm,
+          paddingBottom: spacing.md,
+        },
+        statusText: { ...typography.caption, color: colors.textMuted },
+        errorBanner: {
+          backgroundColor: colors.dangerLight,
+          borderRadius: radius.md,
+          padding: spacing.lg,
+          marginBottom: spacing.md,
+          gap: spacing.sm,
+          borderWidth: 1,
+          borderColor: colors.danger,
+        },
+        errorTitle: { ...typography.bodySemibold, color: colors.danger },
+        errorText: { ...typography.caption, color: colors.danger },
+        retryButton: {
+          alignSelf: "flex-start",
+          marginTop: spacing.xs,
+          paddingHorizontal: spacing.md,
+          paddingVertical: spacing.sm,
+          borderRadius: radius.full,
+          backgroundColor: colors.danger,
+        },
+        retryButtonText: { ...typography.captionMedium, color: colors.textOnPrimary },
+        empty: { alignItems: "center", paddingVertical: spacing.xxxl, gap: spacing.sm },
+        emptyTitle: { ...typography.bodySemibold, color: colors.text },
+        emptySub: { ...typography.caption, color: colors.textMuted, textAlign: "center" },
+        card: {
+          flexDirection: "row",
+          gap: spacing.lg,
+          backgroundColor: colors.surface,
+          borderRadius: radius.lg,
+          padding: spacing.lg,
+          borderWidth: 1,
+          borderColor: colors.border,
+          marginBottom: spacing.md,
+        },
+        thumb: { width: 64, height: 64, borderRadius: radius.md, alignItems: "center", justifyContent: "center" },
+        thumbText: { ...typography.h2, color: colors.text },
+        cardBody: { flex: 1, gap: 2 },
+        name: { ...typography.bodySemibold, color: colors.text },
+        cuisine: { ...typography.caption, color: colors.textSecondary },
+        meta: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: spacing.sm, flexWrap: "wrap" },
+        metaText: { ...typography.caption, color: colors.textMuted },
+        distanceRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
+        distanceText: { ...typography.caption, color: colors.textMuted },
+      }),
+    [colors, typography],
+  );
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { restaurants, loading, error, refresh } = useNearbyRestaurants({
     categoryId: selectedCategory,
@@ -138,88 +228,3 @@ export default function FoodHomeScreen() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  list: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxxl },
-  sectionHeader: { paddingTop: spacing.lg, paddingBottom: spacing.md, gap: 2 },
-  sectionTitle: { ...typography.h3 },
-  sectionSub: { ...typography.caption, color: colors.textMuted },
-  categories: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-    paddingBottom: spacing.lg,
-  },
-  category: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.full,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  categoryActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  categoryActiveRing: {
-    borderWidth: 2,
-    borderColor: colors.primary,
-  },
-  categoryEmoji: { fontSize: 14 },
-  categoryLabel: { ...typography.captionMedium, color: colors.text },
-  categoryLabelActive: { color: colors.textOnPrimary },
-  statusRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    paddingBottom: spacing.md,
-  },
-  statusText: { ...typography.caption, color: colors.textMuted },
-  errorBanner: {
-    backgroundColor: "#FEE2E2",
-    borderRadius: radius.md,
-    padding: spacing.lg,
-    marginBottom: spacing.md,
-    gap: spacing.sm,
-    borderWidth: 1,
-    borderColor: "#FECACA",
-  },
-  errorTitle: { ...typography.bodySemibold, color: colors.danger },
-  errorText: { ...typography.caption, color: colors.danger },
-  retryButton: {
-    alignSelf: "flex-start",
-    marginTop: spacing.xs,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.full,
-    backgroundColor: colors.danger,
-  },
-  retryButtonText: { ...typography.captionMedium, color: "#fff" },
-  empty: { alignItems: "center", paddingVertical: spacing.xxxl, gap: spacing.sm },
-  emptyTitle: { ...typography.bodySemibold },
-  emptySub: { ...typography.caption, color: colors.textMuted, textAlign: "center" },
-  card: {
-    flexDirection: "row",
-    gap: spacing.lg,
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.md,
-  },
-  thumb: { width: 64, height: 64, borderRadius: radius.md, alignItems: "center", justifyContent: "center" },
-  thumbText: { ...typography.h2, color: colors.text },
-  cardBody: { flex: 1, gap: 2 },
-  name: { ...typography.bodySemibold },
-  cuisine: { ...typography.caption, color: colors.textSecondary },
-  meta: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: spacing.sm, flexWrap: "wrap" },
-  metaText: { ...typography.caption, color: colors.textMuted },
-  distanceRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
-  distanceText: { ...typography.caption, color: colors.textMuted },
-});

@@ -1,5 +1,6 @@
+import { useMemo } from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
-import { colors, radius, typography } from "@/theme/tokens";
+import { useTheme } from "@/context/ThemeContext";
 
 type Props = {
   name: string;
@@ -8,6 +9,21 @@ type Props = {
 };
 
 export function Avatar({ name, size = 48, imageUri }: Props) {
+  const { colors, typography } = useTheme();
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        wrap: {
+          backgroundColor: colors.primaryLight,
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
+        },
+        initials: { ...typography.bodySemibold, color: colors.primary },
+      }),
+    [colors, typography],
+  );
+
   const initials = name
     .split(" ")
     .map((part) => part[0])
@@ -25,13 +41,3 @@ export function Avatar({ name, size = 48, imageUri }: Props) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  wrap: {
-    backgroundColor: colors.primaryLight,
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-  },
-  initials: { ...typography.bodySemibold, color: colors.primary },
-});

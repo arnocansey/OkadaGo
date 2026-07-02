@@ -1,15 +1,16 @@
 import { Stack, router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
+import { useTheme } from "@/context/ThemeContext";
 import { useResolvedLocationAddress } from "@/hooks/useResolvedLocationAddress";
 import { useNearbyRestaurants } from "@/hooks/useNearbyRestaurants";
 import { formatDistanceKm } from "@/lib/geo";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { colors, spacing, typography, stackHeaderOptions } from "@/theme/tokens";
+import { spacing } from "@/theme/tokens";
 import type { CartItem } from "@/types";
 
 export default function FoodCheckoutScreen() {
@@ -19,6 +20,29 @@ export default function FoodCheckoutScreen() {
     orderNotes?: string;
   }>();
   const { session, zones, refresh } = useApp();
+  const { colors, typography, stackHeaderOptions } = useTheme();
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        screen: { flex: 1, backgroundColor: colors.background },
+        loader: { marginTop: spacing.xxxl },
+        content: { padding: spacing.xl, gap: spacing.lg },
+        addressInput: { minHeight: 64, paddingTop: spacing.md },
+        title: { ...typography.h2, color: colors.text },
+        subtitle: { ...typography.caption, color: colors.textMuted, marginTop: -spacing.sm },
+        row: { flexDirection: "row", justifyContent: "space-between" },
+        rowLabel: { ...typography.body, color: colors.textSecondary },
+        rowVal: { ...typography.bodyMedium, color: colors.text },
+        totalRow: { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.lg, marginTop: spacing.sm },
+        totalLabel: { ...typography.h3, color: colors.text },
+        totalVal: { ...typography.h3, color: colors.primary },
+        error: { ...typography.caption, color: colors.danger },
+        notesBox: { gap: spacing.xs },
+        notesLabel: { ...typography.captionMedium, color: colors.textSecondary },
+        notesText: { ...typography.body, color: colors.text },
+      }),
+    [colors, typography],
+  );
   const {
     address: dropoff,
     submitAddress: dropoffSubmitAddress,
@@ -130,22 +154,3 @@ export default function FoodCheckoutScreen() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  loader: { marginTop: spacing.xxxl },
-  content: { padding: spacing.xl, gap: spacing.lg },
-  addressInput: { minHeight: 64, paddingTop: spacing.md },
-  title: { ...typography.h2 },
-  subtitle: { ...typography.caption, color: colors.textMuted, marginTop: -spacing.sm },
-  row: { flexDirection: "row", justifyContent: "space-between" },
-  rowLabel: { ...typography.body, color: colors.textSecondary },
-  rowVal: { ...typography.bodyMedium },
-  totalRow: { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.lg, marginTop: spacing.sm },
-  totalLabel: { ...typography.h3 },
-  totalVal: { ...typography.h3, color: colors.primary },
-  error: { ...typography.caption, color: colors.danger },
-  notesBox: { gap: spacing.xs },
-  notesLabel: { ...typography.captionMedium, color: colors.textSecondary },
-  notesText: { ...typography.body, color: colors.text },
-});

@@ -8,6 +8,11 @@ import {
 } from "../../generated/prisma/enums.js";
 import { FareService } from "../pricing/fare.service.js";
 import { MatchingService } from "../matching/matching.service.js";
+import { pushService } from "../notifications/push.service.js";
+import {
+  emitDeliveryStatusUpdate,
+  serializeDeliveryForRealtime
+} from "../realtime/realtime.service.js";
 import type {
   createDeliveryRequestSchema,
   deliveryStatusUpdateSchema
@@ -394,7 +399,7 @@ export class DeliveryService {
         ? await this.findRiderForAssignment(delivery, input.riderProfileId)
         : undefined;
 
-    return prisma.deliveryRequest.update({
+    const updated = await prisma.deliveryRequest.update({
       where: {
         id: deliveryId
       },
@@ -411,5 +416,28 @@ export class DeliveryService {
       },
       include: deliveryDetailsInclude
     });
+
+    const passengerUserId = updated.passenger.userId;
+    emitDeliveryStatusUpdate({
+      delivery: serializeDeliveryForRealtime(updated),
+      passengerUserId,
+      riderUserId: updated.rider?.userId
+    });
+
+    void pushService.sendToUser(passengerUserId, {
+      title: "Delivery update",
+      body: `Status: ${input.nextStatus.replace(/_/g, " ")}`,
+      data: { deliveryId, type: "delivery_status", status: input.nextStatus }
+    });
+
+    if (updated.rider?.userId) {
+      void pushService.sendToUser(updated.rider.userId, {
+        title: "Delivery update",
+        body: `Status: ${input.nextStatus.replace(/_/g, " ")}`,
+        data: { deliveryId, type: "delivery_status", status: input.nextStatus }
+      });
+    }
+
+    return updated;
   }
 }

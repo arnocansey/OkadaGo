@@ -15,6 +15,13 @@ export const createSafetyContactSchema = z.object({
   isPrimary: z.boolean().optional()
 });
 
+export const updateSafetyContactSchema = z.object({
+  name: z.string().trim().min(2).max(120).optional(),
+  phoneE164: z.string().trim().min(8).max(24).optional(),
+  relationship: z.string().trim().min(2).max(60).nullable().optional(),
+  isPrimary: z.boolean().optional()
+});
+
 export const createSafetyIncidentSchema = z.object({
   rideId: z.string().cuid().optional(),
   severity: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]).default("HIGH"),

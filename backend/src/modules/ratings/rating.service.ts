@@ -54,6 +54,31 @@ export class RatingService {
     return session;
   }
 
+  private async getCurrentRiderSession(token: string) {
+    const session = await prisma.userSession.findUnique({
+      where: {
+        refreshTokenId: token
+      },
+      include: {
+        user: {
+          include: {
+            riderProfile: true
+          }
+        }
+      }
+    });
+
+    if (!session || session.revokedAt || session.expiresAt < new Date()) {
+      throw new AppError("Session is invalid or expired", 401, "SESSION_INVALID");
+    }
+
+    if (session.user.role !== UserRole.RIDER || !session.user.riderProfile) {
+      throw new AppError("Rider access is required", 403, "RIDER_ACCESS_REQUIRED");
+    }
+
+    return session;
+  }
+
   async createCurrentPassengerRideRating(token: string, rideId: string, input: CreateRideRatingInput) {
     const session = await this.getCurrentPassengerSession(token);
 
@@ -156,6 +181,90 @@ export class RatingService {
         rating,
         riderAverageScore: aggregate._avg.score ?? 0,
         riderTotalRatings: aggregate._count.score
+      };
+    });
+
+    return result;
+  }
+
+  async createCurrentRiderRideRating(token: string, rideId: string, input: CreateRideRatingInput) {
+    const session = await this.getCurrentRiderSession(token);
+
+    const ride = await prisma.ride.findUnique({
+      where: { id: rideId },
+      include: {
+        passenger: { include: { user: true } },
+        rider: { include: { user: true } }
+      }
+    });
+
+    if (!ride) {
+      throw new AppError("Ride could not be found.", 404, "RIDE_NOT_FOUND");
+    }
+
+    if (!ride.rider || ride.rider.userId !== session.user.id) {
+      throw new AppError("You can only rate passengers on your assigned rides.", 403, "RATING_FORBIDDEN");
+    }
+
+    if (!ride.passenger?.userId) {
+      throw new AppError("This ride has no passenger to rate.", 409, "RATED_USER_MISSING");
+    }
+
+    if (ride.status !== RideStatus.COMPLETED) {
+      throw new AppError("You can only rate completed rides.", 409, "RIDE_NOT_COMPLETED");
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      const rating = await tx.rating.upsert({
+        where: {
+          rideId_raterUserId_ratedUserId: {
+            rideId: ride.id,
+            raterUserId: session.user.id,
+            ratedUserId: ride.passenger.userId
+          }
+        },
+        update: {
+          score: input.score,
+          category: input.category?.trim() || null
+        },
+        create: {
+          rideId: ride.id,
+          raterUserId: session.user.id,
+          ratedUserId: ride.passenger.userId,
+          score: input.score,
+          category: input.category?.trim() || null
+        }
+      });
+
+      const reviewText = input.review?.trim();
+      if (reviewText) {
+        await tx.review.upsert({
+          where: { ratingId: rating.id },
+          update: { body: reviewText },
+          create: {
+            ratingId: rating.id,
+            rideId: ride.id,
+            authorId: session.user.id,
+            body: reviewText
+          }
+        });
+      }
+
+      const aggregate = await tx.rating.aggregate({
+        where: { ratedUserId: ride.passenger.userId },
+        _avg: { score: true },
+        _count: { score: true }
+      });
+
+      await tx.passengerProfile.update({
+        where: { id: ride.passengerId },
+        data: { ratingAverage: aggregate._avg.score ?? 0 }
+      });
+
+      return {
+        rating,
+        passengerAverageScore: aggregate._avg.score ?? 0,
+        passengerTotalRatings: aggregate._count.score
       };
     });
 

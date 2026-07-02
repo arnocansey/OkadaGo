@@ -17,10 +17,12 @@ import {
   createSafetyIncidentSchema,
   createSafetyShareEventSchema,
   requestSafetyContactVerificationSchema,
+  updateSafetyContactSchema,
   verifySafetyContactOtpSchema
 } from "./safety.schemas.js";
 
 type CreateSafetyContactInput = z.infer<typeof createSafetyContactSchema>;
+type UpdateSafetyContactInput = z.infer<typeof updateSafetyContactSchema>;
 type CreateSafetyIncidentInput = z.infer<typeof createSafetyIncidentSchema>;
 type CreateSafetyShareEventInput = z.infer<typeof createSafetyShareEventSchema>;
 type RequestSafetyContactVerificationInput = z.infer<typeof requestSafetyContactVerificationSchema>;
@@ -206,6 +208,39 @@ export class SafetyService {
           phoneE164: input.phoneE164.trim(),
           relationship: input.relationship?.trim() || null,
           isPrimary: input.isPrimary ?? false
+        }
+      });
+    });
+  }
+
+  async updateSafetyContact(token: string, contactId: string, input: UpdateSafetyContactInput) {
+    const session = await this.getCurrentUserSession(token);
+
+    const contact = await prisma.emergencyContact.findUnique({
+      where: { id: contactId }
+    });
+
+    if (!contact || contact.userId !== session.user.id) {
+      throw new AppError("Emergency contact not found.", 404, "CONTACT_NOT_FOUND");
+    }
+
+    return prisma.$transaction(async (tx) => {
+      if (input.isPrimary) {
+        await tx.emergencyContact.updateMany({
+          where: { userId: session.user.id },
+          data: { isPrimary: false }
+        });
+      }
+
+      return tx.emergencyContact.update({
+        where: { id: contactId },
+        data: {
+          ...(input.name !== undefined ? { name: input.name.trim() } : {}),
+          ...(input.phoneE164 !== undefined ? { phoneE164: input.phoneE164.trim() } : {}),
+          ...(input.relationship !== undefined
+            ? { relationship: input.relationship?.trim() || null }
+            : {}),
+          ...(input.isPrimary !== undefined ? { isPrimary: input.isPrimary } : {})
         }
       });
     });

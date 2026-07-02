@@ -30,6 +30,8 @@ import {
 } from "lucide-react";
 import { ImmersivePage } from "@/components/layout/immersive-page";
 import { OperationsMap } from "@/components/maps/operations-map";
+import { PromoCodesManagement } from "@/components/dashboard/admin/PromoCodesManagement";
+import { SupportTicketsManagement } from "@/components/dashboard/admin/SupportTicketsManagement";
 import { fetchJson, requestJson } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { formatMoney } from "@/lib/currency";
@@ -52,6 +54,7 @@ export type AdminConsoleScreen =
   | "payments"
   | "ratings"
   | "promotions"
+  | "supportTickets"
   | "settings"
   | "admins";
 
@@ -1652,6 +1655,15 @@ export function AdminConsolePage({
         badge: `${promoAdjustedTrips.length}`
       },
       {
+        label: "Support Tickets",
+        href: "/admin/support-tickets",
+        icon: Headphones,
+        screen: "supportTickets",
+        group: "system",
+        hint: "Passenger and rider cases",
+        badge: "Live"
+      },
+      {
         label: "Settings",
         href: "/admin/settings",
         icon: MapPin,
@@ -1844,6 +1856,15 @@ export function AdminConsolePage({
       quickActionHref: "/admin/finance",
       quickActionNote: "See how incentives are affecting platform cashflow."
     },
+    supportTickets: {
+      eyebrow: "Support operations",
+      title: "Support Tickets",
+      description: "Review and update support tickets submitted from the passenger and rider apps.",
+      searchLabel: "Search tickets, reporters, or ride IDs...",
+      quickActionLabel: "View rider complaints",
+      quickActionHref: "/admin/riders/complaints",
+      quickActionNote: "Cross-check app support tickets with rider-linked incident reports."
+    },
     settings: {
       eyebrow: "Platform controls",
       title: "Settings",
@@ -1949,6 +1970,11 @@ export function AdminConsolePage({
       { label: "Promo rides", value: `${promoAdjustedTrips.length}` },
       { label: "Promo spend", value: formatMoney(session?.user.preferredCurrency ?? "GHS", promoSpend) },
       { label: "Referral spend", value: formatMoney(session?.user.preferredCurrency ?? "GHS", referralSpend) }
+    ],
+    supportTickets: [
+      { label: "Live queue", value: "Backend" },
+      { label: "Rider complaints", value: `${riderIncidents.length}` },
+      { label: "Open incidents", value: `${riderIncidents.filter((incident) => incident.status.toLowerCase() !== "resolved").length}` }
     ],
     settings: [
       { label: "Active zones", value: `${zones.filter((zone) => zone.isActive).length}` },
@@ -4812,6 +4838,8 @@ export function AdminConsolePage({
         </section>
 
         <div className="exact-admin-grid">
+          <PromoCodesManagement token={session?.token} defaultCurrency={session?.user.preferredCurrency ?? "GHS"} />
+
           <section className="exact-admin-card wide">
             <div className="exact-admin-cardhead">
               <div>
@@ -4958,6 +4986,20 @@ export function AdminConsolePage({
               </section>
             </div>
           </section>
+        </div>
+      </>
+    ) : screen === "supportTickets" ? (
+      <>
+        <section className="exact-admin-section">
+          <div className="exact-admin-heading">
+            <p className="exact-admin-eyebrow">{screenMeta.supportTickets.eyebrow}</p>
+            <h1>{screenMeta.supportTickets.title}</h1>
+            <p>{screenMeta.supportTickets.description}</p>
+          </div>
+        </section>
+
+        <div className="exact-admin-grid">
+          <SupportTicketsManagement token={session?.token} />
         </div>
       </>
     ) : screen === "settings" ? (

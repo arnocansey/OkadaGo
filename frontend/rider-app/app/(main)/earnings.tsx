@@ -1,13 +1,41 @@
+import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Card } from "@/components/ui/Card";
 import { useApp } from "@/context/AppContext";
+import { useTheme } from "@/context/ThemeContext";
 import { compactDate, money } from "@/lib/api";
-import { colors, spacing, typography } from "@/theme/tokens";
+import { spacing } from "@/theme/tokens";
 
 export default function EarningsScreen() {
   const { rides, deliveries, wallets } = useApp();
+  const { colors, typography } = useTheme();
   const currency = wallets[0]?.currency ?? "GHS";
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        screen: { flex: 1, backgroundColor: colors.background, padding: spacing.xl },
+        title: { ...typography.h1, marginBottom: spacing.xl, color: colors.text },
+        hero: { backgroundColor: colors.primary, borderColor: colors.primary, marginBottom: spacing.xxl },
+        heroLabel: { ...typography.caption, color: "rgba(0,0,0,0.65)" },
+        heroAmount: { ...typography.hero, color: colors.textOnPrimary, marginTop: spacing.sm },
+        heroSub: { ...typography.caption, color: "rgba(0,0,0,0.65)", marginTop: spacing.sm },
+        section: { ...typography.h3, marginBottom: spacing.lg, color: colors.text },
+        row: {
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          paddingVertical: spacing.lg,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        },
+        rowBody: { flex: 1, marginRight: spacing.lg },
+        rowTitle: { ...typography.bodyMedium, color: colors.text },
+        rowDate: { ...typography.caption, color: colors.textMuted, marginTop: 2 },
+        rowAmount: { ...typography.bodySemibold, color: colors.primary },
+      }),
+    [colors, typography],
+  );
 
   const completedRides = rides.filter((r) => (r.status ?? "").toLowerCase() === "completed");
   const completedDeliveries = deliveries.filter((d) => (d.status ?? "").toLowerCase() === "delivered");
@@ -44,25 +72,3 @@ export default function EarningsScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background, padding: spacing.xl },
-  title: { ...typography.h1, marginBottom: spacing.xl },
-  hero: { backgroundColor: colors.primary, borderColor: colors.primary, marginBottom: spacing.xxl },
-  heroLabel: { ...typography.caption, color: "rgba(0,0,0,0.65)" },
-  heroAmount: { ...typography.hero, color: colors.textOnPrimary, marginTop: spacing.sm },
-  heroSub: { ...typography.caption, color: "rgba(0,0,0,0.65)", marginTop: spacing.sm },
-  section: { ...typography.h3, marginBottom: spacing.lg },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  rowBody: { flex: 1, marginRight: spacing.lg },
-  rowTitle: { ...typography.bodyMedium },
-  rowDate: { ...typography.caption, color: colors.textMuted, marginTop: 2 },
-  rowAmount: { ...typography.bodySemibold, color: colors.primary },
-});

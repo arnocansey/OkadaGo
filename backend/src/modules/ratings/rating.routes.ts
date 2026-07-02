@@ -22,4 +22,12 @@ export const ratingRoutes: FastifyPluginAsync = async (server) => {
     const result = await ratingService.createCurrentPassengerRideRating(token, params.rideId, input);
     return reply.status(201).send(result);
   });
+
+  server.post("/ratings/rides/:rideId/passenger", async (request, reply) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, rideRatingParamsSchema);
+    const input = parseBody(request, createRideRatingSchema);
+    const result = await ratingService.createCurrentRiderRideRating(token, params.rideId, input);
+    return reply.status(201).send(result);
+  });
 };

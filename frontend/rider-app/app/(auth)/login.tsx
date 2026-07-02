@@ -1,17 +1,49 @@
 import { router } from "expo-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Bike } from "lucide-react-native";
 import { api, phoneParts, type AuthResponse } from "@/lib/api";
+import { registerPushToken } from "@/lib/push";
 import { useApp } from "@/context/AppContext";
+import { useTheme } from "@/context/ThemeContext";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { colors, radius, spacing, typography } from "@/theme/tokens";
+import { radius, spacing } from "@/theme/tokens";
 import type { AuthMode } from "@/types";
 
 export default function LoginScreen() {
   const { signIn } = useApp();
+  const { colors, typography } = useTheme();
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        screen: { flex: 1, backgroundColor: colors.background },
+        flex: { flex: 1 },
+        content: { padding: spacing.xxl, gap: spacing.xxl },
+        hero: { gap: spacing.sm, alignItems: "flex-start" },
+        logoWrap: { marginBottom: spacing.sm },
+        logo: {
+          width: 60,
+          height: 60,
+          borderRadius: radius.xl,
+          backgroundColor: colors.primary,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        brand: { ...typography.label, color: colors.primary, letterSpacing: 1.5 },
+        title: { ...typography.hero, color: colors.text },
+        subtitle: { ...typography.body, color: colors.textSecondary },
+        tabs: { flexDirection: "row", backgroundColor: colors.surface, borderRadius: radius.lg, padding: 4 },
+        tab: { flex: 1, paddingVertical: spacing.md, alignItems: "center", borderRadius: radius.md },
+        tabActive: { backgroundColor: colors.background, shadowColor: "#000", shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
+        tabText: { ...typography.bodyMedium, color: colors.textMuted },
+        tabTextActive: { color: colors.primary },
+        form: { gap: spacing.lg },
+        error: { ...typography.caption, color: colors.danger },
+      }),
+    [colors, typography],
+  );
   const [mode, setMode] = useState<AuthMode>("login");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -32,6 +64,11 @@ export default function LoginScreen() {
 
       const result = await api<AuthResponse>(path, { method: "POST", body });
       await signIn({ token: result.token, expiresAt: result.expiresAt, user: result.user });
+      registerPushToken(result.token).catch(() => undefined);
+      if (result.user.isPhoneVerified === false) {
+        router.replace("/(auth)/verify-phone");
+        return;
+      }
       router.replace("/(main)");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Authentication failed.");
@@ -77,29 +114,3 @@ export default function LoginScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  flex: { flex: 1 },
-  content: { padding: spacing.xxl, gap: spacing.xxl },
-  hero: { gap: spacing.sm, alignItems: "flex-start" },
-  logoWrap: { marginBottom: spacing.sm },
-  logo: {
-    width: 60,
-    height: 60,
-    borderRadius: radius.xl,
-    backgroundColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  brand: { ...typography.label, color: colors.primary, letterSpacing: 1.5 },
-  title: { ...typography.hero, color: colors.text },
-  subtitle: { ...typography.body, color: colors.textSecondary },
-  tabs: { flexDirection: "row", backgroundColor: colors.surface, borderRadius: radius.lg, padding: 4 },
-  tab: { flex: 1, paddingVertical: spacing.md, alignItems: "center", borderRadius: radius.md },
-  tabActive: { backgroundColor: colors.background, shadowColor: "#000", shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
-  tabText: { ...typography.bodyMedium, color: colors.textMuted },
-  tabTextActive: { color: colors.primary },
-  form: { gap: spacing.lg },
-  error: { ...typography.caption, color: colors.danger },
-});

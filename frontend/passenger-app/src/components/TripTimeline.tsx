@@ -1,6 +1,8 @@
+import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Check, Circle } from "lucide-react-native";
-import { colors, spacing, typography } from "@/theme/tokens";
+import { useTheme } from "@/context/ThemeContext";
+import { spacing } from "@/theme/tokens";
 
 type Step = { key: string; label: string };
 
@@ -10,6 +12,34 @@ type Props = {
 };
 
 export function TripTimeline({ steps, currentIndex }: Props) {
+  const { colors, typography } = useTheme();
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        wrap: { gap: 0 },
+        row: { flexDirection: "row", alignItems: "flex-start", gap: spacing.md, minHeight: 44 },
+        rail: { alignItems: "center", width: 24 },
+        dot: {
+          width: 22,
+          height: 22,
+          borderRadius: 11,
+          borderWidth: 2,
+          borderColor: colors.borderStrong,
+          backgroundColor: colors.background,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        dotActive: { borderColor: colors.primary, backgroundColor: colors.primary },
+        dotDone: { borderColor: colors.primary, backgroundColor: colors.primary },
+        line: { width: 2, flex: 1, minHeight: 20, backgroundColor: colors.border },
+        lineDone: { backgroundColor: colors.primary },
+        label: { ...typography.body, color: colors.textMuted, flex: 1, paddingTop: 1 },
+        labelActive: { ...typography.bodySemibold, color: colors.text },
+        labelDone: { color: colors.textSecondary },
+      }),
+    [colors, typography],
+  );
+
   return (
     <View style={styles.wrap}>
       {steps.map((step, index) => {
@@ -25,7 +55,11 @@ export function TripTimeline({ steps, currentIndex }: Props) {
                   active && styles.dotActive,
                 ]}
               >
-                {done ? <Check size={12} color={colors.textOnPrimary} strokeWidth={3} /> : active ? <Circle size={8} color={colors.textOnPrimary} fill={colors.textOnPrimary} /> : null}
+                {done ? (
+                  <Check size={12} color={colors.textOnPrimary} strokeWidth={3} />
+                ) : active ? (
+                  <Circle size={8} color={colors.textOnPrimary} fill={colors.textOnPrimary} />
+                ) : null}
               </View>
               {index < steps.length - 1 ? (
                 <View style={[styles.line, done && styles.lineDone]} />
@@ -62,26 +96,3 @@ export function stepIndexForStatus(status: string, kind: "ride" | "delivery") {
   if (normalized === "arrived") return map.started ?? 3;
   return map[normalized] ?? 0;
 }
-
-const styles = StyleSheet.create({
-  wrap: { gap: 0 },
-  row: { flexDirection: "row", alignItems: "flex-start", gap: spacing.md, minHeight: 44 },
-  rail: { alignItems: "center", width: 24 },
-  dot: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: colors.borderStrong,
-    backgroundColor: colors.background,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dotActive: { borderColor: colors.primary, backgroundColor: colors.primary },
-  dotDone: { borderColor: colors.primary, backgroundColor: colors.primary },
-  line: { width: 2, flex: 1, minHeight: 20, backgroundColor: colors.border },
-  lineDone: { backgroundColor: colors.primary },
-  label: { ...typography.body, color: colors.textMuted, flex: 1, paddingTop: 1 },
-  labelActive: { ...typography.bodySemibold, color: colors.text },
-  labelDone: { color: colors.textSecondary },
-});

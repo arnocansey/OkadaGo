@@ -1,6 +1,12 @@
 import type { FastifyPluginAsync } from "fastify";
 import { authRoutes } from "./auth/auth.routes.js";
+import { deviceRoutes } from "./devices/device.routes.js";
+import { documentRoutes } from "./documents/document.routes.js";
 import { healthRoutes } from "./ops/health.routes.js";
+import { notificationRoutes } from "./notifications/notification.routes.js";
+import { placeRoutes } from "./places/place.routes.js";
+import { promotionRoutes } from "./promotions/promotion.routes.js";
+import { referralRoutes } from "./referrals/referral.routes.js";
 import { rideRoutes } from "./rides/ride.routes.js";
 import { walletRoutes } from "./wallets/wallet.routes.js";
 import { adminRoutes } from "./admin/admin.routes.js";
@@ -8,6 +14,7 @@ import { bootstrapRoutes } from "./bootstrap/bootstrap.routes.js";
 import { ratingRoutes } from "./ratings/rating.routes.js";
 import { safetyRoutes } from "./safety/safety.routes.js";
 import { deliveryRoutes } from "./deliveries/delivery.routes.js";
+import { ticketRoutes } from "./tickets/ticket.routes.js";
 
 export const registerRoutes: FastifyPluginAsync = async (server) => {
   await server.register(healthRoutes);
@@ -18,5 +25,12 @@ export const registerRoutes: FastifyPluginAsync = async (server) => {
   await server.register(walletRoutes);
   await server.register(ratingRoutes);
   await server.register(safetyRoutes);
+  await server.register(notificationRoutes);
+  await server.register(deviceRoutes);
+  await server.register(placeRoutes);
+  await server.register(promotionRoutes);
+  await server.register(referralRoutes);
+  await server.register(documentRoutes);
+  await server.register(ticketRoutes);
   await server.register(adminRoutes);
 };

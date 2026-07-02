@@ -1,7 +1,9 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import type { LeafletMapMarker, LeafletMapCurrentPosition } from "./leaflet-map";
 import type { LatLngExpression } from "leaflet";
+import { MapErrorBoundary } from "./map-error-boundary";
 
 const DynamicLeafletMap = dynamic(
   () => import("./leaflet-map").then((module) => module.LeafletMap),
@@ -11,7 +13,7 @@ const DynamicLeafletMap = dynamic(
       <div className="map-loading-note" aria-live="polite">
         <div className="map-empty-note-card">
           <strong>Loading live map</strong>
-          <p>Preparing the Leaflet surface for trip, rider, and zone overlays.</p>
+          <p>Preparing the map surface for trip, rider, and zone overlays.</p>
         </div>
       </div>
     )
@@ -24,18 +26,9 @@ interface OperationsMapProps {
   emptyTitle: string;
   emptyDescription: string;
   bare?: boolean;
-  markers?: Array<{
-    id: string;
-    position: LatLngExpression;
-    label: string;
-    variant?: "default" | "pickup" | "destination" | "driver";
-    permanentLabel?: boolean;
-  }>;
+  markers?: LeafletMapMarker[];
   route?: Array<[number, number]>;
-  currentPosition?: {
-    position: LatLngExpression;
-    label?: string;
-  } | null;
+  currentPosition?: LeafletMapCurrentPosition | null;
 }
 
 export function OperationsMap({
@@ -53,13 +46,15 @@ export function OperationsMap({
   if (bare) {
     return (
       <>
-        <DynamicLeafletMap
-          center={center}
-          zoom={zoom}
-          markers={markers}
-          route={route}
-          currentPosition={currentPosition}
-        />
+        <MapErrorBoundary>
+          <DynamicLeafletMap
+            center={center}
+            zoom={zoom}
+            markers={markers}
+            route={route}
+            currentPosition={currentPosition}
+          />
+        </MapErrorBoundary>
         {!hasOverlayContent ? (
           <div className="map-empty-note" aria-live="polite">
             <div className="map-empty-note-card">
@@ -74,13 +69,15 @@ export function OperationsMap({
 
   return (
     <div className="map-shell">
-      <DynamicLeafletMap
-        center={center}
-        zoom={zoom}
-        markers={markers}
-        route={route}
-        currentPosition={currentPosition}
-      />
+      <MapErrorBoundary>
+        <DynamicLeafletMap
+          center={center}
+          zoom={zoom}
+          markers={markers}
+          route={route}
+          currentPosition={currentPosition}
+        />
+      </MapErrorBoundary>
       {!hasOverlayContent ? (
         <div className="map-empty-note" aria-live="polite">
           <div className="map-empty-note-card">
