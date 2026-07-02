@@ -138,8 +138,8 @@
 .exact-admin-nav a:hover,
 .exact-admin-nav-toggle.active,
 .exact-admin-nav-toggle:hover {
-  background: #1a6b3c;
-  color: white;
+  background: #0a0b0d;
+  color: #f7c600;
 }
 
 .exact-admin-nav a.active .exact-admin-navcopy small,
@@ -255,8 +255,8 @@
 }
 
 .exact-admin-profile .exact-avatar {
-  background: #1a6b3c;
-  color: white;
+  background: #0a0b0d;
+  color: #f7c600;
   border-color: rgba(255, 255, 255, 0.16);
 }
 
@@ -2373,7 +2373,7 @@
   inset: 0 auto 0 0;
   width: 3px;
   border-radius: 20px 0 0 20px;
-  background: linear-gradient(180deg, #ffc107, #1a6b3c);
+  background: linear-gradient(180deg, #f7c600, #0a0b0d);
 }
 
 .admin-rider-dashboard-grid {

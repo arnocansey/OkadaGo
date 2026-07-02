@@ -4,9 +4,9 @@
   border-radius: 12px;
   display: grid;
   place-items: center;
-  background: #1a6b3c;
-  color: white;
-  box-shadow: 0 12px 24px rgba(26, 107, 60, 0.18);
+  background: #0a0b0d;
+  color: #f7c600;
+  box-shadow: 0 12px 24px rgba(10, 11, 13, 0.18);
 }
 
 .exact-avatar {
@@ -63,14 +63,14 @@
 .exact-primary-cta {
   width: 100%;
   min-height: 56px;
-  border-radius: 14px;
+  border-radius: 16px;
   border: 0;
-  background: #1a6b3c;
-  color: white;
+  background: #0a0b0d;
+  color: #f7c600;
   font-size: 1.05rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 18px 40px rgba(26, 107, 60, 0.18);
+  box-shadow: 0 18px 40px rgba(10, 11, 13, 0.22);
 }
 
 .exact-passenger-page,
@@ -134,7 +134,7 @@
 
 .exact-passenger-links a.active,
 .exact-rider-navlinks a.active {
-  color: #1a6b3c;
+  color: #f7c600;
 }
 
 .exact-ghost-link {
@@ -193,7 +193,7 @@
 .exact-dev-disclosure {
   margin-top: 18px;
   padding: 14px 16px;
-  border-radius: 18px;
+  border-radius: 16px;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
 }
@@ -215,7 +215,7 @@
 
 .exact-zone-card {
   padding: 16px 18px;
-  border-radius: 18px;
+  border-radius: 16px;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
 }
@@ -315,7 +315,7 @@
 
 .map-lab-suggestion-item:hover,
 .exact-place-suggestion-item:hover {
-  border-color: rgba(26, 107, 60, 0.34);
+  border-color: rgba(247, 198, 0, 0.34);
   box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
   transform: translateY(-1px);
 }
@@ -344,7 +344,7 @@
 .map-lab-suggestion-status,
 .exact-place-suggestion-status {
   padding: 12px 14px;
-  border-radius: 14px;
+  border-radius: 16px;
   background: #eef6f1;
   border: 1px solid #dbeadf;
   color: #1a6b3c;
@@ -423,7 +423,7 @@
 
 .exact-passenger-inline-success {
   padding: 14px 16px;
-  border-radius: 18px;
+  border-radius: 16px;
   border: 1px solid rgba(26, 107, 60, 0.16);
   background: rgba(26, 107, 60, 0.08);
   color: #14532d;
@@ -440,7 +440,7 @@
   justify-content: space-between;
   gap: 18px;
   padding: 16px 18px;
-  border-radius: 18px;
+  border-radius: 16px;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
 }
@@ -550,7 +550,7 @@
 .exact-location-field input {
   width: 100%;
   min-height: 56px;
-  border-radius: 14px;
+  border-radius: 16px;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
   padding: 0 44px 0 42px;
@@ -589,7 +589,7 @@
 .exact-saved-place {
   border: 1px solid #e2e8f0;
   background: white;
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 14px;
   display: flex;
   align-items: center;
@@ -638,16 +638,16 @@
 }
 
 .exact-ride-option.active {
-  border: 2px solid #1a6b3c;
-  background: rgba(26, 107, 60, 0.05);
+  border: 2px solid #0a0b0d;
+  background: rgba(247, 198, 0, 0.08);
 }
 
 .exact-option-badge {
   position: absolute;
   top: 0;
   right: 0;
-  background: #1a6b3c;
-  color: white;
+  background: #0a0b0d;
+  color: #f7c600;
   font-size: 0.62rem;
   font-weight: 800;
   padding: 6px 9px;
@@ -661,7 +661,7 @@
   height: 48px;
   border-radius: 12px;
   background: white;
-  color: #1a6b3c;
+  color: #f7c600;
   display: grid;
   place-items: center;
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
@@ -735,7 +735,7 @@
   display: flex;
   padding: 24px;
   background:
-    radial-gradient(circle at top, rgba(26, 107, 60, 0.12), transparent 26%),
+    radial-gradient(circle at top, rgba(247, 198, 0, 0.10), transparent 26%),
     linear-gradient(180deg, #eef2f5 0%, #e5ebf0 100%);
 }
 
@@ -955,7 +955,7 @@
   border-radius: 999px;
   background: white;
   border: 1px solid #e2e8f0;
-  color: #1a6b3c;
+  color: #f7c600;
   display: grid;
   place-items: center;
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.14);
@@ -989,7 +989,7 @@
 .exact-map-control {
   width: 48px;
   height: 48px;
-  border-radius: 14px;
+  border-radius: 16px;
   border: 1px solid #e2e8f0;
   background: white;
   color: #475569;
@@ -1002,7 +1002,7 @@
 .exact-zoom-stack {
   display: grid;
   overflow: hidden;
-  border-radius: 14px;
+  border-radius: 16px;
   box-shadow: 0 10px 26px rgba(15, 23, 42, 0.12);
 }
 
@@ -1022,7 +1022,7 @@
 .exact-trip-card {
   min-width: 220px;
   padding: 14px 16px;
-  border-radius: 18px;
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid #dbe3ea;
   display: flex;

@@ -977,9 +977,9 @@ main {
 }
 
 .workspace-pill.active {
-  background: #1a6b3c;
-  border-color: #1a6b3c;
-  color: white;
+  background: #0a0b0d;
+  border-color: #0a0b0d;
+  color: #f7c600;
 }
 
 .workspace-shell {
@@ -1014,7 +1014,7 @@ main {
 }
 
 .rider-topbar {
-  background: linear-gradient(135deg, #1a6b3c, #124d2a);
+  background: linear-gradient(135deg, #0a0b0d, #15181d);
   border-bottom-color: rgba(255, 255, 255, 0.12);
 }
 
@@ -1124,8 +1124,8 @@ main {
 }
 
 .ride-choice-card.selected {
-  border-color: #1a6b3c;
-  background: linear-gradient(180deg, rgba(26, 107, 60, 0.08), rgba(26, 107, 60, 0.03));
+  border-color: #f7c600;
+  background: linear-gradient(180deg, rgba(247, 198, 0, 0.08), rgba(247, 198, 0, 0.03));
 }
 
 .ride-choice-card strong {
@@ -1201,8 +1201,8 @@ main {
 }
 
 .map-floating-card.accent {
-  background: rgba(26, 107, 60, 0.96);
-  border-color: #1a6b3c;
+  background: rgba(10, 11, 13, 0.96);
+  border-color: #0a0b0d;
 }
 
 .map-floating-card.accent strong,
@@ -1229,7 +1229,7 @@ main {
 .rider-earnings-card {
   border-radius: 24px;
   padding: 22px;
-  background: linear-gradient(135deg, #1a6b3c, #124d2a);
+  background: linear-gradient(135deg, #0a0b0d, #15181d);
   color: white;
   margin-bottom: 18px;
 }

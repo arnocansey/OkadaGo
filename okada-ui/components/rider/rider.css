@@ -11,8 +11,8 @@
 
 .exact-rider-statebar {
   min-height: 36px;
-  background: #1a6b3c;
-  color: white;
+  background: #0a0b0d;
+  color: #f7c600;
   display: flex;
   align-items: center;
   padding: 0 24px;
@@ -47,7 +47,7 @@
 }
 
 .exact-online-toggle {
-  --toggle-on: #1a6b3c;
+  --toggle-on: #f7c600;
   --toggle-off: #dc2626;
   display: flex;
   align-items: center;
@@ -134,7 +134,7 @@
   margin-top: 24px;
   padding: 20px;
   border-radius: 20px;
-  background: linear-gradient(135deg, #1a6b3c, #124d2a);
+  background: linear-gradient(135deg, #0a0b0d, #15181d);
   color: white;
 }
 
@@ -146,7 +146,7 @@
 }
 
 .exact-rider-hero-head span {
-  color: #a5d6b8;
+  color: #c9b458;
   font-size: 0.9rem;
 }
 
@@ -167,7 +167,7 @@
 .exact-rider-bonus-card {
   margin-top: 16px;
   padding: 14px;
-  border-radius: 14px;
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -180,7 +180,7 @@
 
 .exact-rider-bonus-card p {
   margin-top: 4px;
-  color: #a5d6b8;
+  color: #c9b458;
   font-size: 0.84rem;
 }
 
@@ -194,8 +194,9 @@
 .exact-rider-metric-card {
   padding: 16px;
   border-radius: 16px;
-  background: #f8fafc;
-  border: 1px solid #e5edf3;
+  background: white;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
 }
 
 .exact-rider-metric-card.wide {
@@ -298,15 +299,15 @@
 
 .exact-rider-stat-card {
   padding: 18px;
-  border-radius: 22px;
-  border: 1px solid #e5edf3;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
   background: #ffffff;
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
 }
 
 .exact-rider-stat-card.accent {
-  background: linear-gradient(135deg, #1a6b3c, #124d2a);
-  border-color: rgba(26, 107, 60, 0.16);
+  background: linear-gradient(135deg, #0a0b0d, #15181d);
+  border-color: rgba(247, 198, 0, 0.2);
 }
 
 .exact-rider-stat-card span,
@@ -383,9 +384,9 @@
   display: grid;
   gap: 4px;
   padding: 14px 16px;
-  border-radius: 18px;
+  border-radius: 16px;
   background: #f8fafc;
-  border: 1px solid #e5edf3;
+  border: 1px solid #e2e8f0;
 }
 
 .exact-rider-policy-row span,
@@ -421,8 +422,9 @@
   gap: 6px;
   padding: 16px 18px;
   border-radius: 20px;
-  border: 1px solid #e5edf3;
-  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  background: white;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
 }
 
 .exact-rider-policy-state span,
@@ -482,9 +484,10 @@
   justify-content: space-between;
   gap: 16px;
   padding: 16px 18px;
-  border-radius: 18px;
-  border: 1px solid #e5edf3;
-  background: #f8fafc;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
 }
 
 .exact-rider-record-main,
@@ -522,9 +525,9 @@
 .exact-rider-record-icon {
   width: 42px;
   height: 42px;
-  border-radius: 14px;
-  background: rgba(26, 107, 60, 0.12);
-  color: #1a6b3c;
+  border-radius: 16px;
+  background: rgba(247, 198, 0, 0.12);
+  color: #f7c600;
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -548,8 +551,9 @@
   gap: 16px;
   padding: 14px 16px;
   border-radius: 16px;
-  background: #f8fafc;
-  border: 1px solid #e5edf3;
+  background: white;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
 }
 
 .exact-rider-summary-row.compact {
@@ -570,10 +574,10 @@
   gap: 10px;
   align-items: flex-start;
   padding: 16px;
-  border-radius: 18px;
-  background: rgba(26, 107, 60, 0.08);
-  border: 1px solid rgba(26, 107, 60, 0.12);
-  color: #1f5132;
+  border-radius: 16px;
+  background: rgba(247, 198, 0, 0.06);
+  border: 1px solid rgba(247, 198, 0, 0.12);
+  color: #0a0b0d;
 }
 
 .exact-rider-summary-note p {
@@ -613,9 +617,9 @@
 }
 
 .exact-rider-chip-button {
-  border: 1px solid rgba(13, 107, 74, 0.18);
-  background: rgba(13, 107, 74, 0.08);
-  color: #0f5132;
+  border: 1px solid rgba(247, 198, 0, 0.2);
+  background: rgba(247, 198, 0, 0.08);
+  color: #0a0b0d;
   padding: 0.5rem 0.8rem;
   border-radius: 999px;
   font-size: 0.82rem;
@@ -625,13 +629,13 @@
 }
 
 .exact-rider-chip-button:hover {
-  background: rgba(13, 107, 74, 0.14);
+  background: rgba(247, 198, 0, 0.14);
   transform: translateY(-1px);
 }
 
 .exact-rider-eligibility-card {
   margin-top: 14px;
-  border-radius: 18px;
+  border-radius: 16px;
   padding: 16px 18px;
   background: rgba(13, 107, 74, 0.1);
   border: 1px solid rgba(13, 107, 74, 0.16);
@@ -655,7 +659,7 @@
 
 .exact-rider-deficit-banner,
 .exact-rider-finance-alert {
-  border-radius: 24px;
+  border-radius: 20px;
   border: 1px solid rgba(217, 119, 6, 0.18);
   background: linear-gradient(135deg, rgba(255, 248, 235, 0.98), rgba(255, 243, 214, 0.94));
   color: #744210;
@@ -758,7 +762,7 @@
   justify-content: space-between;
   gap: 16px;
   padding: 14px 16px;
-  border-radius: 18px;
+  border-radius: 16px;
   background: rgba(244, 246, 248, 0.98);
   border: 1px solid rgba(15, 23, 42, 0.06);
 }
@@ -825,9 +829,9 @@
   gap: 10px;
   margin-top: 18px;
   padding: 18px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, rgba(26, 107, 60, 0.12), rgba(18, 77, 42, 0.04));
-  border: 1px solid rgba(26, 107, 60, 0.12);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(247, 198, 0, 0.08), rgba(247, 198, 0, 0.02));
+  border: 1px solid rgba(247, 198, 0, 0.12);
 }
 
 .exact-rider-highlight div {
@@ -851,7 +855,7 @@
 }
 
 .exact-rider-sidebar .workbench-list a {
-  color: #1a6b3c;
+  color: #f7c600;
   font-weight: 700;
 }
 
@@ -888,8 +892,8 @@
   width: 12px;
   height: 12px;
   border-radius: 999px;
-  background: #1a6b3c;
-  box-shadow: 0 0 0 8px rgba(26, 107, 60, 0.12);
+  background: #f7c600;
+  box-shadow: 0 0 0 8px rgba(247, 198, 0, 0.14);
 }
 
 .exact-rider-badge {
@@ -919,7 +923,7 @@
   position: absolute;
   inset: -12px;
   border-radius: 999px;
-  background: rgba(26, 107, 60, 0.14);
+  background: rgba(247, 198, 0, 0.14);
   animation: rider-ping 1.9s ease-out infinite;
 }
 
@@ -928,8 +932,8 @@
   width: 56px;
   height: 56px;
   border-radius: 999px;
-  background: #1a6b3c;
-  color: white;
+  background: #0a0b0d;
+  color: #f7c600;
   display: grid;
   place-items: center;
   border: 4px solid white;

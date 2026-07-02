@@ -112,7 +112,8 @@ function getTileConfig(mode: TileMode): TileConfig {
     isGoogle: false,
     tileSize: 256,
     url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    zoomOffset: 0
+    zoomOffset: 0,
+    subdomains: ["a", "b", "c"]
   };
 }
 
