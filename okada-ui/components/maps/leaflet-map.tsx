@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import L, { type LatLngExpression } from "leaflet";
+import { useCallback, useEffect, useState } from "react";
+import L from "leaflet";
 import {
   CircleMarker,
   MapContainer,
@@ -13,123 +13,68 @@ import {
 } from "react-leaflet";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim();
-
 export type MapMarkerVariant = "default" | "pickup" | "destination" | "driver";
 
 export interface LeafletMapMarker {
   id: string;
-  position: LatLngExpression;
+  position: [number, number];
   label: string;
   variant?: MapMarkerVariant;
   permanentLabel?: boolean;
 }
 
 export interface LeafletMapCurrentPosition {
-  position: LatLngExpression;
+  position: [number, number];
   label?: string;
 }
 
 export interface LeafletMapProps {
-  center: LatLngExpression;
+  center: [number, number];
   zoom?: number;
   markers?: LeafletMapMarker[];
   route?: Array<[number, number]>;
   currentPosition?: LeafletMapCurrentPosition | null;
   viewportSync?: boolean;
+  onRecenter?: () => void;
   className?: string;
   style?: React.CSSProperties;
 }
 
-const pickupIcon = L.divIcon({
-  className: "leaflet-custom-icon",
-  html: '<div class="leaflet-marker pickup"></div>',
-  iconSize: [24, 24],
-  iconAnchor: [12, 12]
-});
-
-const destinationIcon = L.divIcon({
-  className: "leaflet-custom-icon",
-  html: '<div class="leaflet-marker destination"></div>',
-  iconSize: [24, 24],
-  iconAnchor: [12, 12]
-});
-
-const driverIcon = L.divIcon({
-  className: "leaflet-custom-icon",
-  html: '<div class="leaflet-marker driver"></div>',
-  iconSize: [24, 24],
-  iconAnchor: [12, 12]
-});
-
-const passengerIcon = L.divIcon({
-  className: "leaflet-custom-icon",
-  html: '<div class="leaflet-marker passenger"></div>',
-  iconSize: [24, 24],
-  iconAnchor: [12, 12]
-});
-
-type TileMode = "google" | "osm";
-
-type TileConfig = {
-  attribution: string;
-  isGoogle: boolean;
-  tileSize: number;
-  url: string;
-  zoomOffset: number;
-  subdomains?: string[];
+const ICONS: Record<string, L.DivIcon> = {
+  pickup: L.divIcon({
+    className: "leaflet-custom-icon",
+    html: '<div class="leaflet-marker pickup"></div>',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
+  }),
+  destination: L.divIcon({
+    className: "leaflet-custom-icon",
+    html: '<div class="leaflet-marker destination"></div>',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
+  }),
+  driver: L.divIcon({
+    className: "leaflet-custom-icon",
+    html: '<div class="leaflet-marker driver"></div>',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
+  }),
+  passenger: L.divIcon({
+    className: "leaflet-custom-icon",
+    html: '<div class="leaflet-marker passenger"></div>',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
+  })
 };
 
-function resolveMarkerIcon(variant: MapMarkerVariant | undefined) {
-  switch (variant) {
-    case "pickup":
-      return pickupIcon;
-    case "destination":
-      return destinationIcon;
-    case "driver":
-      return driverIcon;
-    default:
-      return undefined;
+function pickIcon(variant: MapMarkerVariant | undefined): L.DivIcon | undefined {
+  if (variant && variant !== "default" && ICONS[variant]) {
+    return ICONS[variant];
   }
+  return undefined;
 }
 
-function getTileConfig(mode: TileMode): TileConfig {
-  if (mode === "google" && googleMapsKey) {
-    return {
-      attribution:
-        '&copy; <a href="https://developers.google.com/maps/documentation/javascript/" target="_blank" rel="noreferrer">Google Maps</a>',
-      isGoogle: true,
-      tileSize: 256,
-      url: `https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${googleMapsKey}`,
-      zoomOffset: 0,
-      subdomains: ["0", "1", "2", "3"]
-    };
-  }
-
-  return {
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
-    isGoogle: false,
-    tileSize: 256,
-    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    zoomOffset: 0,
-    subdomains: ["a", "b", "c"]
-  };
-}
-
-function normalizePosition(position: LatLngExpression): [number, number] {
-  if (Array.isArray(position)) {
-    return [Number(position[0]), Number(position[1])];
-  }
-
-  if ("lat" in position && "lng" in position) {
-    return [position.lat, position.lng];
-  }
-
-  return [5.6037, -0.187];
-}
-
-function MapViewportSync({
+function ViewportSync({
   center,
   zoom
 }: {
@@ -143,31 +88,26 @@ function MapViewportSync({
   }, [map]);
 
   useEffect(() => {
-    const currentCenter = map.getCenter();
-    const latitudeChanged = Math.abs(currentCenter.lat - center[0]) > 0.0001;
-    const longitudeChanged = Math.abs(currentCenter.lng - center[1]) > 0.0001;
-    const zoomChanged = map.getZoom() !== zoom;
-
-    if (latitudeChanged || longitudeChanged || zoomChanged) {
+    const current = map.getCenter();
+    const moved =
+      Math.abs(current.lat - center[0]) > 0.0001 ||
+      Math.abs(current.lng - center[1]) > 0.0001;
+    const zoomed = map.getZoom() !== zoom;
+    if (moved || zoomed) {
       map.setView(center, zoom, { animate: false });
     }
-
     map.invalidateSize();
   }, [center, map, zoom]);
 
   return null;
 }
 
-function MapTileLoader() {
+function InitialSize() {
   const map = useMap();
-
   useEffect(() => {
-    const timer = setTimeout(() => {
-      map.invalidateSize();
-    }, 150);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => map.invalidateSize(), 200);
+    return () => clearTimeout(t);
   }, [map]);
-
   return null;
 }
 
@@ -178,45 +118,47 @@ export function LeafletMap({
   route = [],
   currentPosition = null,
   viewportSync = false,
+  onRecenter,
   className = "leaflet-map-surface",
   style = { width: "100%", height: "100%", minHeight: 440 }
 }: LeafletMapProps) {
   const isMobile = useIsMobile();
-  const [tileMode, setTileMode] = useState<TileMode>(googleMapsKey ? "google" : "osm");
-  const [tileWarning, setTileWarning] = useState<string | null>(null);
-  const [tilesLoaded, setTilesLoaded] = useState(false);
+  const [tilesReady, setTilesReady] = useState(false);
+  const [tileError, setTileError] = useState<string | null>(null);
 
-  const normalizedCenter = useMemo(() => normalizePosition(center), [center]);
-  const tileConfig = useMemo(() => getTileConfig(tileMode), [tileMode]);
-  const mapKey = `${tileMode}:${normalizedCenter[0].toFixed(5)}:${normalizedCenter[1].toFixed(5)}:${zoom}`;
+  const onTileLoad = useCallback(() => {
+    setTilesReady(true);
+  }, []);
 
-  function handleTileError() {
-    if (tileMode === "google") {
-      setTileMode("osm");
-      setTileWarning(
-        "Google Maps tiles could not be loaded, so the map switched to OpenStreetMap."
-      );
-      return;
-    }
-    setTileWarning("OpenStreetMap tiles could not be loaded right now.");
-  }
+  const onTileError = useCallback(() => {
+    setTileError("Map tiles could not be loaded right now.");
+  }, []);
 
-  function handleTileLoad() {
-    if (!tilesLoaded) {
-      setTilesLoaded(true);
-    }
-  }
+  const mapKey = `osm:${center[0].toFixed(5)}:${center[1].toFixed(5)}:${zoom}`;
 
   return (
     <>
-      {!tilesLoaded && (
+      {!tilesReady && (
         <div className="map-skeleton" aria-hidden="true">
           <div className="map-skeleton-pulse" />
         </div>
       )}
+      {onRecenter && (
+        <button
+          type="button"
+          className="map-recenter-btn"
+          onClick={onRecenter}
+          aria-label="Re-center map on current location"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+          </svg>
+        </button>
+      )}
       <MapContainer
         key={mapKey}
-        center={normalizedCenter}
+        center={center}
         zoom={zoom}
         scrollWheelZoom={!isMobile}
         zoomControl={!isMobile}
@@ -228,64 +170,61 @@ export function LeafletMap({
         className={className}
         style={style}
       >
-        <MapTileLoader />
-        {viewportSync && <MapViewportSync center={normalizedCenter} zoom={zoom} />}
+        <InitialSize />
+        {viewportSync && <ViewportSync center={center} zoom={zoom} />}
         <TileLayer
-          attribution={tileConfig.attribution}
-          url={tileConfig.url}
-          tileSize={tileConfig.tileSize}
-          zoomOffset={tileConfig.zoomOffset}
-          subdomains={tileConfig.subdomains}
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          subdomains={["a", "b", "c"]}
           eventHandlers={{
-            tileerror: () => handleTileError(),
-            tileload: () => handleTileLoad()
+            tileerror: onTileError,
+            tileload: onTileLoad
           }}
         />
-        {route.length > 1 ? (
+        {route.length > 1 && (
           <Polyline
             positions={route}
             pathOptions={{ color: "#111315", weight: 5, opacity: 0.75 }}
           />
-        ) : null}
-        {currentPosition ? (
+        )}
+        {currentPosition && (
           <>
             <CircleMarker
               center={currentPosition.position}
               radius={22}
               pathOptions={{ color: "#21c45d", fillColor: "#21c45d", fillOpacity: 0.12 }}
             />
-            <Marker position={currentPosition.position} icon={passengerIcon}>
-              {currentPosition.label ? (
+            <Marker position={currentPosition.position} icon={ICONS.passenger}>
+              {currentPosition.label && (
                 <Tooltip direction="top" offset={[0, -10]} permanent>
                   {currentPosition.label}
                 </Tooltip>
-              ) : null}
+              )}
             </Marker>
           </>
-        ) : null}
-        {markers.map((marker) => {
-          const icon = resolveMarkerIcon(marker.variant);
-          return (
-            <Marker
-              key={marker.id}
-              position={marker.position}
-              {...(icon ? { icon } : {})}
-            >
-              <Tooltip direction="top" offset={[0, -10]} permanent={Boolean(marker.permanentLabel)}>
-                {marker.label}
+        )}
+        {markers.map((m) => (
+          <Marker
+            key={m.id}
+            position={m.position}
+            {...(pickIcon(m.variant) ? { icon: pickIcon(m.variant) } : {})}
+          >
+            {m.label && (
+              <Tooltip direction="top" offset={[0, -10]} permanent={!!m.permanentLabel}>
+                {m.label}
               </Tooltip>
-            </Marker>
-          );
-        })}
+            )}
+          </Marker>
+        ))}
       </MapContainer>
-      {tileWarning ? (
+      {tileError && (
         <div className="map-tile-warning" role="status">
           <span className="map-tile-warning-icon" aria-hidden="true">
-            {tileConfig.isGoogle ? "🌐" : "🗺️"}
+            🗺️
           </span>
-          {tileWarning}
+          {tileError}
         </div>
-      ) : null}
+      )}
     </>
   );
 }

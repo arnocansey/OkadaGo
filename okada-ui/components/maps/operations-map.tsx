@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import type { LeafletMapMarker, LeafletMapCurrentPosition } from "./leaflet-map";
-import type { LatLngExpression } from "leaflet";
 import { MapErrorBoundary } from "./map-error-boundary";
 
 const DynamicLeafletMap = dynamic(
@@ -21,7 +20,7 @@ const DynamicLeafletMap = dynamic(
 );
 
 interface OperationsMapProps {
-  center: LatLngExpression;
+  center: [number, number];
   zoom?: number;
   emptyTitle: string;
   emptyDescription: string;
@@ -29,6 +28,10 @@ interface OperationsMapProps {
   markers?: LeafletMapMarker[];
   route?: Array<[number, number]>;
   currentPosition?: LeafletMapCurrentPosition | null;
+}
+
+function toTuple(center: [number, number]): [number, number] {
+  return [Number(center[0]), Number(center[1])];
 }
 
 export function OperationsMap({
@@ -42,13 +45,14 @@ export function OperationsMap({
   currentPosition = null
 }: OperationsMapProps) {
   const hasOverlayContent = markers.length > 0 || route.length > 1 || Boolean(currentPosition);
+  const safeCenter = toTuple(center);
 
   if (bare) {
     return (
       <>
         <MapErrorBoundary>
           <DynamicLeafletMap
-            center={center}
+            center={safeCenter}
             zoom={zoom}
             markers={markers}
             route={route}
@@ -71,7 +75,7 @@ export function OperationsMap({
     <div className="map-shell">
       <MapErrorBoundary>
         <DynamicLeafletMap
-          center={center}
+          center={safeCenter}
           zoom={zoom}
           markers={markers}
           route={route}

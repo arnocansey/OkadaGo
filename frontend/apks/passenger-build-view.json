@@ -1,0 +1,58 @@
+﻿pnpm : Γÿà eas-cli@20.5.1 is now available.
+At C:\Users\arnoc\AppData\Local\Temp\ps-script-16ca68d8-cdd0-41b4-8e94-82cb2f20f8b3.ps1:113 char:20
++ ... S_NO_VCS=1; pnpm dlx eas-cli@16.20.0 build:view 2eb9e643-69fe-48d5-85 ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Γÿà eas-cli@20.5.1 is now available.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+To upgrade, run:
+npm install -g eas-cli
+Proceeding with outdated version.
+
+Using EAS CLI without version control system is not recommended, use this mode only if you know what you are doing.
+- Fetching the buildΓÇª
+ΓêÜ Found a matching build for the project @whoisarnold/okadago-passenger
+{
+  "id": "2eb9e643-69fe-48d5-8545-ed664df591ef",
+  "status": "FINISHED",
+  "platform": "ANDROID",
+  "artifacts": {
+    "buildUrl": "https://expo.dev/artifacts/eas/ONQE7UmPYxus3PUAI_o_5Q3GtwXxO1b5NoHQMyDJnDg.apk",
+    "applicationArchiveUrl": "https://expo.dev/artifacts/eas/ONQE7UmPYxus3PUAI_o_5Q3GtwXxO1b5NoHQMyDJnDg.apk"
+  },
+  "fingerprint": {
+    "id": "019f22c9-1f8b-7b32-be98-d20f3b26fb89",
+    "hash": "e3d21db3b772639e96d69c40087009f1915ad88c"
+  },
+  "initiatingActor": {
+    "id": "bf46a398-90b0-4ea5-865a-db7a6d0d0e3f",
+    "displayName": "whoisarnold"
+  },
+  "project": {
+    "id": "94c07182-c892-4106-8b44-3a4ebc25f853",
+    "name": "okadago-passenger",
+    "slug": "okadago-passenger",
+    "ownerAccount": {
+      "id": "f0ce5390-5483-417e-815e-1c6222a8740f",
+      "name": "whoisarnold"
+    }
+  },
+  "channel": "production",
+  "distribution": "STORE",
+  "buildProfile": "production-apk",
+  "sdkVersion": "54.0.0",
+  "appVersion": "1.0.0",
+  "appBuildVersion": "33",
+  "runtimeVersion": "1.0.0",
+  "priority": "NORMAL",
+  "createdAt": "2026-07-02T20:06:45.355Z",
+  "updatedAt": "2026-07-02T21:49:41.514Z",
+  "completedAt": "2026-07-02T21:49:41.355Z",
+  "expirationDate": "2026-08-01T20:06:45.388Z",
+  "isForIosSimulator": false,
+  "metrics": {
+    "buildWaitTime": 8751,
+    "buildQueueTime": 5682118,
+    "buildDuration": 485131
+  }
+}

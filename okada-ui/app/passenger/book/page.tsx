@@ -1,11 +1,11 @@
 import { Suspense } from "react";
-import { WalletView } from "@/components/passenger/pages/wallet-view";
+import { BookView } from "@/components/passenger/pages/book-view";
 
 export const metadata = {
-  title: "OkadaGo | Wallet"
+  title: "OkadaGo | Book a ride"
 };
 
-export default function PassengerWalletPage() {
+export default function PassengerBookPage() {
   return (
     <Suspense
       fallback={
@@ -14,7 +14,7 @@ export default function PassengerWalletPage() {
         </div>
       }
     >
-      <WalletView />
+      <BookView />
     </Suspense>
   );
 }

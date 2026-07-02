@@ -1,9 +1,9 @@
-import PassengerPortalClient from "./passenger-portal-client";
+import { HomeView } from "@/components/passenger/pages/home-view";
 
 export const metadata = {
-  title: "Passenger Flow | OkadaGo"
+  title: "OkadaGo | Book a ride"
 };
 
-export default function PassengerPage() {
-  return <PassengerPortalClient />;
+export default function PassengerHomePage() {
+  return <HomeView />;
 }

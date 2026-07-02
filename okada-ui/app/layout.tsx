@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
-import "@/components/passenger/passenger.css";
 import "@/components/rider/rider.css";
 import "@/components/dashboard/admin.css";
 import "@/components/landing/landing.css";

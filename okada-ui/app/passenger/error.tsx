@@ -1,8 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
-import Link from "next/link";
-
 export default function PassengerError({
   error,
   reset
@@ -10,37 +7,14 @@ export default function PassengerError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    console.error("[OkadaGo Passenger] Error:", error);
-  }, [error]);
-
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "60vh",
-        padding: "48px 24px",
-        textAlign: "center"
-      }}
-    >
-      <div className="empty-state dark" style={{ maxWidth: 480 }}>
-        <strong>Booking page error.</strong>
-        <p style={{ marginBottom: 24 }}>
-          The passenger booking screen encountered an issue. This is usually
-          temporary. Try again or return to the home screen.
-        </p>
-        <div className="button-row" style={{ justifyContent: "center" }}>
-          <button className="button" type="button" onClick={reset}>
-            Try Again
-          </button>
-          <Link href="/passenger" className="button-secondary" style={{ textDecoration: "none" }}>
-            Passenger Home
-          </Link>
-        </div>
-      </div>
+    <div className="pax-app flex min-h-dvh flex-col items-center justify-center px-6 text-center">
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-2xl">!</div>
+      <h1 className="mb-2 text-xl font-bold text-gray-900">Something went wrong</h1>
+      <p className="mb-6 max-w-xs text-sm text-gray-500">{error.message || "An unexpected error occurred."}</p>
+      <button type="button" onClick={reset} className="pax-btn-primary max-w-xs">
+        Try again
+      </button>
     </div>
   );
 }
