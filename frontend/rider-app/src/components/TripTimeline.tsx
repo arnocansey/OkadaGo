@@ -1,113 +1,77 @@
-import { View, Text, StyleSheet } from "react-native";
-import { palette } from "./ui";
+import { StyleSheet, Text, View } from "react-native";
+import { Check, Circle } from "lucide-react-native";
+import { colors, spacing, typography } from "@/theme/tokens";
 
-export interface TimelineStep {
-  status: string;
-  icon?: string;
-  timestamp?: string;
-  isCompleted: boolean;
-  isActive: boolean;
-}
+type Step = { key: string; label: string };
 
-export function TripTimeline({ steps }: { steps: TimelineStep[] }) {
+type Props = {
+  steps: Step[];
+  currentIndex: number;
+};
+
+export function TripTimeline({ steps, currentIndex }: Props) {
   return (
-    <View style={styles.timeline}>
-      {steps.map((step, index) => (
-        <View key={index} style={styles.timelineItem}>
-          <View style={styles.timelineTrack}>
-            <View
-              style={[
-                styles.timelineDot,
-                step.isCompleted && styles.timelineDotCompleted,
-                step.isActive && styles.timelineDotActive,
-              ]}
-            />
-            {index < steps.length - 1 && (
-              <View
-                style={[
-                  styles.timelineLine,
-                  step.isCompleted && styles.timelineLineCompleted,
-                ]}
-              />
-            )}
+    <View style={styles.wrap}>
+      {steps.map((step, index) => {
+        const done = index < currentIndex;
+        const active = index === currentIndex;
+        return (
+          <View key={step.key} style={styles.row}>
+            <View style={styles.rail}>
+              <View style={[styles.dot, done && styles.dotDone, active && styles.dotActive]}>
+                {done ? <Check size={12} color={colors.textOnPrimary} strokeWidth={3} /> : active ? <Circle size={8} color={colors.textOnPrimary} fill={colors.textOnPrimary} /> : null}
+              </View>
+              {index < steps.length - 1 ? <View style={[styles.line, done && styles.lineDone]} /> : null}
+            </View>
+            <Text style={[styles.label, active && styles.labelActive, done && styles.labelDone]}>{step.label}</Text>
           </View>
-          <View style={styles.timelineContent}>
-            <Text
-              style={[
-                styles.timelineStatus,
-                step.isCompleted && styles.timelineStatusCompleted,
-              ]}
-            >
-              {step.status}
-            </Text>
-            {step.timestamp && (
-              <Text style={styles.timelineTime}>{step.timestamp}</Text>
-            )}
-          </View>
-        </View>
-      ))}
+        );
+      })}
     </View>
   );
 }
 
+export const RIDE_STEPS = [
+  { key: "assigned", label: "Accepted" },
+  { key: "arriving", label: "Heading to pickup" },
+  { key: "arrived", label: "At pickup" },
+  { key: "started", label: "Trip in progress" },
+  { key: "completed", label: "Completed" },
+];
+
+export const DELIVERY_STEPS = [
+  { key: "assigned", label: "Accepted" },
+  { key: "picked_up", label: "Picked up" },
+  { key: "in_transit", label: "Delivering" },
+  { key: "delivered", label: "Delivered" },
+];
+
+export function stepIndexForStatus(status: string, kind: "ride" | "delivery") {
+  const steps = kind === "ride" ? RIDE_STEPS : DELIVERY_STEPS;
+  const normalized = status.toLowerCase();
+  const map: Record<string, number> = Object.fromEntries(steps.map((s, i) => [s.key, i]));
+  return map[normalized] ?? 0;
+}
+
 const styles = StyleSheet.create({
-  timeline: {
-    gap: 0,
-  },
-  timelineItem: {
-    flexDirection: "row",
-    gap: 12,
-    paddingVertical: 12,
-  },
-  timelineTrack: {
-    alignItems: "center",
-    width: 24,
-  },
-  timelineDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: palette.panelRaised,
+  wrap: { gap: 0 },
+  row: { flexDirection: "row", alignItems: "flex-start", gap: spacing.md, minHeight: 44 },
+  rail: { alignItems: "center", width: 24 },
+  dot: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     borderWidth: 2,
-    borderColor: palette.muted,
-    zIndex: 1,
+    borderColor: colors.borderStrong,
+    backgroundColor: colors.background,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  timelineDotActive: {
-    backgroundColor: palette.orange,
-    borderColor: palette.orange,
-  },
-  timelineDotCompleted: {
-    backgroundColor: palette.green,
-    borderColor: palette.green,
-  },
-  timelineLine: {
-    position: "absolute",
-    top: 12,
-    left: 5,
-    width: 2,
-    height: 44,
-    backgroundColor: palette.panelRaised,
-  },
-  timelineLineCompleted: {
-    backgroundColor: palette.green,
-  },
-  timelineContent: {
-    flex: 1,
-    paddingTop: 2,
-    gap: 3,
-  },
-  timelineStatus: {
-    color: palette.muted,
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  timelineStatusCompleted: {
-    color: "#FFFFFF",
-    fontWeight: "900",
-  },
-  timelineTime: {
-    color: palette.muted,
-    fontSize: 12,
-    fontWeight: "700",
-  },
+  dotActive: { borderColor: colors.accent, backgroundColor: colors.accent },
+  dotDone: { borderColor: colors.accent, backgroundColor: colors.accent },
+  line: { width: 2, flex: 1, minHeight: 20, backgroundColor: colors.border },
+  lineDone: { backgroundColor: colors.accent },
+  label: { ...typography.body, color: colors.textMuted, flex: 1, paddingTop: 1 },
+  labelActive: { ...typography.bodySemibold, color: colors.text },
+  labelDone: { color: colors.textSecondary },
 });

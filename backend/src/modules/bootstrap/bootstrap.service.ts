@@ -1,6 +1,7 @@
 import { prisma } from "../../common/prisma.js";
 import { makeReferralCode, makeRiderCode } from "../../common/codes.js";
 import { appConfig } from "../../common/config.js";
+import { AppError } from "../../common/errors.js";
 import {
   AccountStatus,
   PaymentMethod,
@@ -56,6 +57,8 @@ type MapboxReverseResponse = Partial<{
 type ReverseGeocodeResult = {
   label: string;
   displayName: string | null;
+  formattedAddress: string | null;
+  shortLabel: string | null;
   latitude: number;
   longitude: number;
 };
@@ -173,6 +176,76 @@ function dedupeParts(parts: Array<string | null | undefined>) {
   });
 }
 
+const MAPBOX_FEATURE_PRIORITY = [
+  "address",
+  "street",
+  "neighborhood",
+  "locality",
+  "place",
+  "district",
+  "region"
+] as const;
+
+function pickMostSpecificMapboxFeature(features: MapboxReverseFeature[]) {
+  for (const featureType of MAPBOX_FEATURE_PRIORITY) {
+    const match = features.find(
+      (feature) => feature.properties?.feature_type?.toLowerCase() === featureType
+    );
+    if (match) return match;
+  }
+
+  return features[0];
+}
+
+function buildShortLabelFromFormatted(formatted: string | null) {
+  if (!formatted) return null;
+
+  const parts = formatted
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .filter((part) => !/^(ghana|gh)$/i.test(part));
+
+  if (parts.length >= 3) return parts.slice(1, 3).join(", ");
+  if (parts.length === 2) return parts.join(", ");
+  return parts[0] ?? null;
+}
+
+function buildMapboxFormattedAddress(payload: MapboxReverseResponse) {
+  const feature = pickMostSpecificMapboxFeature(payload.features ?? []);
+  if (!feature) return null;
+
+  const fullAddress = compactAddressPart(feature.properties?.full_address);
+  if (fullAddress) return fullAddress;
+
+  const name = compactAddressPart(feature.properties?.name);
+  const placeFormatted = compactAddressPart(feature.properties?.place_formatted);
+
+  if (name && placeFormatted && name.toLowerCase() !== placeFormatted.toLowerCase()) {
+    return `${name}, ${placeFormatted}`;
+  }
+
+  return name ?? placeFormatted ?? null;
+}
+
+function buildNominatimFormattedAddress(payload: ReverseGeocodeResponse) {
+  const address = payload.address ?? {};
+  const streetLine = dedupeParts([address.house_number, address.road]).join(" ");
+  const parts = dedupeParts([
+    streetLine || null,
+    address.neighbourhood,
+    address.suburb,
+    address.city_district,
+    address.city,
+    address.town,
+    address.village,
+    address.state
+  ]);
+
+  if (parts.length > 0) return parts.join(", ");
+  return compactAddressPart(payload.display_name);
+}
+
 function buildCurrentLocationLabel(parts: Array<string | null | undefined>) {
   const cleaned = dedupeParts(parts).slice(0, 2);
   return cleaned.length > 0 ? `Current location, ${cleaned.join(", ")}` : "Current location";
@@ -192,7 +265,12 @@ function buildNominatimLocationLabel(payload: ReverseGeocodeResponse) {
   ]);
 }
 
-function buildMapboxLocationLabel(payload: MapboxReverseResponse) {
+function buildMapboxLocationLabel(payload: MapboxReverseResponse, formattedAddress?: string | null) {
+  const shortLabel = buildShortLabelFromFormatted(formattedAddress ?? buildMapboxFormattedAddress(payload));
+  if (shortLabel) {
+    return buildCurrentLocationLabel(shortLabel.split(",").map((part) => part.trim()));
+  }
+
   const features = payload.features ?? [];
   const areaFeature =
     features.find((feature) =>
@@ -203,15 +281,18 @@ function buildMapboxLocationLabel(payload: MapboxReverseResponse) {
 
   const areaName = compactAddressPart(areaFeature?.properties?.name);
   const placeFormatted = compactAddressPart(areaFeature?.properties?.place_formatted);
-  const fullAddress = compactAddressPart(areaFeature?.properties?.full_address);
 
   if (areaName || placeFormatted) {
     return buildCurrentLocationLabel([areaName, placeFormatted]);
   }
 
-  if (fullAddress) {
-    const parts = fullAddress.split(",").map((part) => part.trim());
-    return buildCurrentLocationLabel(parts.slice(0, 2));
+  return "Current location";
+}
+
+function buildNominatimLocationLabelFromFormatted(formattedAddress?: string | null) {
+  const shortLabel = buildShortLabelFromFormatted(formattedAddress ?? null);
+  if (shortLabel) {
+    return buildCurrentLocationLabel(shortLabel.split(",").map((part) => part.trim()));
   }
 
   return "Current location";
@@ -270,6 +351,139 @@ function mapApprovalStatus(status: CreateRiderInput["approvalStatus"]) {
     rejected: RiderApprovalStatus.REJECTED,
     suspended: RiderApprovalStatus.SUSPENDED
   }[status];
+}
+
+const PLACES_BASE = "https://maps.googleapis.com/maps/api/place";
+const NEARBY_RADIUS_M = 5000;
+
+const PLACES_CATEGORY_SEARCH_TYPES: Record<string, string[]> = {
+  "fast-food": ["meal_takeaway", "restaurant"],
+  local: ["restaurant"],
+  groceries: ["supermarket", "grocery_or_supermarket"],
+  healthy: ["restaurant"],
+  drinks: ["cafe", "bar"],
+  desserts: ["bakery", "cafe"]
+};
+
+const PLACES_ALL_SEARCH_TYPES = [
+  "restaurant",
+  "supermarket",
+  "cafe",
+  "meal_takeaway",
+  "bakery",
+  "grocery_or_supermarket"
+];
+
+type GooglePlaceResult = {
+  place_id: string;
+  name: string;
+  vicinity?: string;
+  formatted_address?: string;
+  geometry: { location: { lat: number; lng: number } };
+  rating?: number;
+  types?: string[];
+  opening_hours?: { open_now?: boolean };
+  photos?: { photo_reference: string }[];
+  business_status?: string;
+};
+
+type NearbySearchResponse = {
+  status: string;
+  results: GooglePlaceResult[];
+  error_message?: string;
+};
+
+export type PlaceDetailsResult = {
+  placeId: string;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  rating: number;
+  types: string[];
+  phone?: string;
+  openNow?: boolean;
+  weekdayText?: string[];
+  photoReference?: string;
+};
+
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const toRad = (value: number) => (value * Math.PI) / 180;
+  const earthRadiusKm = 6371;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function getGooglePlacesApiKey() {
+  const apiKey = appConfig.googlePlacesApiKey;
+  if (!apiKey) {
+    throw new AppError(
+      "Google Places API key is not configured on the server. Set GOOGLE_PLACES_API_KEY in backend .env.",
+      503,
+      "PLACES_NOT_CONFIGURED"
+    );
+  }
+  return apiKey;
+}
+
+function placesApiErrorMessage(status: string, errorMessage?: string) {
+  if (status === "REQUEST_DENIED") {
+    return (
+      "Google Places API access denied. Enable Places API (legacy) for your server API key " +
+      "in Google Cloud Console, then restart the backend."
+    );
+  }
+  if (status === "OVER_QUERY_LIMIT") {
+    return "Google Places quota exceeded. Try again later or check billing in Google Cloud Console.";
+  }
+  if (status === "INVALID_REQUEST") {
+    return errorMessage ?? "Invalid Places API request.";
+  }
+  if (status === "ZERO_RESULTS") {
+    return "";
+  }
+  return errorMessage ?? `Places API error: ${status}`;
+}
+
+function searchTypesForCategory(categoryId?: string | null, type?: string | null) {
+  if (type) return [type];
+  if (!categoryId) return PLACES_ALL_SEARCH_TYPES;
+  return PLACES_CATEGORY_SEARCH_TYPES[categoryId] ?? ["restaurant"];
+}
+
+async function nearbySearchByType(
+  latitude: number,
+  longitude: number,
+  type: string,
+  apiKey: string
+): Promise<GooglePlaceResult[]> {
+  const params = new URLSearchParams({
+    location: `${latitude},${longitude}`,
+    radius: `${NEARBY_RADIUS_M}`,
+    type,
+    key: apiKey
+  });
+
+  const response = await fetch(`${PLACES_BASE}/nearbysearch/json?${params.toString()}`);
+  if (!response.ok) {
+    throw new AppError(`Places API HTTP ${response.status}`, 502, "PLACES_UPSTREAM_ERROR");
+  }
+
+  const data = (await response.json()) as NearbySearchResponse;
+  if (data.status === "ZERO_RESULTS") return [];
+  if (data.status !== "OK") {
+    const message = placesApiErrorMessage(data.status, data.error_message);
+    if (message) {
+      throw new AppError(message, 502, "PLACES_API_ERROR", { status: data.status });
+    }
+    return [];
+  }
+
+  return data.results.filter((place) => place.business_status !== "CLOSED_PERMANENTLY");
 }
 
 export class BootstrapService {
@@ -447,7 +661,7 @@ export class BootstrapService {
 
     const result = await queueReverseGeocodeRequest(async () => {
       let label = "Current location";
-      let displayName: string | null = null;
+      let formattedAddress: string | null = null;
 
       if (appConfig.mapboxAccessToken) {
         const mapboxUrl = new URL("https://api.mapbox.com/search/geocode/v6/reverse");
@@ -469,16 +683,12 @@ export class BootstrapService {
 
         if (mapboxResponse.ok) {
           const payload = (await mapboxResponse.json()) as MapboxReverseResponse;
-          label = buildMapboxLocationLabel(payload);
-          displayName =
-            compactAddressPart(payload.features?.[0]?.properties?.full_address) ??
-            compactAddressPart(payload.features?.[0]?.properties?.place_formatted) ??
-            compactAddressPart(payload.features?.[0]?.properties?.name) ??
-            null;
+          formattedAddress = buildMapboxFormattedAddress(payload);
+          label = buildMapboxLocationLabel(payload, formattedAddress);
         }
       }
 
-      if (!displayName) {
+      if (!formattedAddress) {
         const requestUrl = new URL(`${appConfig.geocodingBaseUrl}/reverse`);
         requestUrl.searchParams.set("format", "jsonv2");
         requestUrl.searchParams.set("lat", `${latitude}`);
@@ -503,13 +713,20 @@ export class BootstrapService {
         }
 
         const payload = (await response.json()) as ReverseGeocodeResponse;
-        label = buildNominatimLocationLabel(payload);
-        displayName = compactAddressPart(payload.display_name);
+        formattedAddress = buildNominatimFormattedAddress(payload);
+        label = buildNominatimLocationLabelFromFormatted(formattedAddress);
+        if (label === "Current location") {
+          label = buildNominatimLocationLabel(payload);
+        }
       }
+
+      const shortLabel = buildShortLabelFromFormatted(formattedAddress);
 
       return {
         label,
-        displayName,
+        displayName: formattedAddress,
+        formattedAddress,
+        shortLabel,
         latitude,
         longitude
       };
@@ -558,20 +775,24 @@ export class BootstrapService {
           const coordinates = feature?.geometry?.coordinates;
 
           if (coordinates) {
+            const formattedAddress =
+              compactAddressPart(feature.properties?.full_address) ??
+              compactAddressPart(feature.properties?.place_formatted) ??
+              compactAddressPart(feature.properties?.name) ??
+              normalizedQuery;
+
             const result = {
               label: buildDestinationLabel(
                 [
                   compactAddressPart(feature.properties?.name),
                   compactAddressPart(feature.properties?.place_formatted),
-                  compactAddressPart(feature.properties?.full_address)
+                  formattedAddress
                 ],
                 normalizedQuery
               ),
-              displayName:
-                compactAddressPart(feature.properties?.full_address) ??
-                compactAddressPart(feature.properties?.place_formatted) ??
-                compactAddressPart(feature.properties?.name) ??
-                normalizedQuery,
+              displayName: formattedAddress,
+              formattedAddress,
+              shortLabel: buildShortLabelFromFormatted(formattedAddress),
               latitude: coordinates[1],
               longitude: coordinates[0]
             } satisfies ForwardGeocodeResult;
@@ -622,6 +843,10 @@ export class BootstrapService {
           normalizedQuery
         ),
         displayName: compactAddressPart(firstResult.display_name) ?? normalizedQuery,
+        formattedAddress: compactAddressPart(firstResult.display_name) ?? normalizedQuery,
+        shortLabel: buildShortLabelFromFormatted(
+          compactAddressPart(firstResult.display_name) ?? normalizedQuery
+        ),
         latitude: Number(firstResult.lat),
         longitude: Number(firstResult.lon)
       } satisfies ForwardGeocodeResult;
@@ -717,5 +942,115 @@ export class BootstrapService {
     });
 
     return result;
+  }
+
+  async nearbyPlaces(input: {
+    latitude: number;
+    longitude: number;
+    categoryId?: string;
+    type?: string;
+  }): Promise<{ results: GooglePlaceResult[] }> {
+    const apiKey = getGooglePlacesApiKey();
+    const types = searchTypesForCategory(input.categoryId, input.type);
+    const batches = await Promise.all(
+      types.map((type) =>
+        nearbySearchByType(input.latitude, input.longitude, type, apiKey)
+      )
+    );
+
+    const byId = new Map<string, GooglePlaceResult>();
+    for (const batch of batches) {
+      for (const place of batch) {
+        if (!byId.has(place.place_id)) {
+          byId.set(place.place_id, place);
+        }
+      }
+    }
+
+    const results = Array.from(byId.values()).sort((a, b) => {
+      const distA = haversineKm(
+        input.latitude,
+        input.longitude,
+        a.geometry.location.lat,
+        a.geometry.location.lng
+      );
+      const distB = haversineKm(
+        input.latitude,
+        input.longitude,
+        b.geometry.location.lat,
+        b.geometry.location.lng
+      );
+      return distA - distB;
+    });
+
+    return { results };
+  }
+
+  async placeDetails(placeId: string): Promise<PlaceDetailsResult> {
+    const apiKey = getGooglePlacesApiKey();
+    const fields = [
+      "place_id",
+      "name",
+      "formatted_address",
+      "vicinity",
+      "geometry",
+      "rating",
+      "types",
+      "formatted_phone_number",
+      "opening_hours",
+      "photos"
+    ].join(",");
+
+    const params = new URLSearchParams({
+      place_id: placeId,
+      fields,
+      key: apiKey
+    });
+
+    const response = await fetch(`${PLACES_BASE}/details/json?${params.toString()}`);
+    if (!response.ok) {
+      throw new AppError(`Place Details HTTP ${response.status}`, 502, "PLACES_UPSTREAM_ERROR");
+    }
+
+    const data = (await response.json()) as {
+      status: string;
+      result?: GooglePlaceResult & {
+        formatted_phone_number?: string;
+        opening_hours?: { open_now?: boolean; weekday_text?: string[] };
+      };
+      error_message?: string;
+    };
+
+    if (data.status !== "OK" || !data.result) {
+      const message = placesApiErrorMessage(data.status, data.error_message);
+      throw new AppError(message || "Could not load place details.", 502, "PLACES_API_ERROR", {
+        status: data.status
+      });
+    }
+
+    const place = data.result;
+    return {
+      placeId: place.place_id,
+      name: place.name,
+      address: place.formatted_address ?? place.vicinity ?? "",
+      latitude: place.geometry.location.lat,
+      longitude: place.geometry.location.lng,
+      rating: place.rating ?? 0,
+      types: place.types ?? [],
+      phone: place.formatted_phone_number,
+      openNow: place.opening_hours?.open_now,
+      weekdayText: place.opening_hours?.weekday_text,
+      photoReference: place.photos?.[0]?.photo_reference
+    };
+  }
+
+  placePhotoUrl(photoReference: string, maxWidth = 400) {
+    const apiKey = getGooglePlacesApiKey();
+    const params = new URLSearchParams({
+      maxwidth: `${maxWidth}`,
+      photoreference: photoReference,
+      key: apiKey
+    });
+    return `${PLACES_BASE}/photo?${params.toString()}`;
   }
 }

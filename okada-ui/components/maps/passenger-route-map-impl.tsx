@@ -12,19 +12,16 @@ import {
   useMap
 } from "react-leaflet";
 
-const mapboxPublicToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN?.trim();
-const mapboxStyle = process.env.NEXT_PUBLIC_MAPBOX_STYLE_ID?.trim() || "mapbox/streets-v12";
-const defaultMapboxStyle = "mapbox/streets-v12";
-const allowCustomMapboxStyle =
-  (process.env.NEXT_PUBLIC_MAPBOX_USE_CUSTOM_STYLE ?? "").trim().toLowerCase() === "true";
+const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim();
 
-type TileMode = "custom" | "defaultMapbox" | "osm";
+type TileMode = "google" | "osm";
 
 type TileConfig = {
   attribution: string;
   tileSize: number;
   url: string;
   zoomOffset: number;
+  subdomains?: string[];
 };
 
 type MarkerVariant = "default" | "pickup" | "destination" | "driver" | undefined;
@@ -74,15 +71,15 @@ const passengerIcon = L.divIcon({
   iconAnchor: [12, 12]
 });
 
-function getTileConfig(styleId?: string | null): TileConfig {
-  if (mapboxPublicToken && styleId) {
+function getTileConfig(mode: TileMode): TileConfig {
+  if (mode === "google" && googleMapsKey) {
     return {
       attribution:
-        '&copy; <a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noreferrer">Mapbox</a> ' +
-        '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
-      tileSize: 512,
-      url: `https://api.mapbox.com/styles/v1/${styleId}/tiles/512/{z}/{x}/{y}@2x?access_token=${mapboxPublicToken}`,
-      zoomOffset: -1
+        '&copy; <a href="https://developers.google.com/maps/documentation/javascript/" target="_blank" rel="noreferrer">Google Maps</a>',
+      tileSize: 256,
+      url: `https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${googleMapsKey}`,
+      zoomOffset: 0,
+      subdomains: ["0", "1", "2", "3"]
     };
   }
 
@@ -130,6 +127,10 @@ function MapViewportSync({
   const map = useMap();
 
   useEffect(() => {
+    map.invalidateSize();
+  }, [map]);
+
+  useEffect(() => {
     const currentCenter = map.getCenter();
     const latitudeChanged = Math.abs(currentCenter.lat - center[0]) > 0.0001;
     const longitudeChanged = Math.abs(currentCenter.lng - center[1]) > 0.0001;
@@ -152,34 +153,20 @@ export function PassengerRouteMapImpl({
   route = [],
   currentPosition = null
 }: PassengerRouteMapProps) {
-  const [tileMode, setTileMode] = useState<TileMode>(
-    mapboxPublicToken ? (allowCustomMapboxStyle ? "custom" : "defaultMapbox") : "osm"
-  );
+  const [tileMode, setTileMode] = useState<TileMode>(googleMapsKey ? "google" : "osm");
   const [tileWarning, setTileWarning] = useState<string | null>(null);
 
   const normalizedCenter = useMemo(() => normalizePosition(center), [center]);
 
-  const tileStyleId =
-    tileMode === "custom"
-      ? mapboxStyle
-      : tileMode === "defaultMapbox"
-        ? defaultMapboxStyle
-        : null;
-  const tileConfig = useMemo(() => getTileConfig(tileStyleId), [tileStyleId]);
+  const tileConfig = useMemo(() => getTileConfig(tileMode), [tileMode]);
 
-  function fallbackTileMode(current: TileMode) {
-    if (current === "custom") {
-      setTileMode("defaultMapbox");
-      setTileWarning(
-        "Your custom Mapbox style could not be loaded, so the map switched to the default streets style."
-      );
-      return;
-    }
+  const mapKey = `${tileMode}:${normalizedCenter[0].toFixed(5)}:${normalizedCenter[1].toFixed(5)}:${zoom}`;
 
-    if (current === "defaultMapbox") {
+  function handleTileError() {
+    if (tileMode === "google") {
       setTileMode("osm");
       setTileWarning(
-        "Mapbox tiles could not be loaded right now, so the map switched to OpenStreetMap."
+        "Google Maps tiles could not be loaded right now, so the map switched to OpenStreetMap."
       );
       return;
     }
@@ -190,6 +177,7 @@ export function PassengerRouteMapImpl({
   return (
     <>
       <MapContainer
+        key={mapKey}
         center={normalizedCenter}
         zoom={zoom}
         scrollWheelZoom
@@ -208,9 +196,10 @@ export function PassengerRouteMapImpl({
           url={tileConfig.url}
           tileSize={tileConfig.tileSize}
           zoomOffset={tileConfig.zoomOffset}
+          subdomains={tileConfig.subdomains}
           eventHandlers={{
             tileerror: () => {
-              fallbackTileMode(tileMode);
+              handleTileError();
             }
           }}
         />

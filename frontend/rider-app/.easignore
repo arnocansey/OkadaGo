@@ -1,10 +1,11 @@
+﻿# Custom easignore: do not exclude .env (root .gitignore would omit it)
 node_modules/
-.pnpm-store/
-.expo/
+.git/
+**/.expo/
 android/
 ios/
-dist/
-web-build/
-*.apk
-*.aab
-*.tsbuildinfo
+*.md
+!README.md
+frontend/.gradle-home/
+**/.gradle-home/
+.gradle/

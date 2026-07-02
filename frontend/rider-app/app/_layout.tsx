@@ -1,0 +1,58 @@
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import * as SplashScreen from "expo-splash-screen";
+import * as Updates from "expo-updates";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { AppProvider } from "@/context/AppContext";
+import { ThemeProvider, useTheme } from "@/context/ThemeContext";
+
+SplashScreen.preventAutoHideAsync().catch(() => undefined);
+
+function RootNavigator() {
+  const { isDark, stackHeaderOptions, ready } = useTheme();
+
+  if (!ready) {
+    return null;
+  }
+
+  return (
+    <>
+      <StatusBar style={isDark ? "light" : "dark"} />
+      <Stack screenOptions={{ headerShown: false, ...stackHeaderOptions }} />
+    </>
+  );
+}
+
+export default function RootLayout() {
+  useEffect(() => {
+    async function prepare() {
+      try {
+        if (!__DEV__ && Updates.isEnabled) {
+          const update = await Updates.checkForUpdateAsync();
+          if (update.isAvailable) {
+            await Updates.fetchUpdateAsync();
+            await Updates.reloadAsync();
+          }
+        }
+      } catch {
+        // OTA check failures should not block launch
+      } finally {
+        await SplashScreen.hideAsync();
+      }
+    }
+    prepare();
+  }, []);
+
+  return (
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <AppProvider>
+          <RootNavigator />
+        </AppProvider>
+      </ThemeProvider>
+    </SafeAreaProvider>
+  );
+}
+
+declare const __DEV__: boolean;

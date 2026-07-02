@@ -1,4 +1,4 @@
-node_modules
+﻿node_modules
 .pnpm-store
 **/.pnpm-store/
 **/node_modules/
@@ -7,6 +7,10 @@ node_modules
 .eas-work/
 **/.expo/
 **/.expo-shared/
+.gradle/
+**/.gradle/
+.gradle-home/
+**/.gradle-home/
 **/android/.gradle/
 **/android/app/build/
 **/android/build/

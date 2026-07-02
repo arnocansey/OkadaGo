@@ -11,21 +11,18 @@ import {
   type PlaceSuggestion
 } from "@/lib/place-search";
 
-const mapboxPublicToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN?.trim();
-const mapboxStyle = process.env.NEXT_PUBLIC_MAPBOX_STYLE_ID?.trim() || "mapbox/streets-v12";
-const defaultMapboxStyle = "mapbox/streets-v12";
-const allowCustomMapboxStyle =
-  (process.env.NEXT_PUBLIC_MAPBOX_USE_CUSTOM_STYLE ?? "").trim().toLowerCase() === "true";
+const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim();
 
-type TileMode = "custom" | "defaultMapbox" | "osm";
+type TileMode = "google" | "osm";
 
 type TileConfig = {
   attribution: string;
-  isMapbox: boolean;
+  isGoogle: boolean;
   label: string;
   tileSize: number;
   url: string;
   zoomOffset: number;
+  subdomains?: string[];
 };
 
 type TileStats = {
@@ -51,7 +48,7 @@ type ForwardGeocodeResponse = {
 type RoutePreviewResponse = {
   distanceKm: number;
   durationMinutes: number;
-  provider: "mapbox" | "osrm";
+  provider: "google" | "osrm";
   route: Array<[number, number]>;
 };
 
@@ -84,24 +81,24 @@ const passengerIcon = L.divIcon({
   iconAnchor: [12, 12]
 });
 
-function getTileConfig(styleId?: string | null): TileConfig {
-  if (mapboxPublicToken && styleId) {
+function getTileConfig(mode: TileMode): TileConfig {
+  if (mode === "google" && googleMapsKey) {
     return {
       attribution:
-        '&copy; <a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noreferrer">Mapbox</a> ' +
-        '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
-      isMapbox: true,
-      label: styleId === defaultMapboxStyle ? "Mapbox Streets" : "Mapbox Custom",
-      tileSize: 512,
-      url: `https://api.mapbox.com/styles/v1/${styleId}/tiles/512/{z}/{x}/{y}@2x?access_token=${mapboxPublicToken}`,
-      zoomOffset: -1
+        '&copy; <a href="https://developers.google.com/maps/documentation/javascript/" target="_blank" rel="noreferrer">Google Maps</a>',
+      isGoogle: true,
+      label: "Google Maps",
+      tileSize: 256,
+      url: `https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${googleMapsKey}`,
+      zoomOffset: 0,
+      subdomains: ["0", "1", "2", "3"]
     };
   }
 
   return {
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
-    isMapbox: false,
+    isGoogle: false,
     label: "OpenStreetMap",
     tileSize: 256,
     url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -138,60 +135,48 @@ async function resolveDestinationWithFallback(
       `/bootstrap/forward-geocode?q=${encodeURIComponent(query)}`
     );
   } catch (backendError) {
-    if (!mapboxPublicToken) {
+    if (!googleMapsKey) {
       throw backendError;
     }
 
-    const endpoint = new URL("https://api.mapbox.com/search/geocode/v6/forward");
-    endpoint.searchParams.set("q", query);
-    endpoint.searchParams.set("access_token", mapboxPublicToken);
-    endpoint.searchParams.set("country", "gh");
+    const endpoint = new URL("https://maps.googleapis.com/maps/api/geocode/json");
+    endpoint.searchParams.set("address", query);
+    endpoint.searchParams.set("key", googleMapsKey);
+    endpoint.searchParams.set("components", "country:GH");
     endpoint.searchParams.set("language", "en");
-    endpoint.searchParams.set("limit", "1");
-    endpoint.searchParams.set(
-      "types",
-      "address,street,neighborhood,locality,place,district,region"
-    );
-    endpoint.searchParams.set("proximity", "-0.187,5.6037");
 
     const response = await fetch(endpoint.toString());
     if (!response.ok) {
       const fallbackMessage = await response.text();
       throw new Error(
-        `Backend geocoding failed, and the Mapbox fallback returned ${response.status}: ${fallbackMessage || "Unknown response"}`
+        `Backend geocoding failed, and the Google Maps fallback returned ${response.status}: ${fallbackMessage || "Unknown response"}`
       );
     }
 
     const payload = (await response.json()) as {
-      features?: Array<{
-        geometry?: { coordinates?: [number, number] };
-        properties?: {
-          full_address?: string;
-          name?: string;
-          place_formatted?: string;
-        };
+      results?: Array<{
+        geometry?: { location?: { lat?: number; lng?: number } };
+        formatted_address?: string;
+        name?: string;
       }>;
+      status?: string;
     };
 
-    const feature = payload.features?.[0];
-    const coordinates = feature?.geometry?.coordinates;
-    if (!coordinates) {
+    if (payload.status !== "OK") {
+      throw new Error(`Google Geocoding API error: ${payload.status}`);
+    }
+
+    const result = payload.results?.[0];
+    const location = result?.geometry?.location;
+    if (!result || !location?.lat || !location?.lng) {
       throw backendError;
     }
 
     return {
-      displayName:
-        feature.properties?.full_address?.trim() ||
-        feature.properties?.place_formatted?.trim() ||
-        feature.properties?.name?.trim() ||
-        query,
-      label:
-        feature.properties?.name?.trim() ||
-        feature.properties?.place_formatted?.trim() ||
-        feature.properties?.full_address?.trim() ||
-        query,
-      latitude: coordinates[1],
-      longitude: coordinates[0]
+      displayName: result.formatted_address?.trim() || query,
+      label: result.formatted_address?.trim() || result.name?.trim() || query,
+      latitude: location.lat,
+      longitude: location.lng
     };
   }
 }
@@ -209,53 +194,100 @@ async function previewRouteWithFallback(input: {
       )}&endLat=${encodeURIComponent(input.endLatitude)}&endLon=${encodeURIComponent(input.endLongitude)}`
     );
   } catch (backendError) {
-    if (!mapboxPublicToken) {
+    if (!googleMapsKey) {
       throw backendError;
     }
 
-    const endpoint = new URL(
-      `https://api.mapbox.com/directions/v5/mapbox/driving/${input.startLongitude},${input.startLatitude};${input.endLongitude},${input.endLatitude}`
+    const endpoint = new URL("https://maps.googleapis.com/maps/api/directions/json");
+    endpoint.searchParams.set(
+      "origin",
+      `${input.startLatitude},${input.startLongitude}`
     );
-    endpoint.searchParams.set("access_token", mapboxPublicToken);
-    endpoint.searchParams.set("overview", "full");
-    endpoint.searchParams.set("geometries", "geojson");
-    endpoint.searchParams.set("alternatives", "false");
-    endpoint.searchParams.set("steps", "false");
+    endpoint.searchParams.set(
+      "destination",
+      `${input.endLatitude},${input.endLongitude}`
+    );
+    endpoint.searchParams.set("key", googleMapsKey);
+    endpoint.searchParams.set("mode", "driving");
 
     const response = await fetch(endpoint.toString());
     if (!response.ok) {
       const fallbackMessage = await response.text();
       throw new Error(
-        `Backend routing failed, and the Mapbox fallback returned ${response.status}: ${fallbackMessage || "Unknown response"}`
+        `Backend routing failed, and the Google Maps fallback returned ${response.status}: ${fallbackMessage || "Unknown response"}`
       );
     }
 
     const payload = (await response.json()) as {
       routes?: Array<{
-        distance: number;
-        duration: number;
-        geometry?: { coordinates?: Array<[number, number]> };
+        legs?: Array<{
+          distance?: { value?: number };
+          duration?: { value?: number };
+        }>;
+        overview_polyline?: { points?: string };
       }>;
+      status?: string;
     };
 
+    if (payload.status !== "OK") {
+      throw new Error(`Google Directions API error: ${payload.status}`);
+    }
+
     const route = payload.routes?.[0];
-    if (!route?.geometry?.coordinates?.length) {
+    const leg = route?.legs?.[0];
+    if (!route?.overview_polyline?.points) {
       throw backendError;
     }
 
+    const decodedRoute = decodePolyline(route.overview_polyline.points);
+
     return {
-      distanceKm: Number((route.distance / 1000).toFixed(1)),
-      durationMinutes: Math.max(1, Math.round(route.duration / 60)),
-      provider: "mapbox",
-      route: route.geometry.coordinates.map(([longitude, latitude]) => [latitude, longitude] as [number, number])
+      distanceKm: Number(((leg?.distance?.value ?? 0) / 1000).toFixed(1)),
+      durationMinutes: Math.max(1, Math.round((leg?.duration?.value ?? 0) / 60)),
+      provider: "google",
+      route: decodedRoute
     };
   }
 }
 
+function decodePolyline(encoded: string): Array<[number, number]> {
+  const points: Array<[number, number]> = [];
+  let index = 0;
+  let lat = 0;
+  let lng = 0;
+
+  while (index < encoded.length) {
+    let b: number;
+    let shift = 0;
+    let result = 0;
+
+    do {
+      b = encoded.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+
+    lat += (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
+
+    shift = 0;
+    result = 0;
+
+    do {
+      b = encoded.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+
+    lng += (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
+
+    points.push([lat / 1e5, lng / 1e5]);
+  }
+
+  return points;
+}
+
 export function MapLabPage() {
-  const [tileMode, setTileMode] = useState<TileMode>(
-    mapboxPublicToken ? (allowCustomMapboxStyle ? "custom" : "defaultMapbox") : "osm"
-  );
+  const [tileMode, setTileMode] = useState<TileMode>(googleMapsKey ? "google" : "osm");
   const [tileWarning, setTileWarning] = useState<string | null>(null);
   const [tileStats, setTileStats] = useState<TileStats>({
     errored: 0,
@@ -298,13 +330,7 @@ export function MapLabPage() {
     zoom: 13
   });
 
-  const tileStyleId =
-    tileMode === "custom"
-      ? mapboxStyle
-      : tileMode === "defaultMapbox"
-        ? defaultMapboxStyle
-        : null;
-  const tileConfig = useMemo(() => getTileConfig(tileStyleId), [tileStyleId]);
+  const tileConfig = useMemo(() => getTileConfig(tileMode), [tileMode]);
 
   useEffect(() => {
     setTileStats({
@@ -383,19 +409,11 @@ export function MapLabPage() {
           ])
   ];
 
-  function fallbackTileMode(current: TileMode) {
-    if (current === "custom") {
-      setTileMode("defaultMapbox");
-      setTileWarning(
-        "Custom Mapbox style failed in Map Lab, so the sandbox fell back to default Mapbox Streets."
-      );
-      return;
-    }
-
-    if (current === "defaultMapbox") {
+  function handleTileError() {
+    if (tileMode === "google") {
       setTileMode("osm");
       setTileWarning(
-        "Mapbox tiles failed in Map Lab, so the sandbox fell back to OpenStreetMap."
+        "Google Maps tiles failed in Map Lab, so the sandbox fell back to OpenStreetMap."
       );
       return;
     }
@@ -976,15 +994,7 @@ export function MapLabPage() {
               <button
                 className="button-secondary"
                 type="button"
-                onClick={() =>
-                  setTileMode(
-                    mapboxPublicToken
-                      ? allowCustomMapboxStyle
-                        ? "custom"
-                        : "defaultMapbox"
-                      : "osm"
-                  )
-                }
+                onClick={() => setTileMode(googleMapsKey ? "google" : "osm")}
               >
                 Restore default provider
               </button>
@@ -1048,7 +1058,7 @@ export function MapLabPage() {
           <h3>Isolated map surface</h3>
           <div className="map-shell" style={{ marginTop: 18, minHeight: "72vh" }}>
             <MapContainer
-              key={mapSeed}
+              key={`${tileMode}:${mapSeed}`}
               center={activeCenter}
               zoom={requestedView.zoom}
               scrollWheelZoom
@@ -1065,6 +1075,7 @@ export function MapLabPage() {
                 url={tileConfig.url}
                 tileSize={tileConfig.tileSize}
                 zoomOffset={tileConfig.zoomOffset}
+                subdomains={tileConfig.subdomains}
                 eventHandlers={{
                   tileerror: (event) => {
                     setTileStats((current) => ({
@@ -1072,7 +1083,7 @@ export function MapLabPage() {
                       errored: current.errored + 1,
                       lastError: `Tile failed for ${String(event.coords?.x ?? "?")},${String(event.coords?.y ?? "?")} at z${String(event.coords?.z ?? "?")}`
                     }));
-                    fallbackTileMode(tileMode);
+                    handleTileError();
                   },
                   tileload: () => {
                     setTileStats((current) => ({

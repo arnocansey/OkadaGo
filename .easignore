@@ -11,3 +11,7 @@
 **/*.tsbuildinfo
 
 frontend/okadago-ui-mobile/
+
+frontend/.gradle-home/
+**/.gradle-home/
+.gradle/

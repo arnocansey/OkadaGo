@@ -34,6 +34,8 @@ const configSchema = z.object({
   SMTP_PASS: emptyStringToUndefined(z.string().min(1)),
   SMTP_FROM: emptyStringToUndefined(z.string().email()),
   MAPBOX_ACCESS_TOKEN: emptyStringToUndefined(z.string().min(1)),
+  GOOGLE_PLACES_API_KEY: emptyStringToUndefined(z.string().min(1)),
+  GOOGLE_MAPS_API_KEY: emptyStringToUndefined(z.string().min(1)),
   GEOCODING_BASE_URL: z.string().url().default("https://nominatim.openstreetmap.org"),
   GEOCODING_USER_AGENT: emptyStringToUndefined(z.string().min(1)),
   GEOCODING_CONTACT_EMAIL: emptyStringToUndefined(z.string().email())
@@ -62,6 +64,7 @@ export const appConfig = {
   smtpPass: parsed.SMTP_PASS,
   smtpFrom: parsed.SMTP_FROM,
   mapboxAccessToken: parsed.MAPBOX_ACCESS_TOKEN,
+  googlePlacesApiKey: parsed.GOOGLE_PLACES_API_KEY ?? parsed.GOOGLE_MAPS_API_KEY,
   geocodingBaseUrl: parsed.GEOCODING_BASE_URL.replace(/\/$/, ""),
   geocodingUserAgent:
     parsed.GEOCODING_USER_AGENT?.trim() || `OkadaGo/0.1 (${defaultAppWebUrl})`,

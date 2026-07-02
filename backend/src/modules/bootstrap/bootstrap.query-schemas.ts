@@ -19,3 +19,19 @@ export const routePreviewQuerySchema = z.object({
   endLat: z.coerce.number().min(-90).max(90),
   endLon: z.coerce.number().min(-180).max(180)
 });
+
+export const placesNearbyQuerySchema = z.object({
+  lat: z.coerce.number().min(-90).max(90),
+  lng: z.coerce.number().min(-180).max(180),
+  categoryId: z.string().trim().min(1).optional(),
+  type: z.string().trim().min(1).optional()
+});
+
+export const placesDetailsQuerySchema = z.object({
+  placeId: z.string().trim().min(1)
+});
+
+export const placesPhotoQuerySchema = z.object({
+  photoreference: z.string().trim().min(1),
+  maxwidth: z.coerce.number().int().min(1).max(1600).default(400)
+});

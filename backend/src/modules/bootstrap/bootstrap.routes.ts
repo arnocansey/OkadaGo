@@ -8,6 +8,9 @@ import {
 import {
   forwardGeocodeQuerySchema,
   listQuerySchema,
+  placesDetailsQuerySchema,
+  placesNearbyQuerySchema,
+  placesPhotoQuerySchema,
   reverseGeocodeQuerySchema,
   routePreviewQuerySchema
 } from "./bootstrap.query-schemas.js";
@@ -67,5 +70,26 @@ export const bootstrapRoutes: FastifyPluginAsync = async (server) => {
       endLatitude: query.endLat,
       endLongitude: query.endLon
     });
+  });
+
+  server.get("/bootstrap/places/nearby", async (request) => {
+    const query = parseQuery(request, placesNearbyQuerySchema);
+    return bootstrapService.nearbyPlaces({
+      latitude: query.lat,
+      longitude: query.lng,
+      categoryId: query.categoryId,
+      type: query.type
+    });
+  });
+
+  server.get("/bootstrap/places/details", async (request) => {
+    const query = parseQuery(request, placesDetailsQuerySchema);
+    return bootstrapService.placeDetails(query.placeId);
+  });
+
+  server.get("/bootstrap/places/photo", async (request, reply) => {
+    const query = parseQuery(request, placesPhotoQuerySchema);
+    const url = bootstrapService.placePhotoUrl(query.photoreference, query.maxwidth);
+    return reply.redirect(url);
   });
 };
