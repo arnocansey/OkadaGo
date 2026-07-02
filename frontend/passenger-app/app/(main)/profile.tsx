@@ -1,5 +1,5 @@
-import { router } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Moon, Sun } from "lucide-react-native";
@@ -13,23 +13,34 @@ import { api } from "@/lib/api";
 import { radius, spacing } from "@/theme/tokens";
 
 type PassengerSettings = {
+  fullName: string;
+  email: string | null;
+  phoneE164: string;
+  preferredCurrency: string;
+  defaultServiceCity: string | null;
   referralCode?: string | null;
 };
 
 export default function ProfileScreen() {
-  const { session, signOut, zones } = useApp();
+  const { session, signOut, zones, refreshSession } = useApp();
   const { colors, typography, isDark, setTheme } = useTheme();
   const user = session!.user;
-  const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [settings, setSettings] = useState<PassengerSettings | null>(null);
   const [friendCode, setFriendCode] = useState("");
   const [applyingReferral, setApplyingReferral] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshSession();
+    }, [refreshSession]),
+  );
 
   useEffect(() => {
     if (!session?.token) return;
     api<PassengerSettings>("/auth/passenger/settings", { token: session.token })
-      .then((settings) => setReferralCode(settings.referralCode ?? null))
-      .catch(() => setReferralCode(null));
-  }, [session?.token]);
+      .then(setSettings)
+      .catch(() => setSettings(null));
+  }, [session?.token, session?.user.fullName, session?.user.email]);
 
   const styles = useMemo(
     () =>
@@ -52,6 +63,8 @@ export default function ProfileScreen() {
         noBorder: { borderBottomWidth: 0 },
         infoLabel: { ...typography.caption, color: colors.textMuted },
         infoValue: { ...typography.bodySemibold, color: colors.text },
+        sectionTitle: { ...typography.bodySemibold, color: colors.text },
+        sectionHint: { ...typography.caption, color: colors.textMuted },
         themeCard: { padding: 0, overflow: "hidden" },
         themeRow: {
           flexDirection: "row",
@@ -70,7 +83,6 @@ export default function ProfileScreen() {
         darkIconBg: { backgroundColor: colors.borderStrong },
         themeLabel: { ...typography.bodySemibold, color: colors.text },
         themeHint: { ...typography.caption, color: colors.textMuted, marginTop: 2 },
-        referralHint: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.md },
       }),
     [colors, typography],
   );
@@ -102,7 +114,7 @@ export default function ProfileScreen() {
           <Text style={styles.phone}>{user.phoneE164}</Text>
         </View>
 
-        <Card style={styles.infoCard}>
+        <Card style={styles.infoCard} padded={false}>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Preferred currency</Text>
             <Text style={styles.infoValue}>{user.preferredCurrency}</Text>
@@ -113,12 +125,13 @@ export default function ProfileScreen() {
           </View>
           <View style={[styles.infoRow, styles.noBorder]}>
             <Text style={styles.infoLabel}>Your referral code</Text>
-            <Text style={styles.infoValue}>{referralCode ?? "—"}</Text>
+            <Text style={styles.infoValue}>{settings?.referralCode ?? "—"}</Text>
           </View>
         </Card>
 
-        <Card>
-          <Text style={styles.themeLabel}>Safety & account</Text>
+        <Card stacked>
+          <Text style={styles.sectionTitle}>Safety & account</Text>
+          <Button label="Edit Profile" variant="outline" fullWidth onPress={() => router.push("/edit-profile")} />
           <Button label="Emergency contacts" variant="outline" fullWidth onPress={() => router.push("/emergency-contacts")} />
           <Button label="Saved places" variant="outline" fullWidth onPress={() => router.push("/saved-places")} />
           <Button label="Support tickets" variant="outline" fullWidth onPress={() => router.push("/support")} />
@@ -127,14 +140,14 @@ export default function ProfileScreen() {
           ) : null}
         </Card>
 
-        <Card>
-          <Text style={styles.themeLabel}>Have a friend's code?</Text>
-          <Text style={styles.referralHint}>Enter a referral code to unlock rewards.</Text>
+        <Card stacked>
+          <Text style={styles.sectionTitle}>Have a friend's code?</Text>
+          <Text style={styles.sectionHint}>Enter a referral code to unlock rewards.</Text>
           <Input label="Referral code" value={friendCode} onChangeText={setFriendCode} autoCapitalize="characters" />
           <Button label="Apply referral" loading={applyingReferral} onPress={applyReferral} fullWidth />
         </Card>
 
-        <Card style={styles.themeCard}>
+        <Card style={styles.themeCard} padded={false}>
           <View style={styles.themeRow}>
             <View style={[styles.themeIcon, isDark ? styles.darkIconBg : styles.lightIconBg]}>
               {isDark ? <Moon size={18} color={colors.text} /> : <Sun size={18} color={colors.primary} />}

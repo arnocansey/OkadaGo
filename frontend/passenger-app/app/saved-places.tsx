@@ -147,9 +147,9 @@ export default function SavedPlacesScreen() {
       <Stack.Screen options={{ headerShown: true, title: "Saved places", ...stackHeaderOptions }} />
       <SafeAreaView style={styles.screen} edges={["bottom"]}>
         <ScrollView contentContainerStyle={styles.content}>
-          <Card>
+          <Card stacked>
             <Text style={styles.title}>{editingId ? "Edit place" : "Add place"}</Text>
-            <View style={styles.presetRow}>
+            <View style={[styles.presetRow, { marginBottom: spacing.sm }]}>
               {LABEL_PRESETS.map(({ id, icon: Icon }) => (
                 <Pressable
                   key={id}
@@ -174,7 +174,7 @@ export default function SavedPlacesScreen() {
             <Text style={styles.meta}>No saved places yet.</Text>
           ) : (
             places.map((place) => (
-              <Card key={place.id}>
+              <Card key={place.id} stacked>
                 <View style={styles.row}>
                   <View style={styles.body}>
                     <Text style={styles.title}>{place.label}</Text>

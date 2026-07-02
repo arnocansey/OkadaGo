@@ -24,8 +24,13 @@ export async function api<T>(
   }
 
   if (!response.ok) {
-    const err = payload as { message?: string; error?: string };
-    throw new Error(err?.message ?? err?.error ?? `Request failed with ${response.status}`);
+    const err = payload as {
+      message?: string;
+      error?: string;
+      details?: { suggestion?: string };
+    };
+    const base = err?.message ?? err?.error ?? `Request failed with ${response.status}`;
+    throw new Error(err.details?.suggestion ? `${base} ${err.details.suggestion}` : base);
   }
 
   return payload as T;

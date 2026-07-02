@@ -25,6 +25,7 @@ export default function VerifyPhoneScreen() {
       StyleSheet.create({
         screen: { flex: 1, backgroundColor: colors.background },
         content: { padding: spacing.xxl, gap: spacing.xl },
+        actions: { gap: spacing.md },
         hero: { alignItems: "center", gap: spacing.md, paddingVertical: spacing.lg },
         icon: {
           width: 64,
@@ -108,23 +109,25 @@ export default function VerifyPhoneScreen() {
           {message ? <Text style={styles.message}>{message}</Text> : null}
           {error ? <Text style={styles.error}>{error}</Text> : null}
 
-          <Button label="Send code" variant="outline" loading={sending} onPress={() => void requestOtp()} fullWidth />
-          <Button
-            label="Verify and continue"
-            loading={verifying}
-            onPress={() => void verifyOtp()}
-            fullWidth
-            disabled={code.trim().length !== 6}
-          />
-          <Button
-            label="Sign out"
-            variant="ghost"
-            onPress={async () => {
-              await signOut();
-              router.replace("/(auth)/login");
-            }}
-            fullWidth
-          />
+          <View style={styles.actions}>
+            <Button label="Send code" variant="outline" loading={sending} onPress={() => void requestOtp()} fullWidth />
+            <Button
+              label="Verify and continue"
+              loading={verifying}
+              onPress={() => void verifyOtp()}
+              fullWidth
+              disabled={code.trim().length !== 6}
+            />
+            <Button
+              label="Sign out"
+              variant="ghost"
+              onPress={async () => {
+                await signOut();
+                router.replace("/(auth)/login");
+              }}
+              fullWidth
+            />
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

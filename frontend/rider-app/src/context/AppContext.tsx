@@ -21,6 +21,7 @@ type AppState = {
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
   refreshSession: () => Promise<void>;
+  updateUser: (user: Session["user"]) => Promise<void>;
   setMessage: (message: string) => void;
   toggleOnline: () => Promise<void>;
   setOnline: (value: boolean) => void;
@@ -113,13 +114,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   usePushRegistration(session?.token);
 
-  async function refreshSession() {
+  const refreshSession = useCallback(async () => {
     if (!session?.token) return;
     const data = await api<{ user: Session["user"] }>("/auth/session", { token: session.token });
     const next = { ...session, user: data.user };
     setSession(next);
     await saveSession(next);
-  }
+  }, [session]);
+
+  const updateUser = useCallback(async (user: Session["user"]) => {
+    setSession((current) => {
+      if (!current) return current;
+      const next = { ...current, user };
+      void saveSession(next);
+      return next;
+    });
+  }, []);
 
   async function signIn(next: Session) {
     setSession(next);
@@ -173,6 +183,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       signOut,
       refresh,
       refreshSession,
+      updateUser,
       setMessage,
       toggleOnline,
       setOnline,
@@ -180,7 +191,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       activeDelivery,
       incomingDelivery,
     }),
-    [session, restoring, loading, message, online, wallets, transactions, rides, deliveries, zones, payouts, refresh, refreshSession, activeRide, activeDelivery, incomingDelivery],
+    [session, restoring, loading, message, online, wallets, transactions, rides, deliveries, zones, payouts, refresh, refreshSession, updateUser, activeRide, activeDelivery, incomingDelivery],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

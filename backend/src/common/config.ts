@@ -61,6 +61,13 @@ const smsProvider =
     : parsed.SMS_PROVIDER ??
       (hasTermiiConfig ? ("termii" as const) : hasTwilioConfig ? ("twilio" as const) : undefined);
 
+const googlePlacesApiKey = parsed.GOOGLE_PLACES_API_KEY ?? parsed.GOOGLE_MAPS_API_KEY;
+const googlePlacesApiKeySource = parsed.GOOGLE_PLACES_API_KEY
+  ? ("GOOGLE_PLACES_API_KEY" as const)
+  : parsed.GOOGLE_MAPS_API_KEY
+    ? ("GOOGLE_MAPS_API_KEY" as const)
+    : undefined;
+
 export const appConfig = {
   nodeEnv: parsed.NODE_ENV,
   port: parsed.PORT,
@@ -80,7 +87,8 @@ export const appConfig = {
   smtpPass: parsed.SMTP_PASS,
   smtpFrom: parsed.SMTP_FROM,
   mapboxAccessToken: parsed.MAPBOX_ACCESS_TOKEN,
-  googlePlacesApiKey: parsed.GOOGLE_PLACES_API_KEY ?? parsed.GOOGLE_MAPS_API_KEY,
+  googlePlacesApiKey,
+  googlePlacesApiKeySource,
   geocodingBaseUrl: parsed.GEOCODING_BASE_URL.replace(/\/$/, ""),
   geocodingUserAgent:
     parsed.GEOCODING_USER_AGENT?.trim() || `OkadaGo/0.1 (${defaultAppWebUrl})`,

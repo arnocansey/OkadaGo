@@ -8,6 +8,7 @@ import {
 import {
   forwardGeocodeQuerySchema,
   listQuerySchema,
+  placesAutocompleteQuerySchema,
   placesDetailsQuerySchema,
   placesNearbyQuerySchema,
   placesPhotoQuerySchema,
@@ -69,6 +70,15 @@ export const bootstrapRoutes: FastifyPluginAsync = async (server) => {
       startLongitude: query.startLon,
       endLatitude: query.endLat,
       endLongitude: query.endLon
+    });
+  });
+
+  server.get("/bootstrap/places/autocomplete", async (request) => {
+    const query = parseQuery(request, placesAutocompleteQuerySchema);
+    return bootstrapService.autocompletePlaces({
+      query: query.q,
+      latitude: query.lat,
+      longitude: query.lng
     });
   });
 

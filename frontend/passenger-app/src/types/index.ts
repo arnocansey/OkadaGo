@@ -71,6 +71,22 @@ export type LocationResult = {
   longitude: number;
 };
 
+export type PlaceSuggestion = {
+  placeId: string;
+  name: string;
+  fullAddress: string;
+  latitude?: number;
+  longitude?: number;
+};
+
+export type PlaceDetails = {
+  placeId: string;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+};
+
 export type RoutePreview = {
   distanceKm: number;
   durationMinutes: number;

@@ -142,13 +142,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   usePushRegistration(session?.token);
 
-  async function refreshSession() {
+  const refreshSession = useCallback(async () => {
     if (!session?.token) return;
     const data = await api<{ user: SessionUser }>("/auth/session", { token: session.token });
     const next = { ...session, user: data.user };
     setSession(next);
     await saveSession(next);
-  }
+  }, [session]);
 
   async function signIn(next: Session) {
     setSession(next);
@@ -160,12 +160,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await clearSavedSession();
   }
 
-  async function updateUser(user: SessionUser) {
-    if (!session) return;
-    const next = { ...session, user };
-    setSession(next);
-    await saveSession(next);
-  }
+  const updateUser = useCallback(async (user: SessionUser) => {
+    setSession((current) => {
+      if (!current) return current;
+      const next = { ...current, user };
+      void saveSession(next);
+      return next;
+    });
+  }, []);
 
   const activeRide = rides.find((r) => !["completed", "cancelled"].includes((r.status ?? "").toLowerCase()));
   const activeDelivery = deliveries.find((d) => !["delivered", "cancelled"].includes((d.status ?? "").toLowerCase()));

@@ -74,10 +74,32 @@ APP_WEB_URL=https://your-web-domain.com
 PAYSTACK_SECRET_KEY=
 PAYSTACK_BASE_URL=https://api.paystack.co
 MAPBOX_ACCESS_TOKEN=
+# Required for Food & groceries (/bootstrap/places/*). Server-side key — not the mobile Maps SDK keys.
+GOOGLE_PLACES_API_KEY=
 GEOCODING_BASE_URL=https://nominatim.openstreetmap.org
 GEOCODING_USER_AGENT=OkadaGo/0.1 (https://your-web-domain.com)
 GEOCODING_CONTACT_EMAIL=
 ```
+
+### Google Places (Food & groceries)
+
+The passenger app loads nearby restaurants via backend proxy endpoints (`/bootstrap/places/*`). You must configure the **backend**, not the Expo app:
+
+1. In [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → **Enable APIs**:
+   - **Places API (New)** — required
+   - **Places API** (legacy) — optional fallback
+2. Ensure **billing** is linked to the project.
+3. Create an API key for the server:
+   - **Application restrictions**: None (Render/server has no fixed referrer)
+   - **API restrictions**: Restrict key → select **Places API (New)** and **Places API**
+4. On Render (or your API host), set `GOOGLE_PLACES_API_KEY=<server-key>` and **redeploy**.
+5. Verify:
+
+```bash
+curl "https://your-api-domain.com/v1/bootstrap/places/nearby?lat=5.6037&lng=-0.1870"
+```
+
+A successful response includes `"results": [...]`. Errors return JSON with `code`, `message`, and `details.suggestion`.
 
 Optional bootstrap env vars for the first admin:
 

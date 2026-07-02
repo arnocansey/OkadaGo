@@ -22,12 +22,13 @@ export function useResolvedLocationAddress() {
   } = useUserLocation();
 
   const [address, setAddressState] = useState("");
+  const [manualCoords, setManualCoords] = useState<{ latitude: number; longitude: number } | null>(null);
   const [resolving, setResolving] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
   const userEditedRef = useRef(false);
   const requestIdRef = useRef(0);
 
-  const coords = {
+  const coords = manualCoords ?? {
     latitude: permissionGranted ? latitude : ACCRA_REGION.latitude,
     longitude: permissionGranted ? longitude : ACCRA_REGION.longitude,
   };
@@ -35,7 +36,16 @@ export function useResolvedLocationAddress() {
   const setAddress = useCallback((value: string) => {
     userEditedRef.current = true;
     setAddressState(value);
+    setManualCoords(null);
     setHint(null);
+  }, []);
+
+  const selectAddress = useCallback((value: string, lat: number, lon: number) => {
+    userEditedRef.current = true;
+    setAddressState(value);
+    setManualCoords({ latitude: lat, longitude: lon });
+    setHint(null);
+    setResolving(false);
   }, []);
 
   const resolveAddress = useCallback(
@@ -90,6 +100,7 @@ export function useResolvedLocationAddress() {
 
   const useCurrentLocation = useCallback(async () => {
     userEditedRef.current = false;
+    setManualCoords(null);
     setAddressState(LOADING_TEXT);
     setHint(null);
     await refreshLocation();
@@ -104,6 +115,7 @@ export function useResolvedLocationAddress() {
     address: inputValue,
     submitAddress: address,
     setAddress,
+    selectAddress,
     coords,
     locationLoading,
     resolving,

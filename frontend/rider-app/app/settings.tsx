@@ -1,9 +1,8 @@
 import { Stack } from "expo-router";
-import { useMemo } from "react";
-import { StyleSheet, Switch, Text, View } from "react-native";
+import { useMemo, useState } from "react";
+import { ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Bell, Moon, Sun, Volume2 } from "lucide-react-native";
-import { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { useTheme } from "@/context/ThemeContext";
 import { radius, spacing } from "@/theme/tokens";
@@ -42,7 +41,8 @@ function SettingRow({
 
 function createStyles(colors: ReturnType<typeof useTheme>["colors"], typography: ReturnType<typeof useTheme>["typography"]) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.background, padding: spacing.xl, gap: spacing.xl },
+    screen: { flex: 1, backgroundColor: colors.background },
+    content: { padding: spacing.xl, gap: spacing.lg, paddingBottom: spacing.xxxl },
     card: { padding: 0, overflow: "hidden" },
     row: {
       flexDirection: "row",
@@ -81,35 +81,37 @@ export default function SettingsScreen() {
     <>
       <Stack.Screen options={{ headerShown: true, title: "Settings", ...stackHeaderOptions }} />
       <SafeAreaView style={styles.screen} edges={["bottom"]}>
-        <Card style={styles.card}>
-          <SettingRow
-            icon={<Bell size={18} color={colors.text} />}
-            label="Push notifications"
-            hint="Trip requests and status updates"
-            value={notifications}
-            onChange={setNotifications}
-            styles={styles}
-          />
-          <View style={styles.divider} />
-          <SettingRow
-            icon={<Volume2 size={18} color={colors.text} />}
-            label="Sound alerts"
-            hint="Play sound for new requests"
-            value={sound}
-            onChange={setSound}
-            styles={styles}
-          />
-          <View style={styles.divider} />
-          <SettingRow
-            icon={isDark ? <Moon size={18} color={colors.text} /> : <Sun size={18} color={colors.primary} />}
-            label={isDark ? "Dark mode" : "Light mode"}
-            hint="Toggle app appearance"
-            value={isDark}
-            onChange={(enabled) => setTheme(enabled ? "dark" : "light")}
-            styles={styles}
-          />
-        </Card>
-        <Text style={styles.version}>OkadaGo Rider v1.0.0</Text>
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <Card style={styles.card}>
+            <SettingRow
+              icon={<Bell size={18} color={colors.text} />}
+              label="Push notifications"
+              hint="Trip requests and status updates"
+              value={notifications}
+              onChange={setNotifications}
+              styles={styles}
+            />
+            <View style={styles.divider} />
+            <SettingRow
+              icon={<Volume2 size={18} color={colors.text} />}
+              label="Sound alerts"
+              hint="Play sound for new requests"
+              value={sound}
+              onChange={setSound}
+              styles={styles}
+            />
+            <View style={styles.divider} />
+            <SettingRow
+              icon={isDark ? <Moon size={18} color={colors.text} /> : <Sun size={18} color={colors.primary} />}
+              label={isDark ? "Dark mode" : "Light mode"}
+              hint="Toggle app appearance"
+              value={isDark}
+              onChange={(enabled) => setTheme(enabled ? "dark" : "light")}
+              styles={styles}
+            />
+          </Card>
+          <Text style={styles.version}>OkadaGo Rider v1.0.0</Text>
+        </ScrollView>
       </SafeAreaView>
     </>
   );

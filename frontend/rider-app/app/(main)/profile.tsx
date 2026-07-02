@@ -1,8 +1,8 @@
-import { router } from "expo-router";
-import { useMemo } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ChevronRight, FileText, Headphones, PhoneCall, Settings } from "lucide-react-native";
+import { ChevronRight, FileText, Headphones, Pencil, PhoneCall, Settings } from "lucide-react-native";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -11,9 +11,15 @@ import { useTheme } from "@/context/ThemeContext";
 import { spacing } from "@/theme/tokens";
 
 export default function ProfileScreen() {
-  const { session, signOut } = useApp();
+  const { session, signOut, refreshSession } = useApp();
   const { colors, typography } = useTheme();
   const user = session!.user;
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshSession();
+    }, [refreshSession]),
+  );
 
   const styles = useMemo(
     () =>
@@ -49,6 +55,11 @@ export default function ProfileScreen() {
       </View>
 
       <Card style={styles.menu}>
+        <Pressable style={styles.menuRow} onPress={() => router.push("/edit-profile")}>
+          <Pencil size={20} color={colors.text} />
+          <Text style={styles.menuLabel}>Edit Profile</Text>
+          <ChevronRight size={18} color={colors.textMuted} />
+        </Pressable>
         <Pressable style={styles.menuRow} onPress={() => router.push("/documents")}>
           <FileText size={20} color={colors.text} />
           <Text style={styles.menuLabel}>Documents</Text>

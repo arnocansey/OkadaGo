@@ -375,6 +375,18 @@ const PLACES_ALL_SEARCH_TYPES = [
   "grocery_or_supermarket"
 ];
 
+/** Legacy-only types mapped to Places API (New) Table A equivalents. */
+const LEGACY_TO_NEW_PLACES_TYPES: Record<string, string[]> = {
+  grocery_or_supermarket: ["supermarket", "grocery_store"]
+};
+
+type PlacesApiFailure = {
+  api: "new" | "legacy";
+  status: string;
+  googleMessage?: string;
+  httpStatus?: number;
+};
+
 /** Field mask for Nearby Search (New) — maps to legacy `GooglePlaceResult` shape. */
 const PLACES_NEARBY_FIELD_MASK = [
   "places.id",
@@ -480,12 +492,21 @@ function getGooglePlacesApiKey() {
   const apiKey = appConfig.googlePlacesApiKey;
   if (!apiKey) {
     throw new AppError(
-      "Google Places API key is not configured on the server. Set GOOGLE_PLACES_API_KEY in backend .env.",
+      "Google Places API key is not configured on the server. Set GOOGLE_PLACES_API_KEY in backend .env (or Render environment) and redeploy.",
       503,
-      "PLACES_NOT_CONFIGURED"
+      "PLACES_NOT_CONFIGURED",
+      {
+        suggestion:
+          "Add GOOGLE_PLACES_API_KEY to your backend host (e.g. Render → Environment). Do not rely on mobile EXPO_PUBLIC_* keys — Places runs server-side."
+      }
     );
   }
   return apiKey;
+}
+
+function toNewApiSearchTypes(types: string[]) {
+  const mapped = types.flatMap((type) => LEGACY_TO_NEW_PLACES_TYPES[type] ?? [type]);
+  return [...new Set(mapped)];
 }
 
 function placesApiErrorMessage(status: string, errorMessage?: string) {
@@ -561,23 +582,78 @@ async function readPlacesApiError(response: Response): Promise<PlacesApiNewError
   }
 }
 
-function throwPlacesApiError(status: string, errorMessage?: string) {
+function throwPlacesApiError(
+  status: string,
+  errorMessage?: string,
+  extras?: { api?: "new" | "legacy"; httpStatus?: number }
+) {
   const normalizedStatus = normalizePlacesApiStatus(status);
   const message = placesApiErrorMessage(normalizedStatus, errorMessage);
   if (message) {
-    throw new AppError(message, 502, "PLACES_API_ERROR", { status: normalizedStatus });
+    throw new AppError(message, 502, "PLACES_API_ERROR", {
+      status: normalizedStatus,
+      api: extras?.api ?? "legacy",
+      googleMessage: errorMessage,
+      httpStatus: extras?.httpStatus
+    });
   }
 }
 
-function logPlacesFallback(operation: string, error: unknown) {
-  const message =
-    error instanceof AppError
-      ? error.message
-      : error instanceof Error
-        ? error.message
-        : String(error);
-  console.warn(
-    `[places] ${operation}: Places API (New) failed (${message}), falling back to legacy Places API`
+function extractPlacesApiFailure(api: "new" | "legacy", error: unknown): PlacesApiFailure {
+  if (error instanceof AppError) {
+    const details = error.details as
+      | { status?: string; googleMessage?: string; httpStatus?: number }
+      | undefined;
+    return {
+      api,
+      status: details?.status ?? "UNKNOWN",
+      googleMessage: details?.googleMessage ?? error.message,
+      httpStatus: details?.httpStatus
+    };
+  }
+
+  return {
+    api,
+    status: "UNKNOWN",
+    googleMessage: error instanceof Error ? error.message : String(error)
+  };
+}
+
+function logPlacesApiFailure(operation: string, failure: PlacesApiFailure) {
+  console.warn(`[places] ${operation}: ${failure.api} API failed`, {
+    status: failure.status,
+    httpStatus: failure.httpStatus,
+    googleMessage: failure.googleMessage
+  });
+}
+
+const PLACES_API_SETUP_SUGGESTION =
+  "In Google Cloud Console: enable billing, enable Places API (New), optionally enable legacy Places API for fallback. " +
+  "Create a server API key (Application restrictions = None; API restrictions = Places API (New) + Places API). " +
+  "Set GOOGLE_PLACES_API_KEY on Render/backend .env and redeploy — not the mobile Maps SDK keys.";
+
+function throwCombinedPlacesApiError(
+  operation: string,
+  primary: PlacesApiFailure,
+  fallback: PlacesApiFailure
+): never {
+  logPlacesApiFailure(operation, primary);
+  logPlacesApiFailure(operation, fallback);
+
+  const formatAttempt = (attempt: PlacesApiFailure) => {
+    const detail = attempt.googleMessage ? `: ${attempt.googleMessage}` : "";
+    const http = attempt.httpStatus ? ` HTTP ${attempt.httpStatus}` : "";
+    return `${attempt.api}=${attempt.status}${http}${detail}`;
+  };
+
+  throw new AppError(
+    `Places search failed. ${formatAttempt(primary)}; ${formatAttempt(fallback)}.`,
+    502,
+    "PLACES_API_ERROR",
+    {
+      attempts: [primary, fallback],
+      suggestion: PLACES_API_SETUP_SUGGESTION
+    }
   );
 }
 
@@ -604,6 +680,7 @@ async function nearbySearchNew(
       includedTypes,
       maxResultCount: 20,
       languageCode: "en",
+      regionCode: "GH",
       locationRestriction: {
         circle: {
           center: { latitude, longitude },
@@ -616,7 +693,10 @@ async function nearbySearchNew(
   if (!response.ok) {
     const payload = await readPlacesApiError(response);
     const status = payload.error?.status ?? `HTTP_${response.status}`;
-    throwPlacesApiError(status, payload.error?.message ?? `Places API HTTP ${response.status}`);
+    throwPlacesApiError(status, payload.error?.message ?? `Places API HTTP ${response.status}`, {
+      api: "new",
+      httpStatus: response.status
+    });
   }
 
   const data = (await response.json()) as { places?: PlacesApiNewPlace[] };
@@ -649,7 +729,7 @@ async function nearbySearchLegacy(
     }
 
     if (data.status !== "OK") {
-      throwPlacesApiError(data.status, data.error_message);
+      throwPlacesApiError(data.status, data.error_message, { api: "legacy" });
     }
 
     for (const place of data.results ?? []) {
@@ -670,10 +750,26 @@ async function nearbySearch(
   apiKey: string
 ): Promise<GooglePlaceResult[]> {
   try {
-    return await nearbySearchNew(latitude, longitude, includedTypes, apiKey);
-  } catch (error) {
-    logPlacesFallback("nearbySearch", error);
-    return nearbySearchLegacy(latitude, longitude, includedTypes, apiKey);
+    return await nearbySearchNew(
+      latitude,
+      longitude,
+      toNewApiSearchTypes(includedTypes),
+      apiKey
+    );
+  } catch (primaryError) {
+    const primaryFailure = extractPlacesApiFailure("new", primaryError);
+    logPlacesApiFailure("nearbySearch", primaryFailure);
+    console.warn("[places] nearbySearch: falling back to legacy Places API");
+
+    try {
+      return await nearbySearchLegacy(latitude, longitude, includedTypes, apiKey);
+    } catch (fallbackError) {
+      throwCombinedPlacesApiError(
+        "nearbySearch",
+        primaryFailure,
+        extractPlacesApiFailure("legacy", fallbackError)
+      );
+    }
   }
 }
 
@@ -691,7 +787,10 @@ async function placeDetailsNew(placeId: string, apiKey: string): Promise<PlaceDe
   if (!response.ok) {
     const payload = await readPlacesApiError(response);
     const status = payload.error?.status ?? `HTTP_${response.status}`;
-    throwPlacesApiError(status, payload.error?.message ?? `Place Details HTTP ${response.status}`);
+    throwPlacesApiError(status, payload.error?.message ?? `Place Details HTTP ${response.status}`, {
+      api: "new",
+      httpStatus: response.status
+    });
   }
 
   const place = (await response.json()) as PlacesApiNewPlace;
@@ -728,7 +827,7 @@ async function placeDetailsLegacy(placeId: string, apiKey: string): Promise<Plac
   const data = (await response.json()) as LegacyPlacesResponse;
 
   if (data.status !== "OK" || !data.result) {
-    throwPlacesApiError(data.status, data.error_message);
+    throwPlacesApiError(data.status, data.error_message, { api: "legacy" });
     throw new AppError("Could not load place details.", 502, "PLACES_API_ERROR");
   }
 
@@ -755,10 +854,302 @@ async function placeDetailsLegacy(placeId: string, apiKey: string): Promise<Plac
 async function placeDetailsWithFallback(placeId: string, apiKey: string): Promise<PlaceDetailsResult> {
   try {
     return await placeDetailsNew(placeId, apiKey);
-  } catch (error) {
-    logPlacesFallback("placeDetails", error);
-    return placeDetailsLegacy(placeId, apiKey);
+  } catch (primaryError) {
+    const primaryFailure = extractPlacesApiFailure("new", primaryError);
+    logPlacesApiFailure("placeDetails", primaryFailure);
+    console.warn("[places] placeDetails: falling back to legacy Places API");
+
+    try {
+      return await placeDetailsLegacy(placeId, apiKey);
+    } catch (fallbackError) {
+      throwCombinedPlacesApiError(
+        "placeDetails",
+        primaryFailure,
+        extractPlacesApiFailure("legacy", fallbackError)
+      );
+    }
   }
+}
+
+export type PlaceSuggestionResult = {
+  placeId: string;
+  name: string;
+  fullAddress: string;
+  latitude?: number;
+  longitude?: number;
+};
+
+const AUTOCOMPLETE_FIELD_MASK =
+  "suggestions.placePrediction.placeId,suggestions.placePrediction.text,suggestions.placePrediction.structuredFormat";
+
+async function suggestPlacesNew(
+  query: string,
+  proximity: { latitude: number; longitude: number } | null,
+  apiKey: string
+): Promise<PlaceSuggestionResult[]> {
+  const response = await fetch(`${PLACES_API_V1}/places:autocomplete`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Goog-Api-Key": apiKey,
+      "X-Goog-FieldMask": AUTOCOMPLETE_FIELD_MASK
+    },
+    body: JSON.stringify({
+      input: query,
+      languageCode: "en",
+      includedRegionCodes: ["gh"],
+      ...(proximity
+        ? {
+            locationBias: {
+              circle: {
+                center: {
+                  latitude: proximity.latitude,
+                  longitude: proximity.longitude
+                },
+                radius: 50000
+              }
+            }
+          }
+        : {})
+    })
+  });
+
+  if (!response.ok) {
+    const payload = await readPlacesApiError(response);
+    const status = payload.error?.status ?? `HTTP_${response.status}`;
+    throwPlacesApiError(status, payload.error?.message ?? `Autocomplete HTTP ${response.status}`, {
+      api: "new",
+      httpStatus: response.status
+    });
+  }
+
+  const payload = (await response.json()) as {
+    suggestions?: Array<{
+      placePrediction?: {
+        placeId?: string;
+        text?: { text?: string };
+        structuredFormat?: {
+          mainText?: { text?: string };
+          secondaryText?: { text?: string };
+        };
+      };
+    }>;
+  };
+
+  return (payload.suggestions ?? [])
+    .map((suggestion) => suggestion.placePrediction)
+    .filter((prediction) => Boolean(prediction?.placeId))
+    .slice(0, 5)
+    .map((prediction) => ({
+      placeId: prediction!.placeId!,
+      name:
+        prediction!.structuredFormat?.mainText?.text?.trim() ||
+        prediction!.text?.text?.trim() ||
+        query,
+      fullAddress:
+        prediction!.text?.text?.trim() ||
+        [
+          prediction!.structuredFormat?.mainText?.text?.trim(),
+          prediction!.structuredFormat?.secondaryText?.text?.trim()
+        ]
+          .filter(Boolean)
+          .join(", ") ||
+        query
+    }));
+}
+
+async function suggestPlacesLegacy(
+  query: string,
+  proximity: { latitude: number; longitude: number } | null,
+  apiKey: string
+): Promise<PlaceSuggestionResult[]> {
+  const url = new URL(`${LEGACY_PLACES_API}/autocomplete/json`);
+  url.searchParams.set("input", query);
+  url.searchParams.set("components", "country:gh");
+  url.searchParams.set("key", apiKey);
+
+  if (proximity) {
+    url.searchParams.set("location", `${proximity.latitude},${proximity.longitude}`);
+    url.searchParams.set("radius", "50000");
+  }
+
+  const response = await fetch(url);
+  const data = (await response.json()) as LegacyPlacesResponse & {
+    predictions?: Array<{
+      place_id?: string;
+      description?: string;
+      structured_formatting?: {
+        main_text?: string;
+        secondary_text?: string;
+      };
+    }>;
+  };
+
+  if (data.status !== "OK" && data.status !== "ZERO_RESULTS") {
+    throwPlacesApiError(data.status, data.error_message, { api: "legacy" });
+  }
+
+  return (data.predictions ?? [])
+    .filter((prediction) => Boolean(prediction.place_id))
+    .slice(0, 5)
+    .map((prediction) => ({
+      placeId: prediction.place_id!,
+      name:
+        prediction.structured_formatting?.main_text?.trim() ||
+        prediction.description?.trim() ||
+        query,
+      fullAddress:
+        prediction.description?.trim() ||
+        [
+          prediction.structured_formatting?.main_text?.trim(),
+          prediction.structured_formatting?.secondary_text?.trim()
+        ]
+          .filter(Boolean)
+          .join(", ") ||
+        query
+    }));
+}
+
+async function suggestPlacesWithGoogle(
+  query: string,
+  proximity: { latitude: number; longitude: number } | null,
+  apiKey: string
+): Promise<PlaceSuggestionResult[]> {
+  try {
+    return await suggestPlacesNew(query, proximity, apiKey);
+  } catch (primaryError) {
+    const primaryFailure = extractPlacesApiFailure("new", primaryError);
+    logPlacesApiFailure("autocomplete", primaryFailure);
+    console.warn("[places] autocomplete: falling back to legacy Places API");
+
+    try {
+      return await suggestPlacesLegacy(query, proximity, apiKey);
+    } catch (fallbackError) {
+      throwCombinedPlacesApiError(
+        "autocomplete",
+        primaryFailure,
+        extractPlacesApiFailure("legacy", fallbackError)
+      );
+    }
+  }
+}
+
+async function suggestPlacesMapbox(
+  query: string,
+  proximity: { latitude: number; longitude: number } | null
+): Promise<PlaceSuggestionResult[]> {
+  if (!appConfig.mapboxAccessToken) {
+    return [];
+  }
+
+  const mapboxUrl = new URL("https://api.mapbox.com/search/geocode/v6/forward");
+  mapboxUrl.searchParams.set("q", query);
+  mapboxUrl.searchParams.set("access_token", appConfig.mapboxAccessToken);
+  mapboxUrl.searchParams.set("country", "gh");
+  mapboxUrl.searchParams.set("language", "en");
+  mapboxUrl.searchParams.set("limit", "5");
+  mapboxUrl.searchParams.set(
+    "types",
+    "address,street,neighborhood,locality,place,district,region"
+  );
+
+  if (proximity) {
+    mapboxUrl.searchParams.set("proximity", `${proximity.longitude},${proximity.latitude}`);
+  } else {
+    mapboxUrl.searchParams.set("proximity", "-0.187,5.6037");
+  }
+
+  const response = await fetch(mapboxUrl, {
+    headers: { "Content-Type": "application/json" }
+  });
+
+  if (!response.ok) {
+    return [];
+  }
+
+  const payload = (await response.json()) as MapboxForwardResponse;
+
+  return (payload.features ?? [])
+    .slice(0, 5)
+    .map((feature, index) => {
+      const coordinates = feature.geometry?.coordinates;
+      const formattedAddress =
+        compactAddressPart(feature.properties?.full_address) ??
+        compactAddressPart(feature.properties?.place_formatted) ??
+        compactAddressPart(feature.properties?.name) ??
+        query;
+
+      return {
+        placeId: `mapbox:${index}:${coordinates?.join(",") ?? query}`,
+        name:
+          compactAddressPart(feature.properties?.name) ??
+          buildDestinationLabel(
+            [
+              compactAddressPart(feature.properties?.name),
+              compactAddressPart(feature.properties?.place_formatted),
+              formattedAddress
+            ],
+            query
+          ),
+        fullAddress: formattedAddress,
+        latitude: coordinates?.[1],
+        longitude: coordinates?.[0]
+      } satisfies PlaceSuggestionResult;
+    })
+    .filter((item) => typeof item.latitude === "number" && typeof item.longitude === "number");
+}
+
+async function suggestPlacesNominatim(
+  query: string
+): Promise<PlaceSuggestionResult[]> {
+  const requestUrl = new URL(`${appConfig.geocodingBaseUrl}/search`);
+  requestUrl.searchParams.set("format", "jsonv2");
+  requestUrl.searchParams.set("q", query);
+  requestUrl.searchParams.set("countrycodes", "gh");
+  requestUrl.searchParams.set("limit", "5");
+  requestUrl.searchParams.set("accept-language", "en");
+
+  if (appConfig.geocodingContactEmail) {
+    requestUrl.searchParams.set("email", appConfig.geocodingContactEmail);
+  }
+
+  const response = await fetch(requestUrl, {
+    headers: {
+      "User-Agent": appConfig.geocodingUserAgent,
+      Referer: appConfig.appWebUrl
+    }
+  });
+
+  if (!response.ok) {
+    return [];
+  }
+
+  const payload = (await response.json()) as NominatimSearchResponse;
+
+  return payload
+    .filter((item) => item.lat && item.lon)
+    .slice(0, 5)
+    .map((item, index) => {
+      const formattedAddress = compactAddressPart(item.display_name) ?? query;
+      return {
+        placeId: `nominatim:${index}:${item.lat},${item.lon}`,
+        name:
+          compactAddressPart(item.name) ??
+          buildDestinationLabel(
+            [
+              compactAddressPart(item.name),
+              ...((item.display_name ?? "")
+                .split(",")
+                .map((part) => compactAddressPart(part))
+                .slice(0, 2) as Array<string | null>)
+            ],
+            query
+          ),
+        fullAddress: formattedAddress,
+        latitude: Number(item.lat),
+        longitude: Number(item.lon)
+      } satisfies PlaceSuggestionResult;
+    });
 }
 
 export class BootstrapService {
@@ -1217,6 +1608,41 @@ export class BootstrapService {
     });
 
     return result;
+  }
+
+  async autocompletePlaces(input: {
+    query: string;
+    latitude?: number;
+    longitude?: number;
+  }): Promise<{ suggestions: PlaceSuggestionResult[] }> {
+    const normalizedQuery = input.query.trim();
+    const proximity =
+      typeof input.latitude === "number" && typeof input.longitude === "number"
+        ? { latitude: input.latitude, longitude: input.longitude }
+        : null;
+
+    let suggestions: PlaceSuggestionResult[] = [];
+
+    try {
+      const apiKey = getGooglePlacesApiKey();
+      suggestions = await suggestPlacesWithGoogle(normalizedQuery, proximity, apiKey);
+    } catch (error) {
+      if (error instanceof AppError && error.code === "PLACES_NOT_CONFIGURED") {
+        suggestions = [];
+      } else {
+        console.warn("[places] autocomplete: Google Places unavailable, using geocoding fallback");
+      }
+    }
+
+    if (suggestions.length === 0) {
+      suggestions = await suggestPlacesMapbox(normalizedQuery, proximity);
+    }
+
+    if (suggestions.length === 0) {
+      suggestions = await suggestPlacesNominatim(normalizedQuery);
+    }
+
+    return { suggestions };
   }
 
   async nearbyPlaces(input: {

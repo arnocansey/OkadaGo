@@ -71,10 +71,10 @@ export default function TripScreen() {
           borderWidth: 1.5,
           borderColor: colors.accent,
         },
-        section: { ...typography.h3, marginBottom: spacing.lg, color: colors.text },
+        section: { ...typography.h3, color: colors.text },
         navRow: { flexDirection: "row", gap: spacing.sm },
         navBtn: { flex: 1 },
-        stars: { flexDirection: "row", gap: spacing.sm, marginBottom: spacing.md },
+        stars: { flexDirection: "row", gap: spacing.sm },
         starBtn: { padding: spacing.xs },
         wsStatus: { ...typography.caption, color: colors.textMuted, textAlign: "center" },
       }),
@@ -262,7 +262,7 @@ export default function TripScreen() {
             </View>
           </Card>
 
-          <Card>
+          <Card stacked>
             <Text style={styles.section}>Navigate</Text>
             <View style={styles.navRow}>
               <Button
@@ -282,13 +282,13 @@ export default function TripScreen() {
             </View>
           </Card>
 
-          <Card>
+          <Card stacked>
             <Text style={styles.section}>Progress</Text>
             <TripTimeline steps={steps} currentIndex={currentIndex} />
           </Card>
 
           {canRatePassenger ? (
-            <Card>
+            <Card stacked>
               <Text style={styles.section}>Rate passenger</Text>
               <View style={styles.stars}>
                 {[1, 2, 3, 4, 5].map((value) => (

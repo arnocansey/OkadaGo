@@ -136,7 +136,7 @@ export default function EmergencyContactsScreen() {
       <Stack.Screen options={{ headerShown: true, title: "Emergency contacts", ...stackHeaderOptions }} />
       <SafeAreaView style={styles.screen} edges={["bottom"]}>
         <ScrollView contentContainerStyle={styles.content}>
-          <Card>
+          <Card stacked>
             <Text style={styles.name}>{editingId ? "Edit contact" : "Add contact"}</Text>
             <Input label="Name" value={name} onChangeText={setName} placeholder="Ama Mensah" />
             <Input label="Phone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" placeholder="024 123 4567" />
@@ -157,7 +157,7 @@ export default function EmergencyContactsScreen() {
             <Text style={styles.meta}>No emergency contacts yet.</Text>
           ) : (
             contacts.map((contact) => (
-              <Card key={contact.id}>
+              <Card key={contact.id} stacked>
                 <View style={styles.row}>
                   <View style={styles.body}>
                     <Text style={styles.name}>{contact.name}</Text>

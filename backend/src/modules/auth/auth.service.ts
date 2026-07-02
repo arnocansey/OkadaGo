@@ -21,6 +21,7 @@ import type {
   passengerSettingsUpdateSchema,
   passengerSignupSchema,
   riderLoginSchema,
+  riderSettingsUpdateSchema,
   riderSignupSchema
 } from "./auth.schemas.js";
 import type { z } from "zod";
@@ -35,6 +36,7 @@ type RiderLoginInput = z.infer<typeof riderLoginSchema>;
 type AdminLoginInput = z.infer<typeof adminLoginSchema>;
 type AdminPromoteInput = z.infer<typeof adminPromoteSchema>;
 type PassengerSettingsUpdateInput = z.infer<typeof passengerSettingsUpdateSchema>;
+type RiderSettingsUpdateInput = z.infer<typeof riderSettingsUpdateSchema>;
 type OtpRequestInput = z.infer<typeof otpRequestSchema>;
 type OtpVerifyInput = z.infer<typeof otpVerifySchema>;
 type UserWithProfiles = {
@@ -58,6 +60,14 @@ type PassengerSettingsUser = UserWithProfiles & {
     referralCode: string;
     defaultServiceCity: string | null;
     preferredPayment: PaymentMethod | null;
+  } | null;
+};
+type RiderSettingsUser = UserWithProfiles & {
+  riderProfile?: {
+    id: string;
+    displayCode: string;
+    city: string | null;
+    approvalStatus: { toLowerCase(): string };
   } | null;
 };
 
@@ -451,6 +461,55 @@ export class AuthService {
     };
   }
 
+  async getRiderSettings(token: string) {
+    const session = await this.getActiveSession(token);
+    await this.touchSession(session.id);
+
+    if (session.user.role !== UserRole.RIDER || !session.user.riderProfile) {
+      throw new AppError("Rider access is required", 403, "RIDER_ACCESS_REQUIRED");
+    }
+
+    return this.serializeRiderSettings(session.user as RiderSettingsUser);
+  }
+
+  async updateRiderSettings(token: string, input: RiderSettingsUpdateInput) {
+    const session = await this.getActiveSession(token);
+
+    if (session.user.role !== UserRole.RIDER || !session.user.riderProfile) {
+      throw new AppError("Rider access is required", 403, "RIDER_ACCESS_REQUIRED");
+    }
+
+    const user = await prisma.user.update({
+      where: {
+        id: session.user.id
+      },
+      data: {
+        fullName: input.fullName,
+        email: input.email,
+        riderProfile: {
+          update: {
+            city: input.city
+          }
+        }
+      },
+      include: {
+        passengerProfile: true,
+        riderProfile: true,
+        adminProfile: true,
+        dispatcherProfile: true
+      }
+    });
+
+    await this.touchSession(session.id);
+
+    return {
+      token,
+      expiresAt: session.expiresAt.toISOString(),
+      user: this.serializeUser(user),
+      settings: this.serializeRiderSettings(user as RiderSettingsUser)
+    };
+  }
+
   async logout(token: string) {
     const session = await prisma.userSession.findUnique({
       where: {
@@ -717,6 +776,20 @@ export class AuthService {
       defaultServiceCity: user.passengerProfile?.defaultServiceCity ?? null,
       preferredPayment: user.passengerProfile?.preferredPayment?.toLowerCase() ?? null,
       referralCode: user.passengerProfile?.referralCode ?? null
+    };
+  }
+
+  private serializeRiderSettings(user: RiderSettingsUser) {
+    return {
+      fullName: user.fullName,
+      email: user.email,
+      phoneCountryCode: user.phoneCountryCode,
+      phoneLocal: user.phoneLocal,
+      phoneE164: user.phoneE164,
+      preferredCurrency: user.preferredCurrency,
+      city: user.riderProfile?.city ?? null,
+      displayCode: user.riderProfile?.displayCode ?? null,
+      approvalStatus: user.riderProfile?.approvalStatus.toLowerCase() ?? null
     };
   }
 }

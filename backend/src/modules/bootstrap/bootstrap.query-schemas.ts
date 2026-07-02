@@ -27,6 +27,12 @@ export const placesNearbyQuerySchema = z.object({
   type: z.string().trim().min(1).optional()
 });
 
+export const placesAutocompleteQuerySchema = z.object({
+  q: z.string().trim().min(2).max(200),
+  lat: z.coerce.number().min(-90).max(90).optional(),
+  lng: z.coerce.number().min(-180).max(180).optional()
+});
+
 export const placesDetailsQuerySchema = z.object({
   placeId: z.string().trim().min(1)
 });

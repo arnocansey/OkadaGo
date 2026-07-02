@@ -44,10 +44,10 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 export function placesApiErrorMessage(status: string, errorMessage?: string): string {
-  if (status === "REQUEST_DENIED") {
+  if (status === "REQUEST_DENIED" || status === "PERMISSION_DENIED") {
     return (
-      "Google Places API access denied. Ask your admin to enable Places API on the backend " +
-      "GOOGLE_PLACES_API_KEY and restart the server."
+      "Google Places API access denied. Ask your admin to enable Places API (New) on the backend " +
+      "GOOGLE_PLACES_API_KEY (server key, not the mobile Maps key), ensure billing is enabled, and redeploy."
     );
   }
   if (status === "OVER_QUERY_LIMIT") {

@@ -89,6 +89,12 @@ export const passengerSettingsUpdateSchema = z.object({
   preferredPayment: z.enum(["cash", "card", "wallet", "mobile_money"]).nullable()
 });
 
+export const riderSettingsUpdateSchema = z.object({
+  fullName: z.string().min(2).max(160),
+  email: z.string().email().nullable(),
+  city: z.string().max(120).nullable()
+});
+
 export const otpRequestSchema = z.object({
   phoneE164: z.string().min(8).max(24)
 });

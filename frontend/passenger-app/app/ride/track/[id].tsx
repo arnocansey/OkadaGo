@@ -38,7 +38,7 @@ export default function TrackScreen() {
         fare: { ...typography.h3, color: colors.text },
         label: { ...typography.caption, color: colors.textMuted },
         address: { ...typography.bodySemibold, marginTop: 4, color: colors.text },
-        section: { ...typography.h3, marginBottom: spacing.lg, color: colors.text },
+        section: { ...typography.h3, color: colors.text },
         riderRow: { flexDirection: "row", alignItems: "center", gap: spacing.lg },
         riderAvatar: {
           width: 44,
@@ -65,7 +65,7 @@ export default function TrackScreen() {
         },
         safetyRow: { flexDirection: "row", gap: spacing.sm },
         safetyBtn: { flex: 1 },
-        stars: { flexDirection: "row", gap: spacing.sm, marginBottom: spacing.md },
+        stars: { flexDirection: "row", gap: spacing.sm },
         starBtn: { padding: spacing.xs },
         wsStatus: { ...typography.caption, color: colors.textMuted, textAlign: "center" },
       }),
@@ -265,7 +265,7 @@ export default function TrackScreen() {
             </Card>
           ) : null}
 
-          <Card>
+          <Card stacked>
             <Text style={styles.section}>Safety</Text>
             <View style={styles.safetyRow}>
               <Button
@@ -296,7 +296,7 @@ export default function TrackScreen() {
           </Card>
 
           {showReceipt ? (
-            <Card>
+            <Card stacked>
               <Text style={styles.section}>Receipt</Text>
               <Text style={styles.label}>Trip ID</Text>
               <Text style={styles.address}>{trip.id}</Text>
@@ -313,7 +313,7 @@ export default function TrackScreen() {
           ) : null}
 
           {canRate ? (
-            <Card>
+            <Card stacked>
               <Text style={styles.section}>Rate your ride</Text>
               <View style={styles.stars}>
                 {[1, 2, 3, 4, 5].map((value) => (

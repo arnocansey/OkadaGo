@@ -7,11 +7,12 @@ import { radius, shadows, spacing } from "@/theme/tokens";
 type Props = ViewProps & {
   children: ReactNode;
   padded?: boolean;
+  stacked?: boolean;
   elevated?: boolean;
   onPress?: () => void;
 };
 
-export function Card({ children, padded = true, elevated, onPress, style, ...rest }: Props) {
+export function Card({ children, padded = true, stacked, elevated, onPress, style, ...rest }: Props) {
   const { colors } = useTheme();
   const styles = useMemo(
     () =>
@@ -24,6 +25,7 @@ export function Card({ children, padded = true, elevated, onPress, style, ...res
           overflow: "hidden",
         },
         padded: { padding: spacing.lg },
+        stacked: { gap: spacing.md },
         pressed: { opacity: 0.92 },
       }),
     [colors],
@@ -32,7 +34,7 @@ export function Card({ children, padded = true, elevated, onPress, style, ...res
   const content = (
     <View
       {...rest}
-      style={[styles.card, elevated && shadows.md, padded && styles.padded, style as ViewStyle]}
+      style={[styles.card, elevated && shadows.md, padded && styles.padded, stacked && styles.stacked, style as ViewStyle]}
     >
       {children}
     </View>

@@ -9,6 +9,7 @@ import {
   passengerSettingsUpdateSchema,
   passengerSignupSchema,
   riderLoginSchema,
+  riderSettingsUpdateSchema,
   riderSignupSchema
 } from "./auth.schemas.js";
 import { AuthService } from "./auth.service.js";
@@ -65,6 +66,17 @@ export const authRoutes: FastifyPluginAsync = async (server) => {
     const token = extractBearerToken(request.headers.authorization);
     const input = parseBody(request, passengerSettingsUpdateSchema);
     return authService.updatePassengerSettings(token, input);
+  });
+
+  server.get("/auth/rider/settings", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return authService.getRiderSettings(token);
+  });
+
+  server.patch("/auth/rider/settings", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const input = parseBody(request, riderSettingsUpdateSchema);
+    return authService.updateRiderSettings(token, input);
   });
 
   server.post("/auth/logout", async (request) => {

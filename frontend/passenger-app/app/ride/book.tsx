@@ -1,17 +1,19 @@
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Clock, LocateFixed, Navigation } from "lucide-react-native";
 import { api, money } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
+import { useAddressAutocomplete } from "@/hooks/useAddressAutocomplete";
 import { useResolvedLocationAddress } from "@/hooks/useResolvedLocationAddress";
 import { useTheme } from "@/context/ThemeContext";
+import { AddressAutocompleteField } from "@/components/AddressAutocompleteField";
 import { AppMap } from "@/components/AppMap";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { radius, spacing } from "@/theme/tokens";
-import type { LocationResult, PaymentMethod, RoutePreview, SavedPlace, ServiceZone } from "@/types";
+import type { LocationResult, PaymentMethod, PlaceSuggestion, RoutePreview, SavedPlace, ServiceZone } from "@/types";
 
 const FALLBACK_DEST = { latitude: 5.556, longitude: -0.182 };
 const PAYMENT_OPTIONS: Array<{ id: PaymentMethod; label: string }> = [
@@ -42,11 +44,16 @@ export default function BookRideScreen() {
   const isDelivery = mode === "delivery";
   const { session, zones, refresh } = useApp();
   const { colors, typography, stackHeaderOptions } = useTheme();
+  const { height: windowHeight } = useWindowDimensions();
+  const mapHeight = Math.max(300, Math.round(windowHeight * 0.44));
   const styles = useMemo(
     () =>
       StyleSheet.create({
         screen: { flex: 1, backgroundColor: colors.background },
-        content: { padding: spacing.xl, gap: spacing.lg },
+        mapSection: { height: mapHeight, minHeight: 300 },
+        formSection: { flex: 1 },
+        content: { padding: spacing.xl, gap: spacing.lg, paddingBottom: spacing.xxxl },
+        fieldStack: { gap: spacing.md },
         pickupRow: { flexDirection: "row", alignItems: "flex-end", gap: spacing.sm },
         pickupInput: { flex: 1 },
         addressInput: { minHeight: 64, paddingTop: spacing.md },
@@ -90,12 +97,13 @@ export default function BookRideScreen() {
         promoHint: { ...typography.caption, color: colors.success },
         error: { ...typography.caption, color: colors.danger },
       }),
-    [colors, typography],
+    [colors, typography, mapHeight],
   );
   const {
     address: pickup,
     submitAddress: pickupSubmitAddress,
     setAddress: setPickup,
+    selectAddress: selectPickupAddress,
     coords: pickupCoords,
     hint: pickupHint,
     locationLoading: pickupLocationLoading,
@@ -103,6 +111,9 @@ export default function BookRideScreen() {
     useCurrentLocation,
   } = useResolvedLocationAddress();
   const [destination, setDestination] = useState("");
+  const [pickupFocused, setPickupFocused] = useState(false);
+  const [destinationFocused, setDestinationFocused] = useState(false);
+  const [destSelected, setDestSelected] = useState(false);
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
   const [packageDesc, setPackageDesc] = useState("");
@@ -115,6 +126,44 @@ export default function BookRideScreen() {
   const [appliedPromoCode, setAppliedPromoCode] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const pickupAutocomplete = useAddressAutocomplete({
+    token: session?.token,
+    query: pickup,
+    proximity: pickupCoords,
+    enabled: pickupFocused && !pickupLocationLoading && !pickupResolving,
+  });
+
+  const destinationAutocomplete = useAddressAutocomplete({
+    token: session?.token,
+    query: destination,
+    proximity: pickupCoords,
+    enabled: destinationFocused,
+  });
+
+  async function choosePickupSuggestion(suggestion: PlaceSuggestion) {
+    try {
+      const resolved = await pickupAutocomplete.resolveSuggestion(suggestion);
+      selectPickupAddress(resolved.address, resolved.latitude, resolved.longitude);
+      pickupAutocomplete.clearSuggestions();
+      setPickupFocused(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not select pickup location.");
+    }
+  }
+
+  async function chooseDestinationSuggestion(suggestion: PlaceSuggestion) {
+    try {
+      const resolved = await destinationAutocomplete.resolveSuggestion(suggestion);
+      setDestination(resolved.address);
+      setDestCoords({ latitude: resolved.latitude, longitude: resolved.longitude });
+      setDestSelected(true);
+      destinationAutocomplete.clearSuggestions();
+      setDestinationFocused(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not select destination.");
+    }
+  }
 
   useEffect(() => {
     if (session?.user.isPhoneVerified === false) {
@@ -133,12 +182,13 @@ export default function BookRideScreen() {
           latitude: Number(place.latitude),
           longitude: Number(place.longitude),
         });
+        setDestSelected(true);
       })
       .catch(() => undefined);
   }, [session?.token, placeId]);
 
   useEffect(() => {
-    if (!destination.trim() || !session) return;
+    if (!destination.trim() || !session || destSelected) return;
     const timer = setTimeout(() => {
       api<LocationResult>(`/bootstrap/forward-geocode?q=${encodeURIComponent(destination.trim())}`, {
         token: session.token,
@@ -147,7 +197,7 @@ export default function BookRideScreen() {
         .catch(() => setDestCoords(FALLBACK_DEST));
     }, 600);
     return () => clearTimeout(timer);
-  }, [destination, session]);
+  }, [destination, session, destSelected]);
 
   const destResolved = destCoords !== FALLBACK_DEST;
 
@@ -317,27 +367,40 @@ export default function BookRideScreen() {
         }}
       />
       <SafeAreaView style={styles.screen} edges={["bottom"]}>
-        <AppMap
-          style={{ height: 180 }}
-          region={{ ...pickupCoords, latitudeDelta: 0.025, longitudeDelta: 0.025 }}
-          markers={markers}
-          routeCoordinates={routeCoordinates}
-          fitToMarkers={markers.length >= 2}
-        />
+        <View style={styles.mapSection}>
+          <AppMap
+            style={StyleSheet.absoluteFillObject}
+            region={{ ...pickupCoords, latitudeDelta: 0.025, longitudeDelta: 0.025 }}
+            markers={markers}
+            routeCoordinates={routeCoordinates}
+            fitToMarkers={markers.length >= 2}
+          />
+        </View>
 
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          style={styles.formSection}
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={styles.pickupRow}>
-            <View style={styles.pickupInput}>
-              <Input
+            <View style={[styles.pickupInput, { zIndex: 2 }]}>
+              <AddressAutocompleteField
                 label="Pickup"
                 value={pickup}
                 onChangeText={setPickup}
+                onFocus={() => setPickupFocused(true)}
+                onBlur={() => setTimeout(() => setPickupFocused(false), 150)}
                 placeholder="Enter pickup address"
                 hint={pickupHint ?? undefined}
                 multiline
                 numberOfLines={2}
                 textAlignVertical="top"
                 style={styles.addressInput}
+                suggestions={pickupAutocomplete.suggestions}
+                suggestionsLoading={pickupAutocomplete.loading}
+                suggestionsError={pickupAutocomplete.error}
+                showSuggestions={pickupFocused}
+                onSelectSuggestion={(suggestion) => void choosePickupSuggestion(suggestion)}
               />
             </View>
             <Pressable
@@ -349,19 +412,29 @@ export default function BookRideScreen() {
             </Pressable>
           </View>
 
-          <Input
+          <AddressAutocompleteField
             label={isDelivery ? "Drop-off address" : "Destination"}
             value={destination}
-            onChangeText={setDestination}
+            onChangeText={(value) => {
+              setDestination(value);
+              setDestSelected(false);
+            }}
+            onFocus={() => setDestinationFocused(true)}
+            onBlur={() => setTimeout(() => setDestinationFocused(false), 150)}
             placeholder="Type an address in Accra…"
+            suggestions={destinationAutocomplete.suggestions}
+            suggestionsLoading={destinationAutocomplete.loading}
+            suggestionsError={destinationAutocomplete.error}
+            showSuggestions={destinationFocused}
+            onSelectSuggestion={(suggestion) => void chooseDestinationSuggestion(suggestion)}
           />
 
           {isDelivery ? (
-            <>
+            <View style={styles.fieldStack}>
               <Input label="Recipient name" value={recipientName} onChangeText={setRecipientName} />
               <Input label="Recipient phone" value={recipientPhone} onChangeText={setRecipientPhone} keyboardType="phone-pad" />
               <Input label="Package details" value={packageDesc} onChangeText={setPackageDesc} placeholder="What's inside?" />
-            </>
+            </View>
           ) : estimate ? (
             <View style={styles.estimate}>
               <View style={styles.estimateStat}>
@@ -376,49 +449,51 @@ export default function BookRideScreen() {
             </View>
           ) : null}
 
-          <View>
-            <Text style={styles.sectionLabel}>Payment method</Text>
-            <View style={[styles.chipRow, { marginTop: spacing.sm }]}>
-              {PAYMENT_OPTIONS.map((option) => (
-                <Pressable
-                  key={option.id}
-                  style={[styles.chip, paymentMethod === option.id && styles.chipActive]}
-                  onPress={() => setPaymentMethod(option.id)}
-                >
-                  <Text style={[styles.chipText, paymentMethod === option.id && styles.chipTextActive]}>
-                    {option.label}
-                  </Text>
-                </Pressable>
-              ))}
+          <View style={styles.fieldStack}>
+            <View>
+              <Text style={styles.sectionLabel}>Payment method</Text>
+              <View style={[styles.chipRow, { marginTop: spacing.sm }]}>
+                {PAYMENT_OPTIONS.map((option) => (
+                  <Pressable
+                    key={option.id}
+                    style={[styles.chip, paymentMethod === option.id && styles.chipActive]}
+                    onPress={() => setPaymentMethod(option.id)}
+                  >
+                    <Text style={[styles.chipText, paymentMethod === option.id && styles.chipTextActive]}>
+                      {option.label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
             </View>
+
+            <Input
+              label="Promo code"
+              value={promoCode}
+              onChangeText={setPromoCode}
+              placeholder="Optional"
+              autoCapitalize="characters"
+            />
+            {promoMessage ? <Text style={styles.promoHint}>{promoMessage}</Text> : null}
+
+            {!isDelivery && estimate ? (
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                <Text style={styles.sectionLabel}>Estimated fare</Text>
+                <Text style={styles.estimateText}>
+                  {money(Math.max(0, estimatedFare - promoDiscount), zones[0]?.currency)}
+                </Text>
+              </View>
+            ) : null}
+
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+            <Button
+              label={isDelivery ? "Request delivery" : "Request ride"}
+              loading={loading}
+              onPress={submit}
+              fullWidth
+              disabled={!destination.trim() || pickupLocationLoading || pickupResolving}
+            />
           </View>
-
-          <Input
-            label="Promo code"
-            value={promoCode}
-            onChangeText={setPromoCode}
-            placeholder="Optional"
-            autoCapitalize="characters"
-          />
-          {promoMessage ? <Text style={styles.promoHint}>{promoMessage}</Text> : null}
-
-          {!isDelivery && estimate ? (
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-              <Text style={styles.sectionLabel}>Estimated fare</Text>
-              <Text style={styles.estimateText}>
-                {money(Math.max(0, estimatedFare - promoDiscount), zones[0]?.currency)}
-              </Text>
-            </View>
-          ) : null}
-
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-          <Button
-            label={isDelivery ? "Request delivery" : "Request ride"}
-            loading={loading}
-            onPress={submit}
-            fullWidth
-            disabled={!destination.trim() || pickupLocationLoading || pickupResolving}
-          />
         </ScrollView>
       </SafeAreaView>
     </>

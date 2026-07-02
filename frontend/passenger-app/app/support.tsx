@@ -87,7 +87,7 @@ export default function SupportScreen() {
       <Stack.Screen options={{ headerShown: true, title: "Support", ...stackHeaderOptions }} />
       <SafeAreaView style={styles.screen} edges={["bottom"]}>
         <ScrollView contentContainerStyle={styles.content}>
-          <Card>
+          <Card stacked>
             <Input label="Subject" value={title} onChangeText={setTitle} placeholder="Issue with my last ride" />
             <Input label="Category" value={category} onChangeText={setCategory} placeholder="GENERAL" />
             <Input
@@ -108,7 +108,7 @@ export default function SupportScreen() {
             <Text style={styles.meta}>No support tickets yet.</Text>
           ) : (
             tickets.map((ticket) => (
-              <Card key={ticket.id}>
+              <Card key={ticket.id} stacked>
                 <Text style={styles.title}>{ticket.title}</Text>
                 <Text style={styles.meta}>{ticket.category} · {compactDate(ticket.createdAt)}</Text>
                 <Text style={styles.status}>{ticket.status.replace(/_/g, " ").toLowerCase()}</Text>
