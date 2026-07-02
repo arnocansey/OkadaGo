@@ -26,7 +26,7 @@ import type {
 } from "./auth.schemas.js";
 import type { z } from "zod";
 import { hasSmsConfig, smsService } from "../notifications/sms.service.js";
-import { makeOtpCode, storeOtp, verifyStoredOtp } from "./otp-store.js";
+import { checkOtpRequestAllowed, makeOtpCode, storeOtp, verifyStoredOtp } from "./otp-store.js";
 
 type PassengerSignupInput = z.infer<typeof passengerSignupSchema>;
 type RiderSignupInput = z.infer<typeof riderSignupSchema>;
@@ -538,6 +538,18 @@ export class AuthService {
   }
 
   async requestPhoneOtp(input: OtpRequestInput) {
+    const decision = checkOtpRequestAllowed(input.phoneE164);
+    if (!decision.allowed) {
+      throw new AppError(
+        decision.reason === "cooldown"
+          ? "Please wait before requesting another verification code"
+          : "Too many verification code requests. Please try again later",
+        429,
+        decision.reason === "cooldown" ? "OTP_COOLDOWN" : "OTP_RATE_LIMITED",
+        { retryAfterSeconds: decision.retryAfterSeconds }
+      );
+    }
+
     const user = await prisma.user.findFirst({
       where: {
         phoneE164: input.phoneE164,
