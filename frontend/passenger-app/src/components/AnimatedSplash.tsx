@@ -18,8 +18,8 @@ type Props = {
 
 const BIKE_WIDTH = 168;
 const BIKE_HEIGHT = 94;
-const DRIVE_DURATION = 1500;
-const FADE_DURATION = 420;
+const DRIVE_DURATION = 2400;
+const FADE_DURATION = 500;
 
 /**
  * OkadaGo animated launch overlay.
@@ -52,13 +52,13 @@ export function AnimatedSplash({ onFinish }: Props) {
       Animated.sequence([
         Animated.timing(speed, {
           toValue: 1,
-          duration: 220,
+          duration: 350,
           easing: Easing.out(Easing.ease),
           useNativeDriver: true,
         }),
         Animated.timing(speed, {
           toValue: 0,
-          duration: 220,
+          duration: 350,
           easing: Easing.in(Easing.ease),
           useNativeDriver: true,
         }),
@@ -69,7 +69,7 @@ export function AnimatedSplash({ onFinish }: Props) {
     const animation = Animated.sequence([
       Animated.timing(brand, {
         toValue: 1,
-        duration: 380,
+        duration: 600,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
@@ -94,7 +94,7 @@ export function AnimatedSplash({ onFinish }: Props) {
 
     // Safety net: guarantee the app is revealed even if the animation is
     // interrupted (e.g. app backgrounded mid-launch).
-    const timeout = setTimeout(finish, DRIVE_DURATION + FADE_DURATION + 900);
+    const timeout = setTimeout(finish, DRIVE_DURATION + FADE_DURATION + 1200);
 
     return () => {
       clearTimeout(timeout);

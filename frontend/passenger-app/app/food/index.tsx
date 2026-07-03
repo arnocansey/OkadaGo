@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Image,
   Pressable,
   RefreshControl,
   StyleSheet,
@@ -14,6 +15,7 @@ import { MapPin, Star } from "lucide-react-native";
 import { FOOD_CATEGORIES } from "@/data/foodCatalog";
 import { useNearbyRestaurants } from "@/hooks/useNearbyRestaurants";
 import { useTheme } from "@/context/ThemeContext";
+import { photoUrl } from "@/services/googlePlaces";
 import { formatDistanceKm } from "@/lib/geo";
 import { radius, spacing } from "@/theme/tokens";
 
@@ -53,8 +55,8 @@ export default function FoodHomeScreen() {
           borderColor: colors.primary,
         },
         categoryEmoji: { fontSize: 14 },
-        categoryLabel: { ...typography.captionMedium, color: colors.text },
-        categoryLabelActive: { color: colors.textOnPrimary },
+        categoryLabel: { ...typography.captionMedium, color: "#1C1C1E" },
+        categoryLabelActive: { color: "#1C1C1E" },
         statusRow: {
           flexDirection: "row",
           alignItems: "center",
@@ -95,7 +97,9 @@ export default function FoodHomeScreen() {
           borderColor: colors.border,
           marginBottom: spacing.md,
         },
-        thumb: { width: 64, height: 64, borderRadius: radius.md, alignItems: "center", justifyContent: "center" },
+        thumb: { width: 64, height: 64, borderRadius: radius.md, overflow: "hidden", alignItems: "center", justifyContent: "center" },
+        thumbImg: { width: 64, height: 64, borderRadius: radius.md },
+        thumbFallback: { width: 64, height: 64, borderRadius: radius.md, alignItems: "center", justifyContent: "center" },
         thumbText: { ...typography.h2, color: colors.text },
         cardBody: { flex: 1, gap: 2 },
         name: { ...typography.bodySemibold, color: colors.text },
@@ -196,9 +200,15 @@ export default function FoodHomeScreen() {
           }
           renderItem={({ item }) => (
             <Pressable style={styles.card} onPress={() => router.push(`/food/${item.id}`)}>
-              <View style={[styles.thumb, { backgroundColor: item.color }]}>
-                <Text style={styles.thumbText}>{item.name[0]}</Text>
-              </View>
+              {item.photoReference ? (
+                <View style={styles.thumb}>
+                  <Image source={{ uri: photoUrl(item.photoReference, 200) }} style={styles.thumbImg} />
+                </View>
+              ) : (
+                <View style={[styles.thumbFallback, { backgroundColor: item.color }]}>
+                  <Text style={styles.thumbText}>{item.name[0]}</Text>
+                </View>
+              )}
               <View style={styles.cardBody}>
                 <Text style={styles.name}>{item.name}</Text>
                 <Text style={styles.cuisine}>{item.cuisine}</Text>

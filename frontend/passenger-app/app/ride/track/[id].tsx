@@ -1,9 +1,16 @@
 import { Stack, useLocalSearchParams } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Linking, Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import * as Haptics from "expo-haptics";
 import { Phone, ShieldAlert, Share2, Star } from "lucide-react-native";
 import { AppMap } from "@/components/AppMap";
-import { TripTimeline, stepIndexForStatus, RIDE_STEPS, DELIVERY_STEPS } from "@/components/TripTimeline";
+import {
+  TripTimeline,
+  stepIndexForStatus,
+  RIDE_STEPS,
+  DELIVERY_STEPS,
+  type StepDetail,
+} from "@/components/TripTimeline";
 import { Badge, statusTone } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -24,10 +31,39 @@ type SafetyOverview = {
   contacts?: Array<{ id: string; name: string; phoneE164: string; isPrimary?: boolean }>;
 };
 
+function formatTime(iso?: string | null): string {
+  if (!iso) return "";
+  try {
+    const d = new Date(iso);
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  } catch {
+    return "";
+  }
+}
+
+const RIDE_SUB_LABELS: Record<string, { searching: string; assigned: string; arriving: string; started: string; completed: string }> = {
+  searching: { searching: "Looking for nearby riders...", assigned: "", arriving: "", started: "", completed: "" },
+  assigned: { searching: "Rider found!", assigned: "Rider is preparing to head your way", arriving: "", started: "", completed: "" },
+  arriving: { searching: "", assigned: "", arriving: "Head to your pickup point", started: "", completed: "" },
+  started: { searching: "", assigned: "", arriving: "", started: "Enjoy the ride!", completed: "" },
+  completed: { searching: "", assigned: "", arriving: "", started: "Trip finished", completed: "Thank you for riding with OkadaGo" },
+};
+
+const DELIVERY_SUB_LABELS: Record<string, Record<string, string>> = {
+  searching: { searching: "Looking for a courier nearby...", assigned: "", picked_up: "", in_transit: "", delivered: "" },
+  assigned: { searching: "Courier found!", assigned: "Courier is heading to pickup", picked_up: "", in_transit: "", delivered: "" },
+  picked_up: { searching: "", assigned: "", picked_up: "Package collected, heading your way", in_transit: "", delivered: "" },
+  in_transit: { searching: "", assigned: "", picked_up: "", in_transit: "Courier is on the way", delivered: "" },
+  delivered: { searching: "", assigned: "", picked_up: "", in_transit: "", delivered: "Package delivered successfully" },
+};
+
 export default function TrackScreen() {
   const { id, kind } = useLocalSearchParams<{ id: string; kind?: string }>();
   const { session, rides, deliveries, refresh } = useApp();
   const { colors, typography, stackHeaderOptions } = useTheme();
+  const prevIndexRef = useRef<number>(-1);
+  const [stepTimestamps, setStepTimestamps] = useState<Record<number, string>>({});
+
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -68,9 +104,24 @@ export default function TrackScreen() {
         stars: { flexDirection: "row", gap: spacing.sm },
         starBtn: { padding: spacing.xs },
         wsStatus: { ...typography.caption, color: colors.textMuted, textAlign: "center" },
+        expandRiderRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
+        expandRiderAvatar: {
+          width: 36,
+          height: 36,
+          borderRadius: 18,
+          backgroundColor: colors.primaryLight,
+          alignItems: "center",
+          justifyContent: "center",
+          borderWidth: 1,
+          borderColor: colors.primary,
+        },
+        expandRiderInitial: { ...typography.bodyMedium, color: colors.primary },
+        expandRiderName: { ...typography.bodyMedium, color: colors.text },
+        expandRiderPlate: { ...typography.caption, color: colors.textSecondary },
       }),
     [colors, typography],
   );
+
   const isRide = kind !== "delivery";
   const trip = isRide ? rides.find((r) => r.id === id) : deliveries.find((d) => d.id === id);
   const [cancelling, setCancelling] = useState(false);
@@ -112,6 +163,106 @@ export default function TrackScreen() {
     Boolean(trip) && isActiveTrip && Boolean(trip?.rider),
   );
 
+  const steps = isRide ? RIDE_STEPS : DELIVERY_STEPS;
+  const currentIndex = stepIndexForStatus(status, isRide ? "ride" : "delivery");
+
+  useEffect(() => {
+    if (prevIndexRef.current === -1) {
+      prevIndexRef.current = currentIndex;
+      return;
+    }
+    if (currentIndex > prevIndexRef.current) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      setStepTimestamps((prev) => ({
+        ...prev,
+        [currentIndex]: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      }));
+    }
+    prevIndexRef.current = currentIndex;
+  }, [currentIndex]);
+
+  const subLabels = isRide ? RIDE_SUB_LABELS : DELIVERY_SUB_LABELS;
+  const currentStatusKey = status.toLowerCase();
+
+  const stepDetails: StepDetail[] = useMemo(() => {
+    const riderName = trip?.rider?.user?.fullName;
+    const plateNumber = isRide
+      ? (trip as (typeof rides)[0])?.rider?.vehicle?.plateNumber
+      : (trip as (typeof deliveries)[0])?.rider?.vehicle?.plateNumber;
+    const createdAt = trip?.createdAt;
+    const completedAt = isRide
+      ? (trip as (typeof rides)[0])?.completedAt
+      : (trip as (typeof deliveries)[0])?.completedAt;
+
+    return steps.map((step, index) => {
+      const done = index < currentIndex;
+      const active = index === currentIndex;
+      const statusMap = subLabels[currentStatusKey] ?? subLabels.searching ?? {};
+      const sub = (statusMap as Record<string, string>)[step.key] ?? "";
+
+      let etaText: string | undefined;
+      if (active && livePreview && (step.key === "arriving" || step.key === "started" || step.key === "in_transit")) {
+        etaText = `~${Math.round(livePreview.durationMinutes)} min · ${livePreview.distanceKm.toFixed(1)} km`;
+      }
+
+      let timestamp: string | undefined;
+      if (done) {
+        if (index === 0 && createdAt) {
+          timestamp = formatTime(createdAt);
+        } else if (index === steps.length - 1 && completedAt) {
+          timestamp = formatTime(completedAt);
+        } else if (stepTimestamps[index]) {
+          timestamp = stepTimestamps[index];
+        }
+      }
+
+      let expandContent: React.ReactNode | undefined;
+      if (done || active) {
+        if (step.key === "assigned" || step.key === "arriving" || step.key === "started") {
+          if (riderName) {
+            expandContent = (
+              <View>
+                <View style={styles.expandRiderRow}>
+                  <View style={styles.expandRiderAvatar}>
+                    <Text style={styles.expandRiderInitial}>{riderName[0]}</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.expandRiderName}>{riderName}</Text>
+                    {plateNumber ? <Text style={styles.expandRiderPlate}>{plateNumber}</Text> : null}
+                  </View>
+                  {riderPhone ? (
+                    <Pressable onPress={() => Linking.openURL(`tel:${riderPhone}`)}>
+                      <Phone size={18} color={colors.primary} />
+                    </Pressable>
+                  ) : null}
+                </View>
+              </View>
+            );
+          }
+        }
+        if (step.key === "completed" || step.key === "delivered") {
+          expandContent = (
+            <View>
+              <Text style={[styles.label, { marginBottom: 4 }]}>
+                {isRide ? "Trip completed" : "Delivery completed"}
+              </Text>
+              <Text style={styles.address}>
+                {money(
+                  isRide
+                    ? (trip as (typeof rides)[0])?.finalFare ?? (trip as (typeof rides)[0])?.estimatedFare
+                    : (trip as (typeof deliveries)[0])?.finalFee ?? (trip as (typeof deliveries)[0])?.estimatedFee,
+                  trip?.currency,
+                )}
+              </Text>
+            </View>
+          );
+        }
+      }
+
+      return { subLabel: sub || undefined, etaText, timestamp, expandContent };
+    });
+  }, [currentIndex, steps, subLabels, currentStatusKey, livePreview, stepTimestamps, trip, isRide, colors]);
+
   if (!trip) {
     return (
       <View style={styles.screen}>
@@ -120,8 +271,6 @@ export default function TrackScreen() {
     );
   }
 
-  const steps = isRide ? RIDE_STEPS : DELIVERY_STEPS;
-  const currentIndex = stepIndexForStatus(status, isRide ? "ride" : "delivery");
   const canCancel = ACTIVE_STATUSES.slice(0, 2).includes(status.toLowerCase());
   const canRate = isRide && status.toLowerCase() === "completed";
   const showReceipt = isRide ? status.toLowerCase() === "completed" : status.toLowerCase() === "delivered";
@@ -240,7 +389,7 @@ export default function TrackScreen() {
 
           <Card>
             <Text style={styles.section}>Timeline</Text>
-            <TripTimeline steps={steps} currentIndex={currentIndex} />
+            <TripTimeline steps={steps} currentIndex={currentIndex} stepDetails={stepDetails} />
           </Card>
 
           {trip.rider?.user?.fullName ? (

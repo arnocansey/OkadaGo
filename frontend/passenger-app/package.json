@@ -44,7 +44,7 @@
     "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
-    "typescript": "~5.9.2",
-    "cross-env": "^7.0.3"
+    "cross-env": "^7.0.3",
+    "typescript": "~5.9.2"
   }
 }
