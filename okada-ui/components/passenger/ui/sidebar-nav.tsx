@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Clock, Home, User, Wallet } from "lucide-react";
+import { Clock, Home, LogOut, User, Wallet } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { usePassengerSignOut } from "@/components/passenger/hooks/use-passenger-sign-out";
 import { initials } from "@/components/passenger/types";
 
 const links = [
@@ -16,6 +17,7 @@ const links = [
 export function PassengerSidebar() {
   const pathname = usePathname();
   const { session } = useAuth();
+  const passengerSignOut = usePassengerSignOut();
 
   return (
     <aside className="pax-sidebar" aria-label="Passenger navigation">
@@ -45,12 +47,22 @@ export function PassengerSidebar() {
       </nav>
 
       {session ? (
-        <div className="pax-sidebar-user">
-          <div className="pax-sidebar-avatar">{initials(session.user.fullName)}</div>
-          <div>
-            <div className="pax-sidebar-user-name">{session.user.fullName}</div>
-            <div className="pax-sidebar-user-phone">{session.user.phoneE164}</div>
+        <div className="pax-sidebar-footer">
+          <div className="pax-sidebar-user">
+            <div className="pax-sidebar-avatar">{initials(session.user.fullName)}</div>
+            <div>
+              <div className="pax-sidebar-user-name">{session.user.fullName}</div>
+              <div className="pax-sidebar-user-phone">{session.user.phoneE164}</div>
+            </div>
           </div>
+          <button
+            type="button"
+            className="pax-sidebar-logout"
+            onClick={() => void passengerSignOut()}
+          >
+            <LogOut size={18} />
+            Log out
+          </button>
         </div>
       ) : null}
     </aside>

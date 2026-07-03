@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { patchJson, postJson } from "@/lib/api";
-import type { RiderRecord } from "../rider-portal-types";
+import { rdrToast } from "@/components/rider/lib/toast";
+import type { RiderRecord } from "@/components/rider/types";
 
 export function useRiderLocation({
   riderProfileId,
@@ -25,13 +26,8 @@ export function useRiderLocation({
   const displayIsOnline = !isDeficitLocked && isOnline;
 
   useEffect(() => {
-    if (!riderProfileId) {
-      return;
-    }
-
-    if (!(displayIsOnline || activeRide) || typeof navigator === "undefined" || !navigator.geolocation) {
-      return;
-    }
+    if (!riderProfileId) return;
+    if (!(displayIsOnline || activeRide) || typeof navigator === "undefined" || !navigator.geolocation) return;
 
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
@@ -62,44 +58,32 @@ export function useRiderLocation({
           });
         }
       },
-      () => {
-        // Live rider tracking should fail softly if browser location is unavailable.
-      },
-      {
-        enableHighAccuracy: true,
-        maximumAge: 5_000,
-        timeout: 10_000
-      }
+      () => {},
+      { enableHighAccuracy: true, maximumAge: 5_000, timeout: 10_000 }
     );
 
-    return () => {
-      navigator.geolocation.clearWatch(watchId);
-    };
+    return () => navigator.geolocation.clearWatch(watchId);
   }, [activeRide, displayIsOnline, riderProfileId]);
 
   const updateAvailability = useMutation({
     mutationFn: async (onlineStatus: boolean) =>
-      patchJson(`/riders/${riderProfileId}/availability`, {
-        onlineStatus
-      }),
+      patchJson(`/riders/${riderProfileId}/availability`, { onlineStatus }),
     onMutate: async (onlineStatus) => {
       setAvailabilityOverride(onlineStatus);
       await queryClient.cancelQueries({ queryKey: ["riders"] });
-
       const previousRiders = queryClient.getQueryData<RiderRecord[]>(["riders"]);
       queryClient.setQueryData<RiderRecord[]>(["riders"], (current = []) =>
-        current.map((entry) =>
-          entry.id === riderProfileId ? { ...entry, onlineStatus } : entry
-        )
+        current.map((entry) => (entry.id === riderProfileId ? { ...entry, onlineStatus } : entry))
       );
-
       return { previousRiders };
     },
-    onError: (_error, _variables, context) => {
-      if (context?.previousRiders) {
-        queryClient.setQueryData(["riders"], context.previousRiders);
-      }
+    onSuccess: (_data, onlineStatus) => {
+      rdrToast.success(onlineStatus ? "You are now online" : "You are now offline");
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previousRiders) queryClient.setQueryData(["riders"], context.previousRiders);
       setAvailabilityOverride(null);
+      rdrToast.error("Could not update availability", (error as Error).message);
     },
     onSettled: async () => {
       setAvailabilityOverride(null);
@@ -109,10 +93,7 @@ export function useRiderLocation({
 
   const advanceRideStatus = useMutation({
     mutationFn: async (nextStatus: string) => {
-      if (!activeRide || !userId) {
-        throw new Error("No active ride is available.");
-      }
-
+      if (!activeRide || !userId) throw new Error("No active ride is available.");
       return patchJson(`/rides/${activeRide.id}/status`, {
         nextStatus,
         actorRole: "rider",
@@ -120,8 +101,12 @@ export function useRiderLocation({
       });
     },
     onSuccess: async () => {
+      rdrToast.success("Trip updated");
       await queryClient.invalidateQueries({ queryKey: ["rides"] });
       await queryClient.invalidateQueries({ queryKey: ["wallets", userId] });
+    },
+    onError: (error) => {
+      rdrToast.error("Could not update trip", (error as Error).message);
     }
   });
 

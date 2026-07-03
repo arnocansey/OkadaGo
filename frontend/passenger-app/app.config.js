@@ -7,6 +7,25 @@ const projectId =
 const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || "https://okadago-backend.onrender.com/v1";
 const updatesEnabled = process.env.EXPO_USE_UPDATES === "1";
 
+const PLACEHOLDER_PATTERNS = [/^your-/i, /^<.*>$/, /will-be-overridden/i, /set in \.env/i];
+
+function resolveMapsKey(envName) {
+  const value = (process.env[envName] || "").trim();
+  const isPlaceholder = !value || PLACEHOLDER_PATTERNS.some((pattern) => pattern.test(value));
+
+  if (isPlaceholder && process.env.EAS_BUILD === "true") {
+    console.warn(
+      `[app.config] ${envName} is missing or a placeholder. Google Maps will be blank in this build. ` +
+        "Set the key as an EAS secret for the production environment, or provide a real value in .env.",
+    );
+  }
+
+  return isPlaceholder ? "" : value;
+}
+
+const androidMapsApiKey = resolveMapsKey("EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_API_KEY");
+const iosMapsApiKey = resolveMapsKey("EXPO_PUBLIC_GOOGLE_MAPS_IOS_API_KEY");
+
 module.exports = {
   ...appJson.expo,
   android: {
@@ -14,7 +33,7 @@ module.exports = {
     config: {
       ...(appJson.expo.android?.config || {}),
       googleMaps: {
-        apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_API_KEY || "",
+        apiKey: androidMapsApiKey,
       },
     },
   },
@@ -22,7 +41,7 @@ module.exports = {
     ...appJson.expo.ios,
     config: {
       ...(appJson.expo.ios?.config || {}),
-      googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_IOS_API_KEY || "",
+      googleMapsApiKey: iosMapsApiKey,
     },
   },
   runtimeVersion: {

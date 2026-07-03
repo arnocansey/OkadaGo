@@ -1,9 +1,10 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import * as Updates from "expo-updates";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { AnimatedSplash } from "@/components/AnimatedSplash";
 import { AppProvider } from "@/context/AppContext";
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 
@@ -11,6 +12,7 @@ SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 function RootNavigator() {
   const { isDark, stackHeaderOptions, ready } = useTheme();
+  const [splashDone, setSplashDone] = useState(false);
 
   if (!ready) {
     return null;
@@ -20,6 +22,7 @@ function RootNavigator() {
     <>
       <StatusBar style={isDark ? "light" : "dark"} />
       <Stack screenOptions={{ headerShown: false, ...stackHeaderOptions }} />
+      {!splashDone ? <AnimatedSplash onFinish={() => setSplashDone(true)} /> : null}
     </>
   );
 }

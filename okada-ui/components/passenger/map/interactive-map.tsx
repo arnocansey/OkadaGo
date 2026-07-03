@@ -90,14 +90,14 @@ function MapController({
 }
 
 function PaxMarker({ kind }: { kind: MapMarker["kind"] }) {
-  return <div className={`pax-marker-dot pax-marker-dot--${kind}`} />;
+  return <div className={`pax-marker-dot rdr-marker-dot pax-marker-dot--${kind} rdr-marker-dot--${kind}`} />;
 }
 
 function UserLocationPin() {
   return (
-    <div className="pax-user-location" aria-hidden>
-      <span className="pax-user-location-pulse" />
-      <span className="pax-user-location-dot" />
+    <div className="pax-user-location rdr-user-location" aria-hidden>
+      <span className="pax-user-location-pulse rdr-user-location-pulse" />
+      <span className="pax-user-location-dot rdr-user-location-dot" />
     </div>
   );
 }
@@ -142,7 +142,7 @@ function GoogleInteractiveMap({
 
   return (
     <Map
-      className="pax-google-map"
+      className="pax-google-map rdr-google-map"
       defaultCenter={mapCenter}
       defaultZoom={zoom}
       gestureHandling="greedy"
@@ -216,9 +216,9 @@ function PaxMapMarker({ marker }: { marker: MapMarker }) {
 
 function MapUnavailable() {
   return (
-    <div className="pax-map-unavailable">
+    <div className="pax-map-unavailable rdr-map-unavailable">
       <p className="text-sm font-medium">Map unavailable</p>
-      <p className="mt-1 text-xs pax-text-secondary">
+      <p className="mt-1 text-xs pax-text-secondary rdr-text-secondary">
         Add <code className="text-[11px]">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> to enable Google Maps.
       </p>
     </div>
@@ -228,14 +228,14 @@ function MapUnavailable() {
 export function InteractiveMap(props: InteractiveMapProps) {
   if (!hasGoogleMapsKey()) {
     return (
-      <div className="pax-map-root">
+      <div className="pax-map-root rdr-map-root">
         <MapUnavailable />
       </div>
     );
   }
 
   return (
-    <div className="pax-map-root">
+    <div className="pax-map-root rdr-map-root">
       <GoogleInteractiveMap {...props} />
     </div>
   );

@@ -1,9 +1,9 @@
-import { RiderPortalPage } from "@/components/rider/rider-portal-page";
+import { DashboardView } from "@/components/rider/pages/dashboard-view";
 
 export const metadata = {
-  title: "Rider Flow | OkadaGo"
+  title: "OkadaGo | Rider Drive"
 };
 
-export default function RiderPage() {
-  return <RiderPortalPage screen="dashboard" />;
+export default function RiderHomePage() {
+  return <DashboardView />;
 }

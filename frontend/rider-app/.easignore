@@ -1,4 +1,6 @@
-﻿# Custom easignore: do not exclude .env (root .gitignore would omit it)
+﻿# Custom .easignore for EAS Build (used instead of .gitignore when EAS_NO_VCS=1).
+# The repo-root .gitignore ignores `.env`/`.env.*`, so without this file EAS would
+# NOT upload the local .env and app.config.js would read empty Google Maps keys.
 node_modules/
 .git/
 **/.expo/
@@ -9,3 +11,9 @@ ios/
 frontend/.gradle-home/
 **/.gradle-home/
 .gradle/
+
+# Explicitly upload .env so app.config.js can resolve Google Maps keys at build time.
+# (Keep this: do NOT let any ignore rule drop the local .env.)
+!.env
+!.env.production
+!.env.local

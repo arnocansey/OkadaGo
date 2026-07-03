@@ -11,7 +11,11 @@ const nextConfig: NextConfig = {
       { source: "/passenger/dashboard", destination: "/passenger", permanent: true },
       { source: "/passenger/saved-places", destination: "/passenger/places", permanent: true },
       { source: "/passenger/payment-methods", destination: "/passenger/payments", permanent: true },
-      { source: "/passenger/emergency-contacts", destination: "/passenger/safety", permanent: true }
+      { source: "/passenger/emergency-contacts", destination: "/passenger/safety", permanent: true },
+      { source: "/rider/dashboard", destination: "/rider", permanent: true },
+      { source: "/rider/drive", destination: "/rider", permanent: true },
+      { source: "/rider/home", destination: "/rider", permanent: true },
+      { source: "/rider/history", destination: "/rider/trips", permanent: true }
     ];
   }
 };

@@ -1,10 +1,17 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import MapViewBase, { Marker, Polyline, PROVIDER_GOOGLE, type Region } from "react-native-maps";
-import { Pressable, StyleSheet, View } from "react-native";
-import { Crosshair } from "lucide-react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Crosshair, MapPin } from "lucide-react-native";
 import { useTheme } from "@/context/ThemeContext";
+import {
+  getGoogleMapsApiKey,
+  GOOGLE_MAPS_SETUP_HINT,
+  isGoogleMapsApiKeyConfigured,
+} from "@/lib/googleMapsConfig";
 import { mapDarkStyle } from "@/theme/mapStyle";
 import { ACCRA_REGION, radius, shadows, spacing } from "@/theme/tokens";
+
+const MAP_LOAD_TIMEOUT_MS = 8000;
 
 type MapMarker = {
   id: string;
@@ -26,6 +33,18 @@ type Props = {
   children?: React.ReactNode;
 };
 
+function MapUnavailable({ title, detail }: { title: string; detail: string }) {
+  const { colors } = useTheme();
+
+  return (
+    <View style={[styles.unavailable, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      <MapPin size={28} color={colors.textMuted} />
+      <Text style={[styles.unavailableTitle, { color: colors.text }]}>{title}</Text>
+      <Text style={[styles.unavailableDetail, { color: colors.textMuted }]}>{detail}</Text>
+    </View>
+  );
+}
+
 export function AppMap({
   region = ACCRA_REGION,
   markers = [],
@@ -39,11 +58,39 @@ export function AppMap({
 }: Props) {
   const mapRef = useRef<MapViewBase>(null);
   const didAutoCenter = useRef(false);
+  const loadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { colors, isDark } = useTheme();
+  const mapsApiKey = getGoogleMapsApiKey();
+  const hasConfiguredKey = isGoogleMapsApiKeyConfigured(mapsApiKey);
+  const [mapStatus, setMapStatus] = useState<"loading" | "ready" | "failed">(
+    hasConfiguredKey ? "loading" : "failed",
+  );
+
+  const clearLoadTimeout = useCallback(() => {
+    if (loadTimeoutRef.current) {
+      clearTimeout(loadTimeoutRef.current);
+      loadTimeoutRef.current = null;
+    }
+  }, []);
+
+  const handleMapReady = useCallback(() => {
+    clearLoadTimeout();
+    setMapStatus("ready");
+  }, [clearLoadTimeout]);
 
   const centerOnRegion = useCallback(() => {
     mapRef.current?.animateToRegion(region, 450);
   }, [region]);
+
+  useEffect(() => {
+    if (!hasConfiguredKey) return;
+
+    loadTimeoutRef.current = setTimeout(() => {
+      setMapStatus((current) => (current === "loading" ? "failed" : current));
+    }, MAP_LOAD_TIMEOUT_MS);
+
+    return clearLoadTimeout;
+  }, [clearLoadTimeout, hasConfiguredKey]);
 
   useEffect(() => {
     if (!fitToMarkers) return;
@@ -70,6 +117,28 @@ export function AppMap({
     didAutoCenter.current = true;
   }, [autoCenterOnLocation, region.latitude, region.longitude, region.latitudeDelta, region.longitudeDelta]);
 
+  if (!hasConfiguredKey) {
+    return (
+      <View style={[styles.wrap, style]}>
+        <MapUnavailable
+          title="Map unavailable"
+          detail={`Google Maps API key is missing in this build. ${GOOGLE_MAPS_SETUP_HINT}`}
+        />
+      </View>
+    );
+  }
+
+  if (mapStatus === "failed") {
+    return (
+      <View style={[styles.wrap, style]}>
+        <MapUnavailable
+          title="Map failed to load"
+          detail={`Google Maps could not initialize. Confirm Maps SDK for Android is enabled, the release SHA-1 is registered in Google Cloud Console, and billing is active. ${GOOGLE_MAPS_SETUP_HINT}`}
+        />
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.wrap, style]}>
       <MapViewBase
@@ -80,6 +149,7 @@ export function AppMap({
         customMapStyle={isDark ? mapDarkStyle : undefined}
         showsUserLocation
         showsMyLocationButton={false}
+        onMapReady={handleMapReady}
       >
         {routeCoordinates?.length ? (
           <Polyline coordinates={routeCoordinates} strokeColor={colors.mapRoute} strokeWidth={4} />
@@ -121,6 +191,24 @@ export function AppMap({
 
 const styles = StyleSheet.create({
   wrap: { flex: 1, overflow: "hidden" },
+  unavailable: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: spacing.xl,
+    borderWidth: 1,
+    gap: spacing.sm,
+  },
+  unavailableTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  unavailableDetail: {
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: "center",
+  },
   centerButton: {
     position: "absolute",
     width: 44,

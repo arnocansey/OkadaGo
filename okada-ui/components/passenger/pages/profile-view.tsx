@@ -16,6 +16,7 @@ import {
 import { requestJson } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { formatMoney } from "@/lib/currency";
+import { usePassengerSignOut } from "@/components/passenger/hooks/use-passenger-sign-out";
 import { PassengerAppFrame } from "@/components/passenger/layout/app-frame";
 import { paxToast } from "@/components/passenger/lib/toast";
 import { ProfileSkeleton } from "@/components/passenger/ui/skeletons";
@@ -90,7 +91,8 @@ function ListItem({
 }
 
 export function ProfileView() {
-  const { session, signOut, setSession } = useAuth();
+  const { session, setSession } = useAuth();
+  const passengerSignOut = usePassengerSignOut();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ fullName: "", email: "", defaultServiceCity: "", preferredPayment: "cash" });
@@ -254,7 +256,7 @@ export function ProfileView() {
           </ListSection>
 
           <ListSection title="App">
-            <ListItem icon={LogOut} title="Log out" danger onClick={() => void signOut()} />
+            <ListItem icon={LogOut} title="Log out" danger onClick={() => void passengerSignOut()} />
           </ListSection>
             </>
           )}

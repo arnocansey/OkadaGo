@@ -12,6 +12,10 @@ export type RideRecord = {
   status: string;
   pickupAddress: string;
   destinationAddress: string;
+  pickupLatitude?: string | number | null;
+  pickupLongitude?: string | number | null;
+  destinationLatitude?: string | number | null;
+  destinationLongitude?: string | number | null;
   estimatedFare: string | number | null;
   finalFare: string | number | null;
   currency: string;
@@ -19,6 +23,7 @@ export type RideRecord = {
   passenger: {
     user: {
       fullName: string;
+      phoneE164?: string;
     };
   };
 };
@@ -47,15 +52,20 @@ export type RiderRecord = {
   };
 };
 
+export type RiderSettings = {
+  fullName: string;
+  email: string | null;
+  phoneE164: string;
+  city: string | null;
+  approvalStatus?: string | null;
+};
+
 export type SettlementPreviewResponse = {
   currency: "GHS" | "NGN";
   paymentMethod: "cash" | "card" | "wallet" | "mobile_money";
   riderNetSettlement: number;
   platformNetRevenue: number;
-  lineItems: Array<{
-    label: string;
-    amount: number;
-  }>;
+  lineItems: Array<{ label: string; amount: number }>;
 };
 
 export type PayoutEligibilityResponse = {
@@ -78,7 +88,12 @@ export type RiderPayoutRequestRecord = {
   paidAt: string | null;
 };
 
-export type RiderPortalScreen = "dashboard" | "earnings" | "trips";
+export const ACTIVE_RIDE_STATUSES = new Set(["assigned", "arriving", "arrived", "started"]);
+
+export const riderDeficitWarningThreshold = 100;
+export const riderDeficitOfflineThreshold = 200;
+
+export const ACCRA_CENTER: [number, number] = [5.6037, -0.187];
 
 export function parseNumber(value: string | number | null | undefined) {
   if (typeof value === "number") return value;
@@ -86,12 +101,13 @@ export function parseNumber(value: string | number | null | undefined) {
   return 0;
 }
 
+export function parseCoord(value: string | number | null | undefined) {
+  return parseNumber(value);
+}
+
 export function roundCurrency(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
-
-export const riderDeficitWarningThreshold = 100;
-export const riderDeficitOfflineThreshold = 200;
 
 export function formatStatus(status: string) {
   return status
@@ -102,14 +118,18 @@ export function formatStatus(status: string) {
 
 export function formatDateTime(value: string) {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "Unknown time";
-  }
+  if (Number.isNaN(date.getTime())) return "Unknown time";
+  return new Intl.DateTimeFormat("en-GH", { dateStyle: "medium", timeStyle: "short" }).format(date);
+}
 
-  return new Intl.DateTimeFormat("en-GH", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(date);
+export function initials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
 }
 
 export function getNextAction(activeRide: { status: string } | null) {

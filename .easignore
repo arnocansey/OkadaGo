@@ -15,3 +15,8 @@ frontend/okadago-ui-mobile/
 frontend/.gradle-home/
 **/.gradle-home/
 .gradle/
+
+# Ensure mobile app .env files upload so app.config.js resolves Google Maps keys.
+# (Repo-root .gitignore ignores .env; EAS uses this .easignore instead under EAS_NO_VCS.)
+!frontend/passenger-app/.env
+!frontend/rider-app/.env

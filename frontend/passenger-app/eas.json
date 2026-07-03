@@ -16,8 +16,7 @@
       },
       "env": {
         "EXPO_USE_UPDATES": "1",
-        "EXPO_PUBLIC_API_BASE_URL": "https://okadago-backend.onrender.com/v1",
-        "EXPO_PUBLIC_GOOGLE_MAPS_IOS_API_KEY": "<will-be-overridden-by-eas-secret>"
+        "EXPO_PUBLIC_API_BASE_URL": "https://okadago-backend.onrender.com/v1"
       }
     },
     "preview": {
@@ -31,8 +30,7 @@
       },
       "env": {
         "EXPO_USE_UPDATES": "1",
-        "EXPO_PUBLIC_API_BASE_URL": "https://okadago-backend.onrender.com/v1",
-        "EXPO_PUBLIC_GOOGLE_MAPS_IOS_API_KEY": "<will-be-overridden-by-eas-secret>"
+        "EXPO_PUBLIC_API_BASE_URL": "https://okadago-backend.onrender.com/v1"
       }
     },
     "production": {
@@ -46,19 +44,13 @@
       },
       "env": {
         "EXPO_USE_UPDATES": "1",
-        "EXPO_PUBLIC_API_BASE_URL": "https://okadago-backend.onrender.com/v1",
-        "EXPO_PUBLIC_GOOGLE_MAPS_IOS_API_KEY": "<will-be-overridden-by-eas-secret>"
+        "EXPO_PUBLIC_API_BASE_URL": "https://okadago-backend.onrender.com/v1"
       }
     },
     "production-apk": {
       "extends": "production",
       "android": {
         "buildType": "apk"
-      },
-      "env": {
-        "EXPO_USE_UPDATES": "1",
-        "EXPO_PUBLIC_API_BASE_URL": "https://okadago-backend.onrender.com/v1",
-        "EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_API_KEY": "<set in .env or EAS secret; .env uploads via .easignore>"
       }
     }
   },
