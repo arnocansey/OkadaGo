@@ -1,7 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import {
-  type AdminConsoleScreen
-} from "@/components/dashboard/admin-console-page";
+import type { AdminConsoleScreen } from "@/components/dashboard/admin/types";
 import AdminScreenClient from "./admin-screen-client";
 
 export default async function AdminScreenPage({
@@ -10,10 +8,13 @@ export default async function AdminScreenPage({
   params: Promise<{ screen: string }>;
 }) {
   const { screen } = await params;
+  
   const screenAliases: Record<string, AdminConsoleScreen> = {
     "request-dashboard": "rides",
     requests: "rides",
     rides: "rides",
+    deliveries: "deliveries",
+    "delivery-orders": "deliveries",
     riders: "riders",
     "rider-verification": "riderVerification",
     "rider-documents": "riderDocuments",
@@ -38,10 +39,20 @@ export default async function AdminScreenPage({
     support: "supportTickets",
     settings: "settings",
     locations: "settings",
-    admins: "admins"
+    admins: "admins",
+    zones: "zones",
+    "zone-management": "zones",
+    notifications: "notifications",
+    broadcasts: "notifications",
+    reports: "reports",
+    analytics: "reports",
+    "audit-logs": "auditLogs",
+    audit: "auditLogs"
   };
+
   const canonicalPaths: Partial<Record<AdminConsoleScreen, string>> = {
     rides: "/admin/requests",
+    deliveries: "/admin/deliveries",
     passengers: "/admin/users",
     riderVerification: "/admin/riders/verification",
     riderDocuments: "/admin/riders/documents",
@@ -54,8 +65,13 @@ export default async function AdminScreenPage({
     riderSuspensions: "/admin/riders/suspensions",
     payments: "/admin/finance",
     ratings: "/admin/reports-analytics",
-    supportTickets: "/admin/support-tickets"
+    supportTickets: "/admin/support-tickets",
+    zones: "/admin/zones",
+    notifications: "/admin/notifications",
+    reports: "/admin/reports",
+    auditLogs: "/admin/audit-logs"
   };
+
   const resolvedScreen = screenAliases[screen];
 
   if (!resolvedScreen) {

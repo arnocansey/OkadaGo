@@ -12,10 +12,20 @@ import {
   adminPayoutReviewSchema,
   adminWalletTransactionsQuerySchema
 } from "../wallets/wallet.schemas.js";
+import { AdminRiderService } from "./admin.service.js";
+import {
+  riderApprovalParamsSchema,
+  riderApprovalSchema,
+  riderSuspensionParamsSchema,
+  riderSuspensionSchema
+} from "./admin.schemas.js";
+
+import { prisma } from "../../common/prisma.js";
 
 const authService = new AuthService();
 const walletService = new WalletService();
 const ratingService = new RatingService();
+const adminRiderService = new AdminRiderService();
 
 function extractBearerToken(authorizationHeader?: string) {
   if (!authorizationHeader?.startsWith("Bearer ")) {
@@ -96,6 +106,19 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
     };
   });
 
+  server.get("/admin/audit-logs", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    await authService.listAdmins(token);
+    const query = request.query as { limit?: number; offset?: number };
+    const logs = await prisma.auditLog.findMany({
+      orderBy: { createdAt: "desc" },
+      take: query?.limit ?? 50,
+      skip: query?.offset ?? 0,
+      include: { actor: { select: { id: true, fullName: true, email: true } } }
+    });
+    return logs;
+  });
+
   server.get("/admin/payments/wallet-transactions", async (request) => {
     const token = extractBearerToken(request.headers.authorization);
     const query = parseQuery(request, adminWalletTransactionsQuerySchema);
@@ -119,5 +142,25 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
     const token = extractBearerToken(request.headers.authorization);
     const query = parseQuery(request, adminRatingsQuerySchema);
     return ratingService.listAdminRatings(token, query);
+  });
+
+  server.get("/admin/riders", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const query = request.query as { status?: string; search?: string; limit?: number };
+    return adminRiderService.listRiders(token, query);
+  });
+
+  server.patch("/admin/riders/:riderProfileId/approval", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, riderApprovalParamsSchema);
+    const input = parseBody(request, riderApprovalSchema);
+    return adminRiderService.approveRider(token, params.riderProfileId, input);
+  });
+
+  server.patch("/admin/riders/:riderProfileId/suspension", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, riderSuspensionParamsSchema);
+    const input = parseBody(request, riderSuspensionSchema);
+    return adminRiderService.suspendRider(token, params.riderProfileId, input);
   });
 };

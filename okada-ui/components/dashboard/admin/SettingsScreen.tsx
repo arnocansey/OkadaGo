@@ -1,232 +1,731 @@
-"use client";
+import { useState, useMemo } from "react";
+import {
+  Settings as SettingsIcon,
+  Building2,
+  Shield,
+  Bell,
+  CreditCard,
+  FileText,
+  Plug,
+  ScrollText,
+  Globe,
+  Save,
+  RotateCcw,
+  HardDrive,
+  Key,
+  AlertTriangle,
+  ExternalLink,
+  Download,
+  Check,
+  X,
+  Pencil,
+  Lock,
+  Smartphone,
+  Mail,
+  MessageSquare,
+  Trash2,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import { useAdminToast } from "./AdminToast";
+import { useBreakpoint } from "../../../hooks/use-breakpoint";
+import { SkeletonForm } from "./AdminSkeleton";
+import type { ServiceZoneRecord, AdminAccountRecord } from "./types";
 
-import { UseQueryResult } from "@tanstack/react-query";
-import { formatMoney } from "@/lib/currency";
-import { EmptyCard } from "./EmptyCard";
-import type {
-  AdminAccountRecord,
-  AdminModulesRecord,
-  AdminPermissionsRecord,
-  ServiceZoneRecord
-} from "./types";
-
-function parseNumber(value: string | number | null | undefined) {
-  if (typeof value === "number") return value;
-  if (typeof value === "string" && value.trim() !== "") return Number(value);
-  return 0;
-}
-
-type SettingsScreenProps = {
-  screenMeta: { eyebrow: string; title: string; description: string };
+export type SettingsScreenProps = {
   zones: ServiceZoneRecord[];
+  adminAccounts: AdminAccountRecord[];
   adminRoleEntries: [string, string[]][];
   adminModules: string[];
-  rolePermissionSnapshot: [string, string[]][];
   adminCurrency: string;
-  adminAccountsQuery: UseQueryResult<AdminAccountRecord[], Error>;
-  adminPermissionsQuery: UseQueryResult<AdminPermissionsRecord, Error>;
-  adminModulesQuery: UseQueryResult<AdminModulesRecord, Error>;
+  dataLoading?: boolean;
+};
+
+type SectionKey =
+  | "general"
+  | "company"
+  | "security"
+  | "notifications"
+  | "payment"
+  | "taxes"
+  | "integrations"
+  | "audit";
+
+const SECTIONS: { key: SectionKey; label: string; icon: typeof SettingsIcon }[] = [
+  { key: "general", label: "General", icon: SettingsIcon },
+  { key: "company", label: "Company Profile", icon: Building2 },
+  { key: "security", label: "Account & Security", icon: Shield },
+  { key: "notifications", label: "Notifications", icon: Bell },
+  { key: "payment", label: "Payment Methods", icon: CreditCard },
+  { key: "taxes", label: "Taxes & Compliance", icon: FileText },
+  { key: "integrations", label: "Integrations", icon: Plug },
+  { key: "audit", label: "Audit Logs", icon: ScrollText },
+];
+
+const DARK = {
+  bg: "#0f1117",
+  surface: "#1a1d27",
+  surfaceAlt: "#222633",
+  border: "#2a2e3d",
+  text: "#e8eaf0",
+  textMuted: "#8b8fa3",
+  accent: "#6c5ce7",
+  accentHover: "#7e6ff0",
+  green: "#00c853",
+  greenBg: "#0f2e1a",
+  red: "#ff5252",
+  redBg: "#2e0f0f",
+  yellow: "#ffc107",
+  yellowBg: "#2e2a0f",
+  blue: "#448aff",
+  blueBg: "#0f1e2e",
+  input: "#161922",
+  inputBorder: "#2a2e3d",
+  navItem: "#1a1d27",
+  navActive: "#6c5ce7",
+  navHover: "#222633",
+  dangerZone: "#2e0f0f",
+  dangerBorder: "#5c1a1a",
+} as const;
+
+const s = (overrides: Record<string, string | number>) =>
+  ({
+    ...DARK,
+    ...overrides,
+  }) as React.CSSProperties;
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "10px 14px",
+  borderRadius: 10,
+  border: `1px solid ${DARK.inputBorder}`,
+  background: DARK.input,
+  color: DARK.text,
+  fontSize: 13,
+  outline: "none",
+  transition: "border-color 0.2s",
+  boxSizing: "border-box",
+};
+
+const labelStyle: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 6,
+  fontSize: 12,
+  color: DARK.textMuted,
+  fontWeight: 500,
+};
+
+const cardStyle: React.CSSProperties = {
+  background: DARK.surface,
+  borderRadius: 14,
+  border: `1px solid ${DARK.border}`,
+  padding: 20,
+};
+
+const btnBase: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "9px 18px",
+  borderRadius: 10,
+  border: "none",
+  fontSize: 13,
+  fontWeight: 600,
+  cursor: "pointer",
+  transition: "all 0.15s",
 };
 
 export function SettingsScreen({
-  screenMeta,
   zones,
+  adminAccounts,
   adminRoleEntries,
   adminModules,
-  rolePermissionSnapshot,
   adminCurrency,
-  adminAccountsQuery,
-  adminPermissionsQuery,
-  adminModulesQuery
+  dataLoading = false,
 }: SettingsScreenProps) {
-  return (
-    <>
-      <section className="exact-admin-section">
-        <div className="exact-admin-heading">
-          <p className="exact-admin-eyebrow">{screenMeta.eyebrow}</p>
-          <h1>{screenMeta.title}</h1>
-          <p>{screenMeta.description}</p>
-        </div>
+  const { addToast } = useAdminToast();
+  const { isMobile, isTablet } = useBreakpoint();
+  const [activeSection, setActiveSection] = useState<SectionKey>("general");
+  const [formValues, setFormValues] = useState<Record<string, string>>({
+    platformName: "OkadaGo",
+    currency: adminCurrency,
+    timezone: "Africa/Accra",
+    dateFormat: "DD/MM/YYYY",
+    timeFormat: "12h",
+    distanceUnit: "km",
+    language: "en",
+    companyName: "OkadaGo Technologies",
+    email: "admin@okadago.com",
+    phone: "+233200000000",
+    address: "Accra, Ghana",
+    website: "https://okadago.com",
+    logo: "",
+    taxRate: "15",
+    invoicePrefix: "OKD",
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [toggles, setToggles] = useState<Record<string, boolean>>({
+    emailNotifications: true,
+    smsNotifications: true,
+    pushNotifications: false,
+    autoInvoice: true,
+    maintenanceMode: false,
+    debugMode: false,
+    require2FA: false,
+  });
+  const [modules, setModules] = useState<string[]>(adminModules);
 
-        <div className="exact-admin-kpis">
-          <article className="exact-admin-kpi">
-            <span>Total zones</span>
-            <strong>{zones.length}</strong>
-          </article>
-          <article className="exact-admin-kpi">
-            <span>Active zones</span>
-            <strong>{zones.filter((zone) => zone.isActive).length}</strong>
-          </article>
-          <article className="exact-admin-kpi">
-            <span>Role permissions</span>
-            <strong>{adminRoleEntries.reduce((sum, [, permissions]) => sum + permissions.length, 0)}</strong>
-          </article>
-          <article className="exact-admin-kpi">
-            <span>Platform modules</span>
-            <strong>{adminModules.length}</strong>
-          </article>
-        </div>
-      </section>
+  const toggle = (key: string) =>
+    setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
 
-      <div className="exact-admin-grid">
-        <section className="exact-admin-card wide">
-          <div className="exact-admin-cardhead">
-            <div>
-              <h3>Control priorities</h3>
-              <p>Platform rules that need the fastest admin attention across pricing, supply, and access.</p>
-            </div>
-          </div>
-          <div className="exact-admin-priority-grid">
-            <article className="exact-admin-priority-card">
-              <span>Inactive zones</span>
-              <strong>{zones.filter((zone) => !zone.isActive).length}</strong>
-              <small>Service zones that are currently out of rotation and may need review.</small>
-            </article>
-            <article className="exact-admin-priority-card">
-              <span>Average base fare</span>
-              <strong>
-                {formatMoney(
-                  adminCurrency,
-                  zones.length === 0
-                    ? 0
-                    : zones.reduce((sum, zone) => sum + parseNumber(zone.baseFare), 0) / zones.length
-                )}
-              </strong>
-              <small>The current average launch price across all configured service zones.</small>
-            </article>
-            <article className="exact-admin-priority-card">
-              <span>Largest permission set</span>
-              <strong>{rolePermissionSnapshot[0]?.[1].length ?? 0}</strong>
-              <small>
-                Most expansive role currently exposed by the backend permission service.
-              </small>
-            </article>
-          </div>
-        </section>
+  const updateField = (key: string, value: string) =>
+    setFormValues((prev) => ({ ...prev, [key]: value }));
 
-        <section className="exact-admin-card wide">
-          <div className="exact-admin-cardhead">
-            <div>
-              <h3>Service zone pricing</h3>
-              <p>Live pricing and service configuration coming directly from backend service zones.</p>
-            </div>
-          </div>
-          {zones.length === 0 ? (
-            <EmptyCard
-              title="No service zones configured."
-              body="Once service zones exist, their pricing and operating status will appear here."
-            />
-          ) : (
-            <div className="table-wrapper">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Zone</th>
-                    <th>Status</th>
-                    <th>Base fare</th>
-                    <th>Per km</th>
-                    <th>Per min</th>
-                    <th>Min fare</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {zones.map((zone) => (
-                    <tr key={zone.id}>
-                      <td>
-                        <strong>{zone.name}</strong>
-                        <div>{zone.city}</div>
-                      </td>
-                      <td>
-                        <span className={`status-chip ${zone.isActive ? "success" : "neutral"}`}>
-                          {zone.isActive ? "Active" : "Inactive"}
-                        </span>
-                      </td>
-                      <td>{formatMoney(zone.currency, zone.baseFare)}</td>
-                      <td>{formatMoney(zone.currency, zone.perKmFee)}</td>
-                      <td>{formatMoney(zone.currency, zone.perMinuteFee)}</td>
-                      <td>{formatMoney(zone.currency, zone.minimumFare)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
+  const handleSave = () => {
+    addToast("Settings saved successfully", "success");
+  };
 
-        <section className="exact-admin-card">
-          <div className="exact-admin-cardhead">
-            <div>
-              <h3>Role permissions</h3>
-              <p>Current permission groups exposed by the backend admin service.</p>
-            </div>
-          </div>
-          {adminPermissionsQuery.isLoading ? (
-            <div className="status-chip warning">Loading permissions</div>
-          ) : adminPermissionsQuery.isError ? (
-            <EmptyCard title="Could not load permissions." body={adminPermissionsQuery.error.message} />
-          ) : (
-            <ul className="workbench-list exact-admin-ride-feed">
-              {rolePermissionSnapshot.map(([role, permissions]) => (
-                <li key={role}>
-                  <span>{role}</span>
-                  <strong>{permissions.length} permissions</strong>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+  const handleReset = () => {
+    addToast("Settings reset to defaults", "info");
+  };
 
-        <section className="exact-admin-card">
-          <div className="exact-admin-cardhead">
-            <div>
-              <h3>Platform modules</h3>
-              <p>Backend-declared operational modules available to the admin workspace.</p>
-            </div>
-          </div>
-          {adminModulesQuery.isLoading ? (
-            <div className="status-chip warning">Loading modules</div>
-          ) : adminModulesQuery.isError ? (
-            <EmptyCard title="Could not load modules." body={adminModulesQuery.error.message} />
-          ) : adminModules.length === 0 ? (
-            <EmptyCard title="No modules reported." body="The backend did not return any platform modules." />
-          ) : (
-            <ul className="workbench-list exact-admin-ride-feed">
-              {adminModules.map((module) => (
-                <li key={module}>
-                  <span>{module.replaceAll("-", " ")}</span>
-                  <strong>Live</strong>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+  const handleConnect = (service: string) => {
+    addToast(`${service} connection initiated`, "info");
+  };
 
-        <section className="exact-admin-card">
-          <div className="exact-admin-cardhead">
-            <div>
-              <h3>Admin access model</h3>
-              <p>The active admin accounts currently controlling this workspace.</p>
-            </div>
-          </div>
-          {adminAccountsQuery.isLoading ? (
-            <div className="status-chip warning">Loading admin accounts</div>
-          ) : adminAccountsQuery.isError ? (
-            <EmptyCard title="Could not load admin accounts." body={adminAccountsQuery.error.message} />
-          ) : (
-            <ul className="workbench-list exact-admin-ride-feed">
-              {(adminAccountsQuery.data ?? []).slice(0, 6).map((admin) => (
-                <li key={admin.id}>
-                  <span>
-                    {admin.user.fullName}
-                    {admin.title ? ` - ${admin.title}` : ""}
-                  </span>
-                  <strong>{admin.user.accountStatus}</strong>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+  const handleExportLogs = () => {
+    addToast("Audit logs exported", "success");
+  };
+
+  const mockLogs = useMemo(
+    () => [
+      { id: "1", action: "login", user: "admin@okadago.com", time: "2026-07-10 09:14", detail: "Successful login" },
+      { id: "2", action: "zone_update", user: "admin@okadago.com", time: "2026-07-10 08:45", detail: "Updated Zone: Accra" },
+      { id: "3", action: "settings_change", user: "super@okadago.com", time: "2026-07-09 17:30", detail: "Tax rate changed to 15%" },
+      { id: "4", action: "admin_created", user: "super@okadago.com", time: "2026-07-09 14:12", detail: "New admin added" },
+      { id: "5", action: "payment_config", user: "admin@okadago.com", time: "2026-07-08 11:00", detail: "MTN MoMo configured" },
+    ],
+    []
+  );
+
+  if (dataLoading) {
+    return (
+      <div style={{ padding: "24px 28px", minHeight: "100vh", display: "flex", flexDirection: "column", gap: 20 }}>
+        <SkeletonForm fields={8} />
       </div>
-    </>
+    );
+  }
+
+  const renderGeneral = () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <h3 style={{ color: DARK.text, fontSize: 16, fontWeight: 700, margin: 0 }}>Platform Settings</h3>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16 }}>
+        <label style={labelStyle}>
+          Platform Name
+          <input style={inputStyle} value={formValues.platformName} onChange={(e) => updateField("platformName", e.target.value)} />
+        </label>
+        <label style={labelStyle}>
+          Currency
+          <input style={inputStyle} value={formValues.currency} onChange={(e) => updateField("currency", e.target.value)} />
+        </label>
+        <label style={labelStyle}>
+          Timezone
+          <input style={inputStyle} value={formValues.timezone} onChange={(e) => updateField("timezone", e.target.value)} />
+        </label>
+        <label style={labelStyle}>
+          Date Format
+          <select style={inputStyle} value={formValues.dateFormat} onChange={(e) => updateField("dateFormat", e.target.value)}>
+            <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+            <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+            <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+          </select>
+        </label>
+        <label style={labelStyle}>
+          Time Format
+          <select style={inputStyle} value={formValues.timeFormat} onChange={(e) => updateField("timeFormat", e.target.value)}>
+            <option value="12h">12-hour</option>
+            <option value="24h">24-hour</option>
+          </select>
+        </label>
+        <label style={labelStyle}>
+          Distance Unit
+          <select style={inputStyle} value={formValues.distanceUnit} onChange={(e) => updateField("distanceUnit", e.target.value)}>
+            <option value="km">Kilometers</option>
+            <option value="mi">Miles</option>
+          </select>
+        </label>
+        <label style={labelStyle}>
+          Language
+          <select style={inputStyle} value={formValues.language} onChange={(e) => updateField("language", e.target.value)}>
+            <option value="en">English</option>
+            <option value="fr">French</option>
+            <option value="tw">Twi</option>
+          </select>
+        </label>
+      </div>
+
+      <h3 style={{ color: DARK.text, fontSize: 14, fontWeight: 700, margin: "8px 0 0" }}>System Toggles</h3>
+      {[
+        { key: "maintenanceMode", label: "Maintenance Mode", desc: "Temporarily disable public access" },
+        { key: "debugMode", label: "Debug Mode", desc: "Enable verbose logging" },
+      ].map(({ key, label, desc }) => (
+        <div key={key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${DARK.border}` }}>
+          <div>
+            <div style={{ color: DARK.text, fontSize: 13, fontWeight: 600 }}>{label}</div>
+            <div style={{ color: DARK.textMuted, fontSize: 12 }}>{desc}</div>
+          </div>
+          <button onClick={() => toggle(key)} style={{
+            width: 44, height: 24, borderRadius: 12, border: "none", cursor: "pointer", position: "relative",
+            background: toggles[key] ? DARK.green : DARK.surfaceAlt,
+            transition: "background 0.2s",
+          }}>
+            <span style={{
+              position: "absolute", top: 3, left: toggles[key] ? 23 : 3,
+              width: 18, height: 18, borderRadius: "50%", background: "#fff",
+              transition: "left 0.2s",
+            }} />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderCompany = () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <h3 style={{ color: DARK.text, fontSize: 16, fontWeight: 700, margin: 0 }}>Company Information</h3>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16 }}>
+        <label style={labelStyle}>
+          Company Name
+          <input style={inputStyle} value={formValues.companyName} onChange={(e) => updateField("companyName", e.target.value)} />
+        </label>
+        <label style={labelStyle}>
+          Email
+          <input style={inputStyle} type="email" value={formValues.email} onChange={(e) => updateField("email", e.target.value)} />
+        </label>
+        <label style={labelStyle}>
+          Phone
+          <input style={inputStyle} value={formValues.phone} onChange={(e) => updateField("phone", e.target.value)} />
+        </label>
+        <label style={labelStyle}>
+          Website
+          <input style={inputStyle} value={formValues.website} onChange={(e) => updateField("website", e.target.value)} />
+        </label>
+      </div>
+      <label style={labelStyle}>
+        Address
+        <input style={inputStyle} value={formValues.address} onChange={(e) => updateField("address", e.target.value)} />
+      </label>
+      <label style={labelStyle}>
+        Company Logo
+        <div style={{
+          width: 120, height: 120, borderRadius: 14, border: `2px dashed ${DARK.border}`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          flexDirection: "column", gap: 8, cursor: "pointer", color: DARK.textMuted, fontSize: 12,
+        }}>
+          <Building2 size={28} style={{ opacity: 0.4 }} />
+          <span>Upload Logo</span>
+        </div>
+      </label>
+    </div>
+  );
+
+  const renderSecurity = () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <h3 style={{ color: DARK.text, fontSize: 16, fontWeight: 700, margin: 0 }}>Account & Security</h3>
+
+      <div style={{ display: "flex", gap: isMobile ? 8 : 12, flexWrap: "wrap" }}>
+        <button style={{ ...btnBase, background: DARK.accent, color: "#fff" }} onClick={() => addToast("Profile editor opened", "info")}>
+          <Pencil size={15} /> Edit Profile
+        </button>
+        <button style={{ ...btnBase, background: DARK.surfaceAlt, color: DARK.text, border: `1px solid ${DARK.border}` }} onClick={() => addToast("Password reset email sent", "success")}>
+          <Lock size={15} /> Change Password
+        </button>
+      </div>
+
+      <div style={{ ...cardStyle, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{
+            width: 40, height: 40, borderRadius: 10, background: toggles.require2FA ? DARK.greenBg : DARK.surfaceAlt,
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <Shield size={20} style={{ color: toggles.require2FA ? DARK.green : DARK.textMuted }} />
+          </div>
+          <div>
+            <div style={{ color: DARK.text, fontSize: 13, fontWeight: 600 }}>Two-Factor Authentication</div>
+            <div style={{ color: DARK.textMuted, fontSize: 12 }}>Require 2FA for all admin accounts</div>
+          </div>
+        </div>
+        <button onClick={() => toggle("require2FA")} style={{
+          width: 44, height: 24, borderRadius: 12, border: "none", cursor: "pointer", position: "relative",
+          background: toggles.require2FA ? DARK.green : DARK.surfaceAlt, transition: "background 0.2s",
+        }}>
+          <span style={{
+            position: "absolute", top: 3, left: toggles.require2FA ? 23 : 3,
+            width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s",
+          }} />
+        </button>
+      </div>
+
+      <h3 style={{ color: DARK.text, fontSize: 14, fontWeight: 700, margin: "4px 0 0" }}>Change Password</h3>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 14 }}>
+        <label style={labelStyle}>
+          Current Password
+          <div style={{ position: "relative" }}>
+            <input style={{ ...inputStyle, paddingRight: 36 }} type="password" value={formValues.currentPassword} onChange={(e) => updateField("currentPassword", e.target.value)} />
+            <Eye size={16} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: DARK.textMuted, cursor: "pointer" }} />
+          </div>
+        </label>
+        <label style={labelStyle}>
+          New Password
+          <input style={inputStyle} type="password" value={formValues.newPassword} onChange={(e) => updateField("newPassword", e.target.value)} />
+        </label>
+        <label style={labelStyle}>
+          Confirm New Password
+          <input style={inputStyle} type="password" value={formValues.confirmPassword} onChange={(e) => updateField("confirmPassword", e.target.value)} />
+        </label>
+      </div>
+    </div>
+  );
+
+  const renderNotifications = () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <h3 style={{ color: DARK.text, fontSize: 16, fontWeight: 700, margin: 0 }}>Notification Preferences</h3>
+      {[
+        { key: "emailNotifications", label: "Email Notifications", desc: "Receive system alerts via email", icon: Mail },
+        { key: "smsNotifications", label: "SMS Notifications", desc: "Receive alerts via SMS", icon: MessageSquare },
+        { key: "pushNotifications", label: "Push Notifications", desc: "Browser push notifications", icon: Smartphone },
+      ].map(({ key, label, desc, icon: Icon }) => (
+        <div key={key} style={{
+          ...cardStyle, display: "flex", justifyContent: "space-between", alignItems: "center",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{
+              width: 40, height: 40, borderRadius: 10, background: toggles[key] ? DARK.greenBg : DARK.surfaceAlt,
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <Icon size={20} style={{ color: toggles[key] ? DARK.green : DARK.textMuted }} />
+            </div>
+            <div>
+              <div style={{ color: DARK.text, fontSize: 13, fontWeight: 600 }}>{label}</div>
+              <div style={{ color: DARK.textMuted, fontSize: 12 }}>{desc}</div>
+            </div>
+          </div>
+          <button onClick={() => toggle(key)} style={{
+            width: 44, height: 24, borderRadius: 12, border: "none", cursor: "pointer", position: "relative",
+            background: toggles[key] ? DARK.green : DARK.surfaceAlt, transition: "background 0.2s",
+          }}>
+            <span style={{
+              position: "absolute", top: 3, left: toggles[key] ? 23 : 3,
+              width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s",
+            }} />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderPayment = () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <h3 style={{ color: DARK.text, fontSize: 16, fontWeight: 700, margin: 0 }}>Payment Methods</h3>
+      {[
+        { name: "MTN Mobile Money", desc: "Accept MTN MoMo payments from passengers", connected: true, color: "#ffc107" },
+        { name: "Telecel Cash", desc: "Accept Telecel Cash payments", connected: false, color: "#ff5252" },
+        { name: "Bank Transfer", desc: "Direct bank account transfers", connected: false, color: DARK.blue },
+      ].map(({ name, desc, connected, color }) => (
+        <div key={name} style={{
+          ...cardStyle, display: "flex", justifyContent: "space-between", alignItems: "center",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{
+              width: 44, height: 44, borderRadius: 12, background: `${color}22`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <CreditCard size={22} style={{ color }} />
+            </div>
+            <div>
+              <div style={{ color: DARK.text, fontSize: 14, fontWeight: 600 }}>{name}</div>
+              <div style={{ color: DARK.textMuted, fontSize: 12 }}>{desc}</div>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {connected && (
+              <span style={{ ...btnBase, background: DARK.greenBg, color: DARK.green, fontSize: 11, padding: "6px 12px" }}>
+                <Check size={13} /> Connected
+              </span>
+            )}
+            {!connected && (
+              <button
+                style={{ ...btnBase, background: DARK.accent, color: "#fff", padding: "8px 16px" }}
+                onClick={() => handleConnect(name)}
+              >
+                Connect
+              </button>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderTaxes = () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <h3 style={{ color: DARK.text, fontSize: 16, fontWeight: 700, margin: 0 }}>Taxes & Compliance</h3>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16 }}>
+        <label style={labelStyle}>
+          Tax Rate (%)
+          <input style={inputStyle} type="number" value={formValues.taxRate} onChange={(e) => updateField("taxRate", e.target.value)} />
+        </label>
+        <label style={labelStyle}>
+          Invoice Prefix
+          <input style={inputStyle} value={formValues.invoicePrefix} onChange={(e) => updateField("invoicePrefix", e.target.value)} />
+        </label>
+      </div>
+
+      <div style={{ ...cardStyle, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{
+            width: 40, height: 40, borderRadius: 10, background: toggles.autoInvoice ? DARK.greenBg : DARK.surfaceAlt,
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <FileText size={20} style={{ color: toggles.autoInvoice ? DARK.green : DARK.textMuted }} />
+          </div>
+          <div>
+            <div style={{ color: DARK.text, fontSize: 13, fontWeight: 600 }}>Auto-Invoice Generation</div>
+            <div style={{ color: DARK.textMuted, fontSize: 12 }}>Automatically generate invoices for completed rides</div>
+          </div>
+        </div>
+        <button onClick={() => toggle("autoInvoice")} style={{
+          width: 44, height: 24, borderRadius: 12, border: "none", cursor: "pointer", position: "relative",
+          background: toggles.autoInvoice ? DARK.green : DARK.surfaceAlt, transition: "background 0.2s",
+        }}>
+          <span style={{
+            position: "absolute", top: 3, left: toggles.autoInvoice ? 23 : 3,
+            width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s",
+          }} />
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderIntegrations = () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <h3 style={{ color: DARK.text, fontSize: 16, fontWeight: 700, margin: 0 }}>Integrations</h3>
+      {[
+        { name: "Google Maps API", desc: "Routing, geocoding, and distance matrix", connected: true },
+        { name: "SMS Gateway", desc: "Transactional SMS provider", connected: false },
+        { name: "Payment Gateway", desc: "Primary payment processor", connected: true },
+      ].map(({ name, desc, connected }) => (
+        <div key={name} style={{ ...cardStyle, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{
+              width: 40, height: 40, borderRadius: 10, background: connected ? DARK.greenBg : DARK.surfaceAlt,
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <Plug size={20} style={{ color: connected ? DARK.green : DARK.textMuted }} />
+            </div>
+            <div>
+              <div style={{ color: DARK.text, fontSize: 14, fontWeight: 600 }}>{name}</div>
+              <div style={{ color: DARK.textMuted, fontSize: 12 }}>{desc}</div>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {connected && (
+              <span style={{ ...btnBase, background: DARK.greenBg, color: DARK.green, fontSize: 11, padding: "6px 12px" }}>
+                <Check size={13} /> Connected
+              </span>
+            )}
+            {!connected && (
+              <button style={{ ...btnBase, background: DARK.accent, color: "#fff", padding: "8px 16px" }} onClick={() => handleConnect(name)}>
+                Connect
+              </button>
+            )}
+            <button style={{ ...btnBase, background: DARK.surfaceAlt, color: DARK.textMuted, padding: "6px 10px" }} title="Open dashboard">
+              <ExternalLink size={14} />
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderAudit = () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h3 style={{ color: DARK.text, fontSize: 16, fontWeight: 700, margin: 0 }}>Audit Logs</h3>
+        <button style={{ ...btnBase, background: DARK.accent, color: "#fff" }} onClick={handleExportLogs}>
+          <Download size={15} /> Export
+        </button>
+      </div>
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <thead>
+            <tr>
+              {["Action", "User", "Time", "Detail"].map((h) => (
+                <th key={h} style={{ textAlign: "left", padding: "10px 14px", borderBottom: `1px solid ${DARK.border}`, color: DARK.textMuted, fontWeight: 600, fontSize: 12, textTransform: "uppercase" as const }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {mockLogs.map((log) => (
+              <tr key={log.id} style={{ borderBottom: `1px solid ${DARK.border}` }}>
+                <td style={{ padding: "10px 14px", color: DARK.text }}>
+                  <span style={{
+                    display: "inline-block", padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600,
+                    background: log.action.includes("update") || log.action.includes("change") ? DARK.yellowBg : log.action.includes("create") ? DARK.greenBg : DARK.blueBg,
+                    color: log.action.includes("update") || log.action.includes("change") ? DARK.yellow : log.action.includes("create") ? DARK.green : DARK.blue,
+                  }}>{log.action}</span>
+                </td>
+                <td style={{ padding: "10px 14px", color: DARK.textMuted }}>{log.user}</td>
+                <td style={{ padding: "10px 14px", color: DARK.textMuted }}>{log.time}</td>
+                <td style={{ padding: "10px 14px", color: DARK.text }}>{log.detail}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
+  const sectionContent: Record<SectionKey, () => React.ReactNode> = {
+    general: renderGeneral,
+    company: renderCompany,
+    security: renderSecurity,
+    notifications: renderNotifications,
+    payment: renderPayment,
+    taxes: renderTaxes,
+    integrations: renderIntegrations,
+    audit: renderAudit,
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? 16 : 20, minHeight: "100%", color: DARK.text, fontFamily: "inherit" }}>
+      {/* Left Sidebar */}
+      <div style={{
+        width: isMobile ? "100%" : 240, flexShrink: 0, background: DARK.surface, borderRadius: 14,
+        border: `1px solid ${DARK.border}`, padding: 8, display: "flex", flexDirection: isMobile ? "row" : "column",
+        flexWrap: isMobile ? "wrap" : undefined, overflowX: isMobile ? "auto" : undefined, gap: 4,
+      }}>
+        {SECTIONS.map(({ key, label, icon: Icon }) => {
+          const active = activeSection === key;
+          return (
+            <button
+              key={key}
+              onClick={() => setActiveSection(key)}
+              style={{
+                display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 10,
+                border: "none", cursor: "pointer", fontSize: 13, fontWeight: active ? 700 : 500,
+                background: active ? DARK.accent : "transparent",
+                color: active ? "#fff" : DARK.textMuted,
+                transition: "all 0.15s", textAlign: "left", width: "100%",
+              }}
+              onMouseEnter={(e) => { if (!active) (e.currentTarget.style.background = DARK.navHover); }}
+              onMouseLeave={(e) => { if (!active) (e.currentTarget.style.background = "transparent"); }}
+            >
+              <Icon size={16} />
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Main Content */}
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 20 }}>
+        <div style={{ ...cardStyle, minHeight: 400 }}>
+          {sectionContent[activeSection]()}
+        </div>
+        <div style={{ display: "flex", gap: isMobile ? 8 : 12, flexWrap: "wrap" }}>
+          <button
+            style={{ ...btnBase, background: DARK.accent, color: "#fff", padding: "11px 24px" }}
+            onClick={handleSave}
+          >
+            <Save size={16} /> Save Changes
+          </button>
+          <button
+            style={{ ...btnBase, background: DARK.surfaceAlt, color: DARK.textMuted, border: `1px solid ${DARK.border}`, padding: "11px 24px" }}
+            onClick={handleReset}
+          >
+            <RotateCcw size={16} /> Reset to Default
+          </button>
+        </div>
+      </div>
+
+      {/* Right Sidebar */}
+      <div style={{ width: isMobile ? "100%" : 260, flexShrink: 0, display: isMobile ? "none" : "flex", flexDirection: "column", gap: 16 }}>
+        {/* Platform Info */}
+        <div style={{ ...cardStyle }}>
+          <h4 style={{ color: DARK.text, fontSize: 13, fontWeight: 700, margin: "0 0 14px" }}>Platform Info</h4>
+          {[
+            { label: "Version", value: "2.4.1" },
+            { label: "Environment", value: "Production" },
+            { label: "Currency", value: adminCurrency },
+            { label: "Active Zones", value: `${zones.filter((z) => z.isActive).length} / ${zones.length}` },
+          ].map(({ label, value }) => (
+            <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: `1px solid ${DARK.border}` }}>
+              <span style={{ color: DARK.textMuted, fontSize: 12 }}>{label}</span>
+              <span style={{ color: DARK.text, fontSize: 12, fontWeight: 600 }}>{value}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Storage */}
+        <div style={{ ...cardStyle }}>
+          <h4 style={{ color: DARK.text, fontSize: 13, fontWeight: 700, margin: "0 0 12px" }}>
+            <HardDrive size={14} style={{ marginRight: 6, verticalAlign: -2 }} />
+            Storage
+          </h4>
+          <div style={{ height: 6, borderRadius: 3, background: DARK.surfaceAlt, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: "62%", borderRadius: 3, background: DARK.accent }} />
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
+            <span style={{ color: DARK.textMuted, fontSize: 11 }}>62% used</span>
+            <span style={{ color: DARK.textMuted, fontSize: 11 }}>5.1 / 8 GB</span>
+          </div>
+        </div>
+
+        {/* API Info */}
+        <div style={{ ...cardStyle }}>
+          <h4 style={{ color: DARK.text, fontSize: 13, fontWeight: 700, margin: "0 0 12px" }}>
+            <Key size={14} style={{ marginRight: 6, verticalAlign: -2 }} />
+            API
+          </h4>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span style={{ color: DARK.textMuted, fontSize: 12 }}>Requests today</span>
+              <span style={{ color: DARK.text, fontSize: 12, fontWeight: 600 }}>14,832</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span style={{ color: DARK.textMuted, fontSize: 12 }}>Rate limit</span>
+              <span style={{ color: DARK.text, fontSize: 12, fontWeight: 600 }}>1,000 / min</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span style={{ color: DARK.textMuted, fontSize: 12 }}>Uptime</span>
+              <span style={{ color: DARK.green, fontSize: 12, fontWeight: 600 }}>99.97%</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Danger Zone */}
+        <div style={{
+          ...cardStyle, background: DARK.dangerZone, borderColor: DARK.dangerBorder,
+        }}>
+          <h4 style={{ color: DARK.red, fontSize: 13, fontWeight: 700, margin: "0 0 12px" }}>
+            <AlertTriangle size={14} style={{ marginRight: 6, verticalAlign: -2 }} />
+            Danger Zone
+          </h4>
+          <button
+            style={{ ...btnBase, background: DARK.red, color: "#fff", width: "100%", justifyContent: "center", padding: "9px 0" }}
+            onClick={() => addToast("Factory reset requires confirmation", "warning")}
+          >
+            <Trash2 size={14} /> Factory Reset
+          </button>
+          <p style={{ color: DARK.textMuted, fontSize: 11, margin: "8px 0 0", lineHeight: 1.4 }}>
+            This action is irreversible and will delete all platform data.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

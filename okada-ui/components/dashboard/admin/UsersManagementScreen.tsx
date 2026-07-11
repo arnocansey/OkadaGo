@@ -1,39 +1,8 @@
-"use client";
-
-import { Bike, Filter, Package, Search, ShieldAlert, User, UserPlus, Users } from "lucide-react";
+import { Users, MapPin, Search } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
 import type { PassengerRecord, RiderRecord } from "./types";
-
-function formatDateTime(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Unknown time";
-  return new Intl.DateTimeFormat("en-GH", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(date);
-}
-
-function statusTone(status: string) {
-  const normalized = status.toLowerCase();
-  if (["completed", "delivered", "paid", "captured", "posted", "approved", "valid"].includes(normalized)) {
-    return "success";
-  }
-  if (["searching", "assigned", "arriving", "arrived", "started", "picked_up", "in_transit", "pending", "requested", "reviewing", "under review", "processing"].includes(normalized)) {
-    return "warning";
-  }
-  if (["failed", "rejected", "cancelled", "reversed", "missing", "expired"].includes(normalized)) {
-    return "danger";
-  }
-  return "neutral";
-}
-
-function formatEnumLabel(value: string) {
-  return value
-    .toLowerCase()
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
+import { statusTone, formatDateTime } from "./utils";
+import { Bike, User } from "lucide-react";
 
 type ManagedUser = {
   id: string;
@@ -42,196 +11,149 @@ type ManagedUser = {
   phone: string;
   email: string;
   status: string;
-  joinedAt: string | undefined;
+  joinedAt?: string;
   location: string;
   reference: string;
-  icon: typeof Bike | typeof User;
+  icon: typeof User;
 };
 
-type UsersManagementScreenProps = {
-  riders: RiderRecord[];
-  passengers: PassengerRecord[];
-  activeRiders: RiderRecord[];
-  recentPassengers: PassengerRecord[];
+export type UsersManagementScreenProps = {
   managedUsers: ManagedUser[];
   searchedManagedUsers: ManagedUser[];
   blockedUsers: ManagedUser[];
-  recentManagedUsers: ManagedUser[];
   userLocationSnapshot: [string, number][];
   userLocationMax: number;
-  userTypeView: "all" | "riders" | "customers" | "vendors" | "admins";
-  setUserTypeView: (view: "all" | "riders" | "customers" | "vendors" | "admins") => void;
+  recentManagedUsers: ManagedUser[];
   adminSearchTerm: string;
-  setAdminSearchTerm: (term: string) => void;
+  onSearchChange: (term: string) => void;
+  userTypeView: "all" | "riders" | "customers" | "vendors" | "admins";
+  onTypeViewChange: (view: "all" | "riders" | "customers" | "vendors" | "admins") => void;
+  passengersCount: number;
+  ridersCount: number;
 };
 
 export function UsersManagementScreen({
-  riders,
-  passengers,
-  activeRiders,
-  recentPassengers,
   managedUsers,
   searchedManagedUsers,
   blockedUsers,
-  recentManagedUsers,
   userLocationSnapshot,
   userLocationMax,
-  userTypeView,
-  setUserTypeView,
+  recentManagedUsers,
   adminSearchTerm,
-  setAdminSearchTerm
+  onSearchChange,
+  userTypeView,
+  onTypeViewChange,
+  passengersCount,
+  ridersCount
 }: UsersManagementScreenProps) {
   return (
-    <div className="admin-reference-dark admin-users-dashboard">
-      <section className="admin-users-kpis">
-        <article className="admin-dark-kpi">
-          <Users size={22} />
-          <span>Total Users</span>
-          <strong>{managedUsers.length}</strong>
-          <small>{passengers.length} customers, {riders.length} riders</small>
+    <div className="exact-admin-screen">
+      <section className="admin-reference-kpis">
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon green"><Users size={22} /></div>
+          <div>
+            <span>Total Users</span>
+            <strong>{managedUsers.length}</strong>
+            <small>{passengersCount} passengers, {ridersCount} riders</small>
+          </div>
         </article>
-        <article className="admin-dark-kpi">
-          <Bike size={22} />
-          <span>Riders</span>
-          <strong>{riders.length}</strong>
-          <small>{activeRiders.length} online</small>
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon yellow"><User size={22} /></div>
+          <div>
+            <span>Passengers</span>
+            <strong>{passengersCount}</strong>
+            <small>Active demand base</small>
+          </div>
         </article>
-        <article className="admin-dark-kpi">
-          <User size={22} />
-          <span>Customers</span>
-          <strong>{passengers.length}</strong>
-          <small>{recentPassengers.length} recent profiles</small>
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon green"><Bike size={22} /></div>
+          <div>
+            <span>Riders</span>
+            <strong>{ridersCount}</strong>
+            <small>Supply pool</small>
+          </div>
         </article>
-        <article className="admin-dark-kpi">
-          <Package size={22} />
-          <span>Vendors</span>
-          <strong>0</strong>
-          <small>No vendor endpoint wired</small>
-        </article>
-        <article className="admin-dark-kpi danger">
-          <ShieldAlert size={22} />
-          <span>Blocked Users</span>
-          <strong>{blockedUsers.length}</strong>
-          <small>From account status data</small>
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon red"><Users size={22} /></div>
+          <div>
+            <span>Blocked Users</span>
+            <strong>{blockedUsers.length}</strong>
+            <small>Restricted access</small>
+          </div>
         </article>
       </section>
 
-      <section className="admin-users-layout">
-        <article className="admin-dark-card admin-users-table-card">
-          <div className="admin-dark-cardhead">
+      {/* Search and filter */}
+      <div className="admin-filter-bar">
+        <div className="admin-search-wrap">
+          <Search size={14} />
+          <input
+            type="text"
+            className="admin-search-input"
+            placeholder="Search by name, phone, email, location..."
+            value={adminSearchTerm}
+            onChange={(e) => onSearchChange(e.target.value)}
+          />
+        </div>
+        {(["all", "riders", "customers"] as const).map((view) => (
+          <button
+            key={view}
+            type="button"
+            className={`admin-filter-pill ${userTypeView === view ? "active" : ""}`}
+            onClick={() => onTypeViewChange(view)}
+          >
+            {view === "all" ? "All Users" : view === "riders" ? "Riders" : "Passengers"}
+          </button>
+        ))}
+      </div>
+
+      <div className="admin-screen-grid-2">
+        <article className="admin-reference-card">
+          <div className="admin-reference-cardhead">
             <div>
-              <h3>All Users</h3>
-              <p>Riders and customers from the live backend. Vendors and admins appear when exposed by API.</p>
+              <h3>User Directory</h3>
+              <p>{searchedManagedUsers.length} results</p>
             </div>
-            <div className="admin-users-actions">
-              <button
-                type="button"
-                onClick={() => {
-                  setUserTypeView("all");
-                  setAdminSearchTerm("");
-                }}
-              >
-                <Filter size={15} /> Reset Filters
-              </button>
-              <a href="/admin/riders"><UserPlus size={15} /> Add User</a>
-            </div>
-          </div>
-          <label className="admin-users-search">
-            <Search size={16} />
-            <input
-              type="search"
-              value={adminSearchTerm}
-              onChange={(event) => setAdminSearchTerm(event.target.value)}
-              placeholder="Search by name, phone, email, or code"
-            />
-          </label>
-          <div className="admin-users-segments">
-            <button
-              type="button"
-              className={userTypeView === "all" ? "active" : ""}
-              onClick={() => setUserTypeView("all")}
-            >
-              All ({managedUsers.length})
-            </button>
-            <button
-              type="button"
-              className={userTypeView === "riders" ? "active" : ""}
-              onClick={() => setUserTypeView("riders")}
-            >
-              Riders ({riders.length})
-            </button>
-            <button
-              type="button"
-              className={userTypeView === "customers" ? "active" : ""}
-              onClick={() => setUserTypeView("customers")}
-            >
-              Customers ({passengers.length})
-            </button>
-            <button
-              type="button"
-              className={userTypeView === "vendors" ? "active" : ""}
-              onClick={() => setUserTypeView("vendors")}
-            >
-              Vendors (0)
-            </button>
-            <button
-              type="button"
-              className={userTypeView === "admins" ? "active" : ""}
-              onClick={() => setUserTypeView("admins")}
-            >
-              Admins (0)
-            </button>
           </div>
           {searchedManagedUsers.length === 0 ? (
-            <EmptyCard
-              title={
-                userTypeView === "vendors" || userTypeView === "admins"
-                  ? `${formatEnumLabel(userTypeView)} are not wired yet.`
-                  : "No users found."
-              }
-              body={
-                userTypeView === "vendors" || userTypeView === "admins"
-                  ? "This UI is ready, but the backend does not expose this user type yet."
-                  : "Try a different search term or reset the filters to see all users."
-              }
-            />
+            <EmptyCard title="No users found." body="Try adjusting your search or filter." />
           ) : (
-            <div className="table-wrapper admin-dark-table">
-              <table className="table">
+            <div className="admin-table-wrapper">
+              <table className="admin-table">
                 <thead>
                   <tr>
-                    <th>User</th>
-                    <th>User Type</th>
-                    <th>Phone Number</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Phone</th>
                     <th>Email</th>
                     <th>Status</th>
-                    <th>Joined Date</th>
+                    <th>Location</th>
+                    <th>Reference</th>
+                    <th>Joined</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {searchedManagedUsers.map((user) => {
+                  {searchedManagedUsers.slice(0, 50).map((user) => {
                     const Icon = user.icon;
-
                     return (
-                      <tr key={`${user.type}-${user.id}`}>
+                      <tr key={user.id}>
                         <td>
-                          <div className="admin-users-person">
-                            <span><Icon size={15} /></span>
-                            <div>
-                              <strong>{user.name}</strong>
-                              <small>{user.reference}</small>
-                            </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <Icon size={14} />
+                            <strong>{user.name}</strong>
                           </div>
                         </td>
-                        <td>{user.type}</td>
-                        <td>{user.phone}</td>
-                        <td>{user.email}</td>
+                        <td><small>{user.type}</small></td>
+                        <td><small>{user.phone}</small></td>
+                        <td><small>{user.email}</small></td>
                         <td>
-                          <span className={`status-chip ${statusTone(user.status)}`}>
-                            {formatEnumLabel(user.status)}
-                          </span>
+                          <em className={`admin-reference-tag ${statusTone(user.status)}`}>
+                            {user.status}
+                          </em>
                         </td>
-                        <td>{user.joinedAt ? formatDateTime(user.joinedAt) : "Not available"}</td>
+                        <td><small>{user.location}</small></td>
+                        <td><code style={{ fontSize: 11 }}>{user.reference}</code></td>
+                        <td><small>{user.joinedAt ? formatDateTime(user.joinedAt) : "—"}</small></td>
                       </tr>
                     );
                   })}
@@ -241,95 +163,66 @@ export function UsersManagementScreen({
           )}
         </article>
 
-        <aside className="admin-users-side">
-          <article className="admin-dark-card">
-            <div className="admin-dark-cardhead">
+        <aside className="admin-sidebar-panel">
+          <article className="admin-reference-card">
+            <div className="admin-reference-cardhead">
               <div>
-                <h3>User Statistics</h3>
-                <p>Current user type split.</p>
+                <h3>Location Breakdown</h3>
+                <p>User distribution by city</p>
               </div>
-              <span>This month</span>
             </div>
-            <div className="admin-users-donut-wrap">
-              <div
-                className="admin-users-donut"
-                style={{
-                  background:
-                    managedUsers.length === 0
-                      ? "#1f2937"
-                      : `conic-gradient(#ffc107 0 ${(riders.length / Math.max(1, managedUsers.length)) * 100}%, #22c55e ${(riders.length / Math.max(1, managedUsers.length)) * 100}% 100%)`
-                }}
-              >
-                <div>
-                  <strong>{managedUsers.length}</strong>
-                  <span>Total Users</span>
-                </div>
-              </div>
-              <ul className="admin-users-stat-list">
-                <li><i className="yellow" /> Riders <strong>{riders.length}</strong></li>
-                <li><i className="green" /> Customers <strong>{passengers.length}</strong></li>
-                <li><i className="blue" /> Vendors <strong>0</strong></li>
-                <li><i className="red" /> Admins <strong>0</strong></li>
-              </ul>
-            </div>
-          </article>
-
-          <article className="admin-dark-card">
-            <div className="admin-dark-cardhead">
-              <div>
-                <h3>Recent Signups</h3>
-                <p>Newest rider and customer records.</p>
-              </div>
-              <span>View all</span>
-            </div>
-            {recentManagedUsers.length === 0 ? (
-              <EmptyCard
-                title="No recent users."
-                body="New signups will appear here when records include signup timestamps."
-              />
+            {userLocationSnapshot.length === 0 ? (
+              <EmptyCard title="No location data." body="" />
             ) : (
-              <ul className="admin-users-recent-list">
-                {recentManagedUsers.map((user) => (
-                  <li key={`${user.type}-recent-${user.id}`}>
-                    <div className="admin-reference-avatar">{user.name.slice(0, 2).toUpperCase()}</div>
+              <ul className="admin-summary-list">
+                {userLocationSnapshot.map(([location, count]) => (
+                  <li key={location}>
                     <div>
-                      <strong>{user.name}</strong>
-                      <span>{user.type}</span>
+                      <MapPin size={12} style={{ marginRight: 4 }} />
+                      <span>{location}</span>
                     </div>
-                    <small>{user.joinedAt ? formatDateTime(user.joinedAt) : "Recent"}</small>
+                    <div>
+                      <div
+                        style={{
+                          height: 6,
+                          width: `${Math.max(10, (count / userLocationMax) * 80)}px`,
+                          background: "var(--color-primary, #111827)",
+                          borderRadius: 3,
+                          display: "inline-block",
+                          marginRight: 8
+                        }}
+                      />
+                      <strong>{count}</strong>
+                    </div>
                   </li>
                 ))}
               </ul>
             )}
           </article>
 
-          <article className="admin-dark-card">
-            <div className="admin-dark-cardhead">
-              <div>
-                <h3>User by Location</h3>
-                <p>Location distribution from rider cities and customer default cities.</p>
-              </div>
-              <span>View full report</span>
+          <article className="admin-reference-card">
+            <div className="admin-reference-cardhead">
+              <div><h3>Recently Joined</h3></div>
             </div>
-            {userLocationSnapshot.length === 0 ? (
-              <EmptyCard
-                title="No location data."
-                body="User location distribution will appear as profiles add city data."
-              />
+            {recentManagedUsers.length === 0 ? (
+              <EmptyCard title="No recent users." body="" />
             ) : (
-              <div className="admin-users-location-list">
-                {userLocationSnapshot.map(([location, count]) => (
-                  <div key={location}>
-                    <span>{location}</span>
-                    <strong>{count}</strong>
-                    <i style={{ width: `${Math.max(8, (count / userLocationMax) * 100)}%` }} />
-                  </div>
+              <ul className="admin-reference-list">
+                {recentManagedUsers.map((user) => (
+                  <li key={user.id} className="admin-reference-list-row">
+                    <span className={`admin-reference-status-dot ${statusTone(user.status)}`} />
+                    <div>
+                      <strong>{user.name}</strong>
+                      <small>{user.type} · {user.location}</small>
+                    </div>
+                    <small>{user.joinedAt ? formatDateTime(user.joinedAt) : "—"}</small>
+                  </li>
                 ))}
-              </div>
+              </ul>
             )}
           </article>
         </aside>
-      </section>
+      </div>
     </div>
   );
 }

@@ -1,8 +1,6 @@
 import { notFound } from "next/navigation";
-import {
-  AdminConsolePage,
-  type AdminConsoleScreen
-} from "@/components/dashboard/admin-console-page";
+import type { AdminConsoleScreen } from "@/components/dashboard/admin/types";
+import AdminScreenClient from "../../[screen]/admin-screen-client";
 
 export default async function AdminRiderSubsetPage({
   params
@@ -27,5 +25,5 @@ export default async function AdminRiderSubsetPage({
     notFound();
   }
 
-  return <AdminConsolePage screen={screen} />;
+  return <AdminScreenClient screen={screen} />;
 }

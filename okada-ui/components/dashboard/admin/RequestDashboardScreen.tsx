@@ -1,509 +1,416 @@
-"use client";
-
 import { useState } from "react";
-import { Bike, CheckCircle, Clock, Download, Filter, Package, XCircle } from "lucide-react";
-import { OperationsMap } from "@/components/maps/operations-map";
+import { Bike, Package, CheckCircle, XCircle, Clock, Filter } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
-import type { RideRecord, DeliveryRecord } from "./types";
 import { EmptyCard } from "./EmptyCard";
+import type { RideRecord, DeliveryRecord } from "./types";
 import { parseNumber, formatDateTime, statusTone, formatEnumLabel } from "./utils";
 
-type MapMarker = {
-  id: string;
-  position: [number, number];
-  label: string;
-  variant: "driver";
-};
+type RequestTab = "rides" | "delivery";
+type RequestStatusView = "all" | "pending" | "accepted" | "on-trip" | "completed" | "cancelled";
 
-type RequestDashboardScreenProps = {
+export type RequestDashboardScreenProps = {
   rides: RideRecord[];
   deliveries: DeliveryRecord[];
-  mapMarkers: MapMarker[];
-  currency: string;
-  onRideAction?: (rideId: string, action: "accept" | "decline") => void;
-  onDeliveryAction?: (deliveryId: string, action: "accept" | "decline") => void;
-  isRideActionPending?: boolean;
-  isDeliveryActionPending?: boolean;
-  rideActionVariables?: { rideId: string } | null;
-  deliveryActionVariables?: { deliveryId: string } | null;
-  rideActionError?: string | null;
-  deliveryActionError?: string | null;
+  adminCurrency: string;
+  requestTab: RequestTab;
+  onTabChange: (tab: RequestTab) => void;
+  requestStatusView: RequestStatusView;
+  onStatusViewChange: (view: RequestStatusView) => void;
+  visibleRequestCards: RideRecord[];
+  visibleDeliveryRequestCards: DeliveryRecord[];
+  activeRequestCounts: {
+    all: number;
+    pending: number;
+    accepted: number;
+    onTrip: number;
+    completed: number;
+    cancelled: number;
+  };
+  requestPeakBuckets: { label: string; count: number }[];
+  requestPeakMax: number;
+  onRideAction: (rideId: string, action: "accept" | "decline") => void;
+  onDeliveryAction: (deliveryId: string, action: "accept" | "decline") => void;
+  isMutating: boolean;
 };
+
+const statusFilters: { key: RequestStatusView; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "pending", label: "Pending" },
+  { key: "accepted", label: "Accepted" },
+  { key: "on-trip", label: "On Trip" },
+  { key: "completed", label: "Completed" },
+  { key: "cancelled", label: "Cancelled" }
+];
 
 export function RequestDashboardScreen({
   rides,
   deliveries,
-  mapMarkers,
-  currency,
+  adminCurrency,
+  requestTab,
+  onTabChange,
+  requestStatusView,
+  onStatusViewChange,
+  visibleRequestCards,
+  visibleDeliveryRequestCards,
+  activeRequestCounts,
+  requestPeakBuckets,
+  requestPeakMax,
   onRideAction,
   onDeliveryAction,
-  isRideActionPending = false,
-  isDeliveryActionPending = false,
-  rideActionVariables = null,
-  deliveryActionVariables = null,
-  rideActionError = null,
-  deliveryActionError = null
+  isMutating
 }: RequestDashboardScreenProps) {
-  const [requestTab, setRequestTab] = useState<"rides" | "food" | "delivery">("rides");
-  const [requestStatusView, setRequestStatusView] = useState<
-    "all" | "pending" | "accepted" | "on-trip" | "completed" | "cancelled"
-  >("all");
+  const [selectedRideIds, setSelectedRideIds] = useState<Set<string>>(new Set());
+  const [selectedDeliveryIds, setSelectedDeliveryIds] = useState<Set<string>>(new Set());
 
-  const requestPending = rides.filter((ride) => ["searching", "pending"].includes(ride.status.toLowerCase()));
-  const requestAccepted = rides.filter((ride) =>
-    ["assigned", "arriving", "arrived"].includes(ride.status.toLowerCase())
-  );
-  const requestOnTrip = rides.filter((ride) => ride.status.toLowerCase() === "started");
-  const requestCompleted = rides.filter((ride) => ride.status.toLowerCase() === "completed");
-  const requestCancelled = rides.filter((ride) => ride.status.toLowerCase() === "cancelled");
+  const toggleRideId = (id: string) => {
+    setSelectedRideIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const toggleAllRides = () => {
+    const allIds = visibleRequestCards.map((r) => r.id);
+    if (allIds.every((id) => selectedRideIds.has(id))) setSelectedRideIds(new Set());
+    else setSelectedRideIds(new Set(allIds));
+  };
+  const toggleDeliveryId = (id: string) => {
+    setSelectedDeliveryIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const toggleAllDeliveries = () => {
+    const allIds = visibleDeliveryRequestCards.map((d) => d.id);
+    if (allIds.every((id) => selectedDeliveryIds.has(id))) setSelectedDeliveryIds(new Set());
+    else setSelectedDeliveryIds(new Set(allIds));
+  };
 
-  const deliveryRequestPending = deliveries.filter((delivery) =>
-    ["searching", "pending"].includes(delivery.status.toLowerCase())
-  );
-  const deliveryRequestAccepted = deliveries.filter((delivery) =>
-    delivery.status.toLowerCase() === "assigned"
-  );
-  const deliveryRequestOnTrip = deliveries.filter((delivery) =>
-    ["picked_up", "in_transit"].includes(delivery.status.toLowerCase())
-  );
-  const deliveryRequestCompleted = deliveries.filter((delivery) => delivery.status.toLowerCase() === "delivered");
-  const deliveryRequestCancelled = deliveries.filter((delivery) => delivery.status.toLowerCase() === "cancelled");
+  const activeTab = requestTab;
+  const selectedCount = activeTab === "rides" ? selectedRideIds.size : selectedDeliveryIds.size;
 
-  const requestCards = rides
-    .slice()
-    .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))
-    .slice(0, 8);
-
-  const deliveryRequestCards = deliveries
-    .slice()
-    .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))
-    .slice(0, 8);
-
-  const visibleRequestCards =
-    requestTab === "rides"
-      ? requestCards.filter((ride) => {
-          const status = ride.status.toLowerCase();
-          if (requestStatusView === "pending") return ["searching", "pending"].includes(status);
-          if (requestStatusView === "accepted") return ["assigned", "arriving", "arrived"].includes(status);
-          if (requestStatusView === "on-trip") return status === "started";
-          if (requestStatusView === "completed") return status === "completed";
-          if (requestStatusView === "cancelled") return status === "cancelled";
-          return true;
-        })
-      : [];
-
-  const visibleDeliveryRequestCards =
-    requestTab === "delivery"
-      ? deliveryRequestCards.filter((delivery) => {
-          const status = delivery.status.toLowerCase();
-          if (requestStatusView === "pending") return ["searching", "pending"].includes(status);
-          if (requestStatusView === "accepted") return status === "assigned";
-          if (requestStatusView === "on-trip") return ["picked_up", "in_transit"].includes(status);
-          if (requestStatusView === "completed") return status === "delivered";
-          if (requestStatusView === "cancelled") return status === "cancelled";
-          return true;
-        })
-      : [];
-
-  const activeRequestCounts =
-    requestTab === "delivery"
-      ? {
-          all: deliveries.length,
-          pending: deliveryRequestPending.length,
-          accepted: deliveryRequestAccepted.length,
-          onTrip: deliveryRequestOnTrip.length,
-          completed: deliveryRequestCompleted.length,
-          cancelled: deliveryRequestCancelled.length
-        }
-      : requestTab === "rides"
-        ? {
-            all: rides.length,
-            pending: requestPending.length,
-            accepted: requestAccepted.length,
-            onTrip: requestOnTrip.length,
-            completed: requestCompleted.length,
-            cancelled: requestCancelled.length
-          }
-        : {
-            all: 0,
-            pending: 0,
-            accepted: 0,
-            onTrip: 0,
-            completed: 0,
-            cancelled: 0
-          };
-
-  const requestPeakBuckets = Array.from({ length: 6 }, (_, index) => {
-    const startHour = index * 4;
-    const endHour = startHour + 3;
-    const count = rides.filter((ride) => {
-      const date = new Date(ride.createdAt);
-      return !Number.isNaN(date.getTime()) && date.getHours() >= startHour && date.getHours() <= endHour;
-    }).length;
-    return {
-      label: `${String(startHour).padStart(2, "0")}:00`,
-      count
-    };
-  });
-  const requestPeakMax = Math.max(1, ...requestPeakBuckets.map((bucket) => bucket.count));
-
-  function handleExportCsv() {
-    const headers =
-      requestTab === "delivery"
-        ? ["id", "status", "passenger", "rider", "pickup", "dropoff", "package", "fee", "createdAt"]
-        : ["id", "status", "passenger", "rider", "pickup", "destination", "fare", "createdAt"];
-    const rows =
-      requestTab === "delivery"
-        ? visibleDeliveryRequestCards.map((delivery) => [
-            delivery.id,
-            delivery.status,
-            delivery.passenger.user.fullName,
-            delivery.rider?.user.fullName ?? "",
-            delivery.pickupAddress,
-            delivery.dropoffAddress,
-            delivery.packageDescription,
-            parseNumber(delivery.finalFee ?? delivery.estimatedFee).toString(),
-            delivery.createdAt
-          ])
-        : visibleRequestCards.map((ride) => [
-            ride.id,
-            ride.status,
-            ride.passenger.user.fullName,
-            ride.rider?.user.fullName ?? "",
-            ride.pickupAddress,
-            ride.destinationAddress,
-            parseNumber(ride.finalFare ?? ride.estimatedFare).toString(),
-            ride.createdAt
-          ]);
-    const csv = [
-      headers.join(","),
-      ...rows.map((row) =>
-        row.map((value) => `"${String(value).replaceAll("\"", "\"\"")}"`).join(",")
-      )
-    ].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = requestTab === "delivery" ? "okadago-delivery-requests.csv" : "okadago-ride-requests.csv";
-    link.click();
-    URL.revokeObjectURL(url);
-  }
+  const handleBulkAccept = () => {
+    const ids = activeTab === "rides" ? selectedRideIds : selectedDeliveryIds;
+    const action = activeTab === "rides" ? onRideAction : onDeliveryAction;
+    ids.forEach((id) => action(id as string, "accept"));
+    if (activeTab === "rides") setSelectedRideIds(new Set());
+    else setSelectedDeliveryIds(new Set());
+  };
+  const handleBulkDecline = () => {
+    const ids = activeTab === "rides" ? selectedRideIds : selectedDeliveryIds;
+    const action = activeTab === "rides" ? onRideAction : onDeliveryAction;
+    ids.forEach((id) => action(id as string, "decline"));
+    if (activeTab === "rides") setSelectedRideIds(new Set());
+    else setSelectedDeliveryIds(new Set());
+  };
 
   return (
-    <div className="admin-reference-dark admin-requests-dashboard">
-      <section className="admin-request-tabs">
+    <div className="exact-admin-screen">
+      {/* Tab switcher */}
+      <div className="admin-tab-bar">
         <button
-          className={requestTab === "rides" ? "active" : ""}
           type="button"
-          onClick={() => {
-            setRequestTab("rides");
-            setRequestStatusView("all");
-          }}
+          className={`admin-tab ${requestTab === "rides" ? "active" : ""}`}
+          onClick={() => onTabChange("rides")}
         >
           <Bike size={16} />
-          <span>Ride Requests</span>
+          Rides ({rides.length})
         </button>
         <button
-          className={requestTab === "food" ? "active" : ""}
           type="button"
-          onClick={() => {
-            setRequestTab("food");
-            setRequestStatusView("all");
-          }}
+          className={`admin-tab ${requestTab === "delivery" ? "active" : ""}`}
+          onClick={() => onTabChange("delivery")}
         >
           <Package size={16} />
-          <span>Food Orders</span>
+          Deliveries ({deliveries.length})
         </button>
-        <button
-          className={requestTab === "delivery" ? "active" : ""}
-          type="button"
-          onClick={() => {
-            setRequestTab("delivery");
-            setRequestStatusView("all");
-          }}
-        >
-          <Package size={16} />
-          <span>Delivery Requests</span>
-        </button>
-        <div className="admin-request-actions">
-          <button type="button" onClick={() => setRequestStatusView("pending")}>
-            <Filter size={15} />
-            <span>Show Pending</span>
-          </button>
+      </div>
+
+      {/* Status filter bar */}
+      <div className="admin-filter-bar">
+        <Filter size={14} />
+        {statusFilters.map((filter) => (
           <button
-            className="primary"
+            key={filter.key}
             type="button"
-            onClick={handleExportCsv}
-            disabled={
-              requestTab === "delivery"
-                ? visibleDeliveryRequestCards.length === 0
-                : visibleRequestCards.length === 0
-            }
+            className={`admin-filter-pill ${requestStatusView === filter.key ? "active" : ""}`}
+            onClick={() => onStatusViewChange(filter.key)}
           >
-            <Download size={15} />
-            <span>Export</span>
+            {filter.label}
+            <em>
+              {filter.key === "all"
+                ? activeRequestCounts.all
+                : filter.key === "pending"
+                  ? activeRequestCounts.pending
+                  : filter.key === "accepted"
+                    ? activeRequestCounts.accepted
+                    : filter.key === "on-trip"
+                      ? activeRequestCounts.onTrip
+                      : filter.key === "completed"
+                        ? activeRequestCounts.completed
+                        : activeRequestCounts.cancelled}
+            </em>
           </button>
-        </div>
-      </section>
+        ))}
+      </div>
 
-      <section className="admin-request-filter-row">
-        <button className={requestStatusView === "all" ? "active" : ""} type="button" onClick={() => setRequestStatusView("all")}>
-          All Requests <strong>{activeRequestCounts.all}</strong>
-        </button>
-        <button className={requestStatusView === "pending" ? "active" : ""} type="button" onClick={() => setRequestStatusView("pending")}>
-          Pending <strong>{activeRequestCounts.pending}</strong>
-        </button>
-        <button className={requestStatusView === "accepted" ? "active" : ""} type="button" onClick={() => setRequestStatusView("accepted")}>
-          Accepted <strong>{activeRequestCounts.accepted}</strong>
-        </button>
-        <button className={requestStatusView === "on-trip" ? "active" : ""} type="button" onClick={() => setRequestStatusView("on-trip")}>
-          On Trip <strong>{activeRequestCounts.onTrip}</strong>
-        </button>
-        <button className={requestStatusView === "completed" ? "active" : ""} type="button" onClick={() => setRequestStatusView("completed")}>
-          Completed <strong>{activeRequestCounts.completed}</strong>
-        </button>
-        <button className={`danger ${requestStatusView === "cancelled" ? "active" : ""}`} type="button" onClick={() => setRequestStatusView("cancelled")}>
-          Cancelled <strong>{activeRequestCounts.cancelled}</strong>
-        </button>
-      </section>
-
-      <section className="admin-request-layout">
-        <article className="admin-dark-card admin-request-list-card">
-          <div className="admin-dark-cardhead">
-            <div>
-              <h3>
-                {requestTab === "delivery"
-                  ? `All Delivery Requests (${deliveries.length})`
-                  : requestTab === "food"
-                    ? "All Food Orders (0)"
-                    : `All Ride Requests (${rides.length})`}
-              </h3>
-              <p>
-                {requestTab === "delivery"
-                  ? "Live parcel delivery requests from the backend delivery service."
-                  : requestTab === "food"
-                    ? "Food orders are not part of the backend yet."
-                    : "Live ride requests from the backend ride service."}
-              </p>
-            </div>
-            <span>Sort by: Newest</span>
-          </div>
-          {requestTab === "food" ? (
-            <EmptyCard
-              title="Food orders are not wired yet."
-              body="The delivery system is wired now. Food ordering still needs its own backend model and API before it can render live records."
-            />
-          ) : requestTab === "delivery" ? (
-            visibleDeliveryRequestCards.length === 0 ? (
-              <EmptyCard
-                title="No delivery requests match this filter."
-                body="Change the selected status filter or wait for matching live delivery requests."
-              />
-            ) : (
-              <div className="admin-request-list">
-                {visibleDeliveryRequestCards.map((delivery) => {
-                  const normalizedStatus = delivery.status.toLowerCase();
-                  const isActionable = ["searching", "pending"].includes(normalizedStatus);
-                  const isMutatingThisDelivery =
-                    isDeliveryActionPending && deliveryActionVariables?.deliveryId === delivery.id;
-
-                  return (
-                    <article key={delivery.id} className="admin-request-card">
-                      <div className="admin-request-user">
-                        <span className={`status-chip ${statusTone(delivery.status)}`}>
-                          {formatEnumLabel(delivery.status)}
-                        </span>
-                        <div className="admin-reference-avatar">
-                          {delivery.passenger.user.fullName
-                            .split(" ")
-                            .filter(Boolean)
-                            .slice(0, 2)
-                            .map((part) => part[0])
-                            .join("")
-                            .toUpperCase()}
-                        </div>
-                        <strong>{delivery.passenger.user.fullName}</strong>
-                        <small>{delivery.rider?.user.fullName ?? "Awaiting rider"}</small>
-                      </div>
-                      <div className="admin-request-route">
-                        <span>{delivery.pickupAddress}</span>
-                        <span>{delivery.dropoffAddress}</span>
-                        <small>
-                          {delivery.packageType}: {delivery.packageDescription}
-                        </small>
-                      </div>
-                      <div className="admin-request-fare">
-                        <strong>{formatMoney(delivery.currency, delivery.finalFee ?? delivery.estimatedFee)}</strong>
-                        <span>{delivery.id.slice(-10).toUpperCase()}</span>
-                      </div>
-                      <div className="admin-request-card-actions">
-                        {isActionable ? (
-                          <>
-                            <button
-                              type="button"
-                              disabled={isDeliveryActionPending}
-                              onClick={() => onDeliveryAction?.(delivery.id, "accept")}
-                            >
-                              {isMutatingThisDelivery ? "Working..." : "Accept"}
-                            </button>
-                            <button
-                              className="outline"
-                              type="button"
-                              disabled={isDeliveryActionPending}
-                              onClick={() => onDeliveryAction?.(delivery.id, "decline")}
-                            >
-                              Decline
-                            </button>
-                          </>
-                        ) : (
-                          <button type="button" onClick={() => setRequestStatusView("all")}>View Details</button>
-                        )}
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            )
-          ) : visibleRequestCards.length === 0 ? (
-            <EmptyCard
-              title="No ride requests match this filter."
-              body="Change the selected status filter or wait for matching live ride requests."
-            />
-          ) : (
-            <div className="admin-request-list">
-              {visibleRequestCards.map((ride) => {
-                const normalizedStatus = ride.status.toLowerCase();
-                const isActionable = ["searching", "pending"].includes(normalizedStatus);
-                const isMutatingThisRide =
-                  isRideActionPending && rideActionVariables?.rideId === ride.id;
-
-                return (
+      <div className="admin-screen-grid-2">
+        {/* Request cards */}
+        <div className="admin-card-list">
+          {requestTab === "rides" && (
+            <>
+              {visibleRequestCards.length === 0 ? (
+                <EmptyCard
+                  title="No ride requests found."
+                  body="Try switching the status filter or waiting for new requests."
+                />
+              ) : (
+                <>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", fontSize: 13, color: "var(--muted, #888)", cursor: "pointer" }}>
+                    <input
+                      type="checkbox"
+                      checked={visibleRequestCards.length > 0 && visibleRequestCards.every((r) => selectedRideIds.has(r.id))}
+                      onChange={toggleAllRides}
+                    />
+                    Select all rides
+                  </label>
+                  {visibleRequestCards.map((ride) => (
                   <article key={ride.id} className="admin-request-card">
-                    <div className="admin-request-user">
-                      <span className={`status-chip ${statusTone(ride.status)}`}>
-                        {formatEnumLabel(ride.status)}
-                      </span>
-                      <div className="admin-reference-avatar">
-                        {ride.passenger.user.fullName
-                          .split(" ")
-                          .filter(Boolean)
-                          .slice(0, 2)
-                          .map((part) => part[0])
-                          .join("")
-                          .toUpperCase()}
+                    <div className="admin-request-card-head">
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <input
+                          type="checkbox"
+                          checked={selectedRideIds.has(ride.id)}
+                          onChange={() => toggleRideId(ride.id)}
+                        />
+                        <div>
+                          <strong>{ride.passenger.user.fullName}</strong>
+                          <small>{ride.id.slice(-6).toUpperCase()}</small>
+                        </div>
                       </div>
-                      <strong>{ride.passenger.user.fullName}</strong>
-                      <small>{ride.rider?.user.fullName ?? "Awaiting rider"}</small>
+                      <em className={`admin-reference-tag ${statusTone(ride.status)}`}>
+                        {formatEnumLabel(ride.status)}
+                      </em>
                     </div>
-                    <div className="admin-request-route">
-                      <span>{ride.pickupAddress}</span>
-                      <span>{ride.destinationAddress}</span>
-                      <small>{formatDateTime(ride.createdAt)}</small>
+                    <div className="admin-request-card-route">
+                      <span>From: {ride.pickupAddress}</span>
+                      <span>To: {ride.destinationAddress}</span>
                     </div>
-                    <div className="admin-request-fare">
-                      <strong>{formatMoney(ride.currency, ride.finalFare ?? ride.estimatedFare)}</strong>
-                      <span>{ride.id.slice(-10).toUpperCase()}</span>
+                    <div className="admin-request-card-meta">
+                      <span>
+                        Rider: {ride.rider?.user.fullName ?? "Unassigned"}
+                      </span>
+                      <span>
+                        Fare:{" "}
+                        {formatMoney(
+                          ride.currency,
+                          parseNumber(ride.finalFare ?? ride.estimatedFare)
+                        )}
+                      </span>
+                      <span>{formatDateTime(ride.createdAt)}</span>
                     </div>
-                    <div className="admin-request-card-actions">
-                      {isActionable ? (
-                        <>
-                          <button
-                            type="button"
-                            disabled={isRideActionPending}
-                            onClick={() => onRideAction?.(ride.id, "accept")}
-                          >
-                            {isMutatingThisRide ? "Working..." : "Accept"}
-                          </button>
-                          <button
-                            className="outline"
-                            type="button"
-                            disabled={isRideActionPending}
-                            onClick={() => onRideAction?.(ride.id, "decline")}
-                          >
-                            Decline
-                          </button>
-                        </>
-                      ) : (
-                        <button type="button" onClick={() => setRequestStatusView("all")}>View Details</button>
-                      )}
-                    </div>
+                    {["searching", "pending"].includes(ride.status.toLowerCase()) && (
+                      <div className="admin-request-card-actions">
+                        <button
+                          type="button"
+                          className="button-sm success"
+                          disabled={isMutating}
+                          onClick={() => onRideAction(ride.id, "accept")}
+                        >
+                          <CheckCircle size={14} />
+                          Accept
+                        </button>
+                        <button
+                          type="button"
+                          className="button-sm danger"
+                          disabled={isMutating}
+                          onClick={() => onRideAction(ride.id, "decline")}
+                        >
+                          <XCircle size={14} />
+                          Decline
+                        </button>
+                      </div>
+                    )}
                   </article>
-                );
-              })}
-            </div>
+                ))}
+                </>
+              )}
+            </>
           )}
-          {rideActionError ? (
-            <div className="empty-state exact-admin-payout-feedback">
-              <strong>Ride request action failed.</strong>
-              <p>{rideActionError}</p>
-            </div>
-          ) : null}
-          {deliveryActionError ? (
-            <div className="empty-state exact-admin-payout-feedback">
-              <strong>Delivery request action failed.</strong>
-              <p>{deliveryActionError}</p>
-            </div>
-          ) : null}
-        </article>
 
-        <aside className="admin-request-side">
-          <article className="admin-dark-card">
-            <div className="admin-dark-cardhead">
-              <div>
-                <h3>Live Requests Map</h3>
-                <p>{mapMarkers.length} live rider locations.</p>
-              </div>
-              <span className="live-dot">Live</span>
-            </div>
-            <div className="admin-request-map">
-              <OperationsMap
-                center={mapMarkers[0]?.position ?? [5.6037, -0.187]}
-                zoom={mapMarkers.length > 0 ? 11 : 6}
-                markers={mapMarkers}
-                emptyTitle="No live map coordinates."
-                emptyDescription="Online riders with coordinates will appear here."
-              />
-            </div>
-          </article>
+          {requestTab === "delivery" && (
+            <>
+              {visibleDeliveryRequestCards.length === 0 ? (
+                <EmptyCard
+                  title="No delivery requests found."
+                  body="Try switching the status filter or waiting for new deliveries."
+                />
+              ) : (
+                <>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", fontSize: 13, color: "var(--muted, #888)", cursor: "pointer" }}>
+                    <input
+                      type="checkbox"
+                      checked={visibleDeliveryRequestCards.length > 0 && visibleDeliveryRequestCards.every((d) => selectedDeliveryIds.has(d.id))}
+                      onChange={toggleAllDeliveries}
+                    />
+                    Select all deliveries
+                  </label>
+                  {visibleDeliveryRequestCards.map((delivery) => (
+                  <article key={delivery.id} className="admin-request-card">
+                    <div className="admin-request-card-head">
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <input
+                          type="checkbox"
+                          checked={selectedDeliveryIds.has(delivery.id)}
+                          onChange={() => toggleDeliveryId(delivery.id)}
+                        />
+                        <div>
+                          <strong>{delivery.passenger.user.fullName}</strong>
+                          <small>{delivery.id.slice(-6).toUpperCase()}</small>
+                        </div>
+                      </div>
+                      <em className={`admin-reference-tag ${statusTone(delivery.status)}`}>
+                        {formatEnumLabel(delivery.status)}
+                      </em>
+                    </div>
+                    <div className="admin-request-card-route">
+                      <span>From: {delivery.pickupAddress}</span>
+                      <span>To: {delivery.dropoffAddress}</span>
+                    </div>
+                    <div className="admin-request-card-meta">
+                      <span>Package: {delivery.packageDescription}</span>
+                      <span>Recipient: {delivery.recipientName}</span>
+                      <span>
+                        Fee:{" "}
+                        {formatMoney(
+                          delivery.currency,
+                          parseNumber(delivery.finalFee ?? delivery.estimatedFee)
+                        )}
+                      </span>
+                      <span>{formatDateTime(delivery.createdAt)}</span>
+                    </div>
+                    {["searching", "pending"].includes(delivery.status.toLowerCase()) && (
+                      <div className="admin-request-card-actions">
+                        <button
+                          type="button"
+                          className="button-sm success"
+                          disabled={isMutating}
+                          onClick={() => onDeliveryAction(delivery.id, "accept")}
+                        >
+                          <CheckCircle size={14} />
+                          Accept
+                        </button>
+                        <button
+                          type="button"
+                          className="button-sm danger"
+                          disabled={isMutating}
+                          onClick={() => onDeliveryAction(delivery.id, "decline")}
+                        >
+                          <XCircle size={14} />
+                          Decline
+                        </button>
+                      </div>
+                    )}
+                  </article>
+                ))}
+                </>
+              )}
+            </>
+          )}
+        </div>
 
-          <article className="admin-dark-card">
-            <div className="admin-dark-cardhead">
+        {/* Peak hours chart */}
+        <aside className="admin-sidebar-panel">
+          <article className="admin-reference-card">
+            <div className="admin-reference-cardhead">
               <div>
-                <h3>Request Statistics</h3>
-                <p>Current ride request status mix.</p>
+                <h3>Peak Hours</h3>
+                <p>Ride volume by time of day.</p>
               </div>
-              <span>Today</span>
+              <Clock size={16} />
             </div>
-            <div className="admin-request-stats">
-              <div><Package size={16} /><span>Total Requests</span><strong>{rides.length}</strong></div>
-              <div><Clock size={16} /><span>Pending</span><strong>{requestPending.length}</strong></div>
-              <div><CheckCircle size={16} /><span>Accepted</span><strong>{requestAccepted.length}</strong></div>
-              <div><Bike size={16} /><span>On Trip</span><strong>{requestOnTrip.length}</strong></div>
-              <div><CheckCircle size={16} /><span>Completed</span><strong>{requestCompleted.length}</strong></div>
-              <div><XCircle size={16} /><span>Cancelled</span><strong>{requestCancelled.length}</strong></div>
-            </div>
-          </article>
-
-          <article className="admin-dark-card">
-            <div className="admin-dark-cardhead">
-              <div>
-                <h3>Peak Request Time</h3>
-                <p>Requests grouped into 4-hour windows.</p>
-              </div>
-              <span>Today</span>
-            </div>
-            <div className="admin-request-peak-chart">
+            <div className="admin-reference-bars horizontal">
               {requestPeakBuckets.map((bucket) => (
-                <div key={bucket.label}>
-                  <i style={{ height: bucket.count === 0 ? 0 : `${Math.max(8, (bucket.count / requestPeakMax) * 100)}%` }} />
+                <div key={bucket.label} className="admin-reference-hbar-row">
                   <span>{bucket.label}</span>
+                  <div className="admin-reference-hbar-track">
+                    <div
+                      className="admin-reference-hbar-fill"
+                      style={{ width: `${Math.max(4, (bucket.count / requestPeakMax) * 100)}%` }}
+                    />
+                  </div>
+                  <em>{bucket.count}</em>
                 </div>
               ))}
             </div>
           </article>
+
+          <article className="admin-reference-card">
+            <div className="admin-reference-cardhead">
+              <div>
+                <h3>Status Summary</h3>
+              </div>
+            </div>
+            <ul className="admin-summary-list">
+              <li>
+                <span>Pending dispatch</span>
+                <strong>{activeRequestCounts.pending}</strong>
+              </li>
+              <li>
+                <span>Accepted / en route</span>
+                <strong>{activeRequestCounts.accepted}</strong>
+              </li>
+              <li>
+                <span>On trip</span>
+                <strong>{activeRequestCounts.onTrip}</strong>
+              </li>
+              <li>
+                <span>Completed</span>
+                <strong>{activeRequestCounts.completed}</strong>
+              </li>
+              <li>
+                <span>Cancelled</span>
+                <strong>{activeRequestCounts.cancelled}</strong>
+              </li>
+            </ul>
+          </article>
         </aside>
-      </section>
+      </div>
+
+      {selectedCount > 0 && (
+        <div
+          className="admin-bulk-bar"
+          style={{
+            position: "sticky",
+            bottom: 0,
+            background: "var(--card-bg, #1a1b1e)",
+            borderTop: "1px solid var(--border)",
+            padding: "12px 16px",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            zIndex: 10
+          }}
+        >
+          <span style={{ fontSize: 13, color: "var(--muted, #aaa)" }}>
+            {selectedCount} {activeTab === "rides" ? "ride" : "delivery"}{selectedCount !== 1 ? "s" : ""} selected
+          </span>
+          <button type="button" className="admin-select-sm" onClick={handleBulkAccept}>
+            <CheckCircle size={14} /> Accept Selected
+          </button>
+          <button type="button" className="admin-select-sm" onClick={handleBulkDecline}>
+            <XCircle size={14} /> Decline Selected
+          </button>
+          <button
+            type="button"
+            className="admin-select-sm"
+            onClick={() => { setSelectedRideIds(new Set()); setSelectedDeliveryIds(new Set()); }}
+          >
+            Clear Selection
+          </button>
+        </div>
+      )}
     </div>
   );
 }

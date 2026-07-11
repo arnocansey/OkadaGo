@@ -3,6 +3,7 @@ import { LayoutDashboard } from "lucide-react";
 export type AdminConsoleScreen =
   | "dashboard"
   | "rides"
+  | "deliveries"
   | "riders"
   | "riderVerification"
   | "riderDocuments"
@@ -17,7 +18,11 @@ export type AdminConsoleScreen =
   | "payments"
   | "ratings"
   | "promotions"
+  | "zones"
   | "supportTickets"
+  | "notifications"
+  | "reports"
+  | "auditLogs"
   | "settings"
   | "admins";
 
@@ -348,4 +353,33 @@ export type AdminIncidentRecord = {
     pickupAddress: string;
     destinationAddress: string;
   } | null;
+};
+
+export type AuditLogRecord = {
+  id: string;
+  action: string;
+  entity: string;
+  entityId: string | null;
+  details: Record<string, unknown> | null;
+  createdAt: string;
+  actor: {
+    id: string;
+    fullName: string;
+    email: string | null;
+    role: string;
+  } | null;
+};
+
+export type RiderFinancialRow = {
+  rider: RiderRecord;
+  rideCount: number;
+  completedCount: number;
+  activeCount: number;
+  revenue: number;
+  earnings: number;
+  commission: number;
+  averageRating: number;
+  ratingCount: number;
+  walletMovement: number;
+  payoutTotal: number;
 };

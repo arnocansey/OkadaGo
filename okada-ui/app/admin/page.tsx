@@ -1,9 +1,5 @@
-import { AdminConsolePage } from "@/components/dashboard/admin-console-page";
+import AdminScreenClient from "./[screen]/admin-screen-client";
 
-export const metadata = {
-  title: "Admin Flow | OkadaGo"
-};
-
-export default function AdminPage() {
-  return <AdminConsolePage screen="dashboard" />;
+export default function AdminDashboardPage() {
+  return <AdminScreenClient screen="dashboard" />;
 }

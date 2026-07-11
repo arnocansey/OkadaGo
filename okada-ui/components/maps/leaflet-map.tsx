@@ -7,11 +7,15 @@ import {
   MapContainer,
   Marker,
   Polyline,
+  Popup,
   TileLayer,
   Tooltip,
   useMap
 } from "react-leaflet";
 import { useIsMobile } from "@/hooks/use-mobile";
+
+const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim();
+const useGoogleTiles = Boolean(googleMapsKey);
 
 export type MapMarkerVariant = "default" | "pickup" | "destination" | "driver";
 
@@ -21,6 +25,8 @@ export interface LeafletMapMarker {
   label: string;
   variant?: MapMarkerVariant;
   permanentLabel?: boolean;
+  lastUpdated?: string;
+  profileUrl?: string;
 }
 
 export interface LeafletMapCurrentPosition {
@@ -36,6 +42,7 @@ export interface LeafletMapProps {
   currentPosition?: LeafletMapCurrentPosition | null;
   viewportSync?: boolean;
   onRecenter?: () => void;
+  showFitAll?: boolean;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -55,7 +62,7 @@ const ICONS: Record<string, L.DivIcon> = {
   }),
   driver: L.divIcon({
     className: "leaflet-custom-icon",
-    html: '<div class="leaflet-marker driver"></div>',
+    html: '<div class="leaflet-marker driver pulsing"></div>',
     iconSize: [24, 24],
     iconAnchor: [12, 12]
   }),
@@ -72,6 +79,32 @@ function pickIcon(variant: MapMarkerVariant | undefined): L.DivIcon | undefined 
     return ICONS[variant];
   }
   return undefined;
+}
+
+function FitAllButton({ positions }: { positions: [number, number][] }) {
+  const map = useMap();
+
+  const handleClick = useCallback(() => {
+    if (positions.length === 0) return;
+    const bounds = L.latLngBounds(positions);
+    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 16, animate: true });
+  }, [map, positions]);
+
+  if (positions.length < 2) return null;
+
+  return (
+    <button
+      type="button"
+      className="map-fit-all-btn"
+      onClick={handleClick}
+      aria-label="Fit map to show all riders"
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+      </svg>
+      Fit All
+    </button>
+  );
 }
 
 function ViewportSync({
@@ -119,6 +152,7 @@ export function LeafletMap({
   currentPosition = null,
   viewportSync = false,
   onRecenter,
+  showFitAll = false,
   className = "leaflet-map-surface",
   style = { width: "100%", height: "100%", minHeight: 440 }
 }: LeafletMapProps) {
@@ -135,6 +169,10 @@ export function LeafletMap({
   }, []);
 
   const mapKey = `osm:${center[0].toFixed(5)}:${center[1].toFixed(5)}:${zoom}`;
+
+  const driverPositions = markers
+    .filter((m) => m.variant === "driver")
+    .map((m) => m.position);
 
   return (
     <>
@@ -172,10 +210,19 @@ export function LeafletMap({
       >
         <InitialSize />
         {viewportSync && <ViewportSync center={center} zoom={zoom} />}
+        {showFitAll && <FitAllButton positions={driverPositions} />}
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          subdomains={["a", "b", "c"]}
+          attribution={
+            useGoogleTiles
+              ? '&copy; <a href="https://developers.google.com/maps/documentation/javascript/" target="_blank" rel="noreferrer">Google Maps</a>'
+              : '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors'
+          }
+          url={
+            useGoogleTiles
+              ? `https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${googleMapsKey}`
+              : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          }
+          subdomains={useGoogleTiles ? ["0", "1", "2", "3"] : ["a", "b", "c"]}
           eventHandlers={{
             tileerror: onTileError,
             tileload: onTileLoad
@@ -213,6 +260,28 @@ export function LeafletMap({
               <Tooltip direction="top" offset={[0, -10]} permanent={!!m.permanentLabel}>
                 {m.label}
               </Tooltip>
+            )}
+            {m.variant === "driver" && (
+              <Popup>
+                <div className="rider-popup">
+                  <strong className="rider-popup-name">{m.label}</strong>
+                  {m.lastUpdated && (
+                    <span className="rider-popup-updated">
+                      Last updated: {m.lastUpdated}
+                    </span>
+                  )}
+                  {m.profileUrl && (
+                    <a
+                      className="rider-popup-link"
+                      href={m.profileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View Profile
+                    </a>
+                  )}
+                </div>
+              </Popup>
             )}
           </Marker>
         ))}

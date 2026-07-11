@@ -2,11 +2,12 @@
 
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { AdminConsoleScreen } from "@/components/dashboard/admin-console-page";
+import { AdminToastProvider } from "@/components/dashboard/admin/AdminToast";
+import type { AdminConsoleScreen } from "@/components/dashboard/admin/types";
 
 const AdminConsolePage = dynamic(
   () =>
-    import("@/components/dashboard/admin-console-page").then(m => ({
+    import("@/components/dashboard/AdminConsolePage").then(m => ({
       default: m.AdminConsolePage
     })),
   {
@@ -25,5 +26,9 @@ export default function AdminScreenClient({
 }: {
   screen: AdminConsoleScreen;
 }) {
-  return <AdminConsolePage screen={screen} />;
+  return (
+    <AdminToastProvider>
+      <AdminConsolePage screen={screen} />
+    </AdminToastProvider>
+  );
 }

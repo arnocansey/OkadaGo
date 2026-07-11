@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import {
   Bell,
   Bike,
+  BookOpen,
   CalendarDays,
   ChevronDown,
   CreditCard,
@@ -13,14 +14,20 @@ import {
   LogOut,
   MapPin,
   Menu,
+  Package,
   Search,
   ShieldAlert,
   Tag,
   User,
-  Users
+  Users,
+  TrendingUp,
+  Globe,
+  ClipboardList,
+  Sun,
+  Moon,
+  X
 } from "lucide-react";
 import { ImmersivePage } from "@/components/layout/immersive-page";
-import { AdminSidebarPulse } from "./AdminSidebarPulse";
 import type { AdminConsoleScreen, AdminNavItem, AdminScreenMeta, AdminHighlight } from "./types";
 
 export type AdminShellBadgeData = {
@@ -44,6 +51,8 @@ export type AdminShellBadgeData = {
   adminAccountsCount: number;
   ratingsCount: number;
   openSupportTicketsCount: number;
+  deliveriesCount: number;
+  completedDeliveriesCount: number;
 };
 
 export type AdminShellProps = {
@@ -52,12 +61,8 @@ export type AdminShellProps = {
   badgeData: AdminShellBadgeData;
   screenHighlights: Record<AdminConsoleScreen, AdminHighlight[]>;
   dashboardToday: string;
-  currency: string;
   userName: string;
-  activeTrips: number;
-  activeRiders: number;
-  totalRevenue: number;
-  zonesCount: number;
+  adminRoleEntries?: [string, string[]][];
   children: React.ReactNode;
 };
 
@@ -66,6 +71,33 @@ const navGroups = [
   { label: "Finance", key: "finance" as const },
   { label: "System", key: "system" as const }
 ];
+
+const screenPermissions: Partial<Record<AdminConsoleScreen, string>> = {
+  dashboard: "dashboard.view",
+  rides: "rides.view",
+  deliveries: "deliveries.view",
+  riders: "riders.view",
+  riderVerification: "riders.verify",
+  riderDocuments: "riders.documents",
+  riderPerformance: "riders.performance",
+  riderEarnings: "riders.earnings",
+  riderWallet: "riders.wallet",
+  riderPayouts: "riders.payouts",
+  riderComplaints: "riders.complaints",
+  riderActivity: "riders.activity",
+  riderSuspensions: "riders.suspensions",
+  passengers: "passengers.view",
+  payments: "finance.view",
+  ratings: "ratings.view",
+  promotions: "promotions.view",
+  zones: "zones.view",
+  supportTickets: "support.view",
+  notifications: "notifications.view",
+  reports: "reports.view",
+  auditLogs: "audit.view",
+  settings: "settings.view",
+  admins: "admins.view"
+};
 
 const screenMeta: Record<AdminConsoleScreen, AdminScreenMeta> = {
   dashboard: {
@@ -86,6 +118,15 @@ const screenMeta: Record<AdminConsoleScreen, AdminScreenMeta> = {
     quickActionHref: "/admin/riders",
     quickActionNote: "Compare ride demand against online rider availability."
   },
+  deliveries: {
+    eyebrow: "Delivery operations",
+    title: "Deliveries",
+    description: "Monitor all package delivery requests, statuses, routes, and courier assignments.",
+    searchLabel: "Search deliveries, recipients, or addresses...",
+    quickActionLabel: "View all requests",
+    quickActionHref: "/admin/requests",
+    quickActionNote: "Cross-reference delivery feed with ride request dashboard."
+  },
   riders: {
     eyebrow: "Supply management",
     title: "Riders",
@@ -102,7 +143,7 @@ const screenMeta: Record<AdminConsoleScreen, AdminScreenMeta> = {
     searchLabel: "Search rider verification queue...",
     quickActionLabel: "Open rider documents",
     quickActionHref: "/admin/riders/documents",
-    quickActionNote: "Verification status is derived from live rider records until a dedicated KYC endpoint is added."
+    quickActionNote: "Verification status is derived from live rider records."
   },
   riderDocuments: {
     eyebrow: "Riders management",
@@ -111,7 +152,7 @@ const screenMeta: Record<AdminConsoleScreen, AdminScreenMeta> = {
     searchLabel: "Search rider documents...",
     quickActionLabel: "Open verification",
     quickActionHref: "/admin/riders/verification",
-    quickActionNote: "Document uploads and expiry dates need backend support; this page currently exposes readiness gaps without dummy files."
+    quickActionNote: "Document uploads and expiry dates tracked from live rider records."
   },
   riderPerformance: {
     eyebrow: "Riders management",
@@ -212,6 +253,15 @@ const screenMeta: Record<AdminConsoleScreen, AdminScreenMeta> = {
     quickActionHref: "/admin/finance",
     quickActionNote: "See how incentives are affecting platform cashflow."
   },
+  zones: {
+    eyebrow: "Platform configuration",
+    title: "Zone Management",
+    description: "View and manage all service zones, pricing parameters, coverage cities, and active status.",
+    searchLabel: "Search zones or cities...",
+    quickActionLabel: "Open settings",
+    quickActionHref: "/admin/settings",
+    quickActionNote: "Zone changes affect ride pricing platform-wide."
+  },
   supportTickets: {
     eyebrow: "Support operations",
     title: "Support Tickets",
@@ -220,6 +270,33 @@ const screenMeta: Record<AdminConsoleScreen, AdminScreenMeta> = {
     quickActionLabel: "View rider complaints",
     quickActionHref: "/admin/riders/complaints",
     quickActionNote: "Cross-check app support tickets with rider-linked incident reports."
+  },
+  notifications: {
+    eyebrow: "Communication",
+    title: "Notifications",
+    description: "Broadcast push notifications and operational alerts to riders, passengers, or all users.",
+    searchLabel: "Search notification history...",
+    quickActionLabel: "View promotions",
+    quickActionHref: "/admin/promotions",
+    quickActionNote: "Pair targeted notifications with active promotion campaigns."
+  },
+  reports: {
+    eyebrow: "Business intelligence",
+    title: "Reports",
+    description: "Aggregate platform performance data across rides, revenue, riders, and passengers over time.",
+    searchLabel: "Search reports...",
+    quickActionLabel: "View finance",
+    quickActionHref: "/admin/finance",
+    quickActionNote: "Reports compile data from live operations into digestible summaries."
+  },
+  auditLogs: {
+    eyebrow: "Compliance & audit",
+    title: "Audit Logs",
+    description: "Review admin actions, data mutations, and operational events with actor attribution.",
+    searchLabel: "Search audit events or actors...",
+    quickActionLabel: "Manage admins",
+    quickActionHref: "/admin/admins",
+    quickActionNote: "Audit logs track all privileged admin operations."
   },
   settings: {
     eyebrow: "Platform controls",
@@ -247,18 +324,38 @@ export function AdminShell({
   badgeData,
   screenHighlights,
   dashboardToday,
-  currency,
   userName,
-  activeTrips,
-  activeRiders,
-  totalRevenue,
-  zonesCount,
+  adminRoleEntries = [],
   children
 }: AdminShellProps) {
   const [expandedNavSections, setExpandedNavSections] = useState<Record<string, boolean>>({});
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const toggleSidebar = useCallback(() => setSidebarOpen((prev) => !prev), []);
+  const [desktopOpen, setDesktopOpen] = useState(true);
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const toggleSidebar = useCallback(() => {
+    if (typeof window !== "undefined" && window.innerWidth > 1024) {
+      setDesktopOpen((prev) => !prev);
+    } else {
+      setSidebarOpen((prev) => !prev);
+    }
+  }, []);
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+  }, []);
+
+  const permittedScreens = useMemo(() => {
+    if (adminRoleEntries.length === 0) return null;
+    const allPerms = new Set(adminRoleEntries.flatMap(([, perms]) => perms));
+    if (allPerms.has("admin.full_access") || allPerms.has("*")) return null;
+    const allowed = new Set<AdminConsoleScreen>();
+    for (const [screenKey, perm] of Object.entries(screenPermissions)) {
+      if (allPerms.has(perm) || allPerms.has(perm.split(".")[0] + ".*")) {
+        allowed.add(screenKey as AdminConsoleScreen);
+      }
+    }
+    return allowed;
+  }, [adminRoleEntries]);
 
   const initials = userName
     .split(" ")
@@ -268,8 +365,8 @@ export function AdminShell({
     .join("")
     .toUpperCase();
 
-  const navItems: AdminNavItem[] = useMemo(
-    () => [
+  const navItems: AdminNavItem[] = useMemo(() => {
+    const allItems: AdminNavItem[] = [
       {
         label: "Dashboard",
         href: "/admin",
@@ -287,6 +384,15 @@ export function AdminShell({
         group: "main",
         hint: "Ride requests and history",
         badge: `${badgeData.completedTripsCount}`
+      },
+      {
+        label: "Deliveries",
+        href: "/admin/deliveries",
+        icon: Package,
+        screen: "deliveries",
+        group: "main",
+        hint: "Package delivery orders",
+        badge: `${badgeData.deliveriesCount}`
       },
       {
         label: "Riders Management",
@@ -387,6 +493,15 @@ export function AdminShell({
         badge: `${badgeData.ratingsCount}`
       },
       {
+        label: "Reports",
+        href: "/admin/reports",
+        icon: TrendingUp,
+        screen: "reports",
+        group: "finance",
+        hint: "Business intelligence",
+        badge: "New"
+      },
+      {
         label: "Promotions",
         href: "/admin/promotions",
         icon: Tag,
@@ -403,6 +518,33 @@ export function AdminShell({
         group: "system",
         hint: "Passenger and rider cases",
         badge: `${badgeData.openSupportTicketsCount}`
+      },
+      {
+        label: "Notifications",
+        href: "/admin/notifications",
+        icon: Bell,
+        screen: "notifications",
+        group: "system",
+        hint: "Push alerts and broadcasts",
+        badge: "New"
+      },
+      {
+        label: "Zone Management",
+        href: "/admin/zones",
+        icon: Globe,
+        screen: "zones",
+        group: "system",
+        hint: "Service zones and pricing",
+        badge: `${badgeData.zonesActiveCount}`
+      },
+      {
+        label: "Audit Logs",
+        href: "/admin/audit-logs",
+        icon: ClipboardList,
+        screen: "auditLogs",
+        group: "system",
+        hint: "Admin action history",
+        badge: "New"
       },
       {
         label: "Settings",
@@ -422,169 +564,193 @@ export function AdminShell({
         hint: "Roles and account control",
         badge: `${badgeData.adminAccountsCount}`
       }
-    ],
-    [badgeData]
-  );
+    ];
+
+    if (!permittedScreens) return allItems;
+
+    const filtered = allItems
+      .map((item) => {
+        const screenAllowed = permittedScreens.has(item.screen);
+        const filteredChildren = item.children?.filter((child) =>
+          permittedScreens.has(child.screen)
+        );
+        if (!screenAllowed && (!filteredChildren || filteredChildren.length === 0)) return null;
+        if (filteredChildren && filteredChildren.length === 0) return null;
+        return { ...item, children: filteredChildren ?? item.children };
+      })
+      .filter(Boolean) as AdminNavItem[];
+
+    return filtered.length > 0 ? filtered : allItems;
+  }, [badgeData, permittedScreens]);
+
+  const currentMeta = screenMeta[screen];
+  const highlights = screenHighlights[screen] ?? [];
+
+  const toggleSection = (key: string) => {
+    setExpandedNavSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const isChildActive = (item: AdminNavItem) =>
+    item.children?.some((child) => child.screen === screen) ?? false;
 
   return (
     <ImmersivePage className="exact-admin-page">
-      <div className={`exact-admin-shell admin-dark-shell ${screen === "payments" ? "admin-finance-shell" : ""}`}>
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
         <div
-          className={`exact-admin-overlay ${sidebarOpen ? "is-visible" : ""}`}
+          className="exact-admin-overlay"
           onClick={closeSidebar}
           aria-hidden="true"
         />
-        <aside className={`exact-admin-sidebar ${sidebarOpen ? "is-open" : ""}`}>
+      )}
+
+      <div className={`exact-admin-shell ${desktopOpen ? "" : "desktop-collapsed"}`} data-theme={theme}>
+        {/* Sidebar */}
+        <aside className={`exact-admin-sidebar ${sidebarOpen ? "open" : ""}`}>
           <div className="exact-admin-brand">
-            <div>
-              <strong>Okada<span>Go</span></strong>
-              <small>Move - Deliver - Earn</small>
-            </div>
+            <strong>Okada<span>Go</span></strong>
+            <small>Web Operations Portal</small>
+            <button
+              type="button"
+              className="exact-admin-sidebar-close"
+              onClick={closeSidebar}
+              aria-label="Close sidebar"
+            >
+              <X size={18} />
+            </button>
           </div>
 
-          <nav className="exact-admin-nav">
-            {navGroups.map((group) => (
-              <div key={group.key} className="exact-admin-navgroup">
-                <p className="exact-admin-navlabel">{group.label}</p>
-                {navItems
-                  .filter((item) => item.group === group.key)
-                  .map((item) => {
+          <nav className="exact-admin-nav" aria-label="Admin navigation">
+            {navGroups.map((group) => {
+              const groupItems = navItems.filter((item) => item.group === group.key);
+              return (
+                <div key={group.key} className="exact-admin-navgroup">
+                  <p className="exact-admin-navlabel">{group.label}</p>
+                  {groupItems.map((item) => {
                     const Icon = item.icon;
-                    const isActive =
-                      item.screen === screen || Boolean(item.children?.some((child) => child.screen === screen));
-                    const hasChildren = Boolean(item.children?.length);
-                    const isExpanded = hasChildren ? expandedNavSections[item.label] ?? isActive : false;
+                    const isActive = item.screen === screen || isChildActive(item);
+                    const isExpanded = expandedNavSections[item.screen] ?? isChildActive(item);
 
                     return (
-                      <div key={item.label} className="exact-admin-navitem">
-                        {hasChildren ? (
+                      <div key={item.screen} className="exact-admin-navitem">
+                        {item.children ? (
                           <button
                             type="button"
                             className={`exact-admin-nav-toggle ${isActive ? "active" : ""} ${isExpanded ? "is-open" : ""}`}
+                            onClick={() => toggleSection(item.screen)}
                             aria-expanded={isExpanded}
-                            onClick={() =>
-                              setExpandedNavSections((current) => ({
-                                ...current,
-                                [item.label]: !(current[item.label] ?? isActive)
-                              }))
-                            }
                           >
-                            <Icon size={18} />
+                            <Icon size={16} />
                             <div className="exact-admin-navcopy">
                               <strong>{item.label}</strong>
-                              <small>{item.hint}</small>
                             </div>
-                            {item.badge ? <em>{item.badge}</em> : null}
-                            <ChevronDown className="exact-admin-nav-chevron" size={15} />
+                            {item.badge && item.badge !== "0" && (
+                              <em>{item.badge}</em>
+                            )}
+                            <ChevronDown
+                              size={14}
+                              className="exact-admin-nav-chevron"
+                            />
                           </button>
                         ) : (
-                          <a href={item.href} className={isActive ? "active" : ""}>
-                            <Icon size={18} />
+                          <a
+                            href={item.href}
+                            className={item.screen === screen ? "active" : ""}
+                            onClick={closeSidebar}
+                          >
+                            <Icon size={16} />
                             <div className="exact-admin-navcopy">
                               <strong>{item.label}</strong>
-                              <small>{item.hint}</small>
                             </div>
-                            {item.badge ? <em>{item.badge}</em> : null}
+                            {item.badge && item.badge !== "0" && (
+                              <em>{item.badge}</em>
+                            )}
                           </a>
                         )}
-                        {item.children && isExpanded ? (
+                        {item.children && isExpanded && (
                           <div className="exact-admin-subnav">
                             {item.children.map((child) => (
                               <a
-                                key={child.href}
+                                key={child.screen}
                                 href={child.href}
                                 className={child.screen === screen ? "active" : ""}
+                                onClick={closeSidebar}
                               >
                                 <span>{child.label}</span>
-                                {child.badge ? <em>{child.badge}</em> : null}
+                                {child.badge && child.badge !== "0" && (
+                                  <em>{child.badge}</em>
+                                )}
                               </a>
                             ))}
                           </div>
-                        ) : null}
+                        )}
                       </div>
                     );
                   })}
-              </div>
-            ))}
-            <div className="exact-admin-navgroup exact-admin-navgroup-quiet">
-              <p className="exact-admin-navlabel">Reference</p>
-              <a href="/admin/settings">
-                <FileText size={18} />
-                <span>Platform controls</span>
-              </a>
-            </div>
+                </div>
+              );
+            })}
           </nav>
 
-          <AdminSidebarPulse
-            currency={currency}
-            activeTrips={activeTrips}
-            activeRiders={activeRiders}
-            totalRevenue={totalRevenue}
-            zones={zonesCount}
-          />
-
-          <button className="exact-admin-profile" type="button" onClick={onSignOut}>
+          <div className="exact-admin-profile" onClick={onSignOut} title="Click to Sign Out">
             <div className="exact-avatar">{initials}</div>
             <div>
               <strong>{userName}</strong>
-              <span>Super admin workspace</span>
+              <span>Sign Out</span>
             </div>
-            <LogOut size={16} />
-          </button>
+          </div>
         </aside>
 
-        <section className="exact-admin-main">
+        {/* Main content */}
+        <div className="exact-admin-main">
+          {/* Top bar */}
           <header className="exact-admin-topbar">
-            <div className="exact-admin-topbarcopy">
-              <button className="exact-admin-menu-button" type="button" aria-label="Open admin navigation" onClick={toggleSidebar}>
-                <Menu size={21} />
-              </button>
-              <div className="exact-admin-pageintro">
-                <div className="exact-admin-topmeta">
-                  <strong>{screenMeta[screen].title}</strong>
-                  <span>{screenMeta[screen].description}</span>
-                </div>
-              </div>
-              <div className="exact-admin-search">
-                <Search size={16} />
-                <input placeholder={screenMeta[screen].searchLabel} />
-              </div>
+            <button
+              type="button"
+              className="exact-admin-menu-button"
+              onClick={toggleSidebar}
+              aria-label="Toggle sidebar"
+            >
+              <Menu size={20} />
+            </button>
+
+            <div className="exact-admin-topmeta">
+              <strong>{currentMeta.title}</strong>
+              <span>{currentMeta.eyebrow}</span>
             </div>
 
-            <div className="exact-admin-actions">
-              <button className="exact-icon-button notification" type="button">
-                <Bell size={18} />
-              </button>
-              <button className="exact-admin-zone" type="button">
-                <CalendarDays size={15} />
-                <span>{dashboardToday}</span>
-                <ChevronDown size={15} />
-              </button>
-              <div className="exact-admin-top-profile">
-                <div className="exact-avatar">{initials}</div>
-                <div>
-                  <strong>{userName}</strong>
-                  <span>Super Admin</span>
+            <div className="exact-admin-highlights">
+              {highlights.map((highlight) => (
+                <div key={highlight.label} className="exact-admin-highlight">
+                  <span>{highlight.label}</span>
+                  <strong>{highlight.value}</strong>
                 </div>
-                <ChevronDown size={15} />
+              ))}
+            </div>
+
+            <div className="exact-admin-top-profile">
+              <button
+                type="button"
+                className="exact-admin-menu-button"
+                onClick={toggleTheme}
+                title="Toggle Theme Mode"
+                style={{ marginRight: 12, opacity: 0.8 }}
+              >
+                {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
+              </button>
+              <div className="exact-avatar">{initials}</div>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <strong>{userName}</strong>
+                <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>{dashboardToday}</span>
               </div>
             </div>
           </header>
 
-          <div className="exact-admin-subbar">
-            <div className="exact-admin-highlights">
-              {screenHighlights[screen].map((item) => (
-                <div key={item.label} className="exact-admin-highlight">
-                  <span>{item.label}</span>
-                  <strong>{item.value}</strong>
-                </div>
-              ))}
-            </div>
-            <p className="exact-admin-subnote">{screenMeta[screen].quickActionNote}</p>
-          </div>
-
-          <div className="exact-admin-scroll">{children}</div>
-        </section>
+          {/* Page content */}
+          <main className="exact-admin-scroll">
+            {children}
+          </main>
+        </div>
       </div>
     </ImmersivePage>
   );

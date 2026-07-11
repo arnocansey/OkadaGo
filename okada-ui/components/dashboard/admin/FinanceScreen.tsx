@@ -1,276 +1,226 @@
-"use client";
-
-import { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
-import { Bike, CreditCard, Package } from "lucide-react";
+import { CreditCard, TrendingUp, TrendingDown, Filter, Download } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
+import { downloadCsv } from "@/lib/export-csv";
 import { EmptyCard } from "./EmptyCard";
-import type {
-  PayoutRequestRecord,
-  WalletTransactionRecord
-} from "./types";
+import type { WalletTransactionRecord, PayoutRequestRecord } from "./types";
+import { parseNumber, formatDateTime, statusTone, formatEnumLabel } from "./utils";
+import { useBreakpoint } from "../../../hooks/use-breakpoint";
+import { SkeletonKPI, SkeletonTable } from "./AdminSkeleton";
 
-function parseNumber(value: string | number | null | undefined) {
-  if (typeof value === "number") return value;
-  if (typeof value === "string" && value.trim() !== "") return Number(value);
-  return 0;
-}
-
-function formatDateTime(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Unknown time";
-  return new Intl.DateTimeFormat("en-GH", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(date);
-}
-
-function statusTone(status: string) {
-  const normalized = status.toLowerCase();
-  if (["completed", "delivered", "paid", "captured", "posted", "approved", "valid"].includes(normalized)) {
-    return "success";
-  }
-  if (
-    [
-      "searching",
-      "assigned",
-      "arriving",
-      "arrived",
-      "started",
-      "picked_up",
-      "in_transit",
-      "pending",
-      "requested",
-      "reviewing",
-      "under review",
-      "processing"
-    ].includes(normalized)
-  ) {
-    return "warning";
-  }
-  if (["failed", "rejected", "cancelled", "reversed", "missing", "expired"].includes(normalized)) {
-    return "danger";
-  }
-  return "neutral";
-}
-
-function formatEnumLabel(value: string) {
-  return value
-    .toLowerCase()
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
-
-type FinanceDailyBucket = {
-  key: string;
-  label: string;
-  revenue: number;
-  commission: number;
-};
-
-type PayoutDailyBucket = {
-  key: string;
-  label: string;
-  revenue: number;
-  commission: number;
-  payouts: number;
-};
-
-type FinanceScreenProps = {
-  adminCurrency: string;
+export type FinanceScreenProps = {
+  walletTransactions: WalletTransactionRecord[];
+  payoutRequests: PayoutRequestRecord[];
+  postedWalletTransactions: WalletTransactionRecord[];
+  pendingWalletTransactions: WalletTransactionRecord[];
+  failedWalletTransactions: WalletTransactionRecord[];
+  pendingPayoutRequests: PayoutRequestRecord[];
+  paidPayoutRequests: PayoutRequestRecord[];
   totalRevenue: number;
-  rideRevenue: number;
-  deliveryRevenue: number;
   totalCommission: number;
-  completedTripsLength: number;
-  completedDeliveriesLength: number;
   payoutOutflow: number;
-  paidPayoutRequestsLength: number;
   platformNetProfit: number;
   profitMargin: number;
   postedWalletVolume: number;
   pendingPayoutValue: number;
   payoutHoldBalance: number;
-  recentFinanceTransactions: WalletTransactionRecord[];
-  financeDailyBuckets: FinanceDailyBucket[];
+  financeDailyBuckets: { key: string; label: string; revenue: number; commission: number }[];
   financeDailyMax: number;
-  payoutDailyBuckets: PayoutDailyBucket[];
+  payoutDailyBuckets: { key: string; label: string; payouts: number }[];
   payoutDailyMax: number;
-  rideRevenuePercent: number;
-  deliveryRevenuePercent: number;
-  totalDashboardRevenue: number;
   paymentMethodSnapshot: [string, number][];
   paymentMethodTotal: number;
-  walletTransactions: WalletTransactionRecord[];
-  walletTransactionsQuery: UseQueryResult<WalletTransactionRecord[], Error>;
-  payoutRequests: PayoutRequestRecord[];
-  payoutRequestsQuery: UseQueryResult<PayoutRequestRecord[], Error>;
-  payoutRejectionReasons: Record<string, string>;
-  setPayoutRejectionReasons: React.Dispatch<React.SetStateAction<Record<string, string>>>;
-  payoutReviewMutation: UseMutationResult<
-    unknown,
-    Error,
-    {
-      payoutRequestId: string;
-      action: "mark_reviewing" | "approve" | "mark_processing" | "mark_paid" | "reject";
-      rejectionReason?: string;
-    }
-  >;
+  recentFinanceTransactions: WalletTransactionRecord[];
   transactionStatusFilter: string;
-  setTransactionStatusFilter: (value: string) => void;
   transactionTypeFilter: string;
-  setTransactionTypeFilter: (value: string) => void;
   payoutStatusFilter: string;
-  setPayoutStatusFilter: (value: string) => void;
-  ratingRiderFilter: string;
-  setRatingRiderFilter: (value: string) => void;
-  ratingRideFilter: string;
-  setRatingRideFilter: (value: string) => void;
-  ratingFromDateFilter: string;
-  setRatingFromDateFilter: (value: string) => void;
-  ratingToDateFilter: string;
-  setRatingToDateFilter: (value: string) => void;
+  onTransactionStatusChange: (v: string) => void;
+  onTransactionTypeChange: (v: string) => void;
+  onPayoutStatusChange: (v: string) => void;
+  adminCurrency: string;
+  totalRideRevenue: number;
+  totalDeliveryRevenue: number;
+  totalRideCommission: number;
+  totalDeliveryCommission: number;
+  riderEarningsTotal: number;
+  dataLoading?: boolean;
 };
 
 export function FinanceScreen({
-  adminCurrency,
+  walletTransactions,
+  payoutRequests,
+  postedWalletTransactions,
+  pendingWalletTransactions,
+  failedWalletTransactions,
+  pendingPayoutRequests,
+  paidPayoutRequests,
   totalRevenue,
-  rideRevenue,
-  deliveryRevenue,
   totalCommission,
-  completedTripsLength,
-  completedDeliveriesLength,
   payoutOutflow,
-  paidPayoutRequestsLength,
   platformNetProfit,
   profitMargin,
   postedWalletVolume,
   pendingPayoutValue,
   payoutHoldBalance,
-  recentFinanceTransactions,
   financeDailyBuckets,
   financeDailyMax,
   payoutDailyBuckets,
   payoutDailyMax,
-  rideRevenuePercent,
-  deliveryRevenuePercent,
-  totalDashboardRevenue,
   paymentMethodSnapshot,
   paymentMethodTotal,
-  walletTransactions,
-  walletTransactionsQuery,
-  payoutRequests,
-  payoutRequestsQuery,
-  payoutRejectionReasons,
-  setPayoutRejectionReasons,
-  payoutReviewMutation,
+  recentFinanceTransactions,
   transactionStatusFilter,
-  setTransactionStatusFilter,
   transactionTypeFilter,
-  setTransactionTypeFilter,
   payoutStatusFilter,
-  setPayoutStatusFilter,
-  ratingRiderFilter,
-  setRatingRiderFilter,
-  ratingRideFilter,
-  setRatingRideFilter,
-  ratingFromDateFilter,
-  setRatingFromDateFilter,
-  ratingToDateFilter,
-  setRatingToDateFilter
+  onTransactionStatusChange,
+  onTransactionTypeChange,
+  onPayoutStatusChange,
+  adminCurrency,
+  totalRideRevenue,
+  totalDeliveryRevenue,
+  totalRideCommission,
+  totalDeliveryCommission,
+  riderEarningsTotal,
+  dataLoading = false
 }: FinanceScreenProps) {
+  const { isMobile } = useBreakpoint();
+  if (dataLoading) {
+    return (
+      <div style={{ padding: "24px 28px", minHeight: "100vh", display: "flex", flexDirection: "column", gap: 20 }}>
+        <SkeletonKPI count={4} />
+        <SkeletonTable rows={5} cols={7} />
+      </div>
+    );
+  }
   return (
-    <div className="admin-finance-dashboard">
-      <section className="admin-finance-kpis" aria-label="Finance metrics">
-        <article className="admin-finance-kpi">
-          <div className="admin-finance-kpi-icon yellow">
-            <CreditCard size={21} />
+    <div className="exact-admin-screen">
+      <style>{`
+        @media (max-width: 767px) {
+          .admin-reference-kpis { grid-template-columns: 1fr 1fr !important; }
+          .admin-reference-grid-3 { grid-template-columns: 1fr !important; }
+          .admin-table-wrapper { overflow-x: auto; }
+          .admin-reference-card { padding: 12px !important; }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .admin-reference-grid-3 { grid-template-columns: 1fr 1fr !important; }
+        }
+      `}</style>
+      <section className="admin-reference-kpis">
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon green"><CreditCard size={22} /></div>
+          <div>
+            <span>Total Revenue</span>
+            <strong>{formatMoney(adminCurrency, totalRevenue)}</strong>
+            <small>{formatMoney(adminCurrency, totalCommission)} commission</small>
           </div>
-          <span>Total Revenue</span>
-          <strong>{formatMoney(adminCurrency, totalRevenue)}</strong>
-          <small>{completedTripsLength} completed rides</small>
         </article>
-        <article className="admin-finance-kpi">
-          <div className="admin-finance-kpi-icon yellow">
-            <Bike size={21} />
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon yellow"><TrendingUp size={22} /></div>
+          <div>
+            <span>Platform Net Profit</span>
+            <strong>{formatMoney(adminCurrency, platformNetProfit)}</strong>
+            <small>{profitMargin.toFixed(1)}% margin</small>
           </div>
-          <span>Rides Revenue</span>
-          <strong>{formatMoney(adminCurrency, rideRevenue)}</strong>
-          <small>{formatMoney(adminCurrency, totalCommission)} commission</small>
         </article>
-        <article className="admin-finance-kpi">
-          <div className="admin-finance-kpi-icon yellow">
-            <Package size={21} />
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon red"><TrendingDown size={22} /></div>
+          <div>
+            <span>Payout Outflow</span>
+            <strong>{formatMoney(adminCurrency, payoutOutflow)}</strong>
+            <small>{paidPayoutRequests.length} paid requests</small>
           </div>
-          <span>Food Revenue</span>
-          <strong>{formatMoney(adminCurrency, 0)}</strong>
-          <small>No food order endpoint wired</small>
         </article>
-        <article className="admin-finance-kpi">
-          <div className="admin-finance-kpi-icon yellow">
-            <Package size={21} />
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon yellow"><CreditCard size={22} /></div>
+          <div>
+            <span>Pending Payouts</span>
+            <strong>{pendingPayoutRequests.length}</strong>
+            <small>{formatMoney(adminCurrency, pendingPayoutValue)} value</small>
           </div>
-          <span>Delivery Revenue</span>
-          <strong>{formatMoney(adminCurrency, deliveryRevenue)}</strong>
-          <small>{completedDeliveriesLength} delivered orders</small>
-        </article>
-        <article className="admin-finance-kpi">
-          <div className="admin-finance-kpi-icon purple">
-            <CreditCard size={21} />
-          </div>
-          <span>Total Payouts</span>
-          <strong>{formatMoney(adminCurrency, payoutOutflow)}</strong>
-          <small>{paidPayoutRequestsLength} paid requests</small>
-        </article>
-        <article className="admin-finance-kpi">
-          <div className="admin-finance-kpi-icon green">
-            <Bike size={21} />
-          </div>
-          <span>Net Profit</span>
-          <strong>{formatMoney(adminCurrency, platformNetProfit)}</strong>
-          <small>{profitMargin.toFixed(1)}% profit margin</small>
         </article>
       </section>
 
-      <section className="admin-finance-grid-main">
-        <article className="admin-finance-card admin-finance-revenue-chart">
-          <div className="admin-finance-cardhead">
-            <div>
-              <h3>Revenue Overview</h3>
-              <p>Completed ride revenue and platform commission over the last 10 days.</p>
-            </div>
-            <span>This week</span>
+      <article className="admin-reference-card" style={{ marginTop: 16 }}>
+        <div className="admin-reference-cardhead">
+          <div><h3>Finance Reconciliation</h3><p>Revenue, commission & net breakdown</p></div>
+        </div>
+        <div className="admin-table-wrapper">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Revenue</th>
+                <th>Commission</th>
+                <th>Net</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Rides</strong></td>
+                <td>{formatMoney(adminCurrency, totalRideRevenue)}</td>
+                <td>{formatMoney(adminCurrency, totalRideCommission)}</td>
+                <td>{formatMoney(adminCurrency, totalRideRevenue - totalRideCommission)}</td>
+              </tr>
+              <tr>
+                <td><strong>Deliveries</strong></td>
+                <td>{formatMoney(adminCurrency, totalDeliveryRevenue)}</td>
+                <td>{formatMoney(adminCurrency, totalDeliveryCommission)}</td>
+                <td>{formatMoney(adminCurrency, totalDeliveryRevenue - totalDeliveryCommission)}</td>
+              </tr>
+              <tr style={{ fontWeight: 700 }}>
+                <td><strong>Totals</strong></td>
+                <td>{formatMoney(adminCurrency, totalRideRevenue + totalDeliveryRevenue)}</td>
+                <td>{formatMoney(adminCurrency, totalRideCommission + totalDeliveryCommission)}</td>
+                <td>{formatMoney(adminCurrency, (totalRideRevenue - totalRideCommission) + (totalDeliveryRevenue - totalDeliveryCommission))}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 16, padding: "12px 16px", background: "rgba(255,255,255,0.04)", borderRadius: 10 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span>Revenue coming in</span>
+            <strong>{formatMoney(adminCurrency, totalRevenue)}</strong>
           </div>
-          <div className="admin-finance-legend">
-            <span><i className="yellow" /> Total revenue</span>
-            <span><i className="blue" /> Platform commission</span>
-            <span><i className="green" /> Food revenue</span>
-            <span><i className="purple" /> Delivery revenue</span>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span>Commission captured</span>
+            <strong>{formatMoney(adminCurrency, totalCommission)}</strong>
           </div>
-          <div className="admin-finance-chart">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span>Rider earnings paid out</span>
+            <strong>{formatMoney(adminCurrency, riderEarningsTotal)}</strong>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span>Payout outflow</span>
+            <strong>{formatMoney(adminCurrency, payoutOutflow)}</strong>
+          </div>
+          <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.1)", margin: "4px 0" }} />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontWeight: 700, fontSize: 16 }}>
+            <span>Platform net profit</span>
+            <strong style={{ color: platformNetProfit >= 0 ? "#4ade80" : "#f87171" }}>{formatMoney(adminCurrency, platformNetProfit)}</strong>
+          </div>
+        </div>
+      </article>
+
+      <section className="admin-reference-grid-3">
+        <article className="admin-reference-card">
+          <div className="admin-reference-cardhead">
+            <div><h3>Revenue Trend</h3><p>Last 10 days</p></div>
+          </div>
+          <div className="admin-reference-legend">
+            <span><i className="black" /> Revenue</span>
+            <span><i className="yellow" /> Commission</span>
+          </div>
+          <div className="admin-reference-bars">
             {financeDailyBuckets.map((bucket) => (
-              <div key={bucket.key} className="admin-finance-chart-day">
-                <div className="admin-finance-chart-bars">
+              <div key={bucket.key} className="admin-reference-bar-day">
+                <div className="admin-reference-bar-track">
                   <i
-                    className="yellow"
-                    style={{
-                      height:
-                        bucket.revenue === 0
-                          ? 0
-                          : `${Math.max(8, (bucket.revenue / financeDailyMax) * 100)}%`
-                    }}
+                    className="rides"
+                    style={{ height: bucket.revenue === 0 ? 0 : `${Math.max(8, (bucket.revenue / financeDailyMax) * 100)}%` }}
                   />
                   <i
-                    className="blue"
-                    style={{
-                      height:
-                        bucket.commission === 0
-                          ? 0
-                          : `${Math.max(8, (bucket.commission / financeDailyMax) * 100)}%`
-                    }}
+                    className="completed"
+                    style={{ height: bucket.commission === 0 ? 0 : `${Math.max(8, (bucket.commission / financeDailyMax) * 100)}%` }}
                   />
-                  <i className="green" style={{ height: 0 }} />
-                  <i className="purple" style={{ height: 0 }} />
                 </div>
                 <span>{bucket.label}</span>
               </div>
@@ -278,565 +228,234 @@ export function FinanceScreen({
           </div>
         </article>
 
-        <article className="admin-finance-card admin-finance-breakdown">
-          <div className="admin-finance-cardhead">
-            <div>
-              <h3>Revenue Breakdown</h3>
-              <p>Revenue split by currently wired business line.</p>
-            </div>
+        <article className="admin-reference-card">
+          <div className="admin-reference-cardhead">
+            <div><h3>Payout Trend</h3><p>Last 10 days</p></div>
           </div>
-          <div className="admin-finance-breakdown-body">
-            <div
-              className="admin-finance-donut"
-              style={{
-                background:
-                  totalDashboardRevenue === 0
-                    ? "#1f2937"
-                    : `conic-gradient(#ffc107 0 ${rideRevenuePercent}%, #22c55e ${rideRevenuePercent}% ${rideRevenuePercent}%, #6d5dfc ${rideRevenuePercent}% 100%)`
-              }}
-            >
-              <div>
-                <span>Total</span>
-                <strong>{formatMoney(adminCurrency, totalDashboardRevenue)}</strong>
-              </div>
-            </div>
-            <ul className="admin-finance-breakdown-list">
-              <li>
-                <i className="yellow" />
-                <span>Rides Revenue</span>
-                <strong>{formatMoney(adminCurrency, rideRevenue)}</strong>
-                <small>{rideRevenuePercent}%</small>
-              </li>
-              <li>
-                <i className="green" />
-                <span>Food Revenue</span>
-                <strong>{formatMoney(adminCurrency, 0)}</strong>
-                <small>0%</small>
-              </li>
-              <li>
-                <i className="purple" />
-                <span>Delivery Revenue</span>
-                <strong>{formatMoney(adminCurrency, deliveryRevenue)}</strong>
-                <small>{deliveryRevenuePercent}%</small>
-              </li>
-            </ul>
-          </div>
-        </article>
-
-        <aside className="admin-finance-side-stack">
-          <article className="admin-finance-card">
-            <div className="admin-finance-cardhead">
-              <div>
-                <h3>Wallet Summary</h3>
-                <p>Admin-visible wallet and payout movement.</p>
-              </div>
-              <a href="/admin/finance">View all</a>
-            </div>
-            <div className="admin-finance-wallet-main">
-              <span>OkadaGo Wallet Volume</span>
-              <strong>{formatMoney(adminCurrency, postedWalletVolume)}</strong>
-            </div>
-            <div className="admin-finance-wallet-grid">
-              <div>
-                <span>Pending payouts</span>
-                <strong>{formatMoney(adminCurrency, pendingPayoutValue)}</strong>
-              </div>
-              <div>
-                <span>Hold balance</span>
-                <strong>{formatMoney(adminCurrency, payoutHoldBalance)}</strong>
-              </div>
-            </div>
-          </article>
-
-          <article className="admin-finance-card">
-            <div className="admin-finance-cardhead">
-              <div>
-                <h3>Recent Transactions</h3>
-                <p>Latest wallet transactions from the backend.</p>
-              </div>
-              <a href="#finance-ledger">View all</a>
-            </div>
-            {walletTransactionsQuery.isLoading ? (
-              <div className="status-chip warning">Loading transactions</div>
-            ) : walletTransactionsQuery.isError ? (
-              <EmptyCard
-                title="Could not load transactions."
-                body={walletTransactionsQuery.error.message}
-              />
-            ) : recentFinanceTransactions.length === 0 ? (
-              <EmptyCard
-                title="No wallet transactions yet."
-                body="Wallet top-ups, commissions, payouts, and reversals will appear here."
-              />
-            ) : (
-              <ul className="admin-finance-transaction-list">
-                {recentFinanceTransactions.map((transaction) => (
-                  <li key={transaction.id}>
-                    <div>
-                      <strong>{transaction.description ?? formatEnumLabel(transaction.type)}</strong>
-                      <span>{transaction.wallet.user.fullName}</span>
-                    </div>
-                    <span className={parseNumber(transaction.amount) < 0 ? "debit" : "credit"}>
-                      {formatMoney(transaction.currency, transaction.amount)}
-                    </span>
-                    <em className={`status-chip ${statusTone(transaction.status)}`}>
-                      {formatEnumLabel(transaction.status)}
-                    </em>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </article>
-
-          <article className="admin-finance-card">
-            <div className="admin-finance-cardhead">
-              <div>
-                <h3>Expenses Summary</h3>
-                <p>Expense tracking is not exposed by the backend yet.</p>
-              </div>
-              <span>This month</span>
-            </div>
-            <EmptyCard
-              title="No expenses endpoint is wired."
-              body="Once expenses or invoices are added to the API, this panel can show real operational costs."
-            />
-          </article>
-        </aside>
-      </section>
-
-      <section className="admin-finance-grid-lower">
-        <article className="admin-finance-card">
-          <div className="admin-finance-cardhead">
-            <div>
-              <h3>Payout Overview</h3>
-              <p>Paid payout volume over the same 10-day window.</p>
-            </div>
-            <span>This week</span>
-          </div>
-          <div className="admin-finance-payout-bars">
+          <div className="admin-reference-bars">
             {payoutDailyBuckets.map((bucket) => (
-              <div key={bucket.key}>
-                <i
-                  style={{
-                    height:
-                      bucket.payouts === 0
-                        ? 0
-                        : `${Math.max(8, (bucket.payouts / payoutDailyMax) * 100)}%`
-                  }}
-                />
+              <div key={bucket.key} className="admin-reference-bar-day">
+                <div className="admin-reference-bar-track">
+                  <i
+                    className="rides"
+                    style={{ height: bucket.payouts === 0 ? 0 : `${Math.max(8, (bucket.payouts / payoutDailyMax) * 100)}%` }}
+                  />
+                </div>
                 <span>{bucket.label}</span>
               </div>
             ))}
           </div>
-          <div className="admin-finance-progress-list">
-            <div>
-              <span>Paid payouts</span>
-              <strong>{formatMoney(adminCurrency, payoutOutflow)}</strong>
-            </div>
-            <div>
-              <span>Pending payout queue</span>
-              <strong>{formatMoney(adminCurrency, pendingPayoutValue)}</strong>
-            </div>
-          </div>
         </article>
 
-        <article className="admin-finance-card">
-          <div className="admin-finance-cardhead">
-            <div>
-              <h3>Payment Methods</h3>
-              <p>Grouped from linked payment and wallet transaction data.</p>
-            </div>
-            <a href="#finance-ledger">View all</a>
+        <article className="admin-reference-card">
+          <div className="admin-reference-cardhead">
+            <div><h3>Payment Methods</h3><p>By transaction volume</p></div>
           </div>
           {paymentMethodSnapshot.length === 0 ? (
-            <EmptyCard
-              title="No payment method volume yet."
-              body="Payment method totals will appear after wallet transactions are recorded."
-            />
+            <EmptyCard title="No method data." body="" />
           ) : (
-            <div className="table-wrapper admin-finance-table">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Method</th>
-                    <th>Revenue</th>
-                    <th>Percentage</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paymentMethodSnapshot.map(([method, amount]) => (
-                    <tr key={method}>
-                      <td>{formatEnumLabel(method)}</td>
-                      <td>{formatMoney(adminCurrency, amount)}</td>
-                      <td>
-                        {paymentMethodTotal > 0
-                          ? `${((amount / paymentMethodTotal) * 100).toFixed(1)}%`
-                          : "0%"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td>Total</td>
-                    <td>{formatMoney(adminCurrency, paymentMethodTotal)}</td>
-                    <td>100%</td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
+            <ul className="admin-summary-list">
+              {paymentMethodSnapshot.map(([method, amount]) => (
+                <li key={method}>
+                  <span>{method}</span>
+                  <div>
+                    <strong>{formatMoney(adminCurrency, amount)}</strong>
+                    <small>
+                      {paymentMethodTotal > 0 ? Math.round((amount / paymentMethodTotal) * 100) : 0}%
+                    </small>
+                  </div>
+                </li>
+              ))}
+            </ul>
           )}
         </article>
       </section>
 
-      <section className="admin-finance-card admin-finance-controls">
-        <div className="admin-finance-cardhead">
+      {/* Wallet Transactions */}
+      <article className="admin-reference-card" style={{ marginTop: 16 }}>
+        <div className="admin-reference-cardhead">
           <div>
-            <h3>Finance Filters</h3>
-            <p>Filter wallet movement, payout requests, and rating verification records.</p>
+            <h3>Wallet Transactions</h3>
+            <p>
+              {postedWalletTransactions.length} posted · {pendingWalletTransactions.length} pending ·{" "}
+              {failedWalletTransactions.length} failed
+            </p>
           </div>
-        </div>
-        <div className="exact-admin-payment-filters">
-          <div className="field-group">
-            <label className="field-label">Wallet transaction status</label>
+          <div style={{ display: "flex", gap: 8, flexWrap: isMobile ? "wrap" : undefined }}>
+            <button
+              className="admin-select-sm"
+              onClick={() =>
+                downloadCsv(
+                  "wallet-transactions.csv",
+                  ["User", "Role", "Type", "Direction", "Amount", "Status", "Reference", "Date"],
+                  walletTransactions.map((tx) => [
+                    tx.wallet.user.fullName,
+                    tx.wallet.user.role,
+                    tx.type,
+                    tx.direction,
+                    tx.amount,
+                    tx.status,
+                    tx.reference ?? "",
+                    tx.createdAt
+                  ])
+                )
+              }
+            >
+              <Download size={14} /> Export CSV
+            </button>
+            <Filter size={14} />
             <select
-              className="select"
+              className="admin-select-sm"
               value={transactionStatusFilter}
-              onChange={(event) => setTransactionStatusFilter(event.target.value)}
+              onChange={(e) => onTransactionStatusChange(e.target.value)}
             >
               <option value="">All statuses</option>
-              <option value="PENDING">Pending</option>
               <option value="POSTED">Posted</option>
-              <option value="REVERSED">Reversed</option>
+              <option value="PENDING">Pending</option>
               <option value="FAILED">Failed</option>
+              <option value="REVERSED">Reversed</option>
             </select>
-          </div>
-
-          <div className="field-group">
-            <label className="field-label">Wallet transaction type</label>
             <select
-              className="select"
+              className="admin-select-sm"
               value={transactionTypeFilter}
-              onChange={(event) => setTransactionTypeFilter(event.target.value)}
+              onChange={(e) => onTransactionTypeChange(e.target.value)}
             >
               <option value="">All types</option>
-              <option value="TOP_UP">Top up</option>
-              <option value="WITHDRAWAL">Withdrawal</option>
+              <option value="RIDE_FARE">Ride Fare</option>
+              <option value="PAYOUT">Payout</option>
               <option value="COMMISSION">Commission</option>
-              <option value="ADJUSTMENT">Adjustment</option>
-              <option value="CREDIT">Credit</option>
-              <option value="DEBIT">Debit</option>
-              <option value="REFUND">Refund</option>
-              <option value="BONUS">Bonus</option>
             </select>
           </div>
+        </div>
+        {walletTransactions.length === 0 ? (
+          <EmptyCard title="No wallet transactions." body="Transactions will appear as payments are processed." />
+        ) : (
+          <div className="admin-table-wrapper">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Type</th>
+                  <th>Direction</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Reference</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {walletTransactions.slice(0, 50).map((tx) => (
+                  <tr key={tx.id}>
+                    <td>
+                      <strong>{tx.wallet.user.fullName}</strong>
+                      <br />
+                      <small>{tx.wallet.user.role}</small>
+                    </td>
+                    <td><small>{formatEnumLabel(tx.type)}</small></td>
+                    <td>
+                      <em className={`admin-reference-tag ${parseNumber(tx.amount) >= 0 ? "success" : "danger"}`}>
+                        {tx.direction}
+                      </em>
+                    </td>
+                    <td><strong>{formatMoney(tx.currency, Math.abs(parseNumber(tx.amount)))}</strong></td>
+                    <td>
+                      <em className={`admin-reference-tag ${statusTone(tx.status)}`}>{tx.status}</em>
+                    </td>
+                    <td><code style={{ fontSize: 11 }}>{tx.reference?.slice(-12)}</code></td>
+                    <td><small>{formatDateTime(tx.createdAt)}</small></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </article>
 
-          <div className="field-group">
-            <label className="field-label">Payout request status</label>
-            <select
-              className="select"
-              value={payoutStatusFilter}
-              onChange={(event) => setPayoutStatusFilter(event.target.value)}
+      {/* Payout Requests */}
+      <article className="admin-reference-card" style={{ marginTop: 16 }}>
+        <div className="admin-reference-cardhead">
+          <div>
+            <h3>Payout Requests</h3>
+            <p>{payoutRequests.length} total · {pendingPayoutRequests.length} pending</p>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: isMobile ? "wrap" : undefined }}>
+            <button
+              className="admin-select-sm"
+              onClick={() =>
+                downloadCsv(
+                  "payout-requests.csv",
+                  ["Rider", "Code", "Amount", "Method", "Destination", "Status", "Requested", "Reviewer"],
+                  payoutRequests.map((request) => [
+                    request.rider.user.fullName,
+                    request.rider.displayCode,
+                    request.amount,
+                    request.method,
+                    request.destinationLabel,
+                    request.status,
+                    request.requestedAt,
+                    request.reviewer?.fullName ?? "—"
+                  ])
+                )
+              }
             >
-              <option value="">All payout statuses</option>
+              <Download size={14} /> Export CSV
+            </button>
+            <select
+              className="admin-select-sm"
+              value={payoutStatusFilter}
+              onChange={(e) => onPayoutStatusChange(e.target.value)}
+            >
+              <option value="">All statuses</option>
               <option value="REQUESTED">Requested</option>
               <option value="REVIEWING">Reviewing</option>
               <option value="APPROVED">Approved</option>
               <option value="PROCESSING">Processing</option>
               <option value="PAID">Paid</option>
               <option value="REJECTED">Rejected</option>
-              <option value="CANCELLED">Cancelled</option>
             </select>
           </div>
-
-          <div className="field-group">
-            <label className="field-label">Rating rider profile ID</label>
-            <input
-              className="input"
-              value={ratingRiderFilter}
-              onChange={(event) => setRatingRiderFilter(event.target.value)}
-              placeholder="Filter by rider profile CUID"
-            />
-          </div>
-
-          <div className="field-group">
-            <label className="field-label">Rating ride ID</label>
-            <input
-              className="input"
-              value={ratingRideFilter}
-              onChange={(event) => setRatingRideFilter(event.target.value)}
-              placeholder="Filter by ride CUID"
-            />
-          </div>
-
-          <div className="field-group">
-            <label className="field-label">Ratings from date</label>
-            <input
-              className="input"
-              type="date"
-              value={ratingFromDateFilter}
-              onChange={(event) => setRatingFromDateFilter(event.target.value)}
-            />
-          </div>
-
-          <div className="field-group">
-            <label className="field-label">Ratings to date</label>
-            <input
-              className="input"
-              type="date"
-              value={ratingToDateFilter}
-              onChange={(event) => setRatingToDateFilter(event.target.value)}
-            />
-          </div>
         </div>
-      </section>
-
-      <section id="finance-ledger" className="admin-finance-grid-ledgers">
-        <article className="admin-finance-card">
-          <div className="admin-finance-cardhead">
-            <div>
-              <h3>Wallet Transaction Ledger</h3>
-              <p>Live wallet movement across top-ups, commissions, withdrawals, and reversals.</p>
-            </div>
-          </div>
-          {walletTransactionsQuery.isLoading ? (
-            <div className="status-chip warning">Loading wallet transactions</div>
-          ) : walletTransactionsQuery.isError ? (
-            <EmptyCard
-              title="Wallet transactions could not be loaded."
-              body={walletTransactionsQuery.error.message}
-            />
-          ) : walletTransactions.length === 0 ? (
-            <EmptyCard
-              title="No wallet transactions found."
-              body="Top-ups, payouts, and settlement movement will appear here as soon as they happen."
-            />
-          ) : (
-            <div className="table-wrapper admin-finance-table">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>User</th>
-                    <th>Wallet</th>
-                    <th>Type</th>
-                    <th>Status</th>
-                    <th>Amount</th>
-                    <th>Reference</th>
-                    <th>Created</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {walletTransactions
-                    .slice()
-                    .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))
-                    .map((transaction) => (
-                      <tr key={transaction.id}>
-                        <td>
-                          <div className="exact-admin-transaction-user">
-                            <strong>{transaction.wallet.user.fullName}</strong>
-                            <span>{transaction.wallet.user.phoneE164}</span>
-                          </div>
-                        </td>
-                        <td>{formatEnumLabel(transaction.wallet.type)}</td>
-                        <td>{formatEnumLabel(transaction.type)}</td>
-                        <td>
-                          <span className={`status-chip ${statusTone(transaction.status)}`}>
-                            {formatEnumLabel(transaction.status)}
-                          </span>
-                        </td>
-                        <td>{formatMoney(transaction.currency, transaction.amount)}</td>
-                        <td>{transaction.reference}</td>
-                        <td>{formatDateTime(transaction.createdAt)}</td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </article>
-
-        <article className="admin-finance-card">
-          <div className="admin-finance-cardhead">
-            <div>
-              <h3>Payout Review Queue</h3>
-              <p>Approve, process, pay, or reject rider payout requests.</p>
-            </div>
-          </div>
-          {payoutRequestsQuery.isLoading ? (
-            <div className="status-chip warning">Loading payout requests</div>
-          ) : payoutRequestsQuery.isError ? (
-            <EmptyCard
-              title="Payout requests could not be loaded."
-              body={payoutRequestsQuery.error.message}
-            />
-          ) : payoutRequests.length === 0 ? (
-            <EmptyCard
-              title="No payout requests yet."
-              body="Rider withdrawals will appear here once riders start requesting payouts."
-            />
-          ) : (
-            <div className="exact-admin-payout-list">
-              {payoutRequests.map((request) => (
-                <article key={request.id} className="exact-admin-payout-card">
-                  <div className="exact-admin-payout-head">
-                    <div>
+        {payoutRequests.length === 0 ? (
+          <EmptyCard title="No payout requests." body="Rider payout requests will appear here." />
+        ) : (
+          <div className="admin-table-wrapper">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Rider</th>
+                  <th>Amount</th>
+                  <th>Method</th>
+                  <th>Destination</th>
+                  <th>Status</th>
+                  <th>Requested</th>
+                  <th>Reviewer</th>
+                </tr>
+              </thead>
+              <tbody>
+                {payoutRequests.map((request) => (
+                  <tr key={request.id}>
+                    <td>
                       <strong>{request.rider.user.fullName}</strong>
-                      <span>{request.rider.displayCode} - {request.destinationLabel}</span>
-                    </div>
-                    <span className={`status-chip ${statusTone(request.status)}`}>
-                      {formatEnumLabel(request.status)}
-                    </span>
-                  </div>
-
-                  <div className="exact-admin-payout-metrics">
-                    <span>{formatMoney(request.currency, request.amount)}</span>
-                    <span>{formatEnumLabel(request.method)}</span>
-                    <span>{formatDateTime(request.requestedAt)}</span>
-                  </div>
-
-                  {["REQUESTED", "REVIEWING", "APPROVED", "PROCESSING"].includes(request.status) ? (
-                    <>
-                      <div className="field-group exact-admin-payout-reason">
-                        <label className="field-label">Rejection note</label>
-                        <input
-                          className="input"
-                          value={payoutRejectionReasons[request.id] ?? ""}
-                          onChange={(event) =>
-                            setPayoutRejectionReasons((current) => ({
-                              ...current,
-                              [request.id]: event.target.value
-                            }))
-                          }
-                          placeholder="Optional reason if you reject this payout"
-                        />
-                      </div>
-
-                      <div className="button-row exact-admin-payout-actions">
-                        {request.status === "REQUESTED" ? (
-                          <button
-                            className="button button-secondary"
-                            type="button"
-                            disabled={payoutReviewMutation.isPending}
-                            onClick={() =>
-                              payoutReviewMutation.mutate({
-                                payoutRequestId: request.id,
-                                action: "mark_reviewing"
-                              })
-                            }
-                          >
-                            Review
-                          </button>
-                        ) : null}
-
-                        {["REQUESTED", "REVIEWING"].includes(request.status) ? (
-                          <button
-                            className="button"
-                            type="button"
-                            disabled={payoutReviewMutation.isPending}
-                            onClick={() =>
-                              payoutReviewMutation.mutate({
-                                payoutRequestId: request.id,
-                                action: "approve"
-                              })
-                            }
-                          >
-                            Approve
-                          </button>
-                        ) : null}
-
-                        {request.status === "APPROVED" ? (
-                          <button
-                            className="button button-secondary"
-                            type="button"
-                            disabled={payoutReviewMutation.isPending}
-                            onClick={() =>
-                              payoutReviewMutation.mutate({
-                                payoutRequestId: request.id,
-                                action: "mark_processing"
-                              })
-                            }
-                          >
-                            Mark processing
-                          </button>
-                        ) : null}
-
-                        {["APPROVED", "PROCESSING"].includes(request.status) ? (
-                          <button
-                            className="button"
-                            type="button"
-                            disabled={payoutReviewMutation.isPending}
-                            onClick={() =>
-                              payoutReviewMutation.mutate({
-                                payoutRequestId: request.id,
-                                action: "mark_paid"
-                              })
-                            }
-                          >
-                            Mark paid
-                          </button>
-                        ) : null}
-
-                        <button
-                          className="button button-secondary"
-                          type="button"
-                          disabled={payoutReviewMutation.isPending}
-                          onClick={() =>
-                            payoutReviewMutation.mutate({
-                              payoutRequestId: request.id,
-                              action: "reject",
-                              rejectionReason: payoutRejectionReasons[request.id]
-                            })
-                          }
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    </>
-                  ) : null}
-                </article>
-              ))}
-            </div>
-          )}
-
-          {payoutReviewMutation.isError ? (
-            <div className="empty-state exact-admin-payout-feedback">
-              <strong>Payout review failed.</strong>
-              <p>{payoutReviewMutation.error.message}</p>
-            </div>
-          ) : null}
-        </article>
-      </section>
-
-      <section className="admin-finance-card">
-        <div className="admin-finance-cardhead">
-          <div>
-            <h3>Finance Summary</h3>
-            <p>Combined view of ride revenue, payouts, expenses, and margin.</p>
+                      <br />
+                      <small>{request.rider.displayCode}</small>
+                    </td>
+                    <td><strong>{formatMoney(request.currency, parseNumber(request.amount))}</strong></td>
+                    <td><small>{request.method}</small></td>
+                    <td><small>{request.destinationLabel}</small></td>
+                    <td>
+                      <em className={`admin-reference-tag ${statusTone(request.status)}`}>
+                        {request.status}
+                      </em>
+                    </td>
+                    <td><small>{formatDateTime(request.requestedAt)}</small></td>
+                    <td><small>{request.reviewer?.fullName ?? "—"}</small></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </div>
-        <div className="admin-finance-summary-strip">
-          <div>
-            <span>Total Revenue</span>
-            <strong>{formatMoney(adminCurrency, totalRevenue)}</strong>
-          </div>
-          <div>
-            <span>Total Payouts</span>
-            <strong>{formatMoney(adminCurrency, payoutOutflow)}</strong>
-          </div>
-          <div>
-            <span>Total Expenses</span>
-            <strong>{formatMoney(adminCurrency, 0)}</strong>
-          </div>
-          <div>
-            <span>Net Profit</span>
-            <strong>{formatMoney(adminCurrency, platformNetProfit)}</strong>
-          </div>
-          <div>
-            <span>Profit Margin</span>
-            <strong>{profitMargin.toFixed(1)}%</strong>
-          </div>
-        </div>
-      </section>
+        )}
+      </article>
     </div>
   );
 }

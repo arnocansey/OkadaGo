@@ -1,183 +1,128 @@
-"use client";
-
+import { Tag, TrendingDown, Map } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
 import type { RideRecord } from "./types";
+import { parseNumber, formatDateTime } from "./utils";
 
-function parseNumber(value: string | number | null | undefined) {
-  if (typeof value === "number") return value;
-  if (typeof value === "string" && value.trim() !== "") return Number(value);
-  return 0;
-}
-
-function formatDateTime(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Unknown time";
-  return new Intl.DateTimeFormat("en-GH", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(date);
-}
-
-type PromotionsScreenProps = {
-  screenMeta: { eyebrow: string; title: string; description: string };
-  rides: RideRecord[];
+export type PromotionsScreenProps = {
   promoAdjustedTrips: RideRecord[];
+  topDiscountedRides: RideRecord[];
+  promotionZoneSnapshot: [string, number][];
   promoSpend: number;
   referralSpend: number;
   adminCurrency: string;
-  promotionZoneSnapshot: [string, number][];
-  topDiscountedRides: RideRecord[];
 };
 
 export function PromotionsScreen({
-  screenMeta,
-  rides,
   promoAdjustedTrips,
+  topDiscountedRides,
+  promotionZoneSnapshot,
   promoSpend,
   referralSpend,
-  adminCurrency,
-  promotionZoneSnapshot,
-  topDiscountedRides
+  adminCurrency
 }: PromotionsScreenProps) {
-  return (
-    <>
-      <section className="exact-admin-section">
-        <div className="exact-admin-heading">
-          <p className="exact-admin-eyebrow">{screenMeta.eyebrow}</p>
-          <h1>{screenMeta.title}</h1>
-          <p>{screenMeta.description}</p>
-        </div>
+  const totalDiscount = promoSpend + referralSpend;
 
-        <div className="exact-admin-kpis">
-          <article className="exact-admin-kpi">
-            <span>Promo-assisted rides</span>
-            <strong>{promoAdjustedTrips.filter((ride) => parseNumber(ride.promoDiscount) > 0).length}</strong>
-          </article>
-          <article className="exact-admin-kpi">
-            <span>Referral-assisted rides</span>
-            <strong>{promoAdjustedTrips.filter((ride) => parseNumber(ride.referralDiscount) > 0).length}</strong>
-          </article>
-          <article className="exact-admin-kpi">
-            <span>Total promo spend</span>
+  return (
+    <div className="exact-admin-screen">
+      <section className="admin-reference-kpis">
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon yellow"><Tag size={22} /></div>
+          <div>
+            <span>Promo Rides</span>
+            <strong>{promoAdjustedTrips.length}</strong>
+            <small>With discounts applied</small>
+          </div>
+        </article>
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon red"><TrendingDown size={22} /></div>
+          <div>
+            <span>Promo Spend</span>
             <strong>{formatMoney(adminCurrency, promoSpend)}</strong>
-          </article>
-          <article className="exact-admin-kpi">
-            <span>Total referral spend</span>
+            <small>Discount codes</small>
+          </div>
+        </article>
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon yellow"><TrendingDown size={22} /></div>
+          <div>
+            <span>Referral Spend</span>
             <strong>{formatMoney(adminCurrency, referralSpend)}</strong>
-          </article>
-        </div>
+            <small>Referral discounts</small>
+          </div>
+        </article>
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon red"><TrendingDown size={22} /></div>
+          <div>
+            <span>Total Discount Cost</span>
+            <strong>{formatMoney(adminCurrency, totalDiscount)}</strong>
+            <small>Promo + referral</small>
+          </div>
+        </article>
       </section>
 
-      <div className="exact-admin-grid">
-        <section className="exact-admin-card wide">
-          <div className="exact-admin-cardhead">
+      <div className="admin-screen-grid-2">
+        <article className="admin-reference-card">
+          <div className="admin-reference-cardhead">
             <div>
-              <h3>Growth pressure</h3>
-              <p>How discounts are currently influencing demand and where that pressure is landing.</p>
+              <h3>Top Discounted Rides</h3>
+              <p>Rides with the highest discount applied.</p>
             </div>
           </div>
-          <div className="exact-admin-priority-grid">
-            <article className="exact-admin-priority-card">
-              <span>Discount penetration</span>
-              <strong>
-                {rides.length === 0 ? "0%" : `${Math.round((promoAdjustedTrips.length / rides.length) * 100)}%`}
-              </strong>
-              <small>Share of all rides currently carrying either promo or referral support.</small>
-            </article>
-            <article className="exact-admin-priority-card">
-              <span>Average discount per ride</span>
-              <strong>
-                {formatMoney(
-                  adminCurrency,
-                  promoAdjustedTrips.length === 0
-                    ? 0
-                    : (promoSpend + referralSpend) / promoAdjustedTrips.length
-                )}
-              </strong>
-              <small>Blended incentive cost applied each time a discounted ride is posted.</small>
-            </article>
-            <article className="exact-admin-priority-card">
-              <span>Largest single discount</span>
-              <strong>
-                {formatMoney(
-                  adminCurrency,
-                  topDiscountedRides.length === 0
-                    ? 0
-                    : parseNumber(topDiscountedRides[0]?.promoDiscount) +
-                        parseNumber(topDiscountedRides[0]?.referralDiscount)
-                )}
-              </strong>
-              <small>
-                Highest combined promo and referral value currently recorded on one ride.
-              </small>
-            </article>
-          </div>
-        </section>
-
-        <section className="exact-admin-card wide">
-          <div className="exact-admin-cardhead">
-            <div>
-              <h3>Promo and referral ride ledger</h3>
-              <p>Completed and live rides where discounts are actually being applied in the live system.</p>
-            </div>
-          </div>
-          {promoAdjustedTrips.length === 0 ? (
-            <EmptyCard
-              title="No promo-adjusted rides yet."
-              body="Once promo or referral discounts are applied to rides, they will show up here automatically."
-            />
+          {topDiscountedRides.length === 0 ? (
+            <EmptyCard title="No promo-adjusted rides." body="Rides with promo codes or referral discounts will appear here." />
           ) : (
-            <div className="table-wrapper">
-              <table className="table">
+            <div className="admin-table-wrapper">
+              <table className="admin-table">
                 <thead>
                   <tr>
                     <th>Passenger</th>
-                    <th>Rider</th>
+                    <th>Route</th>
+                    <th>Promo Discount</th>
+                    <th>Referral Discount</th>
+                    <th>Final Fare</th>
                     <th>Zone</th>
-                    <th>Promo</th>
-                    <th>Referral</th>
-                    <th>Fare</th>
-                    <th>Time</th>
+                    <th>Date</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {promoAdjustedTrips
-                    .slice()
-                    .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))
-                    .map((ride) => (
-                      <tr key={ride.id}>
-                        <td>{ride.passenger.user.fullName}</td>
-                        <td>{ride.rider?.user.fullName ?? "Unassigned"}</td>
-                        <td>{ride.serviceZone?.name ?? "No zone"}</td>
-                        <td>{formatMoney(ride.currency, ride.promoDiscount)}</td>
-                        <td>{formatMoney(ride.currency, ride.referralDiscount)}</td>
-                        <td>{formatMoney(ride.currency, ride.finalFare ?? ride.estimatedFare)}</td>
-                        <td>{formatDateTime(ride.createdAt)}</td>
-                      </tr>
-                    ))}
+                  {topDiscountedRides.map((ride) => (
+                    <tr key={ride.id}>
+                      <td><strong>{ride.passenger.user.fullName}</strong></td>
+                      <td>
+                        <small>
+                          {ride.pickupAddress} → {ride.destinationAddress}
+                        </small>
+                      </td>
+                      <td>{formatMoney(ride.currency, parseNumber(ride.promoDiscount))}</td>
+                      <td>{formatMoney(ride.currency, parseNumber(ride.referralDiscount))}</td>
+                      <td>
+                        <strong>
+                          {formatMoney(ride.currency, parseNumber(ride.finalFare ?? ride.estimatedFare))}
+                        </strong>
+                      </td>
+                      <td><small>{ride.serviceZone?.name ?? "No zone"}</small></td>
+                      <td><small>{formatDateTime(ride.createdAt)}</small></td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           )}
-        </section>
+        </article>
 
-        <section className="exact-admin-card">
-          <div className="exact-admin-cardhead">
-            <div>
-              <h3>Discount signals</h3>
-              <p>Where promotion activity is currently clustering.</p>
+        <aside className="admin-sidebar-panel">
+          <article className="admin-reference-card">
+            <div className="admin-reference-cardhead">
+              <div>
+                <h3>Promo by Zone</h3>
+                <Map size={16} />
+              </div>
             </div>
-          </div>
-          <div className="exact-admin-stack">
             {promotionZoneSnapshot.length === 0 ? (
-              <EmptyCard
-                title="No promotion zones yet."
-                body="Promotion activity will show the most active zones here once the first discounted rides land."
-              />
+              <EmptyCard title="No zone data." body="" />
             ) : (
-              <ul className="workbench-list exact-admin-ride-feed">
-                {promotionZoneSnapshot.slice(0, 6).map(([zone, count]) => (
+              <ul className="admin-summary-list">
+                {promotionZoneSnapshot.map(([zone, count]) => (
                   <li key={zone}>
                     <span>{zone}</span>
                     <strong>{count} rides</strong>
@@ -185,38 +130,23 @@ export function PromotionsScreen({
                 ))}
               </ul>
             )}
+          </article>
 
-            <section className="exact-admin-card exact-admin-card-inset">
-              <div className="exact-admin-cardhead">
-                <div>
-                  <h3>Top discounted rides</h3>
-                  <p>The passenger-side rides consuming the most incentive value right now.</p>
-                </div>
-              </div>
-              {topDiscountedRides.length === 0 ? (
-                <EmptyCard
-                  title="No discounted rides yet."
-                  body="The highest-value discounted trips will appear here once promotions are in use."
-                />
-              ) : (
-                <ul className="workbench-list exact-admin-ride-feed">
-                  {topDiscountedRides.map((ride) => (
-                    <li key={ride.id}>
-                      <span>{ride.passenger.user.fullName}</span>
-                      <strong>
-                        {formatMoney(
-                          ride.currency,
-                          parseNumber(ride.promoDiscount) + parseNumber(ride.referralDiscount)
-                        )}
-                      </strong>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          </div>
-        </section>
+          <article className="admin-reference-card">
+            <div className="admin-reference-cardhead">
+              <div><h3>Promo Code Management</h3></div>
+            </div>
+            <div style={{ padding: "12px 0" }}>
+              <p style={{ fontSize: 14, marginBottom: 12 }}>
+                Create and manage promotion codes for your platform.
+              </p>
+              <a href="#promo-codes" className="button" style={{ textDecoration: "none" }}>
+                Manage Promo Codes
+              </a>
+            </div>
+          </article>
+        </aside>
       </div>
-    </>
+    </div>
   );
 }

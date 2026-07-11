@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AdminLayout } from './_shared/AdminLayout';
 import { 
   TrendingUp, 
@@ -13,7 +13,26 @@ import {
   User
 } from 'lucide-react';
 
+type Tab = 'Daily' | 'Weekly' | 'Monthly';
+
+interface Toast {
+  id: number;
+  message: string;
+}
+
 export default function Earnings() {
+  const [activeTab, setActiveTab] = useState<Tab>('Daily');
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+
+  const showToast = (message: string) => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 3000);
+  };
+
   const stats = [
     { label: 'Total Earnings', value: 'GHS 158,750', change: '+12.5%', isPositive: true, icon: DollarSign },
     { label: 'Trip Earnings', value: 'GHS 127,450', change: '+10.2%', isPositive: true, icon: DollarSign },
@@ -45,9 +64,11 @@ export default function Earnings() {
     { date: 'May 27, 2024', trips: 131, tripEarnings: 'GHS 3,820', incentives: 'GHS 420', commissions: '-GHS 370', net: 'GHS 3,870', growth: '+0.8%' },
   ];
 
+  const tabs: Tab[] = ['Daily', 'Weekly', 'Monthly'];
+
   return (
     <AdminLayout active="Earnings" title="Earnings Overview" breadcrumbs={['Riders Management', 'Earnings']}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20, position: 'relative' }}>
         
         {/* Stat Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 15 }}>
@@ -146,7 +167,14 @@ export default function Earnings() {
           <div style={{ background: 'var(--bg-card)', borderRadius: 12, border: '1px solid var(--border)', padding: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
               <h3 style={{ color: 'var(--text-primary)', fontSize: 14, fontWeight: 600, margin: 0 }}>Top Earning Riders</h3>
-              <button style={{ color: 'var(--brand-yellow)', background: 'transparent', border: 'none', fontSize: 11, cursor: 'pointer' }}>View All</button>
+              <button 
+                style={{ color: 'var(--brand-yellow)', background: 'transparent', border: 'none', fontSize: 11, cursor: 'pointer' }}
+                onClick={() => showToast('Loading all riders...')}
+                onMouseEnter={(e) => { e.currentTarget.style.color = '#FFD700'; e.currentTarget.style.textDecoration = 'underline'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--brand-yellow)'; e.currentTarget.style.textDecoration = 'none'; }}
+              >
+                View All
+              </button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {topRiders.map((rider, i) => (
@@ -186,11 +214,46 @@ export default function Earnings() {
         <div style={{ background: 'var(--bg-card)', borderRadius: 12, border: '1px solid var(--border)', overflow: 'hidden' }}>
           <div style={{ padding: '15px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: 20 }}>
-              {['Daily', 'Weekly', 'Monthly'].map((tab, i) => (
-                <span key={tab} style={{ color: i === 0 ? 'var(--brand-yellow)' : 'var(--text-muted)', fontSize: 12, fontWeight: i === 0 ? 600 : 400, cursor: 'pointer', borderBottom: i === 0 ? '2px solid var(--brand-yellow)' : 'none', paddingBottom: 5 }}>{tab}</span>
+              {tabs.map((tab) => (
+                <span
+                  key={tab}
+                  onClick={() => {
+                    setActiveTab(tab);
+                    showToast(`Switched to ${tab} view`);
+                  }}
+                  style={{
+                    color: activeTab === tab ? 'var(--brand-yellow)' : 'var(--text-muted)',
+                    fontSize: 12,
+                    fontWeight: activeTab === tab ? 600 : 400,
+                    cursor: 'pointer',
+                    borderBottom: activeTab === tab ? '2px solid var(--brand-yellow)' : 'none',
+                    paddingBottom: 5,
+                    transition: 'all 0.2s ease',
+                    opacity: activeTab === tab ? 1 : 0.7,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (activeTab !== tab) {
+                      e.currentTarget.style.opacity = '1';
+                      e.currentTarget.style.color = 'var(--text-secondary)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeTab !== tab) {
+                      e.currentTarget.style.opacity = '0.7';
+                      e.currentTarget.style.color = 'var(--text-muted)';
+                    }
+                  }}
+                >
+                  {tab}
+                </span>
               ))}
             </div>
-            <button style={{ color: 'var(--text-secondary)', background: 'transparent', border: '1px solid var(--border)', borderRadius: 6, padding: '4px 10px', fontSize: 11, display: 'flex', alignItems: 'center', gap: 5 }}>
+            <button
+              style={{ color: 'var(--text-secondary)', background: 'transparent', border: '1px solid var(--border)', borderRadius: 6, padding: '4px 10px', fontSize: 11, display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer', transition: 'all 0.2s ease' }}
+              onClick={() => showToast('Options menu opened')}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--brand-yellow)'; e.currentTarget.style.color = 'var(--brand-yellow)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+            >
               <MoreVertical size={12} /> Options
             </button>
           </div>
@@ -204,7 +267,16 @@ export default function Earnings() {
             </thead>
             <tbody>
               {summaryRows.map((row, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
+                <tr
+                  key={i}
+                  style={{
+                    borderBottom: '1px solid var(--border)',
+                    background: hoveredRow === i ? 'rgba(255,107,0,0.05)' : 'transparent',
+                    transition: 'background 0.2s ease',
+                  }}
+                  onMouseEnter={() => setHoveredRow(i)}
+                  onMouseLeave={() => setHoveredRow(null)}
+                >
                   <td style={{ padding: '12px 20px', color: 'var(--text-primary)', fontSize: 12 }}>{row.date}</td>
                   <td style={{ padding: '12px 20px', color: 'var(--text-primary)', fontSize: 12 }}>{row.trips}</td>
                   <td style={{ padding: '12px 20px', color: 'var(--text-primary)', fontSize: 12 }}>{row.tripEarnings}</td>
@@ -217,12 +289,44 @@ export default function Earnings() {
             </tbody>
           </table>
           <div style={{ padding: '10px 20px', display: 'flex', justifyContent: 'center' }}>
-             <button style={{ color: 'var(--brand-yellow)', background: 'transparent', border: 'none', fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+             <button
+               style={{ color: 'var(--brand-yellow)', background: 'transparent', border: 'none', fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.2s ease' }}
+               onClick={() => showToast('Loading full earnings history...')}
+               onMouseEnter={(e) => { e.currentTarget.style.color = '#FFD700'; e.currentTarget.style.transform = 'translateX(4px)'; }}
+               onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--brand-yellow)'; e.currentTarget.style.transform = 'translateX(0)'; }}
+             >
                 View Full History <ChevronRight size={14} />
              </button>
           </div>
         </div>
 
+        {/* Toast Container */}
+        <div style={{ position: 'fixed', top: 20, right: 20, display: 'flex', flexDirection: 'column', gap: 10, zIndex: 9999 }}>
+          {toasts.map((toast) => (
+            <div
+              key={toast.id}
+              style={{
+                background: 'var(--bg-card)',
+                border: '1px solid var(--brand-yellow)',
+                borderRadius: 8,
+                padding: '12px 20px',
+                color: 'var(--text-primary)',
+                fontSize: 12,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                animation: 'slideIn 0.3s ease-out',
+              }}
+            >
+              {toast.message}
+            </div>
+          ))}
+        </div>
+
+        <style>{`
+          @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+          }
+        `}</style>
       </div>
     </AdminLayout>
   );

@@ -1,200 +1,237 @@
-"use client";
-
+import { useState } from "react";
+import { MapPin, Download } from "lucide-react";
+import { downloadCsv } from "@/lib/export-csv";
 import { OperationsMap } from "@/components/maps/operations-map";
-import type { RiderRecord } from "./types";
 import { EmptyCard } from "./EmptyCard";
+import type { RiderRecord } from "./types";
+import { statusTone } from "./utils";
+import { parseNumber } from "./utils";
 
-type MapMarker = {
-  id: string;
-  position: [number, number];
-  label: string;
-  variant: "driver";
-};
-
-type RidersScreenProps = {
+export type RidersScreenProps = {
   riders: RiderRecord[];
-  mapMarkers: MapMarker[];
+  activeRiders: RiderRecord[];
+  ridersWithCoords: RiderRecord[];
+  rideZoneSnapshot: [string, number][];
   riderCitySnapshot: [string, number][];
   riderZoneSnapshot: [string, number][];
-  riderRideLoadSnapshot: [string, number][];
+  vehicleCount: number;
+  onboardingPipeline: {
+    total: number;
+    signedUp: number;
+    hasVehicle: number;
+    hasZone: number;
+    verified: number;
+    active: number;
+  };
+  onBulkApprove?: (ids: string[]) => void;
+  onBulkSuspend?: (ids: string[]) => void;
 };
 
 export function RidersScreen({
   riders,
-  mapMarkers,
+  activeRiders,
+  ridersWithCoords,
+  rideZoneSnapshot,
   riderCitySnapshot,
   riderZoneSnapshot,
-  riderRideLoadSnapshot
+  vehicleCount,
+  onboardingPipeline,
+  onBulkApprove,
+  onBulkSuspend
 }: RidersScreenProps) {
-  const activeRiders = riders.filter((rider) => rider.onlineStatus);
-  const offlineRiders = Math.max(0, riders.length - activeRiders.length);
-  const ridersWithCoords = riders.filter(
-    (rider) => rider.currentLatitude !== null && rider.currentLongitude !== null
-  );
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const sortedRiders = riders
+    .slice()
+    .sort((a, b) => Number(b.onlineStatus) - Number(a.onlineStatus))
+    .slice(0, 20);
+  const allVisibleIds = sortedRiders.map((r) => r.id);
+  const allSelected = allVisibleIds.length > 0 && allVisibleIds.every((id) => selectedIds.has(id));
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(allVisibleIds));
+    }
+  };
+
+  const toggleId = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const mapMarkers = ridersWithCoords.map((rider) => ({
+    id: rider.id,
+    position: [parseNumber(rider.currentLatitude), parseNumber(rider.currentLongitude)] as [number, number],
+    label: rider.user.fullName,
+    variant: "driver" as const
+  }));
 
   return (
-    <>
-      <section className="exact-admin-section">
-        <div className="exact-admin-heading">
-          <p className="exact-admin-eyebrow">Supply management</p>
-          <h1>Riders</h1>
-          <p>Monitor rider availability, city coverage, and live coordinate activity.</p>
-        </div>
-
-        <div className="exact-admin-kpis">
-          <article className="exact-admin-kpi">
-            <span>Total riders</span>
+    <div className="exact-admin-screen">
+      <section className="admin-reference-kpis">
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon green"><MapPin size={22} /></div>
+          <div>
+            <span>Total Riders</span>
             <strong>{riders.length}</strong>
-          </article>
-          <article className="exact-admin-kpi">
-            <span>Online riders</span>
+            <small>{vehicleCount} with vehicle</small>
+          </div>
+        </article>
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon yellow"><MapPin size={22} /></div>
+          <div>
+            <span>Online Now</span>
             <strong>{activeRiders.length}</strong>
-          </article>
-          <article className="exact-admin-kpi">
-            <span>Offline riders</span>
-            <strong>{offlineRiders}</strong>
-          </article>
-          <article className="exact-admin-kpi">
-            <span>Live coordinates</span>
+            <small>Currently dispatching</small>
+          </div>
+        </article>
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon green"><MapPin size={22} /></div>
+          <div>
+            <span>GPS Mapped</span>
             <strong>{ridersWithCoords.length}</strong>
-          </article>
-        </div>
+            <small>With live coordinates</small>
+          </div>
+        </article>
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon yellow"><MapPin size={22} /></div>
+          <div>
+            <span>Zone Coverage</span>
+            <strong>{riderZoneSnapshot.length}</strong>
+            <small>Service zones</small>
+          </div>
+        </article>
       </section>
 
-      <div className="exact-admin-grid">
-        <section className="exact-admin-card wide">
-          <div className="exact-admin-cardhead">
-            <div>
-              <h3>Rider map</h3>
-              <p>Online riders with coordinates plotted from the live availability feed.</p>
-            </div>
-          </div>
-          <div className="exact-admin-map">
-            <OperationsMap
-              center={mapMarkers[0]?.position ?? [5.6037, -0.187]}
-              zoom={mapMarkers.length > 0 ? 11 : 6}
-              markers={mapMarkers}
-              emptyTitle="No rider coordinates yet."
-              emptyDescription="Riders appear here after their availability feed starts sending coordinates."
-            />
-          </div>
-        </section>
-
-        <div className="exact-admin-stack">
-          <section className="exact-admin-card">
-            <div className="exact-admin-cardhead">
-              <div>
-                <h3>Supply pressure</h3>
-                <p>Quick read on rider readiness across the network.</p>
+      <article className="admin-reference-card" style={{ marginBottom: 16 }}>
+        <div className="admin-reference-cardhead">
+          <div><h3>Rider Onboarding Pipeline</h3><p>Registration progress across all stages</p></div>
+        </div>
+        <div style={{ display: "flex", gap: 2, padding: "16px 0" }}>
+          {/* Each stage is a horizontal bar segment */}
+          {[
+            { label: "Signed Up", count: onboardingPipeline.signedUp, color: "#6b7280" },
+            { label: "Vehicle Added", count: onboardingPipeline.hasVehicle, color: "#d97706" },
+            { label: "Zone Assigned", count: onboardingPipeline.hasZone, color: "#2563eb" },
+            { label: "Verified", count: onboardingPipeline.verified, color: "#7c3aed" },
+            { label: "Active", count: onboardingPipeline.active, color: "#16a34a" }
+          ].map((stage, i) => {
+            const pct = onboardingPipeline.total > 0 ? (stage.count / onboardingPipeline.total) * 100 : 0;
+            return (
+              <div key={stage.label} style={{ flex: pct > 0 ? pct : 1, minWidth: pct > 0 ? 60 : 20 }}>
+                <div style={{ height: 32, background: stage.color, borderRadius: i === 0 ? "8px 0 0 8px" : i === 4 ? "0 8px 8px 0" : 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: pct > 0 ? 1 : 0.3 }}>
+                  <span style={{ color: "#fff", fontSize: 12, fontWeight: 600 }}>{stage.count}</span>
+                </div>
+                <span style={{ fontSize: 11, color: "var(--text-secondary)", display: "block", textAlign: "center", marginTop: 4 }}>{stage.label}</span>
               </div>
-            </div>
-            <div className="exact-admin-priority-grid">
-              <article className="exact-admin-priority-card">
-                <span>Online supply</span>
-                <strong>{activeRiders.length}</strong>
-                <small>Riders currently ready to take work.</small>
-              </article>
-              <article className="exact-admin-priority-card">
-                <span>Mapped riders</span>
-                <strong>{ridersWithCoords.length}</strong>
-                <small>Profiles already sending usable location coordinates.</small>
-              </article>
-              <article className="exact-admin-priority-card">
-                <span>Unassigned zones</span>
-                <strong>{riders.filter((rider) => !rider.serviceZone?.id).length}</strong>
-                <small>Riders that still need clearer zone alignment for dispatch.</small>
-              </article>
-            </div>
-          </section>
+            );
+          })}
+        </div>
+      </article>
 
-          <section className="exact-admin-card">
-            <div className="exact-admin-cardhead">
-              <div>
-                <h3>City coverage</h3>
-                <p>How rider supply is clustering by city.</p>
-              </div>
+      <div className="admin-screen-grid-2">
+        <div>
+          <article className="admin-reference-card" style={{ marginBottom: 16 }}>
+            <div className="admin-reference-cardhead">
+              <div><h3>Live Rider Map</h3><p>{activeRiders.length} riders online</p></div>
             </div>
-            {riderCitySnapshot.length === 0 ? (
-              <EmptyCard
-                title="No rider city data yet."
-                body="Rider city coverage will appear here as soon as rider profiles are created."
+            <div className="admin-reference-map">
+              <OperationsMap
+                center={mapMarkers[0]?.position ?? [5.6037, -0.187]}
+                zoom={mapMarkers.length > 0 ? 11 : 6}
+                markers={mapMarkers}
+                emptyTitle="No riders with coordinates."
+                emptyDescription="Riders will appear when they share their live location."
               />
+            </div>
+          </article>
+
+          <article className="admin-reference-card">
+            <div className="admin-reference-cardhead">
+              <div><h3>All Riders</h3><p>Sorted by online status</p></div>
+              <button
+                className="admin-select-sm"
+                onClick={() =>
+                  downloadCsv(
+                    "riders.csv",
+                    ["Name", "Display Code", "Phone", "City", "Zone", "Vehicle", "Online", "Status"],
+                    riders.map((rider) => [
+                      rider.user.fullName,
+                      rider.displayCode,
+                      rider.user.phoneE164 ?? "",
+                      rider.city ?? "",
+                      rider.serviceZone?.name ?? "",
+                      rider.vehicle?.plateNumber ?? "",
+                      rider.onlineStatus ? "Online" : "Offline",
+                      rider.user.accountStatus ?? (rider.onlineStatus ? "active" : "offline")
+                    ])
+                  )
+                }
+              >
+                <Download size={14} /> Export CSV
+              </button>
+            </div>
+            {riders.length === 0 ? (
+              <EmptyCard title="No riders yet." body="Rider registrations will appear here." />
             ) : (
-              <ul className="workbench-list">
-                {riderCitySnapshot.slice(0, 6).map(([city, count]) => (
-                  <li key={city}>
-                    <span>{city}</span>
-                    <strong>{count}</strong>
-                  </li>
-                ))}
+              <ul className="admin-reference-list">
+                <li className="admin-reference-list-row" style={{ fontWeight: 600, fontSize: 12, color: "var(--muted, #888)" }}>
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={toggleSelectAll}
+                  />
+                  <div style={{ flex: 1 }}>Rider</div>
+                  <div style={{ textAlign: "right" }}>Vehicle / Status</div>
+                </li>
+                {sortedRiders.map((rider) => (
+                    <li key={rider.id} className="admin-reference-list-row">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(rider.id)}
+                        onChange={() => toggleId(rider.id)}
+                      />
+                      <span
+                        className={`admin-reference-status-dot ${rider.onlineStatus ? "success" : "neutral"}`}
+                      />
+                      <div>
+                        <strong>{rider.user.fullName}</strong>
+                        <small>
+                          {rider.displayCode} · {rider.city ?? rider.serviceZone?.name ?? "No location"}
+                        </small>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <small>{rider.vehicle?.plateNumber ?? "No vehicle"}</small>
+                        <em
+                          className={`admin-reference-tag ${statusTone(
+                            rider.user.accountStatus ?? (rider.onlineStatus ? "active" : "offline")
+                          )}`}
+                        >
+                          {rider.onlineStatus ? "Online" : "Offline"}
+                        </em>
+                      </div>
+                    </li>
+                  ))}
               </ul>
             )}
-          </section>
+          </article>
         </div>
-      </div>
 
-      <div className="exact-admin-grid">
-        <section className="exact-admin-card wide">
-          <div className="exact-admin-cardhead">
-            <div>
-              <h3>Rider roster</h3>
-              <p>Availability, zone assignment, and contact context.</p>
-            </div>
-          </div>
-          {riders.length === 0 ? (
-            <EmptyCard
-              title="No riders created yet."
-              body="Create riders in the operations lab and they will appear here."
-            />
-          ) : (
-            <div className="table-wrapper">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Rider</th>
-                    <th>Status</th>
-                    <th>City</th>
-                    <th>Zone</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {riders.map((rider) => (
-                    <tr key={rider.id}>
-                      <td>
-                        <strong>{rider.user.fullName}</strong>
-                        <div>{rider.displayCode}</div>
-                      </td>
-                      <td>
-                        <span className={`status-chip ${rider.onlineStatus ? "success" : "neutral"}`}>
-                          {rider.onlineStatus ? "Online" : "Offline"}
-                        </span>
-                      </td>
-                      <td>{rider.city ?? "No city"}</td>
-                      <td>{rider.serviceZone?.name ?? "No zone"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
-
-        <div className="exact-admin-stack">
-          <section className="exact-admin-card">
-            <div className="exact-admin-cardhead">
-              <div>
-                <h3>Zone rider distribution</h3>
-                <p>Where rider headcount is currently concentrated.</p>
-              </div>
+        <aside className="admin-sidebar-panel">
+          <article className="admin-reference-card">
+            <div className="admin-reference-cardhead">
+              <div><h3>Zone Distribution</h3></div>
             </div>
             {riderZoneSnapshot.length === 0 ? (
-              <EmptyCard
-                title="No rider zones yet."
-                body="Zone assignment counts will show up here once rider profiles are distributed."
-              />
+              <EmptyCard title="No zone data." body="Riders will be distributed across zones here." />
             ) : (
-              <ul className="workbench-list">
-                {riderZoneSnapshot.slice(0, 6).map(([zone, count]) => (
+              <ul className="admin-summary-list">
+                {riderZoneSnapshot.map(([zone, count]) => (
                   <li key={zone}>
                     <span>{zone}</span>
                     <strong>{count}</strong>
@@ -202,33 +239,73 @@ export function RidersScreen({
                 ))}
               </ul>
             )}
-          </section>
+          </article>
 
-          <section className="exact-admin-card">
-            <div className="exact-admin-cardhead">
-              <div>
-                <h3>Rider trip load</h3>
-                <p>Which riders are carrying the most trip volume so far.</p>
-              </div>
+          <article className="admin-reference-card">
+            <div className="admin-reference-cardhead">
+              <div><h3>City Breakdown</h3></div>
             </div>
-            {riderRideLoadSnapshot.length === 0 ? (
-              <EmptyCard
-                title="No rider trip load yet."
-                body="Trip volume per rider will appear after rides start getting assigned."
-              />
+            {riderCitySnapshot.length === 0 ? (
+              <EmptyCard title="No city data." body="" />
             ) : (
-              <ul className="workbench-list exact-admin-ride-feed">
-                {riderRideLoadSnapshot.map(([name, count]) => (
-                  <li key={name}>
-                    <span>{name}</span>
-                    <strong>{count} rides</strong>
+              <ul className="admin-summary-list">
+                {riderCitySnapshot.map(([city, count]) => (
+                  <li key={city}>
+                    <span>{city}</span>
+                    <strong>{count}</strong>
                   </li>
                 ))}
               </ul>
             )}
-          </section>
-        </div>
+          </article>
+        </aside>
       </div>
-    </>
+
+      {selectedIds.size > 0 && (
+        <div
+          className="admin-bulk-bar"
+          style={{
+            position: "sticky",
+            bottom: 0,
+            background: "var(--card-bg, #1a1b1e)",
+            borderTop: "1px solid var(--border)",
+            padding: "12px 16px",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            zIndex: 10
+          }}
+        >
+          <span style={{ fontSize: 13, color: "var(--muted, #aaa)" }}>
+            {selectedIds.size} rider{selectedIds.size !== 1 ? "s" : ""} selected
+          </span>
+          {onBulkApprove && (
+            <button
+              type="button"
+              className="admin-select-sm"
+              onClick={() => onBulkApprove(Array.from(selectedIds))}
+            >
+              Approve Selected
+            </button>
+          )}
+          {onBulkSuspend && (
+            <button
+              type="button"
+              className="admin-select-sm"
+              onClick={() => onBulkSuspend(Array.from(selectedIds))}
+            >
+              Suspend Selected
+            </button>
+          )}
+          <button
+            type="button"
+            className="admin-select-sm"
+            onClick={() => setSelectedIds(new Set())}
+          >
+            Clear Selection
+          </button>
+        </div>
+      )}
+    </div>
   );
 }

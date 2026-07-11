@@ -28,6 +28,7 @@ interface OperationsMapProps {
   markers?: LeafletMapMarker[];
   route?: Array<[number, number]>;
   currentPosition?: LeafletMapCurrentPosition | null;
+  showFitAll?: boolean;
 }
 
 function toTuple(center: [number, number]): [number, number] {
@@ -42,7 +43,8 @@ export function OperationsMap({
   bare = false,
   markers = [],
   route = [],
-  currentPosition = null
+  currentPosition = null,
+  showFitAll = false
 }: OperationsMapProps) {
   const hasOverlayContent = markers.length > 0 || route.length > 1 || Boolean(currentPosition);
   const safeCenter = toTuple(center);
@@ -57,6 +59,7 @@ export function OperationsMap({
             markers={markers}
             route={route}
             currentPosition={currentPosition}
+            showFitAll={showFitAll}
           />
         </MapErrorBoundary>
         {!hasOverlayContent ? (
@@ -80,6 +83,7 @@ export function OperationsMap({
           markers={markers}
           route={route}
           currentPosition={currentPosition}
+          showFitAll={showFitAll}
         />
       </MapErrorBoundary>
       {!hasOverlayContent ? (

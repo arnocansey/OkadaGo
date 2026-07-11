@@ -1154,35 +1154,40 @@ async function suggestPlacesNominatim(
 
 export class BootstrapService {
   async listPassengers(limit = 25) {
-    return prisma.passengerProfile.findMany({
-      take: limit,
-      where: {
-        user: {
-          role: UserRole.PASSENGER,
-          deletedAt: null
-        }
-      },
-      orderBy: {
-        createdAt: "desc"
-      },
-      include: {
-        user: true
+    const where = {
+      user: {
+        role: UserRole.PASSENGER,
+        deletedAt: null
       }
-    });
+    };
+    const [data, total] = await Promise.all([
+      prisma.passengerProfile.findMany({
+        take: limit,
+        where,
+        orderBy: { createdAt: "desc" },
+        include: { user: true }
+      }),
+      prisma.passengerProfile.count({ where })
+    ]);
+    return { data, total };
   }
 
   async listRiders(limit = 25) {
-    return prisma.riderProfile.findMany({
-      take: limit,
-      orderBy: {
-        createdAt: "desc"
-      },
-      include: {
-        user: true,
-        serviceZone: true,
-        vehicle: true
+    const where = {
+      user: {
+        deletedAt: null
       }
-    });
+    };
+    const [data, total] = await Promise.all([
+      prisma.riderProfile.findMany({
+        take: limit,
+        where,
+        orderBy: { createdAt: "desc" },
+        include: { user: true, serviceZone: true, vehicle: true }
+      }),
+      prisma.riderProfile.count({ where })
+    ]);
+    return { data, total };
   }
 
   async listServiceZones(limit = 25) {

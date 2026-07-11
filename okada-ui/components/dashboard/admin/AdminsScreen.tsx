@@ -1,485 +1,311 @@
-"use client";
-
-import { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
-import { formatMoney } from "@/lib/currency";
+import { ShieldAlert, UserPlus, CheckCircle } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
-import type {
-  AdminAccountRecord,
-  AdminPermissionsRecord,
-  PassengerRecord
-} from "./types";
+import type { AdminAccountRecord, PassengerRecord } from "./types";
+import { formatDateTime, statusTone } from "./utils";
 
-type AdminForm = {
-  fullName: string;
-  email: string;
-  phoneCountryCode: string;
-  phoneLocal: string;
-  phoneE164: string;
-  preferredCurrency: string;
-  password: string;
-  title: string;
-  permissions: string;
-};
-
-type PromoteForm = {
-  passengerUserId: string;
-  email: string;
-  password: string;
-  title: string;
-  permissions: string;
-};
-
-type AdminsScreenProps = {
-  screenMeta: { eyebrow: string; title: string; description: string };
-  adminAccountsQuery: UseQueryResult<AdminAccountRecord[], Error>;
-  adminPermissionsQuery: UseQueryResult<AdminPermissionsRecord, Error>;
-  adminRoleEntries: [string, string[]][];
-  rolePermissionSnapshot: [string, string[]][];
-  adminTitleSnapshot: [string, number][];
+export type AdminsScreenProps = {
+  adminAccounts: AdminAccountRecord[];
   eligiblePassengers: PassengerRecord[];
+  adminRoleEntries: [string, string[]][];
+  adminForm: {
+    fullName: string;
+    email: string;
+    phoneCountryCode: string;
+    phoneLocal: string;
+    phoneE164: string;
+    preferredCurrency: string;
+    password: string;
+    title: string;
+    permissions: string;
+  };
+  promoteForm: {
+    passengerUserId: string;
+    email: string;
+    password: string;
+    title: string;
+    permissions: string;
+  };
   selectedPassenger: PassengerRecord | null;
-  adminForm: AdminForm;
-  setAdminForm: React.Dispatch<React.SetStateAction<AdminForm>>;
-  promoteForm: PromoteForm;
-  setPromoteForm: React.Dispatch<React.SetStateAction<PromoteForm>>;
-  createAdminMutation: UseMutationResult<unknown, Error, void>;
-  promotePassengerMutation: UseMutationResult<unknown, Error, void>;
+  onAdminFormChange: (field: string, value: string) => void;
+  onPromoteFormChange: (field: string, value: string) => void;
+  onCreateAdmin: () => void;
+  onPromotePassenger: () => void;
+  isCreating: boolean;
+  isPromoting: boolean;
 };
 
 export function AdminsScreen({
-  screenMeta,
-  adminAccountsQuery,
-  adminPermissionsQuery,
-  adminRoleEntries,
-  rolePermissionSnapshot,
-  adminTitleSnapshot,
+  adminAccounts,
   eligiblePassengers,
-  selectedPassenger,
+  adminRoleEntries,
   adminForm,
-  setAdminForm,
   promoteForm,
-  setPromoteForm,
-  createAdminMutation,
-  promotePassengerMutation
+  selectedPassenger,
+  onAdminFormChange,
+  onPromoteFormChange,
+  onCreateAdmin,
+  onPromotePassenger,
+  isCreating,
+  isPromoting
 }: AdminsScreenProps) {
   return (
-    <>
-      <section className="exact-admin-section">
-        <div className="exact-admin-heading">
-          <p className="exact-admin-eyebrow">{screenMeta.eyebrow}</p>
-          <h1>{screenMeta.title}</h1>
-          <p>{screenMeta.description}</p>
-        </div>
-
-        <div className="exact-admin-kpis">
-          <article className="exact-admin-kpi">
-            <span>Total admins</span>
-            <strong>{adminAccountsQuery.data?.length ?? 0}</strong>
-          </article>
-          <article className="exact-admin-kpi">
-            <span>Named titles</span>
-            <strong>{(adminAccountsQuery.data ?? []).filter((admin) => Boolean(admin.title)).length}</strong>
-          </article>
-          <article className="exact-admin-kpi">
-            <span>With email</span>
-            <strong>{(adminAccountsQuery.data ?? []).filter((admin) => Boolean(admin.user.email)).length}</strong>
-          </article>
-          <article className="exact-admin-kpi">
-            <span>Active accounts</span>
+    <div className="exact-admin-screen">
+      <section className="admin-reference-kpis">
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon yellow"><ShieldAlert size={22} /></div>
+          <div>
+            <span>Admin Accounts</span>
+            <strong>{adminAccounts.length}</strong>
+            <small>Active operators</small>
+          </div>
+        </article>
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon green"><UserPlus size={22} /></div>
+          <div>
+            <span>Eligible Passengers</span>
+            <strong>{eligiblePassengers.length}</strong>
+            <small>Can be promoted</small>
+          </div>
+        </article>
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon yellow"><ShieldAlert size={22} /></div>
+          <div>
+            <span>Permission Roles</span>
+            <strong>{adminRoleEntries.length}</strong>
+            <small>Defined templates</small>
+          </div>
+        </article>
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon green"><CheckCircle size={22} /></div>
+          <div>
+            <span>Active Admins</span>
             <strong>
-              {(adminAccountsQuery.data ?? []).filter(
-                (admin) => admin.user.accountStatus === "active"
-              ).length}
+              {adminAccounts.filter((a) => a.user.accountStatus?.toLowerCase() === "active").length}
             </strong>
-          </article>
-        </div>
+            <small>Currently active</small>
+          </div>
+        </article>
       </section>
 
-      <div className="exact-admin-grid">
-        <section className="exact-admin-card">
-          <div className="exact-admin-cardhead">
-            <div>
-              <h3>Access governance</h3>
-              <p>Who currently holds operational access and how broadly those permissions are distributed.</p>
+      <div className="admin-screen-grid-2">
+        {/* Current Admins */}
+        <div>
+          <article className="admin-reference-card" style={{ marginBottom: 16 }}>
+            <div className="admin-reference-cardhead">
+              <div>
+                <h3>Admin Accounts</h3>
+                <p>All current administrators on the platform.</p>
+              </div>
             </div>
-          </div>
-          <div className="exact-admin-priority-grid">
-            <article className="exact-admin-priority-card">
-              <span>Eligible passenger pool</span>
-              <strong>{eligiblePassengers.length}</strong>
-              <small>Passenger accounts that can still be promoted into admin operators.</small>
-            </article>
-            <article className="exact-admin-priority-card">
-              <span>Permission families</span>
-              <strong>{adminRoleEntries.length}</strong>
-              <small>Distinct role families currently emitted by the backend access model.</small>
-            </article>
-            <article className="exact-admin-priority-card">
-              <span>Most common admin title</span>
-              <strong>{adminTitleSnapshot[0]?.[0] ?? "No titles yet"}</strong>
-              <small>
-                The title appearing most often across active admin accounts in this workspace.
-              </small>
-            </article>
-          </div>
-        </section>
+            {adminAccounts.length === 0 ? (
+              <EmptyCard title="No admin accounts." body="Create the first admin account using the form below." />
+            ) : (
+              <div className="admin-table-wrapper">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Title</th>
+                      <th>Phone</th>
+                      <th>Email</th>
+                      <th>Status</th>
+                      <th>Permissions</th>
+                      <th>Created</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {adminAccounts.map((admin) => (
+                      <tr key={admin.id}>
+                        <td><strong>{admin.user.fullName}</strong></td>
+                        <td><small>{admin.title ?? "—"}</small></td>
+                        <td><small>{admin.user.phoneE164}</small></td>
+                        <td><small>{admin.user.email ?? "—"}</small></td>
+                        <td>
+                          <em className={`admin-reference-tag ${statusTone(admin.user.accountStatus)}`}>
+                            {admin.user.accountStatus}
+                          </em>
+                        </td>
+                        <td>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                            {admin.permissions.slice(0, 3).map((perm) => (
+                              <em key={perm} className="admin-reference-tag neutral" style={{ fontSize: 11 }}>
+                                {perm}
+                              </em>
+                            ))}
+                            {admin.permissions.length > 3 && (
+                              <em className="admin-reference-tag neutral" style={{ fontSize: 11 }}>
+                                +{admin.permissions.length - 3}
+                              </em>
+                            )}
+                          </div>
+                        </td>
+                        <td><small>{formatDateTime(admin.createdAt)}</small></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </article>
+        </div>
 
-        <section className="exact-admin-card">
-          <div className="exact-admin-cardhead">
-            <div>
-              <h3>Role footprint</h3>
-              <p>Quick view of which permission families currently carry the heaviest access load.</p>
+        <aside className="admin-sidebar-panel">
+          {/* Create new admin */}
+          <article className="admin-reference-card" style={{ marginBottom: 16 }}>
+            <div className="admin-reference-cardhead">
+              <div><h3>Create Admin Account</h3></div>
             </div>
-          </div>
-          {adminPermissionsQuery.isLoading ? (
-            <div className="status-chip warning">Loading permissions</div>
-          ) : adminPermissionsQuery.isError ? (
-            <EmptyCard title="Could not load permissions." body={adminPermissionsQuery.error.message} />
-          ) : rolePermissionSnapshot.length === 0 ? (
-            <EmptyCard
-              title="No permission families found."
-              body="Permission families will surface here once the backend reports them."
-            />
-          ) : (
-            <ul className="workbench-list exact-admin-ride-feed">
-              {rolePermissionSnapshot.map(([role, permissions]) => (
-                <li key={role}>
-                  <span>{role}</span>
-                  <strong>{permissions.length} permissions</strong>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </div>
-
-      <div className="exact-admin-grid">
-        <section className="exact-admin-card">
-          <div className="exact-admin-cardhead">
-            <div>
-              <h3>Create admin account</h3>
-              <p>Only authenticated admins can create another admin from this page.</p>
-            </div>
-          </div>
-
-          <div className="two-up">
-            <div className="field-group">
-              <label className="field-label">Full name</label>
-              <input
-                className="input"
-                value={adminForm.fullName}
-                onChange={(event) =>
-                  setAdminForm((current) => ({ ...current, fullName: event.target.value }))
-                }
-                placeholder="Admin full name"
-              />
-            </div>
-            <div className="field-group">
-              <label className="field-label">Email</label>
-              <input
-                className="input"
-                value={adminForm.email}
-                onChange={(event) =>
-                  setAdminForm((current) => ({ ...current, email: event.target.value }))
-                }
-                placeholder="admin@okadago.com"
-              />
-            </div>
-            <div className="field-group">
-              <label className="field-label">Phone country code</label>
-              <input
-                className="input"
-                value={adminForm.phoneCountryCode}
-                onChange={(event) =>
-                  setAdminForm((current) => ({
-                    ...current,
-                    phoneCountryCode: event.target.value
-                  }))
-                }
-                placeholder="+233"
-              />
-            </div>
-            <div className="field-group">
-              <label className="field-label">Phone local</label>
-              <input
-                className="input"
-                value={adminForm.phoneLocal}
-                onChange={(event) =>
-                  setAdminForm((current) => ({ ...current, phoneLocal: event.target.value }))
-                }
-                placeholder="24XXXXXXX"
-              />
-            </div>
-            <div className="field-group">
-              <label className="field-label">Phone E.164</label>
-              <input
-                className="input"
-                value={adminForm.phoneE164}
-                onChange={(event) =>
-                  setAdminForm((current) => ({ ...current, phoneE164: event.target.value }))
-                }
-                placeholder="+23324XXXXXXX"
-              />
-            </div>
-            <div className="field-group">
-              <label className="field-label">Preferred currency</label>
-              <select
-                className="select"
-                value={adminForm.preferredCurrency}
-                onChange={(event) =>
-                  setAdminForm((current) => ({
-                    ...current,
-                    preferredCurrency: event.target.value
-                  }))
-                }
+            <div className="admin-form">
+              <label>
+                Full Name
+                <input
+                  type="text"
+                  className="admin-input"
+                  value={adminForm.fullName}
+                  onChange={(e) => onAdminFormChange("fullName", e.target.value)}
+                  placeholder="Full name"
+                />
+              </label>
+              <label>
+                Email
+                <input
+                  type="email"
+                  className="admin-input"
+                  value={adminForm.email}
+                  onChange={(e) => onAdminFormChange("email", e.target.value)}
+                  placeholder="Email address"
+                />
+              </label>
+              <label>
+                Phone (E.164)
+                <input
+                  type="tel"
+                  className="admin-input"
+                  value={adminForm.phoneE164}
+                  onChange={(e) => onAdminFormChange("phoneE164", e.target.value)}
+                  placeholder="+233XXXXXXXXX"
+                />
+              </label>
+              <label>
+                Password
+                <input
+                  type="password"
+                  className="admin-input"
+                  value={adminForm.password}
+                  onChange={(e) => onAdminFormChange("password", e.target.value)}
+                  placeholder="Password"
+                />
+              </label>
+              <label>
+                Title / Role
+                <input
+                  type="text"
+                  className="admin-input"
+                  value={adminForm.title}
+                  onChange={(e) => onAdminFormChange("title", e.target.value)}
+                  placeholder="e.g. Operations Manager"
+                />
+              </label>
+              <label>
+                Permissions (comma-separated)
+                <input
+                  type="text"
+                  className="admin-input"
+                  value={adminForm.permissions}
+                  onChange={(e) => onAdminFormChange("permissions", e.target.value)}
+                  placeholder="e.g. rides:read, riders:write"
+                />
+              </label>
+              <button
+                type="button"
+                className="button"
+                disabled={isCreating || !adminForm.fullName || !adminForm.phoneE164}
+                onClick={onCreateAdmin}
               >
-                <option value="GHS">GHS</option>
-                <option value="NGN">NGN</option>
-              </select>
+                {isCreating ? "Creating..." : "Create Admin"}
+              </button>
             </div>
-            <div className="field-group">
-              <label className="field-label">Title</label>
-              <input
-                className="input"
-                value={adminForm.title}
-                onChange={(event) =>
-                  setAdminForm((current) => ({ ...current, title: event.target.value }))
-                }
-                placeholder="Operations Lead"
-              />
+          </article>
+
+          {/* Promote passenger */}
+          <article className="admin-reference-card">
+            <div className="admin-reference-cardhead">
+              <div><h3>Promote Passenger</h3><p>Elevate an existing user to admin.</p></div>
             </div>
-            <div className="field-group">
-              <label className="field-label">Password</label>
-              <input
-                className="input"
-                type="password"
-                value={adminForm.password}
-                onChange={(event) =>
-                  setAdminForm((current) => ({ ...current, password: event.target.value }))
-                }
-                placeholder="Create a strong password"
-              />
-            </div>
-          </div>
-
-          <div className="field-group admin-form-block">
-            <label className="field-label">Permissions</label>
-            <textarea
-              className="textarea"
-              value={adminForm.permissions}
-              onChange={(event) =>
-                setAdminForm((current) => ({ ...current, permissions: event.target.value }))
-              }
-              placeholder="users:manage:any, analytics:read:any"
-            />
-          </div>
-
-          <div className="button-row admin-form-actions">
-            <button
-              className="button"
-              type="button"
-              onClick={() => createAdminMutation.mutate()}
-              disabled={createAdminMutation.isPending}
-            >
-              {createAdminMutation.isPending ? "Creating..." : "Create admin"}
-            </button>
-          </div>
-
-          {createAdminMutation.isError ? (
-            <div className="empty-state admin-form-feedback">
-              <strong>Admin creation failed.</strong>
-              <p>{createAdminMutation.error.message}</p>
-            </div>
-          ) : null}
-
-          {createAdminMutation.isSuccess ? (
-            <div className="status-chip success admin-form-feedback-chip">Admin account created</div>
-          ) : null}
-        </section>
-
-        <section className="exact-admin-card">
-          <div className="exact-admin-cardhead">
-            <div>
-              <h3>Promote passenger to admin</h3>
-              <p>Upgrade an existing passenger account and keep the same person record in the system.</p>
-            </div>
-          </div>
-
-          <div className="two-up">
-            <div className="field-group">
-              <label className="field-label">Passenger account</label>
-              <select
-                className="select"
-                value={promoteForm.passengerUserId}
-                onChange={(event) => {
-                  const passenger =
-                    eligiblePassengers.find((item) => item.userId === event.target.value) ?? null;
-
-                  setPromoteForm((current) => ({
-                    ...current,
-                    passengerUserId: event.target.value,
-                    email: passenger?.user.email ?? current.email,
-                    title: current.title
-                  }));
-                }}
+            <div className="admin-form">
+              <label>
+                Passenger User ID
+                <select
+                  className="admin-input"
+                  value={promoteForm.passengerUserId}
+                  onChange={(e) => onPromoteFormChange("passengerUserId", e.target.value)}
+                >
+                  <option value="">Select a passenger...</option>
+                  {eligiblePassengers.map((p) => (
+                    <option key={p.userId} value={p.userId}>
+                      {p.user.fullName} ({p.user.phoneE164})
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {selectedPassenger && (
+                <div className="admin-promote-preview">
+                  <strong>{selectedPassenger.user.fullName}</strong>
+                  <small>{selectedPassenger.user.phoneE164} · {selectedPassenger.user.email}</small>
+                </div>
+              )}
+              <label>
+                New Email (optional)
+                <input
+                  type="email"
+                  className="admin-input"
+                  value={promoteForm.email}
+                  onChange={(e) => onPromoteFormChange("email", e.target.value)}
+                  placeholder="Admin email"
+                />
+              </label>
+              <label>
+                New Password
+                <input
+                  type="password"
+                  className="admin-input"
+                  value={promoteForm.password}
+                  onChange={(e) => onPromoteFormChange("password", e.target.value)}
+                  placeholder="New admin password"
+                />
+              </label>
+              <label>
+                Title
+                <input
+                  type="text"
+                  className="admin-input"
+                  value={promoteForm.title}
+                  onChange={(e) => onPromoteFormChange("title", e.target.value)}
+                  placeholder="e.g. Finance Officer"
+                />
+              </label>
+              <label>
+                Permissions (comma-separated)
+                <input
+                  type="text"
+                  className="admin-input"
+                  value={promoteForm.permissions}
+                  onChange={(e) => onPromoteFormChange("permissions", e.target.value)}
+                  placeholder="e.g. finance:read"
+                />
+              </label>
+              <button
+                type="button"
+                className="button"
+                disabled={isPromoting || !promoteForm.passengerUserId || !promoteForm.password}
+                onClick={onPromotePassenger}
               >
-                <option value="">Select passenger</option>
-                {eligiblePassengers.map((passenger) => (
-                  <option key={passenger.userId} value={passenger.userId}>
-                    {passenger.user.fullName} - {passenger.user.phoneE164}
-                  </option>
-                ))}
-              </select>
+                {isPromoting ? "Promoting..." : "Promote to Admin"}
+              </button>
             </div>
-
-            <div className="field-group">
-              <label className="field-label">Admin email</label>
-              <input
-                className="input"
-                value={promoteForm.email}
-                onChange={(event) =>
-                  setPromoteForm((current) => ({ ...current, email: event.target.value }))
-                }
-                placeholder="admin@okadago.com"
-              />
-            </div>
-
-            <div className="field-group">
-              <label className="field-label">New admin password</label>
-              <input
-                className="input"
-                type="password"
-                value={promoteForm.password}
-                onChange={(event) =>
-                  setPromoteForm((current) => ({ ...current, password: event.target.value }))
-                }
-                placeholder="Set a fresh admin password"
-              />
-            </div>
-
-            <div className="field-group">
-              <label className="field-label">Admin title</label>
-              <input
-                className="input"
-                value={promoteForm.title}
-                onChange={(event) =>
-                  setPromoteForm((current) => ({ ...current, title: event.target.value }))
-                }
-                placeholder="Support Supervisor"
-              />
-            </div>
-          </div>
-
-          {selectedPassenger ? (
-            <div className="admin-promote-summary">
-              <strong>{selectedPassenger.user.fullName}</strong>
-              <span>{selectedPassenger.user.phoneE164}</span>
-              <span>{selectedPassenger.defaultServiceCity ?? "No default city"}</span>
-              <span>{selectedPassenger.referralCode}</span>
-            </div>
-          ) : null}
-
-          <div className="field-group admin-form-block">
-            <label className="field-label">Permissions</label>
-            <textarea
-              className="textarea"
-              value={promoteForm.permissions}
-              onChange={(event) =>
-                setPromoteForm((current) => ({ ...current, permissions: event.target.value }))
-              }
-              placeholder="users:manage:any, analytics:read:any"
-            />
-          </div>
-
-          <div className="button-row admin-form-actions">
-            <button
-              className="button"
-              type="button"
-              onClick={() => promotePassengerMutation.mutate()}
-              disabled={promotePassengerMutation.isPending || !promoteForm.passengerUserId}
-            >
-              {promotePassengerMutation.isPending ? "Promoting..." : "Promote passenger"}
-            </button>
-          </div>
-
-          {promotePassengerMutation.isError ? (
-            <div className="empty-state admin-form-feedback">
-              <strong>Passenger promotion failed.</strong>
-              <p>{promotePassengerMutation.error.message}</p>
-            </div>
-          ) : null}
-
-          {promotePassengerMutation.isSuccess ? (
-            <div className="status-chip success admin-form-feedback-chip">
-              Passenger promoted to admin
-            </div>
-          ) : null}
-        </section>
+          </article>
+        </aside>
       </div>
-
-      <div className="exact-admin-grid">
-        <section className="exact-admin-card wide">
-          <div className="exact-admin-cardhead">
-            <div>
-              <h3>Existing admins</h3>
-              <p>Admin accounts currently available in the workspace.</p>
-            </div>
-          </div>
-          {adminAccountsQuery.isLoading ? (
-            <div className="status-chip warning">Loading admin accounts</div>
-          ) : adminAccountsQuery.isError ? (
-            <EmptyCard
-              title="Could not load admins."
-              body={adminAccountsQuery.error.message}
-            />
-          ) : (adminAccountsQuery.data ?? []).length === 0 ? (
-            <EmptyCard
-              title="No admin accounts found."
-              body="Create the next admin account from the form on this page."
-            />
-          ) : (
-            <ul className="workbench-list">
-              {(adminAccountsQuery.data ?? []).map((admin) => (
-                <li key={admin.id}>
-                  <span>
-                    {admin.user.fullName}
-                    {admin.title ? ` - ${admin.title}` : ""}
-                  </span>
-                  <strong>{admin.user.email ?? admin.user.phoneE164}</strong>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        <section className="exact-admin-card">
-          <div className="exact-admin-cardhead">
-            <div>
-              <h3>Admin title mix</h3>
-              <p>Titles in use across the current operator base.</p>
-            </div>
-          </div>
-          {adminAccountsQuery.isLoading ? (
-            <div className="status-chip warning">Loading title mix</div>
-          ) : adminAccountsQuery.isError ? (
-            <EmptyCard title="Could not load title mix." body={adminAccountsQuery.error.message} />
-          ) : adminTitleSnapshot.length === 0 ? (
-            <EmptyCard
-              title="No admin titles yet."
-              body="Admin titles will be grouped here once accounts are created with role labels."
-            />
-          ) : (
-            <ul className="workbench-list exact-admin-ride-feed">
-              {adminTitleSnapshot.map(([title, count]) => (
-                <li key={title}>
-                  <span>{title}</span>
-                  <strong>{count}</strong>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </div>
-    </>
+    </div>
   );
 }

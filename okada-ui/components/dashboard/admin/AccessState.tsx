@@ -1,5 +1,3 @@
-"use client";
-
 import { ImmersivePage } from "@/components/layout/immersive-page";
 
 export function AccessState({

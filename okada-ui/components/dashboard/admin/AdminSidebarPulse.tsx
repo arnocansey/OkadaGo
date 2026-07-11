@@ -1,5 +1,3 @@
-"use client";
-
 import { formatMoney } from "@/lib/currency";
 
 export function AdminSidebarPulse({
