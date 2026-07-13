@@ -105,11 +105,16 @@ export default function ProfileScreen() {
 
   async function pickAndUploadAvatar() {
     if (!session?.token) return;
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission needed", "Allow photo access to change your profile picture.");
+      return;
+    }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.8,
+      quality: 0.7,
     });
     if (result.canceled || !result.assets?.[0]) return;
 
@@ -138,6 +143,53 @@ export default function ProfileScreen() {
     }
   }
 
+  async function takePhotoAndUpload() {
+    if (!session?.token) return;
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission needed", "Allow camera access to take a profile photo.");
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+    if (result.canceled || !result.assets?.[0]) return;
+
+    setUploadingAvatar(true);
+    try {
+      const asset = result.assets[0];
+      const response = await fetch(asset.uri);
+      const blob = await response.blob();
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(blob);
+      });
+
+      await api("/auth/avatar", {
+        method: "POST",
+        token: session.token,
+        body: { imageBase64: base64 },
+      });
+      refreshSession();
+      Alert.alert("Photo updated", "Your profile photo was saved.");
+    } catch (e) {
+      Alert.alert("Upload failed", e instanceof Error ? e.message : "Could not update photo.");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
+  function showAvatarOptions() {
+    Alert.alert("Change photo", "Choose an option", [
+      { text: "Take photo", onPress: takePhotoAndUpload },
+      { text: "Choose from library", onPress: pickAndUploadAvatar },
+      { text: "Cancel", style: "cancel" },
+    ]);
+  }
+
   async function applyReferral() {
     if (!session || !friendCode.trim()) return;
     setApplyingReferral(true);
@@ -162,7 +214,7 @@ export default function ProfileScreen() {
         <View style={styles.header}>
           <View style={styles.avatarWrap}>
             <Avatar name={user.fullName} size={80} imageUri={user.avatarUrl ?? undefined} />
-            <Pressable style={styles.cameraBtn} onPress={pickAndUploadAvatar} disabled={uploadingAvatar} hitSlop={8} accessibilityLabel="Change profile photo" accessibilityRole="button">
+            <Pressable style={styles.cameraBtn} onPress={showAvatarOptions} disabled={uploadingAvatar} hitSlop={8} accessibilityLabel="Change profile photo" accessibilityRole="button">
               <Camera size={14} color="#fff" />
             </Pressable>
           </View>
