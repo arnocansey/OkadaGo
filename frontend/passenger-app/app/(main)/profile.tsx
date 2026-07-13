@@ -1,8 +1,9 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Moon, Sun } from "lucide-react-native";
+import { Moon, Sun, Camera } from "lucide-react-native";
+import * as ImagePicker from "expo-image-picker";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -28,6 +29,7 @@ export default function ProfileScreen() {
   const [settings, setSettings] = useState<PassengerSettings | null>(null);
   const [friendCode, setFriendCode] = useState("");
   const [applyingReferral, setApplyingReferral] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -83,9 +85,58 @@ export default function ProfileScreen() {
         darkIconBg: { backgroundColor: colors.borderStrong },
         themeLabel: { ...typography.bodySemibold, color: colors.text },
         themeHint: { ...typography.caption, color: colors.textMuted, marginTop: 2 },
+        avatarWrap: { position: "relative" },
+        cameraBtn: {
+          position: "absolute",
+          bottom: 0,
+          right: 0,
+          width: 28,
+          height: 28,
+          borderRadius: 14,
+          backgroundColor: colors.primary,
+          alignItems: "center",
+          justifyContent: "center",
+          borderWidth: 2,
+          borderColor: colors.background,
+        },
       }),
     [colors, typography],
   );
+
+  async function pickAndUploadAvatar() {
+    if (!session?.token) return;
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (result.canceled || !result.assets?.[0]) return;
+
+    setUploadingAvatar(true);
+    try {
+      const asset = result.assets[0];
+      const response = await fetch(asset.uri);
+      const blob = await response.blob();
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(blob);
+      });
+
+      const data = await api<{ token: string; expiresAt: string; user: typeof session.user }>("/auth/avatar", {
+        method: "POST",
+        token: session.token,
+        body: { imageBase64: base64 },
+      });
+      refreshSession();
+      Alert.alert("Photo updated", "Your profile photo was saved.");
+    } catch (e) {
+      Alert.alert("Upload failed", e instanceof Error ? e.message : "Could not update photo.");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
 
   async function applyReferral() {
     if (!session || !friendCode.trim()) return;
@@ -109,7 +160,12 @@ export default function ProfileScreen() {
     <SafeAreaView style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Avatar name={user.fullName} size={80} />
+          <View style={styles.avatarWrap}>
+            <Avatar name={user.fullName} size={80} imageUri={user.avatarUrl ?? undefined} />
+            <Pressable style={styles.cameraBtn} onPress={pickAndUploadAvatar} disabled={uploadingAvatar}>
+              <Camera size={14} color="#fff" />
+            </Pressable>
+          </View>
           <Text style={styles.name}>{user.fullName}</Text>
           <Text style={styles.phone}>{user.phoneE164}</Text>
         </View>

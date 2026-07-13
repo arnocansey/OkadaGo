@@ -87,6 +87,7 @@ export type PassengerSettings = {
   phoneLocal: string;
   phoneE164: string;
   preferredCurrency: string;
+  avatarUrl: string | null;
   defaultServiceCity: string | null;
   preferredPayment: "cash" | "card" | "wallet" | "mobile_money" | null;
   referralCode: string | null;

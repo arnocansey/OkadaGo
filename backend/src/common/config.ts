@@ -45,7 +45,10 @@ const configSchema = z.object({
   TERMII_BASE_URL: z.string().url().default("https://api.ng.termii.com"),
   TWILIO_ACCOUNT_SID: emptyStringToUndefined(z.string().min(1)),
   TWILIO_AUTH_TOKEN: emptyStringToUndefined(z.string().min(1)),
-  TWILIO_FROM_NUMBER: emptyStringToUndefined(z.string().min(1))
+  TWILIO_FROM_NUMBER: emptyStringToUndefined(z.string().min(1)),
+  CLOUDINARY_CLOUD_NAME: emptyStringToUndefined(z.string().min(1)),
+  CLOUDINARY_API_KEY: emptyStringToUndefined(z.string().min(1)),
+  CLOUDINARY_API_SECRET: emptyStringToUndefined(z.string().min(1))
 });
 
 const parsed = configSchema.parse(process.env);
@@ -99,5 +102,8 @@ export const appConfig = {
   termiiBaseUrl: parsed.TERMII_BASE_URL.replace(/\/$/, ""),
   twilioAccountSid: parsed.TWILIO_ACCOUNT_SID,
   twilioAuthToken: parsed.TWILIO_AUTH_TOKEN,
-  twilioFromNumber: parsed.TWILIO_FROM_NUMBER
+  twilioFromNumber: parsed.TWILIO_FROM_NUMBER,
+  cloudinaryCloudName: parsed.CLOUDINARY_CLOUD_NAME,
+  cloudinaryApiKey: parsed.CLOUDINARY_API_KEY,
+  cloudinaryApiSecret: parsed.CLOUDINARY_API_SECRET
 } as const;

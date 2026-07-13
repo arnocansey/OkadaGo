@@ -1218,6 +1218,19 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
       { label: "Active zones", value: `${zones.filter((z) => z.isActive).length}` },
       { label: "Admins", value: `${adminAccounts.length}` }
     ],
+    paymentMethods: [
+      { label: "Finance", value: `${adminCurrency} ${totalRevenue.toFixed(0)}` }
+    ],
+    integrations: [
+      { label: "Settings", value: `${zones.length} zones` }
+    ],
+    taxesCompliance: [
+      { label: "Compliant", value: "100%" }
+    ],
+    settingsNotifications: [
+      { label: "Riders", value: `${riders.length}` },
+      { label: "Passengers", value: `${passengers.length}` }
+    ],
     admins: [
       { label: "Admins", value: `${adminAccounts.length}` },
       { label: "Eligible passengers", value: `${eligiblePassengers.length}` }

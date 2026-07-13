@@ -33,6 +33,10 @@ import { NotificationsScreen } from "./admin/NotificationsScreen";
 import { ReportsScreen } from "./admin/ReportsScreen";
 import { AuditLogsScreen } from "./admin/AuditLogsScreen";
 import { SettingsScreen } from "./admin/SettingsScreen";
+import { PaymentMethodsScreen } from "./admin/PaymentMethodsScreen";
+import { IntegrationsScreen } from "./admin/IntegrationsScreen";
+import { TaxesComplianceScreen } from "./admin/TaxesComplianceScreen";
+import { SettingsNotificationsScreen } from "./admin/SettingsNotificationsScreen";
 import { AdminsScreen } from "./admin/AdminsScreen";
 
 import { parseNumber } from "./admin/utils";
@@ -455,6 +459,18 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             dataLoading={data.dataLoading}
           />
         );
+
+      case "paymentMethods":
+        return <PaymentMethodsScreen dataLoading={data.dataLoading} />;
+
+      case "integrations":
+        return <IntegrationsScreen dataLoading={data.dataLoading} />;
+
+      case "taxesCompliance":
+        return <TaxesComplianceScreen dataLoading={data.dataLoading} />;
+
+      case "settingsNotifications":
+        return <SettingsNotificationsScreen dataLoading={data.dataLoading} />;
 
       case "admins":
         return (

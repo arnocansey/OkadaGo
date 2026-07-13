@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Bell,
+  Camera,
   ChevronRight,
   CreditCard,
   History,
@@ -32,6 +33,7 @@ type SettingsUpdateResponse = {
     email: string | null;
     phoneE164: string;
     preferredCurrency: string;
+    avatarUrl: string | null;
     passengerProfileId: string | null;
     riderProfileId: string | null;
     riderApprovalStatus: string | null;
@@ -96,6 +98,8 @@ export function ProfileView() {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ fullName: "", email: "", defaultServiceCity: "", preferredPayment: "cash" });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const walletsQuery = useQuery({
     queryKey: ["wallets", session?.user.id],
@@ -153,6 +157,37 @@ export function ProfileView() {
     }
   });
 
+  const avatarMutation = useMutation({
+    mutationFn: (base64: string) =>
+      requestJson<SettingsUpdateResponse>("/auth/avatar", {
+        method: "POST",
+        token: session?.token,
+        body: JSON.stringify({ imageBase64: base64 })
+      }),
+    onSuccess: (data) => {
+      setSession({ token: data.token, expiresAt: data.expiresAt, user: data.user });
+      void queryClient.invalidateQueries({ queryKey: ["passenger-settings"] });
+      paxToast.success("Photo updated");
+    },
+    onError: (error) => {
+      paxToast.error("Could not upload photo", (error as Error).message);
+    },
+    onSettled: () => setUploadingAvatar(false)
+  });
+
+  function handleAvatarFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingAvatar(true);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result as string;
+      avatarMutation.mutate(base64);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  }
+
   return (
     <PassengerAppFrame>
       <div className="pax-page">
@@ -169,7 +204,32 @@ export function ProfileView() {
             <>
           <div className="pax-profile-hero">
             <div className="flex items-center gap-4">
-              <div className="pax-avatar-xl">{initials(session?.user.fullName ?? "OG")}</div>
+              <div className="relative">
+                {session?.user.avatarUrl ? (
+                  <img
+                    src={session.user.avatarUrl}
+                    alt={session.user.fullName}
+                    className="pax-avatar-xl object-cover"
+                  />
+                ) : (
+                  <div className="pax-avatar-xl">{initials(session?.user.fullName ?? "OG")}</div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingAvatar}
+                  className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--pax-primary)] text-white border-2 border-[var(--pax-background)] hover:opacity-90 disabled:opacity-50"
+                >
+                  <Camera size={14} />
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarFileChange}
+                />
+              </div>
               <div>
                 <h2 className="text-2xl font-bold leading-tight">{session?.user.fullName}</h2>
                 <p className="text-sm pax-text-secondary">{session?.user.phoneE164}</p>

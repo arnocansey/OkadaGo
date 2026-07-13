@@ -33,6 +33,7 @@ type SettingsUpdateResponse = {
     email: string | null;
     phoneE164: string;
     preferredCurrency: string;
+    avatarUrl: string | null;
     passengerProfileId: string | null;
     riderProfileId: string | null;
     riderApprovalStatus: string | null;

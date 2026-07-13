@@ -56,6 +56,7 @@ export type RiderSettings = {
   fullName: string;
   email: string | null;
   phoneE164: string;
+  avatarUrl: string | null;
   city: string | null;
   approvalStatus?: string | null;
 };

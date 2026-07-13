@@ -24,6 +24,10 @@ export type AdminConsoleScreen =
   | "reports"
   | "auditLogs"
   | "settings"
+  | "paymentMethods"
+  | "integrations"
+  | "taxesCompliance"
+  | "settingsNotifications"
   | "admins";
 
 export type RideRecord = {

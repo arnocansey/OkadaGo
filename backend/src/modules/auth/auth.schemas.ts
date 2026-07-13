@@ -103,3 +103,7 @@ export const otpVerifySchema = z.object({
   phoneE164: z.string().min(8).max(24),
   code: z.string().trim().length(6)
 });
+
+export const avatarUploadSchema = z.object({
+  imageBase64: z.string().min(1)
+});

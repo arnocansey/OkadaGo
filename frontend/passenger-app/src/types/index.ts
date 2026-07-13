@@ -11,6 +11,7 @@ export type SessionUser = {
   phoneLocal: string;
   preferredCurrency: "GHS" | "NGN";
   isPhoneVerified?: boolean;
+  avatarUrl?: string | null;
   passengerProfileId?: string | null;
 };
 

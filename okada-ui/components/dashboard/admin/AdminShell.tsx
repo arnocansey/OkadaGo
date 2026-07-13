@@ -96,6 +96,10 @@ const screenPermissions: Partial<Record<AdminConsoleScreen, string>> = {
   reports: "reports.view",
   auditLogs: "audit.view",
   settings: "settings.view",
+  paymentMethods: "settings.view",
+  integrations: "settings.view",
+  taxesCompliance: "settings.view",
+  settingsNotifications: "settings.view",
   admins: "admins.view"
 };
 
@@ -306,6 +310,42 @@ const screenMeta: Record<AdminConsoleScreen, AdminScreenMeta> = {
     quickActionLabel: "Manage admin roles",
     quickActionHref: "/admin/admins",
     quickActionNote: "Update the people who can operate platform controls."
+  },
+  paymentMethods: {
+    eyebrow: "Platform controls",
+    title: "Payment Methods",
+    description: "Manage how your company receives payments and makes payouts.",
+    searchLabel: "Search payment methods...",
+    quickActionLabel: "View finance",
+    quickActionHref: "/admin/finance",
+    quickActionNote: "Review payment methods against finance records."
+  },
+  integrations: {
+    eyebrow: "Platform controls",
+    title: "Integrations",
+    description: "Connect OkadaGo with third-party services and tools to automate and grow your business.",
+    searchLabel: "Search integrations...",
+    quickActionLabel: "View settings",
+    quickActionHref: "/admin/settings",
+    quickActionNote: "Manage connected services and API keys."
+  },
+  taxesCompliance: {
+    eyebrow: "Platform controls",
+    title: "Taxes & Compliance",
+    description: "Manage your tax information, filings, and compliance requirements.",
+    searchLabel: "Search tax records...",
+    quickActionLabel: "View finance",
+    quickActionHref: "/admin/finance",
+    quickActionNote: "Cross-check tax obligations with finance records."
+  },
+  settingsNotifications: {
+    eyebrow: "Platform controls",
+    title: "Notifications",
+    description: "Stay updated with important alerts, activities and system notifications.",
+    searchLabel: "Search notifications...",
+    quickActionLabel: "View promotions",
+    quickActionHref: "/admin/promotions",
+    quickActionNote: "Pair notifications with active campaigns."
   },
   admins: {
     eyebrow: "Access control",
@@ -553,7 +593,14 @@ export function AdminShell({
         screen: "settings",
         group: "system",
         hint: "Zones, pricing, modules",
-        badge: `${badgeData.zonesActiveCount}`
+        badge: `${badgeData.zonesActiveCount}`,
+        children: [
+          { label: "General", href: "/admin/settings", screen: "settings" },
+          { label: "Payment Methods", href: "/admin/payment-methods", screen: "paymentMethods" },
+          { label: "Taxes & Compliance", href: "/admin/taxes-compliance", screen: "taxesCompliance" },
+          { label: "Integrations", href: "/admin/integrations", screen: "integrations" },
+          { label: "Notifications", href: "/admin/settings-notifications", screen: "settingsNotifications" }
+        ]
       },
       {
         label: "Admins",

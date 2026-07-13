@@ -39,6 +39,12 @@ export default async function AdminScreenPage({
     support: "supportTickets",
     settings: "settings",
     locations: "settings",
+    "payment-methods": "paymentMethods",
+    "taxes-compliance": "taxesCompliance",
+    taxes: "taxesCompliance",
+    integrations: "integrations",
+    "settings-notifications": "settingsNotifications",
+    "admin-settings-notifications": "settingsNotifications",
     admins: "admins",
     zones: "zones",
     "zone-management": "zones",
@@ -69,7 +75,11 @@ export default async function AdminScreenPage({
     zones: "/admin/zones",
     notifications: "/admin/notifications",
     reports: "/admin/reports",
-    auditLogs: "/admin/audit-logs"
+    auditLogs: "/admin/audit-logs",
+    paymentMethods: "/admin/payment-methods",
+    taxesCompliance: "/admin/taxes-compliance",
+    integrations: "/admin/integrations",
+    settingsNotifications: "/admin/settings-notifications"
   };
 
   const resolvedScreen = screenAliases[screen];

@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Bike, ChevronRight, LogOut, Shield, User } from "lucide-react";
+import { Bike, Camera, ChevronRight, LogOut, Shield, User } from "lucide-react";
 import { requestJson } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { formatMoney } from "@/lib/currency";
@@ -66,6 +66,8 @@ export function ProfileView() {
   const riderSignOut = useRiderSignOut();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ fullName: "", email: "", city: "" });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const settingsQuery = useQuery({
     queryKey: ["rider-settings", session?.token],
@@ -110,6 +112,42 @@ export function ProfileView() {
     }
   });
 
+  const avatarMutation = useMutation({
+    mutationFn: (base64: string) =>
+      requestJson<{
+        token: string;
+        expiresAt: string;
+        user: NonNullable<typeof session>["user"];
+      }>("/auth/avatar", {
+        method: "POST",
+        token: session?.token,
+        body: JSON.stringify({ imageBase64: base64 })
+      }),
+    onSuccess: (payload) => {
+      if (session) {
+        setSession({ token: payload.token, expiresAt: payload.expiresAt, user: payload.user });
+      }
+      rdrToast.success("Photo updated");
+    },
+    onError: (error) => {
+      rdrToast.error("Could not upload photo", (error as Error).message);
+    },
+    onSettled: () => setUploadingAvatar(false)
+  });
+
+  function handleAvatarFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingAvatar(true);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result as string;
+      avatarMutation.mutate(base64);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  }
+
   const vehicle = data.rider?.vehicle;
   const approvalStatus = session?.user.riderApprovalStatus ?? "pending";
 
@@ -128,7 +166,32 @@ export function ProfileView() {
             <>
               <div className="rdr-profile-hero">
                 <div className="flex items-center gap-4">
-                  <div className="rdr-avatar-xl">{initials(session?.user.fullName ?? "R")}</div>
+                  <div className="relative">
+                    {session?.user.avatarUrl ? (
+                      <img
+                        src={session.user.avatarUrl}
+                        alt={session.user.fullName}
+                        className="rdr-avatar-xl object-cover"
+                      />
+                    ) : (
+                      <div className="rdr-avatar-xl">{initials(session?.user.fullName ?? "R")}</div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingAvatar}
+                      className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--rdr-primary)] text-white border-2 border-[var(--rdr-background)] hover:opacity-90 disabled:opacity-50"
+                    >
+                      <Camera size={14} />
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAvatarFileChange}
+                    />
+                  </div>
                   <div>
                     <h2 className="text-2xl font-bold leading-tight">{session?.user.fullName}</h2>
                     <p className="text-sm rdr-text-secondary">{session?.user.phoneE164}</p>

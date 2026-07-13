@@ -24,9 +24,11 @@ import type {
   riderSettingsUpdateSchema,
   riderSignupSchema
 } from "./auth.schemas.js";
+import type { avatarUploadSchema } from "./auth.schemas.js";
 import type { z } from "zod";
 import { hasSmsConfig, smsService } from "../notifications/sms.service.js";
 import { makeOtpCode, storeOtp, verifyStoredOtp } from "./otp-store.js";
+import { v2 as cloudinary } from "cloudinary";
 
 type PassengerSignupInput = z.infer<typeof passengerSignupSchema>;
 type RiderSignupInput = z.infer<typeof riderSignupSchema>;
@@ -37,6 +39,7 @@ type AdminLoginInput = z.infer<typeof adminLoginSchema>;
 type AdminPromoteInput = z.infer<typeof adminPromoteSchema>;
 type PassengerSettingsUpdateInput = z.infer<typeof passengerSettingsUpdateSchema>;
 type RiderSettingsUpdateInput = z.infer<typeof riderSettingsUpdateSchema>;
+type AvatarUploadInput = z.infer<typeof avatarUploadSchema>;
 type OtpRequestInput = z.infer<typeof otpRequestSchema>;
 type OtpVerifyInput = z.infer<typeof otpVerifySchema>;
 type UserWithProfiles = {
@@ -49,6 +52,7 @@ type UserWithProfiles = {
   phoneLocal: string;
   phoneE164: string;
   preferredCurrency: string;
+  avatarUrl?: string | null;
   passengerProfile?: { id: string } | null;
   riderProfile?: { id: string; approvalStatus: { toLowerCase(): string } } | null;
   adminProfile?: { id: string; title?: string | null; permissions?: unknown } | null;
@@ -88,6 +92,14 @@ function mapPaymentMethod(method?: PassengerSignupInput["preferredPayment"]) {
 
 function makeExpiryDate() {
   return new Date(Date.now() + sessionDurationMs);
+}
+
+if (appConfig.cloudinaryCloudName && appConfig.cloudinaryApiKey && appConfig.cloudinaryApiSecret) {
+  cloudinary.config({
+    cloud_name: appConfig.cloudinaryCloudName,
+    api_key: appConfig.cloudinaryApiKey,
+    api_secret: appConfig.cloudinaryApiSecret,
+  });
 }
 
 export class AuthService {
@@ -596,6 +608,49 @@ export class AuthService {
     };
   }
 
+  async uploadAvatar(token: string, input: AvatarUploadInput) {
+    const session = await this.getActiveSession(token);
+
+    if (!appConfig.cloudinaryCloudName || !appConfig.cloudinaryApiKey || !appConfig.cloudinaryApiSecret) {
+      throw new AppError("Avatar uploads are not configured", 503, "CLOUDINARY_NOT_CONFIGURED");
+    }
+
+    const dataUri = input.imageBase64.startsWith("data:")
+      ? input.imageBase64
+      : `data:image/jpeg;base64,${input.imageBase64}`;
+
+    const result = await cloudinary.uploader.upload(dataUri, {
+      folder: "okadago/avatars",
+      public_id: session.userId,
+      overwrite: true,
+      transformation: [
+        { width: 400, height: 400, crop: "fill", gravity: "face" },
+        { quality: "auto", fetch_format: "auto" }
+      ]
+    });
+
+    const avatarUrl = result.secure_url;
+
+    const user = await prisma.user.update({
+      where: { id: session.userId },
+      data: { avatarUrl },
+      include: {
+        passengerProfile: true,
+        riderProfile: true,
+        adminProfile: true,
+        dispatcherProfile: true
+      }
+    });
+
+    await this.touchSession(session.id);
+
+    return {
+      token,
+      expiresAt: session.expiresAt.toISOString(),
+      user: this.serializeUser(user)
+    };
+  }
+
   private async loginByRole(
     role: "PASSENGER" | "RIDER",
     input: PassengerLoginInput | RiderLoginInput,
@@ -756,6 +811,7 @@ export class AuthService {
       phoneLocal: user.phoneLocal,
       phoneE164: user.phoneE164,
       preferredCurrency: user.preferredCurrency,
+      avatarUrl: user.avatarUrl ?? null,
       isPhoneVerified: (user as { isPhoneVerified?: boolean }).isPhoneVerified ?? false,
       passengerProfileId: user.passengerProfile?.id ?? null,
       riderProfileId: user.riderProfile?.id ?? null,
@@ -773,6 +829,7 @@ export class AuthService {
       phoneLocal: user.phoneLocal,
       phoneE164: user.phoneE164,
       preferredCurrency: user.preferredCurrency,
+      avatarUrl: user.avatarUrl ?? null,
       defaultServiceCity: user.passengerProfile?.defaultServiceCity ?? null,
       preferredPayment: user.passengerProfile?.preferredPayment?.toLowerCase() ?? null,
       referralCode: user.passengerProfile?.referralCode ?? null
@@ -787,6 +844,7 @@ export class AuthService {
       phoneLocal: user.phoneLocal,
       phoneE164: user.phoneE164,
       preferredCurrency: user.preferredCurrency,
+      avatarUrl: user.avatarUrl ?? null,
       city: user.riderProfile?.city ?? null,
       displayCode: user.riderProfile?.displayCode ?? null,
       approvalStatus: user.riderProfile?.approvalStatus.toLowerCase() ?? null

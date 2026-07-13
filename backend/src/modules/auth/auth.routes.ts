@@ -3,6 +3,7 @@ import { AppError } from "../../common/errors.js";
 import { parseBody } from "../../common/validation.js";
 import {
   adminLoginSchema,
+  avatarUploadSchema,
   otpRequestSchema,
   otpVerifySchema,
   passengerLoginSchema,
@@ -92,5 +93,11 @@ export const authRoutes: FastifyPluginAsync = async (server) => {
   server.post("/auth/otp/verify", async (request) => {
     const input = parseBody(request, otpVerifySchema);
     return authService.verifyPhoneOtp(input);
+  });
+
+  server.post("/auth/avatar", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const input = parseBody(request, avatarUploadSchema);
+    return authService.uploadAvatar(token, input);
   });
 };
