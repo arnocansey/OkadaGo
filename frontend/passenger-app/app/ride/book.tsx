@@ -1,6 +1,6 @@
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Clock, LocateFixed, Navigation } from "lucide-react-native";
 import { api, money } from "@/lib/api";
@@ -366,22 +366,27 @@ export default function BookRideScreen() {
           ...stackHeaderOptions,
         }}
       />
-      <SafeAreaView style={styles.screen} edges={["bottom"]}>
-        <View style={styles.mapSection}>
-          <AppMap
-            style={StyleSheet.absoluteFillObject}
-            region={{ ...pickupCoords, latitudeDelta: 0.025, longitudeDelta: 0.025 }}
-            markers={markers}
-            routeCoordinates={routeCoordinates}
-            fitToMarkers={markers.length >= 2}
-          />
-        </View>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 88 : 0}
+      >
+        <SafeAreaView style={styles.screen} edges={["bottom"]}>
+          <View style={styles.mapSection}>
+            <AppMap
+              style={StyleSheet.absoluteFillObject}
+              region={{ ...pickupCoords, latitudeDelta: 0.025, longitudeDelta: 0.025 }}
+              markers={markers}
+              routeCoordinates={routeCoordinates}
+              fitToMarkers={markers.length >= 2}
+            />
+          </View>
 
-        <ScrollView
-          style={styles.formSection}
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled"
-        >
+          <ScrollView
+            style={styles.formSection}
+            contentContainerStyle={styles.content}
+            keyboardShouldPersistTaps="handled"
+          >
           <View style={styles.pickupRow}>
             <View style={[styles.pickupInput, { zIndex: 2 }]}>
               <AddressAutocompleteField
@@ -495,7 +500,8 @@ export default function BookRideScreen() {
             />
           </View>
         </ScrollView>
-      </SafeAreaView>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
     </>
   );
 }

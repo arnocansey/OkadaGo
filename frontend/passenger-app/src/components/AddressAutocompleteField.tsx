@@ -41,6 +41,7 @@ export function AddressAutocompleteField({
           borderRadius: radius.md,
           backgroundColor: colors.surface,
           overflow: "hidden",
+          maxHeight: 180,
         },
         suggestionRow: {
           flexDirection: "row",
