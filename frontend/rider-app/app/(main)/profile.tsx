@@ -34,9 +34,9 @@ export default function ProfileScreen() {
           position: "absolute",
           bottom: 0,
           right: 0,
-          width: 28,
-          height: 28,
-          borderRadius: 14,
+          width: 32,
+          height: 32,
+          borderRadius: 16,
           backgroundColor: colors.primary,
           alignItems: "center",
           justifyContent: "center",
@@ -100,7 +100,7 @@ export default function ProfileScreen() {
       <View style={styles.header}>
         <View style={styles.avatarWrap}>
           <Avatar name={user.fullName} size={72} imageUri={user.avatarUrl ?? undefined} />
-          <Pressable style={styles.cameraBtn} onPress={pickAndUploadAvatar} disabled={uploadingAvatar}>
+          <Pressable style={styles.cameraBtn} onPress={pickAndUploadAvatar} disabled={uploadingAvatar} hitSlop={8} accessibilityLabel="Change profile photo" accessibilityRole="button">
             <Camera size={14} color="#fff" />
           </Pressable>
         </View>

@@ -2,6 +2,8 @@ import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { SkeletonList } from "@/components/ui/Skeleton";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { compactDate, money } from "@/lib/api";
@@ -17,9 +19,9 @@ export default function EarningsScreen() {
         screen: { flex: 1, backgroundColor: colors.background, padding: spacing.xl },
         title: { ...typography.h1, marginBottom: spacing.xl, color: colors.text },
         hero: { backgroundColor: colors.primary, borderColor: colors.primary, marginBottom: spacing.xxl },
-        heroLabel: { ...typography.caption, color: "rgba(0,0,0,0.65)" },
+        heroLabel: { ...typography.caption, color: colors.textOnPrimary },
         heroAmount: { ...typography.hero, color: colors.textOnPrimary, marginTop: spacing.sm },
-        heroSub: { ...typography.caption, color: "rgba(0,0,0,0.65)", marginTop: spacing.sm },
+        heroSub: { ...typography.caption, color: colors.textOnPrimary, marginTop: spacing.sm, opacity: 0.7 },
         section: { ...typography.h3, marginBottom: spacing.lg, color: colors.text },
         row: {
           flexDirection: "row",
@@ -60,15 +62,19 @@ export default function EarningsScreen() {
       </Card>
 
       <Text style={styles.section}>Recent</Text>
-      {trips.slice(0, 15).map((t) => (
-        <View key={t.id} style={styles.row}>
-          <View style={styles.rowBody}>
-            <Text style={styles.rowTitle} numberOfLines={1}>{t.label}</Text>
-            <Text style={styles.rowDate}>{compactDate(t.date)}</Text>
+      {trips.length === 0 ? (
+        <EmptyState title="No earnings yet" message="Complete trips to see your earnings here." />
+      ) : (
+        trips.slice(0, 15).map((t) => (
+          <View key={t.id} style={styles.row}>
+            <View style={styles.rowBody}>
+              <Text style={styles.rowTitle} numberOfLines={1}>{t.label}</Text>
+              <Text style={styles.rowDate}>{compactDate(t.date)}</Text>
+            </View>
+            <Text style={styles.rowAmount}>{money(t.amount, currency)}</Text>
           </View>
-          <Text style={styles.rowAmount}>{money(t.amount, currency)}</Text>
-        </View>
-      ))}
+        ))
+      )}
     </SafeAreaView>
   );
 }

@@ -1,10 +1,12 @@
 import { Stack, router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/Input";
+import { SkeletonList } from "@/components/ui/Skeleton";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { api, compactDate } from "@/lib/api";
@@ -48,6 +50,7 @@ export default function SupportScreen() {
     try {
       setTickets(await api<SupportTicket[]>("/support/tickets", { token: session.token }));
     } catch {
+      Alert.alert("Load failed", "Could not load your support tickets.");
       setTickets([]);
     } finally {
       setLoading(false);
@@ -85,8 +88,13 @@ export default function SupportScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: true, title: "Support", ...stackHeaderOptions }} />
-      <SafeAreaView style={styles.screen} edges={["bottom"]}>
-        <ScrollView contentContainerStyle={styles.content}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 88 : 0}
+      >
+        <SafeAreaView style={styles.screen} edges={["bottom"]}>
+          <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <Card stacked>
             <Input label="Subject" value={title} onChangeText={setTitle} placeholder="Payout issue" />
             <Input label="Category" value={category} onChangeText={setCategory} placeholder="RIDER" />
@@ -103,9 +111,9 @@ export default function SupportScreen() {
 
           <Text style={styles.title}>Your tickets</Text>
           {loading ? (
-            <Text style={styles.meta}>Loading tickets…</Text>
+            <SkeletonList count={3} />
           ) : tickets.length === 0 ? (
-            <Text style={styles.meta}>No support tickets yet.</Text>
+            <EmptyState title="No support tickets" message="Submit a ticket above to get help." />
           ) : (
             tickets.map((ticket) => (
               <Card key={ticket.id} stacked>
@@ -119,7 +127,8 @@ export default function SupportScreen() {
 
           <Button label="Back" variant="outline" onPress={() => router.back()} fullWidth />
         </ScrollView>
-      </SafeAreaView>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
     </>
   );
 }

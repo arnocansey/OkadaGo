@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
@@ -62,6 +62,11 @@ export default function WalletScreen() {
   }
 
   return (
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 88 : 0}
+    >
     <SafeAreaView style={styles.screen}>
       <Text style={styles.title}>Wallet</Text>
 
@@ -106,5 +111,6 @@ export default function WalletScreen() {
         </>
       ) : null}
     </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }

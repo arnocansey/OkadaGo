@@ -1,6 +1,6 @@
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MapPin, Navigation, Phone, Star } from "lucide-react-native";
 import { AppMap } from "@/components/AppMap";
@@ -75,7 +75,7 @@ export default function TripScreen() {
         navRow: { flexDirection: "row", gap: spacing.sm },
         navBtn: { flex: 1 },
         stars: { flexDirection: "row", gap: spacing.sm },
-        starBtn: { padding: spacing.xs },
+        starBtn: { padding: spacing.sm },
         wsStatus: { ...typography.caption, color: colors.textMuted, textAlign: "center" },
       }),
     [colors, typography],
@@ -219,7 +219,12 @@ export default function TripScreen() {
       <View style={styles.screen}>
         <AppMap style={styles.map} markers={markers} fitToMarkers />
 
-        <ScrollView contentContainerStyle={styles.body}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 88 : 0}
+        >
+        <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
           <Text style={styles.wsStatus}>
             {riderWs.isConnected() ? "Live updates connected" : "Polling for updates"}
             {livePreview ? ` · ETA ~${Math.round(livePreview.durationMinutes)} min (${livePreview.distanceKm.toFixed(1)} km)` : ""}
@@ -255,6 +260,8 @@ export default function TripScreen() {
                 <Pressable
                   style={styles.callBtn}
                   onPress={() => Linking.openURL(`tel:${passengerPhone}`)}
+                  accessibilityLabel="Call passenger"
+                  accessibilityRole="button"
                 >
                   <Phone size={18} color={colors.primary} />
                 </Pressable>
@@ -317,6 +324,7 @@ export default function TripScreen() {
             />
           ) : null}
         </ScrollView>
+        </KeyboardAvoidingView>
       </View>
     </>
   );

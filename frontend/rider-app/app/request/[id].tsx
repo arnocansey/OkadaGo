@@ -124,7 +124,8 @@ export default function RequestScreen() {
       }
       await refresh();
       router.replace({ pathname: "/trip/[id]", params: { id: trip.id, kind: isRide ? "ride" : "delivery" } });
-    } catch {
+    } catch (e) {
+      Alert.alert("Accept failed", e instanceof Error ? e.message : "Could not accept request.");
       router.back();
     }
   }

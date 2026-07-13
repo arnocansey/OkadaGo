@@ -20,7 +20,7 @@ export default function MainLayout() {
           paddingBottom: insets.bottom + 4,
           paddingTop: 8,
         },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: "600" },
+        tabBarLabelStyle: { fontSize: 12, fontWeight: "600" },
       }}
     >
       <Tabs.Screen name="index" options={{ title: "Drive", tabBarIcon: ({ color, size }) => <LayoutDashboard color={color} size={size} /> }} />

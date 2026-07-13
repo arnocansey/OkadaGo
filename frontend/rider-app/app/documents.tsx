@@ -6,6 +6,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { FileCheck, FileWarning, Upload } from "lucide-react-native";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { SkeletonList } from "@/components/ui/Skeleton";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/lib/api";
@@ -58,6 +59,7 @@ export default function DocumentsScreen() {
       const result = await api<RiderDocument[]>("/riders/documents", { token: session.token });
       setDocuments(Array.isArray(result) ? result : []);
     } catch {
+      Alert.alert("Load failed", "Could not load your documents.");
       setDocuments([]);
     } finally {
       setLoading(false);
@@ -112,7 +114,7 @@ export default function DocumentsScreen() {
       <SafeAreaView style={styles.screen} edges={["bottom"]}>
         <Text style={styles.subtitle}>Keep documents up to date to stay active on the platform.</Text>
         {loading ? (
-          <ActivityIndicator color={colors.primary} />
+          <SkeletonList count={4} />
         ) : (
           DOC_TYPES.map((doc) => {
             const status = statusFor(doc.apiType);
@@ -137,7 +139,7 @@ export default function DocumentsScreen() {
                       {status.replace(/_/g, " ")}
                     </Text>
                   </View>
-                  <Pressable onPress={() => uploadDocument(doc)} disabled={uploading === doc.id}>
+                  <Pressable onPress={() => uploadDocument(doc)} disabled={uploading === doc.id} hitSlop={12} accessibilityLabel={`Upload ${doc.label}`} accessibilityRole="button">
                     {uploading === doc.id ? (
                       <ActivityIndicator color={colors.primary} />
                     ) : (
