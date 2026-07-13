@@ -66,9 +66,9 @@ export default function RestaurantScreen() {
         itemPrice: { ...typography.captionMedium, color: colors.text, marginTop: 4 },
         qty: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
         qtyBtn: {
-          width: 32,
-          height: 32,
-          borderRadius: 16,
+          width: 44,
+          height: 44,
+          borderRadius: 22,
           backgroundColor: colors.surface,
           alignItems: "center",
           justifyContent: "center",
@@ -243,6 +243,8 @@ export default function RestaurantScreen() {
                   <Pressable
                     style={styles.phoneRow}
                     onPress={() => Linking.openURL(`tel:${restaurant.phone}`)}
+                    accessibilityLabel={`Call ${restaurant.name}`}
+                    accessibilityRole="button"
                   >
                     <Phone size={14} color="rgba(255,255,255,0.85)" />
                     <Text style={styles.heroAddressText}>{restaurant.phone}</Text>

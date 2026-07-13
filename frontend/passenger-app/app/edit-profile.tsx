@@ -1,6 +1,6 @@
 import { Stack, router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -118,8 +118,13 @@ export default function EditProfileScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: true, title: "Edit Profile", ...stackHeaderOptions }} />
-      <SafeAreaView style={styles.screen} edges={["bottom"]}>
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 88 : 0}
+      >
+        <SafeAreaView style={styles.screen} edges={["bottom"]}>
+          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
           <Card stacked>
             <Input label="Full name" value={fullName} onChangeText={setFullName} autoCapitalize="words" />
             <Input
@@ -160,7 +165,8 @@ export default function EditProfileScreen() {
             <Button label="Save profile" loading={saving} onPress={() => void saveProfile()} fullWidth />
           </Card>
         </ScrollView>
-      </SafeAreaView>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
     </>
   );
 }

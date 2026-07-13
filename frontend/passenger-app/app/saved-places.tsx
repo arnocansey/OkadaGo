@@ -1,10 +1,11 @@
 import { Stack, router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Home, Pencil, Trash2, Briefcase } from "lucide-react-native";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/Input";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -35,7 +36,7 @@ export default function SavedPlacesScreen() {
       StyleSheet.create({
         screen: { flex: 1, backgroundColor: colors.background },
         content: { padding: spacing.xl, gap: spacing.lg, paddingBottom: spacing.xxxl },
-        row: { flexDirection: "row", alignItems: "center", gap: spacing.md },
+        row: { flexDirection: "row", alignItems: "center", gap: spacing.lg },
         body: { flex: 1 },
         title: { ...typography.bodySemibold, color: colors.text },
         meta: { ...typography.caption, color: colors.textMuted, marginTop: 2 },
@@ -145,8 +146,13 @@ export default function SavedPlacesScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: true, title: "Saved places", ...stackHeaderOptions }} />
-      <SafeAreaView style={styles.screen} edges={["bottom"]}>
-        <ScrollView contentContainerStyle={styles.content}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 88 : 0}
+      >
+        <SafeAreaView style={styles.screen} edges={["bottom"]}>
+          <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <Card stacked>
             <Text style={styles.title}>{editingId ? "Edit place" : "Add place"}</Text>
             <View style={[styles.presetRow, { marginBottom: spacing.sm }]}>
@@ -171,7 +177,7 @@ export default function SavedPlacesScreen() {
           {loading ? (
             <Text style={styles.meta}>Loading places…</Text>
           ) : places.length === 0 ? (
-            <Text style={styles.meta}>No saved places yet.</Text>
+            <EmptyState title="No saved places" message="Save your home, work, or favourite spots for quick access." />
           ) : (
             places.map((place) => (
               <Card key={place.id} stacked>
@@ -180,10 +186,10 @@ export default function SavedPlacesScreen() {
                     <Text style={styles.title}>{place.label}</Text>
                     <Text style={styles.meta}>{place.address}</Text>
                   </View>
-                  <Pressable onPress={() => startEdit(place)}>
+                  <Pressable onPress={() => startEdit(place)} hitSlop={12}>
                     <Pencil size={18} color={colors.primary} />
                   </Pressable>
-                  <Pressable onPress={() => void removePlace(place.id)}>
+                  <Pressable onPress={() => void removePlace(place.id)} hitSlop={12}>
                     <Trash2 size={18} color={colors.danger} />
                   </Pressable>
                 </View>
@@ -192,8 +198,9 @@ export default function SavedPlacesScreen() {
           )}
 
           <Button label="Back to profile" variant="outline" onPress={() => router.back()} fullWidth />
-        </ScrollView>
-      </SafeAreaView>
+          </ScrollView>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
     </>
   );
 }

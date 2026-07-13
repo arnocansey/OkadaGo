@@ -1,7 +1,6 @@
 import { Stack, router } from "expo-router";
 import { useMemo, useState } from "react";
 import {
-  ActivityIndicator,
   FlatList,
   Image,
   Pressable,
@@ -15,6 +14,7 @@ import { MapPin, Star } from "lucide-react-native";
 import { FOOD_CATEGORIES } from "@/data/foodCatalog";
 import { useNearbyRestaurants } from "@/hooks/useNearbyRestaurants";
 import { useTheme } from "@/context/ThemeContext";
+import { SkeletonList } from "@/components/ui/Skeleton";
 import { photoUrl } from "@/services/googlePlaces";
 import { formatDistanceKm } from "@/lib/geo";
 import { radius, spacing } from "@/theme/tokens";
@@ -55,15 +55,8 @@ export default function FoodHomeScreen() {
           borderColor: colors.primary,
         },
         categoryEmoji: { fontSize: 14 },
-        categoryLabel: { ...typography.captionMedium, color: "#1C1C1E" },
-        categoryLabelActive: { color: "#1C1C1E" },
-        statusRow: {
-          flexDirection: "row",
-          alignItems: "center",
-          gap: spacing.sm,
-          paddingBottom: spacing.md,
-        },
-        statusText: { ...typography.caption, color: colors.textMuted },
+        categoryLabel: { ...typography.captionMedium, color: colors.text },
+        categoryLabelActive: { color: colors.text },
         errorBanner: {
           backgroundColor: colors.dangerLight,
           borderRadius: radius.md,
@@ -169,10 +162,7 @@ export default function FoodHomeScreen() {
               </View>
 
               {loading ? (
-                <View style={styles.statusRow}>
-                  <ActivityIndicator color={colors.primary} />
-                  <Text style={styles.statusText}>Finding places near you…</Text>
-                </View>
+                <SkeletonList count={4} />
               ) : null}
 
               {error ? (

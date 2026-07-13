@@ -102,7 +102,7 @@ export default function TrackScreen() {
         safetyRow: { flexDirection: "row", gap: spacing.sm },
         safetyBtn: { flex: 1 },
         stars: { flexDirection: "row", gap: spacing.sm },
-        starBtn: { padding: spacing.xs },
+        starBtn: { padding: spacing.sm },
         wsStatus: { ...typography.caption, color: colors.textMuted, textAlign: "center" },
         expandRiderRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
         expandRiderAvatar: {
@@ -406,7 +406,7 @@ export default function TrackScreen() {
                   ) : null}
                 </View>
                 {riderPhone ? (
-                  <Pressable style={styles.callBtn} onPress={() => Linking.openURL(`tel:${riderPhone}`)}>
+                  <Pressable style={styles.callBtn} onPress={() => Linking.openURL(`tel:${riderPhone}`)} accessibilityLabel="Call rider" accessibilityRole="button">
                     <Phone size={18} color={colors.primary} />
                   </Pressable>
                 ) : null}
@@ -486,7 +486,7 @@ export default function TrackScreen() {
               variant="danger"
               loading={cancelling}
               fullWidth
-              onPress={async () => {
+                onPress={async () => {
                 if (!session) return;
                 setCancelling(true);
                 try {
@@ -497,8 +497,8 @@ export default function TrackScreen() {
                     body: { nextStatus: "cancelled", actorRole: "passenger", actorUserId: session.user.id },
                   });
                   await refresh();
-                } catch {
-                  // silently fail
+                } catch (e) {
+                  Alert.alert("Cancel failed", e instanceof Error ? e.message : "Could not cancel ride.");
                 } finally {
                   setCancelling(false);
                 }

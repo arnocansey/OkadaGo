@@ -1,6 +1,6 @@
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
@@ -9,7 +9,6 @@ import { useResolvedLocationAddress } from "@/hooks/useResolvedLocationAddress";
 import { useNearbyRestaurants } from "@/hooks/useNearbyRestaurants";
 import { formatDistanceKm } from "@/lib/geo";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
 import { spacing } from "@/theme/tokens";
 import type { CartItem } from "@/types";
 
@@ -105,8 +104,13 @@ export default function FoodCheckoutScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: true, title: "Checkout", ...stackHeaderOptions }} />
-      <SafeAreaView style={styles.screen} edges={["bottom"]}>
-        <ScrollView contentContainerStyle={styles.content}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 88 : 0}
+      >
+        <SafeAreaView style={styles.screen} edges={["bottom"]}>
+          <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <Text style={styles.title}>{restaurant?.name ?? "Order"}</Text>
           {restaurant ? (
             <Text style={styles.subtitle}>
@@ -150,7 +154,8 @@ export default function FoodCheckoutScreen() {
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Button label="Place order" loading={loading} disabled={!restaurant} onPress={submit} fullWidth />
         </ScrollView>
-      </SafeAreaView>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
     </>
   );
 }

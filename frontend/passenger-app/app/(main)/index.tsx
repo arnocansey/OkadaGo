@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Animated, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Home, MapPin, Package, Search, UtensilsCrossed } from "lucide-react-native";
 import { AppMap } from "@/components/AppMap";
@@ -29,16 +29,20 @@ export default function HomeScreen() {
   const { latitude, longitude } = useUserLocation();
   const [service, setService] = useState<HomeService>("ride");
   const [savedPlaces, setSavedPlaces] = useState<SavedPlace[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   const pulseAnim = useRef(new Animated.Value(1)).current;
-  if (activeRide || activeDelivery) {
-    Animated.loop(
+  useEffect(() => {
+    if (!activeRide && !activeDelivery) return;
+    const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, { toValue: 1.03, duration: 700, useNativeDriver: true }),
         Animated.timing(pulseAnim, { toValue: 1, duration: 700, useNativeDriver: true }),
       ]),
-    ).start();
-  }
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [Boolean(activeRide), Boolean(activeDelivery)]);
 
   useEffect(() => {
     if (!session?.token) return;
@@ -46,6 +50,19 @@ export default function HomeScreen() {
       .then(setSavedPlaces)
       .catch(() => setSavedPlaces([]));
   }, [session?.token]);
+
+  async function onRefresh() {
+    if (!session?.token) return;
+    setRefreshing(true);
+    try {
+      const places = await api<SavedPlace[]>("/places/saved", { token: session.token });
+      setSavedPlaces(places);
+    } catch {
+      // keep existing
+    } finally {
+      setRefreshing(false);
+    }
+  }
 
   function openService(placeId?: string) {
     if (service === "food") {
@@ -105,7 +122,7 @@ export default function HomeScreen() {
           ...shadows.md,
         },
         activeDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.textOnPrimary },
-        activeLabel: { ...typography.label, color: "rgba(0,0,0,0.65)" },
+        activeLabel: { ...typography.label, color: colors.textOnPrimary },
         activeValue: { ...typography.bodySemibold, color: colors.textOnPrimary, marginTop: 2 },
         activeArrow: { fontSize: 22, color: colors.textOnPrimary, fontWeight: "300" },
         sheet: {
