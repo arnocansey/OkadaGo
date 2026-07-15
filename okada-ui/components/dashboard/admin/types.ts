@@ -28,7 +28,8 @@ export type AdminConsoleScreen =
   | "integrations"
   | "taxesCompliance"
   | "settingsNotifications"
-  | "admins";
+  | "admins"
+  | "escalationRules";
 
 export type RideRecord = {
   id: string;

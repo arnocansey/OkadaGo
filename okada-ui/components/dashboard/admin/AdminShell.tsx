@@ -92,6 +92,7 @@ const screenPermissions: Partial<Record<AdminConsoleScreen, string>> = {
   promotions: "promotions.view",
   zones: "zones.view",
   supportTickets: "support.view",
+  escalationRules: "support.view",
   notifications: "notifications.view",
   reports: "reports.view",
   auditLogs: "audit.view",
@@ -274,6 +275,15 @@ const screenMeta: Record<AdminConsoleScreen, AdminScreenMeta> = {
     quickActionLabel: "View rider complaints",
     quickActionHref: "/admin/riders/complaints",
     quickActionNote: "Cross-check app support tickets with rider-linked incident reports."
+  },
+  escalationRules: {
+    eyebrow: "Support operations",
+    title: "Escalation Rules",
+    description: "Configure automated escalation rules for unresolved support tickets and incidents.",
+    searchLabel: "Search escalation rules...",
+    quickActionLabel: "View support tickets",
+    quickActionHref: "/admin/support-tickets",
+    quickActionNote: "Escalation rules automatically escalate unresolved tickets based on thresholds."
   },
   notifications: {
     eyebrow: "Communication",
@@ -558,6 +568,14 @@ export function AdminShell({
         group: "system",
         hint: "Passenger and rider cases",
         badge: `${badgeData.openSupportTicketsCount}`
+      },
+      {
+        label: "Escalation Rules",
+        href: "/admin/escalation-rules",
+        icon: Headphones,
+        screen: "escalationRules",
+        group: "system",
+        hint: "Automated incident escalation"
       },
       {
         label: "Notifications",
