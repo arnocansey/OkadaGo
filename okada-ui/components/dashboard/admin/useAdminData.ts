@@ -1234,6 +1234,9 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     admins: [
       { label: "Admins", value: `${adminAccounts.length}` },
       { label: "Eligible passengers", value: `${eligiblePassengers.length}` }
+    ],
+    escalationRules: [
+      { label: "Rules", value: "—" }
     ]
   }), [
     activeRides, activeRiders, adminCurrency, totalDashboardRevenue, rides, completedRides,
