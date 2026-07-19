@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Alert, Linking, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react-native";
 import { Card } from "@/components/ui/Card";
@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { PaystackCheckout } from "@/components/PaystackCheckout";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { api, compactDate, money } from "@/lib/api";
@@ -18,6 +19,7 @@ export default function WalletScreen() {
   const wallet = wallets[0];
   const [topUpAmount, setTopUpAmount] = useState("20");
   const [topUpLoading, setTopUpLoading] = useState(false);
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -81,8 +83,7 @@ export default function WalletScreen() {
           description: "OkadaGo wallet top-up",
         },
       });
-      await Linking.openURL(result.authorizationUrl);
-      await refresh();
+      setCheckoutUrl(result.authorizationUrl);
     } catch (e) {
       Alert.alert("Top-up failed", e instanceof Error ? e.message : "Could not start Paystack checkout.");
     } finally {
@@ -90,8 +91,24 @@ export default function WalletScreen() {
     }
   }
 
+  async function handleCheckoutSuccess(reference: string) {
+    setCheckoutUrl(null);
+    Alert.alert("Payment received", `Reference: ${reference}. Verifying...`);
+    await refresh();
+  }
+
+  function handleCheckoutCancel() {
+    setCheckoutUrl(null);
+  }
+
   return (
     <SafeAreaView style={styles.screen}>
+      <PaystackCheckout
+        authorizationUrl={checkoutUrl ?? ""}
+        visible={!!checkoutUrl}
+        onSuccess={handleCheckoutSuccess}
+        onCancel={handleCheckoutCancel}
+      />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>Wallet</Text>
 
