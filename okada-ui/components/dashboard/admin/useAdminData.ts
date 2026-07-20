@@ -1089,6 +1089,25 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     }
   });
 
+  const zoneUpdateMutation = useMutation({
+    mutationFn: async ({
+      zoneId,
+      updates
+    }: {
+      zoneId: string;
+      updates: Partial<Pick<ServiceZoneRecord, "isActive" | "ridesEnabled" | "deliveriesEnabled">>;
+    }) =>
+      requestJson(`/bootstrap/service-zones/${zoneId}`, {
+        method: "PATCH",
+        token,
+        body: JSON.stringify(updates)
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: QK.zones(token) });
+      addToast("Zone settings updated", "success");
+    }
+  });
+
   // ── badge data ──────────────────────────────────────────────────────────────
   const badgeData = useMemo(() => ({
     activeTripsCount: activeRides.length,
@@ -1318,6 +1337,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     createAdminMutation,
     promotePassengerMutation,
     riderApprovalMutation,
-    riderSuspensionMutation
+    riderSuspensionMutation,
+    zoneUpdateMutation
   };
 }

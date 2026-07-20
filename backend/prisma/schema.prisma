@@ -51,6 +51,18 @@ enum VehicleStatus {
   ARCHIVED
 }
 
+enum VehicleType {
+  OKADA
+  TRICYCLE
+  BICYCLE
+}
+
+enum JobPreference {
+  RIDES_ONLY
+  DELIVERY_ONLY
+  BOTH
+}
+
 enum RideStatus {
   SEARCHING
   ASSIGNED
@@ -302,8 +314,12 @@ model RiderProfile {
   city              String?             @db.VarChar(120)
   serviceZoneId     String?
   onlineStatus      Boolean             @default(false)
+  jobPreference     JobPreference       @default(BOTH)
   currentLatitude   Decimal?            @db.Decimal(10, 7)
   currentLongitude  Decimal?            @db.Decimal(10, 7)
+  /// Populated via raw SQL only (see prisma/postgis-setup.sql). Requires the
+  /// postgis extension; matching falls back to Haversine when unavailable.
+  currentLocation   Unsupported("geography(Point,4326)")?
   ratingAverage     Decimal             @default(0) @db.Decimal(3, 2)
   acceptanceRate    Decimal             @default(0) @db.Decimal(5, 2)
   cancellationRate  Decimal             @default(0) @db.Decimal(5, 2)
@@ -360,6 +376,7 @@ model Vehicle {
   plateNumber        String        @unique @db.VarChar(32)
   registrationNumber String?       @db.VarChar(80)
   insuranceNumber    String?       @db.VarChar(80)
+  vehicleType        VehicleType   @default(OKADA)
   status             VehicleStatus @default(ACTIVE)
   metadata           Json?
   createdAt          DateTime      @default(now())
@@ -397,6 +414,8 @@ model ServiceZone {
   countryCode      String            @db.VarChar(2)
   currency         String            @db.VarChar(3)
   isActive         Boolean           @default(true)
+  ridesEnabled     Boolean           @default(true)
+  deliveriesEnabled Boolean          @default(true)
   polygonGeoJson   Json
   baseFare         Decimal           @db.Decimal(12, 2)
   perKmFee         Decimal           @db.Decimal(12, 2)

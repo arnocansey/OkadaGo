@@ -60,6 +60,42 @@ export type Ride = {
   } | null;
 };
 
+export type DeliveryStatus =
+  | "SEARCHING"
+  | "ASSIGNED"
+  | "PICKED_UP"
+  | "IN_TRANSIT"
+  | "DELIVERED"
+  | "CANCELLED";
+
+export type Delivery = {
+  id: string;
+  status: DeliveryStatus;
+  passengerId: string;
+  riderId: string | null;
+  pickupAddress: string;
+  dropoffAddress: string;
+  pickupLatitude: string | number;
+  pickupLongitude: string | number;
+  dropoffLatitude: string | number;
+  dropoffLongitude: string | number;
+  recipientName: string;
+  recipientPhoneE164: string;
+  packageType: string;
+  packageDescription: string;
+  estimatedDistanceKm: string | number | null;
+  estimatedDurationMinutes: number | null;
+  estimatedFee: string | number | null;
+  finalFee: string | number | null;
+  currency: string;
+  createdAt: string;
+  rider: {
+    currentLatitude: string | number | null;
+    currentLongitude: string | number | null;
+    user: { fullName: string; phoneE164: string };
+  } | null;
+};
+
 export type RiderPin = {
   id: string;
   serviceZoneId: string | null;
@@ -146,7 +182,7 @@ export type PaymentMethod = "cash" | "card" | "wallet" | "mobile_money";
 
 export type LocationPoint = { lat: number; lng: number; label: string };
 
-export type RideType = "standard" | "express";
+export type RideType = "standard" | "express" | "cargo";
 
 export function parseCoord(value: string | number | null | undefined) {
   if (typeof value === "number") return value;
@@ -171,6 +207,8 @@ export const ACTIVE_RIDE_STATUSES = new Set([
   "ARRIVED",
   "IN_PROGRESS"
 ]);
+
+export const ACTIVE_DELIVERY_STATUSES = new Set(["SEARCHING", "ASSIGNED", "PICKED_UP", "IN_TRANSIT"]);
 
 export const ghanaCenters: Record<string, [number, number]> = {
   accra: [5.6037, -0.187],

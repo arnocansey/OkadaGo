@@ -24,13 +24,15 @@ export const createRiderSchema = z.object({
   serviceZoneId: z.string().cuid().optional(),
   commissionPercent: z.number().min(0).max(100).optional(),
   approvalStatus: z.enum(["pending", "approved", "rejected", "suspended"]).default("approved"),
+  jobPreference: z.enum(["rides_only", "delivery_only", "both"]).default("both"),
   vehicle: z
     .object({
       make: z.string().min(1).max(80),
       model: z.string().min(1).max(80),
       plateNumber: z.string().min(3).max(32),
       color: z.string().max(50).optional(),
-      year: z.number().int().min(2000).max(2100).optional()
+      year: z.number().int().min(2000).max(2100).optional(),
+      vehicleType: z.enum(["okada", "tricycle", "bicycle"]).default("okada")
     })
     .optional()
 });
@@ -48,3 +50,23 @@ export const createServiceZoneSchema = z.object({
   waitingFeePerMin: z.number().nonnegative(),
   polygonGeoJson: z.record(z.string(), z.unknown())
 });
+
+export const serviceZoneParamsSchema = z.object({
+  zoneId: z.string().cuid()
+});
+
+export const updateServiceZoneSchema = z
+  .object({
+    isActive: z.boolean().optional(),
+    ridesEnabled: z.boolean().optional(),
+    deliveriesEnabled: z.boolean().optional(),
+    baseFare: z.number().nonnegative().optional(),
+    perKmFee: z.number().nonnegative().optional(),
+    perMinuteFee: z.number().nonnegative().optional(),
+    minimumFare: z.number().nonnegative().optional(),
+    cancellationFee: z.number().nonnegative().optional(),
+    waitingFeePerMin: z.number().nonnegative().optional()
+  })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: "At least one field must be provided"
+  });

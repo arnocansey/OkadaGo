@@ -1,9 +1,11 @@
 import type { FastifyPluginAsync } from "fastify";
-import { parseBody, parseQuery } from "../../common/validation.js";
+import { parseBody, parseParams, parseQuery } from "../../common/validation.js";
 import {
   createPassengerSchema,
   createRiderSchema,
-  createServiceZoneSchema
+  createServiceZoneSchema,
+  serviceZoneParamsSchema,
+  updateServiceZoneSchema
 } from "./bootstrap.schemas.js";
 import {
   forwardGeocodeQuerySchema,
@@ -51,6 +53,12 @@ export const bootstrapRoutes: FastifyPluginAsync = async (server) => {
     const input = parseBody(request, createServiceZoneSchema);
     const zone = await bootstrapService.createServiceZone(input);
     return reply.status(201).send(zone);
+  });
+
+  server.patch("/bootstrap/service-zones/:zoneId", async (request) => {
+    const params = parseParams(request, serviceZoneParamsSchema);
+    const input = parseBody(request, updateServiceZoneSchema);
+    return bootstrapService.updateServiceZone(params.zoneId, input);
   });
 
   server.get("/bootstrap/reverse-geocode", async (request) => {

@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from "fastify";
 import { parseBody, parseParams } from "../../common/validation.js";
 import {
   createDeliveryRequestSchema,
+  deliveryEstimateSchema,
   deliveryIdParamsSchema,
   deliveryStatusUpdateSchema
 } from "./delivery.schemas.js";
@@ -10,6 +11,11 @@ import { DeliveryService } from "./delivery.service.js";
 const deliveryService = new DeliveryService();
 
 export const deliveryRoutes: FastifyPluginAsync = async (server) => {
+  server.post("/deliveries/estimate", async (request) => {
+    const input = parseBody(request, deliveryEstimateSchema);
+    return deliveryService.estimateDelivery(input);
+  });
+
   server.post("/deliveries/request", async (request, reply) => {
     const input = parseBody(request, createDeliveryRequestSchema);
     const delivery = await deliveryService.createDeliveryRequest(input);

@@ -5,10 +5,12 @@ import { prisma } from "../../common/prisma.js";
 import { makeReferralCode, makeRiderCode } from "../../common/codes.js";
 import {
   AccountStatus,
+  JobPreference,
   PaymentMethod,
   RiderApprovalStatus,
   UserRole,
   VehicleStatus,
+  VehicleType,
   WalletType
 } from "../../generated/prisma/enums.js";
 import type {
@@ -94,6 +96,22 @@ function makeExpiryDate() {
   return new Date(Date.now() + sessionDurationMs);
 }
 
+function mapJobPreference(preference: RiderSignupInput["jobPreference"]) {
+  return {
+    rides_only: JobPreference.RIDES_ONLY,
+    delivery_only: JobPreference.DELIVERY_ONLY,
+    both: JobPreference.BOTH
+  }[preference];
+}
+
+function mapVehicleType(vehicleType?: NonNullable<RiderSignupInput["vehicle"]>["vehicleType"]) {
+  return {
+    okada: VehicleType.OKADA,
+    tricycle: VehicleType.TRICYCLE,
+    bicycle: VehicleType.BICYCLE
+  }[vehicleType ?? "okada"];
+}
+
 if (appConfig.cloudinaryCloudName && appConfig.cloudinaryApiKey && appConfig.cloudinaryApiSecret) {
   cloudinary.config({
     cloud_name: appConfig.cloudinaryCloudName,
@@ -171,6 +189,7 @@ export class AuthService {
             city: input.city,
             serviceZoneId: input.serviceZoneId,
             commissionPercent: input.commissionPercent,
+            jobPreference: mapJobPreference(input.jobPreference),
             vehicle: input.vehicle
               ? {
                   create: {
@@ -179,6 +198,7 @@ export class AuthService {
                     plateNumber: input.vehicle.plateNumber,
                     color: input.vehicle.color,
                     year: input.vehicle.year,
+                    vehicleType: mapVehicleType(input.vehicle.vehicleType),
                     status: VehicleStatus.ACTIVE
                   }
                 }

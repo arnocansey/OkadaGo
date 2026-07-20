@@ -1,6 +1,12 @@
 import { z } from "zod";
 import { locationSchema } from "../rides/ride.schemas.js";
 
+export const deliveryEstimateSchema = z.object({
+  serviceZoneId: z.string().cuid(),
+  estimatedDistanceKm: z.number().nonnegative(),
+  estimatedDurationMinutes: z.number().int().nonnegative()
+});
+
 export const createDeliveryRequestSchema = z.object({
   passengerProfileId: z.string().cuid(),
   serviceZoneId: z.string().cuid(),

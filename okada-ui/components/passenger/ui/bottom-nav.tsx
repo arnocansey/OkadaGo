@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Clock, Home, User, Wallet } from "lucide-react";
+import { Clock, Home, Package, User, Wallet } from "lucide-react";
 
 const tabs = [
   { href: "/passenger", label: "Home", icon: Home, exact: true },
+  { href: "/passenger/delivery", label: "Delivery", icon: Package },
   { href: "/passenger/trips", label: "Trips", icon: Clock },
   { href: "/passenger/wallet", label: "Wallet", icon: Wallet },
   { href: "/passenger/profile", label: "Profile", icon: User }

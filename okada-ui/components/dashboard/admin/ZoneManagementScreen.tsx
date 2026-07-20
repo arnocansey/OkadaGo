@@ -9,13 +9,48 @@ export type ZoneManagementScreenProps = {
   ridersPerZone: Record<string, number>;
   ridesPerZone: Record<string, number>;
   adminCurrency: string;
+  onZoneUpdate?: (
+    zoneId: string,
+    updates: Partial<Pick<ServiceZoneRecord, "isActive" | "ridesEnabled" | "deliveriesEnabled">>
+  ) => void;
+  isMutating?: boolean;
 };
+
+function ZoneToggle({
+  label,
+  active,
+  disabled,
+  onToggle
+}: {
+  label: string;
+  active: boolean;
+  disabled?: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={`admin-reference-tag ${active ? "success" : "neutral"}`}
+      style={{ cursor: disabled ? "not-allowed" : "pointer", border: "none", opacity: disabled ? 0.6 : 1 }}
+      disabled={disabled}
+      onClick={(event) => {
+        event.stopPropagation();
+        onToggle();
+      }}
+      title={`Click to turn ${active ? "off" : "on"}`}
+    >
+      {label}: {active ? "On" : "Off"}
+    </button>
+  );
+}
 
 export function ZoneManagementScreen({
   zones,
   ridersPerZone,
   ridesPerZone,
-  adminCurrency
+  adminCurrency,
+  onZoneUpdate,
+  isMutating
 }: ZoneManagementScreenProps) {
   const activeZones = zones.filter((z) => z.isActive);
   const inactiveZones = zones.filter((z) => !z.isActive);
@@ -88,6 +123,8 @@ export function ZoneManagementScreen({
                   <th>Active Riders</th>
                   <th>Total Rides</th>
                   <th>Status</th>
+                  <th>Rides Module</th>
+                  <th>Delivery Module</th>
                 </tr>
               </thead>
               <tbody>
@@ -107,9 +144,30 @@ export function ZoneManagementScreen({
                     </td>
                     <td>{ridesPerZone[zone.id] ?? 0}</td>
                     <td>
-                      <em className={`admin-reference-tag ${zone.isActive ? "success" : "neutral"}`}>
-                        {zone.isActive ? "Active" : "Inactive"}
-                      </em>
+                      <ZoneToggle
+                        label="Zone"
+                        active={zone.isActive}
+                        disabled={!onZoneUpdate || isMutating}
+                        onToggle={() => onZoneUpdate?.(zone.id, { isActive: !zone.isActive })}
+                      />
+                    </td>
+                    <td>
+                      <ZoneToggle
+                        label="Rides"
+                        active={zone.ridesEnabled ?? true}
+                        disabled={!onZoneUpdate || isMutating}
+                        onToggle={() => onZoneUpdate?.(zone.id, { ridesEnabled: !(zone.ridesEnabled ?? true) })}
+                      />
+                    </td>
+                    <td>
+                      <ZoneToggle
+                        label="Delivery"
+                        active={zone.deliveriesEnabled ?? true}
+                        disabled={!onZoneUpdate || isMutating}
+                        onToggle={() =>
+                          onZoneUpdate?.(zone.id, { deliveriesEnabled: !(zone.deliveriesEnabled ?? true) })
+                        }
+                      />
                     </td>
                   </tr>
                 ))}
@@ -149,6 +207,28 @@ export function ZoneManagementScreen({
                 <span>Min Fare</span>
                 <strong>{formatMoney(zone.currency, parseNumber(zone.minimumFare))}</strong>
               </div>
+            </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+              <ZoneToggle
+                label="Zone"
+                active={zone.isActive}
+                disabled={!onZoneUpdate || isMutating}
+                onToggle={() => onZoneUpdate?.(zone.id, { isActive: !zone.isActive })}
+              />
+              <ZoneToggle
+                label="Rides"
+                active={zone.ridesEnabled ?? true}
+                disabled={!onZoneUpdate || isMutating}
+                onToggle={() => onZoneUpdate?.(zone.id, { ridesEnabled: !(zone.ridesEnabled ?? true) })}
+              />
+              <ZoneToggle
+                label="Delivery"
+                active={zone.deliveriesEnabled ?? true}
+                disabled={!onZoneUpdate || isMutating}
+                onToggle={() =>
+                  onZoneUpdate?.(zone.id, { deliveriesEnabled: !(zone.deliveriesEnabled ?? true) })
+                }
+              />
             </div>
           </article>
         ))}

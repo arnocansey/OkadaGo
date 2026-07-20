@@ -1,11 +1,14 @@
 import { AppError } from "../../common/errors.js";
 import { makeWalletReference } from "../../common/codes.js";
 import { prisma } from "../../common/prisma.js";
+import { findNearbyRiderCandidates, syncRiderLocationGeography } from "../../common/geo.js";
 import {
+  JobPreference,
   PaymentMethod,
   PaymentStatus,
   RideStatus,
   RiderApprovalStatus,
+  VehicleType,
   WalletTransactionStatus,
   WalletTransactionType,
   WalletType
@@ -83,6 +86,22 @@ function roundCoordinate(value: number) {
 
 function riderDeficitFromBalance(balance: number) {
   return balance < 0 ? Math.abs(balance) : 0;
+}
+
+const ridesJobPreferenceFilter = [JobPreference.RIDES_ONLY, JobPreference.BOTH];
+
+function requiredVehicleTypeForRideType(rideType: string): VehicleType {
+  return rideType === "cargo_tricycle" ? VehicleType.TRICYCLE : VehicleType.OKADA;
+}
+
+async function getRideRequestedType(rideId: string): Promise<string> {
+  const requestedEvent = await prisma.rideEvent.findFirst({
+    where: { rideId, eventType: "ride_requested" },
+    orderBy: { createdAt: "asc" }
+  });
+
+  const payload = requestedEvent?.payload as { rideType?: string } | null;
+  return payload?.rideType ?? "standard_bike";
 }
 
 function haversineDistanceKm(
@@ -244,7 +263,7 @@ export class RideService {
       }
     }
 
-    return prisma.riderProfile.update({
+    const updated = await prisma.riderProfile.update({
       where: {
         id: riderProfileId
       },
@@ -260,6 +279,12 @@ export class RideService {
         serviceZone: true
       }
     });
+
+    if (input.latitude !== undefined && input.longitude !== undefined) {
+      void syncRiderLocationGeography(riderProfileId, input.latitude, input.longitude);
+    }
+
+    return updated;
   }
 
   async createRideRequest(input: CreateRideRequestInput) {
@@ -294,12 +319,32 @@ export class RideService {
       throw new AppError("Service zone was not found", 404, "SERVICE_ZONE_NOT_FOUND");
     }
 
+    if (!serviceZone.isActive || !serviceZone.ridesEnabled) {
+      throw new AppError(
+        "Rides are currently unavailable in this area",
+        403,
+        "RIDES_DISABLED_IN_REGION"
+      );
+    }
+
+    const requiredVehicleType = requiredVehicleTypeForRideType(input.rideType);
+
+    const nearbyCandidates = await findNearbyRiderCandidates({
+      serviceZoneId: input.serviceZoneId,
+      latitude: input.pickup.latitude,
+      longitude: input.pickup.longitude,
+      radiusKm: 8
+    });
+
     const riders = await prisma.riderProfile.findMany({
       where: {
         serviceZoneId: input.serviceZoneId,
         onlineStatus: true,
         approvalStatus: RiderApprovalStatus.APPROVED,
-        deletedAt: null
+        deletedAt: null,
+        jobPreference: { in: ridesJobPreferenceFilter },
+        vehicle: { vehicleType: requiredVehicleType },
+        ...(nearbyCandidates ? { id: { in: nearbyCandidates.map((candidate) => candidate.id) } } : {})
       },
       include: {
         user: true
@@ -661,6 +706,8 @@ export class RideService {
       });
     });
 
+    void syncRiderLocationGeography(ride.riderId!, latitude, longitude);
+
     const updatedRide = await this.getRide(rideId);
     emitRiderLocationUpdate({
       rideId,
@@ -675,6 +722,7 @@ export class RideService {
 
   private async findRiderForAssignment(
     ride: {
+      id: string;
       riderId: string | null;
       serviceZoneId: string | null;
       pickupLatitude: unknown;
@@ -713,11 +761,26 @@ export class RideService {
       );
     }
 
+    const rideType = await getRideRequestedType(ride.id);
+    const requiredVehicleType = requiredVehicleTypeForRideType(rideType);
+
+    const nearbyCandidates = riderProfileId
+      ? null
+      : await findNearbyRiderCandidates({
+          serviceZoneId: ride.serviceZoneId,
+          latitude: Number(ride.pickupLatitude),
+          longitude: Number(ride.pickupLongitude),
+          radiusKm: 8
+        });
+
     const riderWhere = {
       serviceZoneId: ride.serviceZoneId,
       onlineStatus: true,
       approvalStatus: RiderApprovalStatus.APPROVED,
-      deletedAt: null
+      deletedAt: null,
+      jobPreference: { in: ridesJobPreferenceFilter },
+      vehicle: { vehicleType: requiredVehicleType },
+      ...(nearbyCandidates ? { id: { in: nearbyCandidates.map((candidate) => candidate.id) } } : {})
     };
 
     const riders = await prisma.riderProfile.findMany({

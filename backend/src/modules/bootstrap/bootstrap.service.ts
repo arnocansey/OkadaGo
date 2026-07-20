@@ -4,22 +4,26 @@ import { appConfig } from "../../common/config.js";
 import { AppError } from "../../common/errors.js";
 import {
   AccountStatus,
+  JobPreference,
   PaymentMethod,
   RiderApprovalStatus,
   UserRole,
   VehicleStatus,
+  VehicleType,
   WalletType
 } from "../../generated/prisma/enums.js";
 import type { z } from "zod";
 import type {
   createPassengerSchema,
   createRiderSchema,
-  createServiceZoneSchema
+  createServiceZoneSchema,
+  updateServiceZoneSchema
 } from "./bootstrap.schemas.js";
 
 type CreatePassengerInput = z.infer<typeof createPassengerSchema>;
 type CreateRiderInput = z.infer<typeof createRiderSchema>;
 type CreateServiceZoneInput = z.infer<typeof createServiceZoneSchema>;
+type UpdateServiceZoneInput = z.infer<typeof updateServiceZoneSchema>;
 
 type ReverseGeocodeAddress = Partial<{
   house_number: string;
@@ -351,6 +355,22 @@ function mapApprovalStatus(status: CreateRiderInput["approvalStatus"]) {
     rejected: RiderApprovalStatus.REJECTED,
     suspended: RiderApprovalStatus.SUSPENDED
   }[status];
+}
+
+function mapJobPreference(preference: CreateRiderInput["jobPreference"]) {
+  return {
+    rides_only: JobPreference.RIDES_ONLY,
+    delivery_only: JobPreference.DELIVERY_ONLY,
+    both: JobPreference.BOTH
+  }[preference];
+}
+
+function mapVehicleType(vehicleType?: NonNullable<CreateRiderInput["vehicle"]>["vehicleType"]) {
+  return {
+    okada: VehicleType.OKADA,
+    tricycle: VehicleType.TRICYCLE,
+    bicycle: VehicleType.BICYCLE
+  }[vehicleType ?? "okada"];
 }
 
 const PLACES_API_V1 = "https://places.googleapis.com/v1";
@@ -1262,6 +1282,7 @@ export class BootstrapService {
               city: input.city,
               serviceZoneId: input.serviceZoneId,
               commissionPercent: input.commissionPercent,
+              jobPreference: mapJobPreference(input.jobPreference),
               approvedAt: input.approvalStatus === "approved" ? new Date() : undefined,
               vehicle: input.vehicle
                 ? {
@@ -1271,6 +1292,7 @@ export class BootstrapService {
                       plateNumber: input.vehicle.plateNumber,
                       color: input.vehicle.color,
                       year: input.vehicle.year,
+                      vehicleType: mapVehicleType(input.vehicle.vehicleType),
                       status: VehicleStatus.ACTIVE
                     }
                   }
@@ -1312,6 +1334,28 @@ export class BootstrapService {
         countryCode: input.countryCode,
         currency: input.currency,
         polygonGeoJson: input.polygonGeoJson as never,
+        baseFare: input.baseFare,
+        perKmFee: input.perKmFee,
+        perMinuteFee: input.perMinuteFee,
+        minimumFare: input.minimumFare,
+        cancellationFee: input.cancellationFee,
+        waitingFeePerMin: input.waitingFeePerMin
+      }
+    });
+  }
+
+  async updateServiceZone(zoneId: string, input: UpdateServiceZoneInput) {
+    const zone = await prisma.serviceZone.findUnique({ where: { id: zoneId } });
+    if (!zone) {
+      throw new AppError("Service zone was not found", 404, "SERVICE_ZONE_NOT_FOUND");
+    }
+
+    return prisma.serviceZone.update({
+      where: { id: zoneId },
+      data: {
+        isActive: input.isActive,
+        ridesEnabled: input.ridesEnabled,
+        deliveriesEnabled: input.deliveriesEnabled,
         baseFare: input.baseFare,
         perKmFee: input.perKmFee,
         perMinuteFee: input.perMinuteFee,

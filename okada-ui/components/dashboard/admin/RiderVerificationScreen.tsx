@@ -740,6 +740,7 @@ export function RiderVerificationScreen({
                             <CheckCircle size={16} color="#22c55e" />
                             <span style={{ fontSize: 12, color: "#94a3b8" }}>
                               {rider.vehicle?.plateNumber}
+                              {rider.vehicle?.vehicleType ? ` · ${rider.vehicle.vehicleType.toLowerCase()}` : ""}
                             </span>
                           </span>
                         ) : (
@@ -903,8 +904,19 @@ export function RiderVerificationScreen({
                   icon: Car,
                   label: "Vehicle",
                   value: selectedRow.rider.vehicle
-                    ? `${selectedRow.rider.vehicle.plateNumber} · ${selectedRow.rider.vehicle.make}`
+                    ? `${selectedRow.rider.vehicle.plateNumber} · ${selectedRow.rider.vehicle.make}${
+                        selectedRow.rider.vehicle.vehicleType
+                          ? ` (${selectedRow.rider.vehicle.vehicleType.toLowerCase()})`
+                          : ""
+                      }`
                     : "None",
+                },
+                {
+                  icon: ClipboardCheck,
+                  label: "Job preference",
+                  value: selectedRow.rider.jobPreference
+                    ? selectedRow.rider.jobPreference.toLowerCase().replace(/_/g, " ")
+                    : "both",
                 },
               ].map(({ icon: Icon, label, value }) => (
                 <div key={label} style={S.infoRow}>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Bike, MessageCircle, Phone, Truck, Zap } from "lucide-react";
+import { ArrowLeft, MessageCircle, Package, Phone } from "lucide-react";
 import { fetchJson, postJson } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { formatMoney } from "@/lib/currency";
@@ -17,16 +17,22 @@ import { RideMap, type MapMarker } from "@/components/passenger/map/ride-map";
 import { MAP_LEGEND, MapLegend, type MapLegendItem } from "@/components/passenger/map/map-legend";
 import { BookFormSkeleton, PaxSkeleton } from "@/components/passenger/ui/skeletons";
 import {
-  ACTIVE_RIDE_STATUSES,
+  ACTIVE_DELIVERY_STATUSES,
   initials,
   parseCoord,
+  type Delivery,
   type FareEstimate,
   type LocationPoint,
-  type Ride,
-  type RideType,
   type RoutePreview,
   type ServiceZone
 } from "@/components/passenger/types";
+
+const PACKAGE_TYPES = [
+  { id: "parcel", label: "Parcel" },
+  { id: "documents", label: "Documents" },
+  { id: "food", label: "Food" },
+  { id: "other", label: "Other" }
+];
 
 function parseNumber(value: string | number | null | undefined) {
   if (typeof value === "number") return value;
@@ -34,30 +40,14 @@ function parseNumber(value: string | number | null | undefined) {
   return 0;
 }
 
-function toApiRideType(rideType: RideType): "standard_bike" | "express_bike" | "cargo_tricycle" {
-  if (rideType === "express") return "express_bike";
-  if (rideType === "cargo") return "cargo_tricycle";
-  return "standard_bike";
-}
-
-function toSurgeMultiplier(rideType: RideType) {
-  return rideType === "express" ? 1.2 : 1;
-}
-
-function rideTypeLabel(rideType: RideType) {
-  if (rideType === "express") return "OkadaX";
-  if (rideType === "cargo") return "Cargo";
-  return "OkadaGo";
-}
-
 function TrackingPanel({
   riderName,
   statusLabel,
-  destinationAddress
+  dropoffAddress
 }: {
   riderName: string;
   statusLabel: string;
-  destinationAddress: string;
+  dropoffAddress: string;
 }) {
   return (
     <>
@@ -69,14 +59,14 @@ function TrackingPanel({
         <div>
           <h2 className="text-xl font-bold">{riderName}</h2>
           <p className="mt-0.5 flex items-center gap-1 text-sm pax-text-secondary">
-            <Bike size={14} /> OkadaGo
+            <Package size={14} /> OkadaGo Delivery
           </p>
         </div>
       </div>
 
       <div className="pax-alert-box mb-5">
         <div className="pax-alert-box-title">{statusLabel}</div>
-        <div className="pax-alert-box-sub">{destinationAddress}</div>
+        <div className="pax-alert-box-sub">{dropoffAddress}</div>
       </div>
 
       <div className="mb-5 flex gap-3">
@@ -90,21 +80,27 @@ function TrackingPanel({
 
       <div className="text-center">
         <button type="button" className="rounded-full px-4 py-2 text-sm font-medium pax-text-danger">
-          Cancel ride
+          Cancel delivery
         </button>
       </div>
     </>
   );
 }
 
-function BookingForm({
+function DeliveryForm({
   pickupText,
   dropoffText,
   pickup,
   dropoff,
   center,
-  rideType,
-  setRideType,
+  packageType,
+  setPackageType,
+  recipientName,
+  setRecipientName,
+  recipientPhone,
+  setRecipientPhone,
+  packageDescription,
+  setPackageDescription,
   setPickup,
   setDropoff,
   setPickupText,
@@ -125,8 +121,14 @@ function BookingForm({
   pickup: LocationPoint | null;
   dropoff: LocationPoint | null;
   center: [number, number];
-  rideType: RideType;
-  setRideType: (v: RideType) => void;
+  packageType: string;
+  setPackageType: (v: string) => void;
+  recipientName: string;
+  setRecipientName: (v: string) => void;
+  recipientPhone: string;
+  setRecipientPhone: (v: string) => void;
+  packageDescription: string;
+  setPackageDescription: (v: string) => void;
   setPickup: (v: LocationPoint) => void;
   setDropoff: (v: LocationPoint) => void;
   setPickupText: (v: string) => void;
@@ -143,18 +145,21 @@ function BookingForm({
   fareLoading: boolean;
 }) {
   const proximity = pickup ? { lat: pickup.lat, lng: pickup.lng } : { lat: center[0], lng: center[1] };
+  const canBook = Boolean(
+    pickup && dropoff && fare && recipientName.trim() && recipientPhone.trim() && packageDescription.trim()
+  );
 
   return (
     <div className="pax-book-form-body">
-      <h2 className="pax-desktop-only pax-greeting mb-1">Book a ride</h2>
-      <p className="pax-desktop-only pax-greeting-sub mb-5">Set pickup and destination to see your fare</p>
+      <h2 className="pax-desktop-only pax-greeting mb-1">Send a package</h2>
+      <p className="pax-desktop-only pax-greeting-sub mb-5">Set pickup and drop-off to see your delivery fee</p>
 
       <div className="relative mb-4 flex flex-col gap-4">
         <div className="absolute bottom-8 left-[9px] top-6 w-0.5 bg-[var(--pax-border)]" />
         <AddressField
           label="Pickup"
           value={pickupText}
-          placeholder="Where are you?"
+          placeholder="Where should the rider pick up?"
           kind="pickup"
           proximity={proximity}
           showUseCurrentLocation
@@ -171,9 +176,9 @@ function BookingForm({
           }}
         />
         <AddressField
-          label="Destination"
+          label="Drop-off"
           value={dropoffText}
-          placeholder="Where to?"
+          placeholder="Where is it going?"
           kind="dropoff"
           proximity={proximity}
           onChange={setDropoffText}
@@ -189,52 +194,43 @@ function BookingForm({
         <PaxSkeleton className="mb-4 h-4 w-40" />
       ) : null}
 
-      <div className="pax-book-ride-options">
-        <button
-          type="button"
-          className={`pax-ride-option${rideType === "standard" ? " pax-ride-option--selected" : ""}`}
-          onClick={() => setRideType("standard")}
-        >
-          <Bike className="mb-2" size={28} />
-          <div className="text-sm font-bold">OkadaGo</div>
-          <div className="text-xs pax-text-secondary">Standard</div>
-          {fare && rideType === "standard" ? (
-            <div className="mt-1 text-base font-bold pax-text-primary">{formatMoney(currency, fare)}</div>
-          ) : fareLoading && rideType === "standard" ? (
-            <PaxSkeleton className="mx-auto mt-2 h-5 w-16" />
-          ) : null}
-        </button>
-        <button
-          type="button"
-          className={`pax-ride-option relative${rideType === "express" ? " pax-ride-option--selected" : ""}`}
-          onClick={() => setRideType("express")}
-        >
-          <div className="absolute -right-1 -top-1 flex items-center gap-0.5 rounded-full bg-[var(--pax-primary)] px-2 py-0.5 text-[10px] font-bold text-[var(--pax-text-on-primary)]">
-            <Zap size={10} /> Fast
-          </div>
-          <Bike className="mb-2" size={28} />
-          <div className="text-sm font-bold">OkadaX</div>
-          <div className="text-xs pax-text-secondary">Express</div>
-          {fare && rideType === "express" ? (
-            <div className="mt-1 text-base font-bold pax-text-primary">{formatMoney(currency, fare)}</div>
-          ) : fareLoading && rideType === "express" ? (
-            <PaxSkeleton className="mx-auto mt-2 h-5 w-16" />
-          ) : null}
-        </button>
-        <button
-          type="button"
-          className={`pax-ride-option${rideType === "cargo" ? " pax-ride-option--selected" : ""}`}
-          onClick={() => setRideType("cargo")}
-        >
-          <Truck className="mb-2" size={28} />
-          <div className="text-sm font-bold">Cargo</div>
-          <div className="text-xs pax-text-secondary">Tricycle</div>
-          {fare && rideType === "cargo" ? (
-            <div className="mt-1 text-base font-bold pax-text-primary">{formatMoney(currency, fare)}</div>
-          ) : fareLoading && rideType === "cargo" ? (
-            <PaxSkeleton className="mx-auto mt-2 h-5 w-16" />
-          ) : null}
-        </button>
+      <div className="mb-4">
+        <label className="mb-2 block text-sm font-medium pax-text-secondary">Package type</label>
+        <div className="pax-book-ride-options">
+          {PACKAGE_TYPES.map((type) => (
+            <button
+              key={type.id}
+              type="button"
+              className={`pax-ride-option${packageType === type.id ? " pax-ride-option--selected" : ""}`}
+              onClick={() => setPackageType(type.id)}
+            >
+              <Package className="mb-2" size={24} />
+              <div className="text-sm font-bold">{type.label}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mb-4 flex flex-col gap-3">
+        <input
+          className="pax-input"
+          placeholder="Recipient name"
+          value={recipientName}
+          onChange={(event) => setRecipientName(event.target.value)}
+        />
+        <input
+          className="pax-input"
+          placeholder="Recipient phone (e.g. +233241234567)"
+          value={recipientPhone}
+          onChange={(event) => setRecipientPhone(event.target.value)}
+        />
+        <textarea
+          className="pax-input"
+          placeholder="What are you sending? (e.g. Documents in a brown envelope)"
+          rows={2}
+          value={packageDescription}
+          onChange={(event) => setPackageDescription(event.target.value)}
+        />
       </div>
 
       <div className="pax-payment-row mb-5">
@@ -254,23 +250,22 @@ function BookingForm({
       <button
         type="button"
         className="pax-btn-primary mt-auto justify-between px-6"
-        disabled={!pickup || !dropoff || !fare || bookMutation.isPending}
+        disabled={!canBook || bookMutation.isPending}
         onClick={onBook}
       >
-        <span>{bookMutation.isPending ? "Booking…" : `Book ${rideTypeLabel(rideType)}`}</span>
-        <span>{fare ? formatMoney(currency, fare) : "—"}</span>
+        <span>{bookMutation.isPending ? "Booking…" : "Book delivery"}</span>
+        <span>
+          {fare ? formatMoney(currency, fare) : fareLoading ? "…" : "—"}
+        </span>
       </button>
     </div>
   );
 }
 
-export function BookView() {
+export function DeliveryView() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const trackingRideId = searchParams.get("ride");
-  const dropoffLatParam = searchParams.get("dropoffLat");
-  const dropoffLngParam = searchParams.get("dropoffLng");
-  const dropoffLabelParam = searchParams.get("dropoffLabel");
+  const trackingDeliveryId = searchParams.get("delivery");
   const { session } = useAuth();
   const queryClient = useQueryClient();
   const { center, coords, hasFix, loading: geoLoading, refresh: refreshGeo } = useGeoLocation();
@@ -285,7 +280,10 @@ export function BookView() {
   const [dropoffText, setDropoffText] = useState("");
   const [pickupSource, setPickupSource] = useState<"gps" | "manual">("gps");
   const [recenterSignal, setRecenterSignal] = useState(0);
-  const [rideType, setRideType] = useState<RideType>("standard");
+  const [packageType, setPackageType] = useState("parcel");
+  const [recipientName, setRecipientName] = useState("");
+  const [recipientPhone, setRecipientPhone] = useState("");
+  const [packageDescription, setPackageDescription] = useState("");
   const [paymentMethod] = useState<"cash" | "wallet" | "mobile_money">("mobile_money");
 
   const passengerProfileId = session?.user.passengerProfileId;
@@ -295,16 +293,16 @@ export function BookView() {
     queryFn: () => fetchJson<ServiceZone[]>("/bootstrap/service-zones?limit=100")
   });
 
-  const ridesQuery = useQuery({
-    queryKey: ["rides"],
-    queryFn: () => fetchJson<Ride[]>("/rides"),
-    refetchInterval: trackingRideId ? 5_000 : false
+  const deliveriesQuery = useQuery({
+    queryKey: ["deliveries"],
+    queryFn: () => fetchJson<Delivery[]>("/deliveries"),
+    refetchInterval: trackingDeliveryId ? 5_000 : false
   });
 
-  const trackingRide = useMemo(() => {
-    if (!trackingRideId) return null;
-    return (ridesQuery.data ?? []).find((r) => r.id === trackingRideId) ?? null;
-  }, [trackingRideId, ridesQuery.data]);
+  const trackingDelivery = useMemo(() => {
+    if (!trackingDeliveryId) return null;
+    return (deliveriesQuery.data ?? []).find((d) => d.id === trackingDeliveryId) ?? null;
+  }, [trackingDeliveryId, deliveriesQuery.data]);
 
   const selectedZone = zonesQuery.data?.[0] ?? null;
 
@@ -318,38 +316,12 @@ export function BookView() {
   });
 
   const fareQuery = useQuery({
-    queryKey: ["fare-estimate", pickup, dropoff, rideType, routeQuery.data?.distanceKm],
+    queryKey: ["delivery-fare-estimate", selectedZone?.id, routeQuery.data?.distanceKm, routeQuery.data?.durationMinutes],
     queryFn: () =>
-      postJson<FareEstimate, unknown>("/rides/estimate", {
-        pickup: {
-          address: pickup!.label,
-          latitude: pickup!.lat,
-          longitude: pickup!.lng
-        },
-        destination: {
-          address: dropoff!.label,
-          latitude: dropoff!.lat,
-          longitude: dropoff!.lng
-        },
-        pricing: {
-          countryCode: selectedZone!.countryCode,
-          currency: selectedZone!.currency,
-          rideType: toApiRideType(rideType),
-          baseFare: parseNumber(selectedZone!.baseFare),
-          perKmFee: parseNumber(selectedZone!.perKmFee),
-          perMinuteFee: parseNumber(selectedZone!.perMinuteFee),
-          minimumFare: parseNumber(selectedZone!.minimumFare),
-          cancellationFee: 0,
-          waitingFeePerMinute: 0,
-          commissionPercent: 12,
-          surgeMultiplier: toSurgeMultiplier(rideType),
-          zoneFee: 0,
-          promoDiscount: 0,
-          referralDiscount: 0,
-          estimatedDistanceKm: routeQuery.data!.distanceKm,
-          estimatedDurationMinutes: routeQuery.data!.durationMinutes,
-          waitingMinutes: 0
-        }
+      postJson<FareEstimate, unknown>("/deliveries/estimate", {
+        serviceZoneId: selectedZone!.id,
+        estimatedDistanceKm: routeQuery.data!.distanceKm,
+        estimatedDurationMinutes: routeQuery.data!.durationMinutes
       }),
     enabled: Boolean(pickup && dropoff && selectedZone && routeQuery.data)
   });
@@ -357,27 +329,32 @@ export function BookView() {
   const bookMutation = useMutation({
     mutationFn: async () => {
       if (!passengerProfileId || !selectedZone || !pickup || !dropoff) {
-        throw new Error("Complete pickup and destination before booking.");
+        throw new Error("Complete pickup and drop-off before booking.");
       }
-      return postJson<{ ride: Ride }, unknown>("/rides/request", {
+      if (!recipientName.trim() || !recipientPhone.trim() || !packageDescription.trim()) {
+        throw new Error("Add recipient details and a package description.");
+      }
+      return postJson<{ delivery: Delivery }, unknown>("/deliveries/request", {
         passengerProfileId,
         serviceZoneId: selectedZone.id,
         paymentMethod,
         pickup: { address: pickup.label, latitude: pickup.lat, longitude: pickup.lng },
-        destination: { address: dropoff.label, latitude: dropoff.lat, longitude: dropoff.lng },
+        dropoff: { address: dropoff.label, latitude: dropoff.lat, longitude: dropoff.lng },
+        recipientName: recipientName.trim(),
+        recipientPhoneE164: recipientPhone.trim(),
+        packageType,
+        packageDescription: packageDescription.trim(),
         estimatedDistanceKm: routeQuery.data?.distanceKm ?? 0,
-        estimatedDurationMinutes: routeQuery.data?.durationMinutes ?? 0,
-        rideType: toApiRideType(rideType),
-        surgeMultiplier: toSurgeMultiplier(rideType)
+        estimatedDurationMinutes: routeQuery.data?.durationMinutes ?? 0
       });
     },
     onSuccess: async (data) => {
-      paxToast.success("Ride requested!", "Finding a rider near you…");
-      await queryClient.invalidateQueries({ queryKey: ["rides"] });
-      router.replace(`/passenger/book?ride=${data.ride.id}`);
+      paxToast.success("Delivery requested!", "Finding a rider near you…");
+      await queryClient.invalidateQueries({ queryKey: ["deliveries"] });
+      router.replace(`/passenger/delivery?delivery=${data.delivery.id}`);
     },
     onError: (error) => {
-      paxToast.error("Could not book ride", (error as Error).message);
+      paxToast.error("Could not book delivery", (error as Error).message);
     }
   });
 
@@ -414,54 +391,42 @@ export function BookView() {
     }
   };
 
-  useEffect(() => {
-    if (!dropoffLatParam || !dropoffLngParam || dropoff) return;
-
-    const lat = Number(dropoffLatParam);
-    const lng = Number(dropoffLngParam);
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
-
-    const label = dropoffLabelParam?.trim() || "Destination";
-    setDropoff({ lat, lng, label });
-    setDropoffText(label);
-  }, [dropoffLatParam, dropoffLngParam, dropoffLabelParam, dropoff]);
-
   const currency = selectedZone?.currency ?? session?.user.preferredCurrency ?? "GHS";
   const fare = fareQuery.data?.pricing.totalFare ?? null;
 
   const mapCenter: [number, number] = useMemo(() => {
-    if (trackingRide) {
-      const lat = parseCoord(trackingRide.rider?.currentLatitude ?? trackingRide.pickupLatitude);
-      const lng = parseCoord(trackingRide.rider?.currentLongitude ?? trackingRide.pickupLongitude);
+    if (trackingDelivery) {
+      const lat = parseCoord(trackingDelivery.rider?.currentLatitude ?? trackingDelivery.pickupLatitude);
+      const lng = parseCoord(trackingDelivery.rider?.currentLongitude ?? trackingDelivery.pickupLongitude);
       return [lat, lng];
     }
     if (pickup && dropoff) return [(pickup.lat + dropoff.lat) / 2, (pickup.lng + dropoff.lng) / 2];
     if (pickup) return [pickup.lat, pickup.lng];
     return center;
-  }, [trackingRide, pickup, dropoff, center]);
+  }, [trackingDelivery, pickup, dropoff, center]);
 
   const markers = useMemo(() => {
     const list: MapMarker[] = [];
-    const ride = trackingRide ?? null;
+    const delivery = trackingDelivery ?? null;
 
-    if (ride) {
+    if (delivery) {
       list.push({
         id: "pickup",
-        lat: parseCoord(ride.pickupLatitude),
-        lng: parseCoord(ride.pickupLongitude),
+        lat: parseCoord(delivery.pickupLatitude),
+        lng: parseCoord(delivery.pickupLongitude),
         kind: "pickup"
       });
       list.push({
         id: "dropoff",
-        lat: parseCoord(ride.destinationLatitude),
-        lng: parseCoord(ride.destinationLongitude),
+        lat: parseCoord(delivery.dropoffLatitude),
+        lng: parseCoord(delivery.dropoffLongitude),
         kind: "dropoff"
       });
-      if (ride.rider?.currentLatitude != null) {
+      if (delivery.rider?.currentLatitude != null) {
         list.push({
           id: "rider",
-          lat: parseCoord(ride.rider.currentLatitude),
-          lng: parseCoord(ride.rider.currentLongitude),
+          lat: parseCoord(delivery.rider.currentLatitude),
+          lng: parseCoord(delivery.rider.currentLongitude),
           kind: "rider"
         });
       }
@@ -479,7 +444,7 @@ export function BookView() {
     }
     if (dropoff) list.push({ id: "dropoff", lat: dropoff.lat, lng: dropoff.lng, kind: "dropoff" });
     return list;
-  }, [trackingRide, pickup, dropoff, userLocation]);
+  }, [trackingDelivery, pickup, dropoff, userLocation]);
 
   const route = routeQuery.data?.route ?? [];
 
@@ -496,8 +461,14 @@ export function BookView() {
     pickup,
     dropoff,
     center,
-    rideType,
-    setRideType,
+    packageType,
+    setPackageType,
+    recipientName,
+    setRecipientName,
+    recipientPhone,
+    setRecipientPhone,
+    packageDescription,
+    setPackageDescription,
     setPickup,
     setDropoff,
     setPickupText,
@@ -514,14 +485,16 @@ export function BookView() {
     fareLoading: fareQuery.isFetching && Boolean(pickup && dropoff)
   };
 
-  if (trackingRide && ACTIVE_RIDE_STATUSES.has(trackingRide.status)) {
-    const riderName = trackingRide.rider?.user.fullName ?? "Finding rider…";
+  if (trackingDelivery && ACTIVE_DELIVERY_STATUSES.has(trackingDelivery.status)) {
+    const riderName = trackingDelivery.rider?.user.fullName ?? "Finding rider…";
     const statusLabel =
-      trackingRide.status === "IN_PROGRESS"
-        ? "On trip"
-        : trackingRide.status === "SEARCHING" || trackingRide.status === "REQUESTED"
+      trackingDelivery.status === "IN_TRANSIT"
+        ? "On the way"
+        : trackingDelivery.status === "SEARCHING"
           ? "Finding a rider"
-          : "Rider on the way";
+          : trackingDelivery.status === "PICKED_UP"
+            ? "Package picked up"
+            : "Rider assigned";
 
     return (
       <PassengerAppFrame hideNav fullBleed>
@@ -534,9 +507,7 @@ export function BookView() {
               userLocation={userLocation}
               recenterSignal={recenterSignal}
             />
-            <MapLegend
-              items={[MAP_LEGEND.you, MAP_LEGEND.pickup, MAP_LEGEND.dropoff, MAP_LEGEND.rider]}
-            />
+            <MapLegend items={[MAP_LEGEND.you, MAP_LEGEND.pickup, MAP_LEGEND.dropoff, MAP_LEGEND.rider]} />
             <Link href="/passenger" className="pax-tracking-back">
               <ArrowLeft size={22} />
             </Link>
@@ -551,7 +522,7 @@ export function BookView() {
               <TrackingPanel
                 riderName={riderName}
                 statusLabel={statusLabel}
-                destinationAddress={trackingRide.destinationAddress}
+                dropoffAddress={trackingDelivery.dropoffAddress}
               />
             </div>
           </div>
@@ -561,7 +532,7 @@ export function BookView() {
             <TrackingPanel
               riderName={riderName}
               statusLabel={statusLabel}
-              destinationAddress={trackingRide.destinationAddress}
+              dropoffAddress={trackingDelivery.dropoffAddress}
             />
           </div>
         </div>
@@ -589,10 +560,10 @@ export function BookView() {
             <Link href="/passenger" aria-label="Back to home">
               <ArrowLeft size={22} />
             </Link>
-            <h1>Book a ride</h1>
+            <h1>Send a package</h1>
           </div>
           <div className="pax-split-panel-inner pax-book-form">
-            {zonesQuery.isLoading ? <BookFormSkeleton /> : <BookingForm {...formProps} />}
+            {zonesQuery.isLoading ? <BookFormSkeleton /> : <DeliveryForm {...formProps} />}
           </div>
         </div>
 
@@ -601,7 +572,7 @@ export function BookView() {
             <Link href="/passenger" aria-label="Back to home">
               <ArrowLeft size={22} />
             </Link>
-            <h1>Book a ride</h1>
+            <h1>Send a package</h1>
           </div>
           <div className="pax-book-map-mobile">
             <RideMap
@@ -615,7 +586,7 @@ export function BookView() {
             <MapLegend items={legendItems} />
           </div>
           <div className="pax-book-form">
-            {zonesQuery.isLoading ? <BookFormSkeleton /> : <BookingForm {...formProps} />}
+            {zonesQuery.isLoading ? <BookFormSkeleton /> : <DeliveryForm {...formProps} />}
           </div>
         </div>
       </div>

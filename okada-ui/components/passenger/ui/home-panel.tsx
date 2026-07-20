@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Briefcase, Clock, Home as HomeIcon, Search } from "lucide-react";
+import { Briefcase, Clock, Home as HomeIcon, Package, Search } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
 import { parseCoord, type Ride, type SavedPlace } from "@/components/passenger/types";
 
@@ -61,6 +61,9 @@ export function HomeBookingPanel({ recentTrips, savedPlaces = [] }: HomePanelPro
             <Briefcase size={16} /> Work
           </Link>
         )}
+        <Link href="/passenger/delivery" className="pax-chip">
+          <Package size={16} /> Send package
+        </Link>
       </div>
 
       {recentTrips.length > 0 ? (

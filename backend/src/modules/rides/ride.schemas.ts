@@ -9,10 +9,12 @@ export const locationSchema = z.object({
   longitude: z.number().min(-180).max(180)
 });
 
+export const rideTypeSchema = z.enum(["standard_bike", "express_bike", "cargo_tricycle"]);
+
 export const pricingInputSchema = z.object({
   countryCode: countryCodeSchema,
   currency: currencySchema,
-  rideType: z.enum(["standard_bike", "express_bike"]),
+  rideType: rideTypeSchema,
   baseFare: z.number().nonnegative(),
   perKmFee: z.number().nonnegative(),
   perMinuteFee: z.number().nonnegative(),
@@ -43,7 +45,7 @@ export const createRideRequestSchema = z.object({
   destination: locationSchema,
   estimatedDistanceKm: z.number().positive(),
   estimatedDurationMinutes: z.number().int().positive(),
-  rideType: z.enum(["standard_bike", "express_bike"]).default("standard_bike"),
+  rideType: rideTypeSchema.default("standard_bike"),
   scheduledFor: z.string().datetime().optional(),
   notes: z.string().max(500).optional(),
   promoDiscount: z.number().nonnegative().default(0),

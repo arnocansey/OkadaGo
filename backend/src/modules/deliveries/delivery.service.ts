@@ -1,8 +1,10 @@
 import { AppError } from "../../common/errors.js";
 import { prisma } from "../../common/prisma.js";
+import { findNearbyRiderCandidates } from "../../common/geo.js";
 import {
   CancellationParty,
   DeliveryStatus,
+  JobPreference,
   PaymentMethod,
   RiderApprovalStatus
 } from "../../generated/prisma/enums.js";
@@ -15,11 +17,13 @@ import {
 } from "../realtime/realtime.service.js";
 import type {
   createDeliveryRequestSchema,
+  deliveryEstimateSchema,
   deliveryStatusUpdateSchema
 } from "./delivery.schemas.js";
 import type { z } from "zod";
 
 type CreateDeliveryRequestInput = z.infer<typeof createDeliveryRequestSchema>;
+type DeliveryEstimateInput = z.infer<typeof deliveryEstimateSchema>;
 type DeliveryStatusUpdateInput = z.infer<typeof deliveryStatusUpdateSchema>;
 
 const deliveryTransitions: Record<string, string[]> = {
@@ -69,6 +73,8 @@ function toApiDeliveryStatus(status: DeliveryStatus) {
 function roundCoordinate(value: number) {
   return Math.round((value + Number.EPSILON) * 10_000_000) / 10_000_000;
 }
+
+const deliveryJobPreferenceFilter = [JobPreference.DELIVERY_ONLY, JobPreference.BOTH];
 
 function haversineDistanceKm(
   fromLatitude: number,
@@ -146,11 +152,22 @@ export class DeliveryService {
       );
     }
 
+    const nearbyCandidates = riderProfileId
+      ? null
+      : await findNearbyRiderCandidates({
+          serviceZoneId: delivery.serviceZoneId,
+          latitude: Number(delivery.pickupLatitude),
+          longitude: Number(delivery.pickupLongitude),
+          radiusKm: 8
+        });
+
     const riderWhere = {
       serviceZoneId: delivery.serviceZoneId,
       onlineStatus: true,
       approvalStatus: RiderApprovalStatus.APPROVED,
-      deletedAt: null
+      deletedAt: null,
+      jobPreference: { in: deliveryJobPreferenceFilter },
+      ...(nearbyCandidates ? { id: { in: nearbyCandidates.map((candidate) => candidate.id) } } : {})
     };
 
     const riders = await prisma.riderProfile.findMany({
@@ -223,6 +240,40 @@ export class DeliveryService {
     return selectedRider;
   }
 
+  async estimateDelivery(input: DeliveryEstimateInput) {
+    const serviceZone = await prisma.serviceZone.findUnique({
+      where: {
+        id: input.serviceZoneId
+      }
+    });
+
+    if (!serviceZone) {
+      throw new AppError("Service zone was not found", 404, "SERVICE_ZONE_NOT_FOUND");
+    }
+
+    const pricing = this.fareService.compute({
+      countryCode: serviceZone.countryCode as "GH" | "NG",
+      currency: serviceZone.currency as "GHS" | "NGN",
+      rideType: "standard_bike",
+      baseFare: Number(serviceZone.baseFare),
+      perKmFee: Number(serviceZone.perKmFee),
+      perMinuteFee: Number(serviceZone.perMinuteFee),
+      minimumFare: Number(serviceZone.minimumFare),
+      cancellationFee: Number(serviceZone.cancellationFee),
+      waitingFeePerMinute: Number(serviceZone.waitingFeePerMin),
+      commissionPercent: 12,
+      surgeMultiplier: 1,
+      zoneFee: 0,
+      promoDiscount: 0,
+      referralDiscount: 0,
+      estimatedDistanceKm: input.estimatedDistanceKm,
+      estimatedDurationMinutes: input.estimatedDurationMinutes,
+      waitingMinutes: 0
+    });
+
+    return { pricing };
+  }
+
   async createDeliveryRequest(input: CreateDeliveryRequestInput) {
     const passenger = await prisma.passengerProfile.findUnique({
       where: {
@@ -247,12 +298,29 @@ export class DeliveryService {
       throw new AppError("Service zone was not found", 404, "SERVICE_ZONE_NOT_FOUND");
     }
 
+    if (!serviceZone.isActive || !serviceZone.deliveriesEnabled) {
+      throw new AppError(
+        "Delivery is currently unavailable in this area",
+        403,
+        "DELIVERY_DISABLED_IN_REGION"
+      );
+    }
+
+    const nearbyCandidates = await findNearbyRiderCandidates({
+      serviceZoneId: input.serviceZoneId,
+      latitude: input.pickup.latitude,
+      longitude: input.pickup.longitude,
+      radiusKm: 8
+    });
+
     const riders = await prisma.riderProfile.findMany({
       where: {
         serviceZoneId: input.serviceZoneId,
         onlineStatus: true,
         approvalStatus: RiderApprovalStatus.APPROVED,
-        deletedAt: null
+        deletedAt: null,
+        jobPreference: { in: deliveryJobPreferenceFilter },
+        ...(nearbyCandidates ? { id: { in: nearbyCandidates.map((candidate) => candidate.id) } } : {})
       },
       include: {
         user: true

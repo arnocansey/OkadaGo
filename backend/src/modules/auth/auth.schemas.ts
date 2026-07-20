@@ -30,6 +30,7 @@ export const riderSignupSchema = z.object({
   city: z.string().max(120).optional(),
   serviceZoneId: z.string().cuid().optional(),
   commissionPercent: z.number().min(0).max(100).optional(),
+  jobPreference: z.enum(["rides_only", "delivery_only", "both"]).default("both"),
   password: passwordSchema,
   device: deviceSchema.optional(),
   vehicle: z
@@ -38,7 +39,8 @@ export const riderSignupSchema = z.object({
       model: z.string().min(1).max(80),
       plateNumber: z.string().min(3).max(32),
       color: z.string().max(50).optional(),
-      year: z.number().int().min(2000).max(2100).optional()
+      year: z.number().int().min(2000).max(2100).optional(),
+      vehicleType: z.enum(["okada", "tricycle", "bicycle"]).default("okada")
     })
     .optional()
 }).and(phoneSchema);

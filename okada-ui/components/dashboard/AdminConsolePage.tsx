@@ -402,6 +402,8 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             ridersPerZone={data.ridersPerZone}
             ridesPerZone={data.ridesPerZone}
             adminCurrency={data.adminCurrency}
+            onZoneUpdate={(zoneId, updates) => data.zoneUpdateMutation.mutate({ zoneId, updates })}
+            isMutating={data.zoneUpdateMutation.isPending}
           />
         );
 

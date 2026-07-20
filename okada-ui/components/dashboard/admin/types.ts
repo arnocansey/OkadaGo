@@ -119,11 +119,13 @@ export type RiderRecord = {
     id: string;
     name: string;
   } | null;
+  jobPreference?: string;
   vehicle?: {
     id: string;
     make: string;
     model: string;
     plateNumber: string;
+    vehicleType?: string;
     status: string;
   } | null;
   user: {
@@ -142,6 +144,8 @@ export type ServiceZoneRecord = {
   city: string;
   currency: string;
   isActive: boolean;
+  ridesEnabled?: boolean;
+  deliveriesEnabled?: boolean;
   baseFare: string | number;
   perKmFee: string | number;
   perMinuteFee: string | number;

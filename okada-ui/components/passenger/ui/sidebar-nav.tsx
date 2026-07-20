@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Clock, Home, LogOut, User, Wallet } from "lucide-react";
+import { Clock, Home, LogOut, Package, User, Wallet } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { usePassengerSignOut } from "@/components/passenger/hooks/use-passenger-sign-out";
 import { initials } from "@/components/passenger/types";
 
 const links = [
   { href: "/passenger", label: "Home", icon: Home, exact: true },
+  { href: "/passenger/delivery", label: "Delivery", icon: Package },
   { href: "/passenger/trips", label: "Trips", icon: Clock },
   { href: "/passenger/wallet", label: "Wallet", icon: Wallet },
   { href: "/passenger/profile", label: "Profile", icon: User }
