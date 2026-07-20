@@ -37,6 +37,7 @@ export type WalletTransaction = {
   currency: string;
   direction: string;
   description?: string | null;
+  reference?: string | null;
   createdAt?: string;
 };
 

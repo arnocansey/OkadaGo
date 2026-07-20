@@ -29,7 +29,6 @@ import { PromoPerformanceScreen } from "./admin/PromoPerformanceScreen";
 import { ZoneManagementScreen } from "./admin/ZoneManagementScreen";
 import { SupportTicketsScreen } from "./admin/SupportTicketsScreen";
 import { ScheduledNotificationsScreen } from "./admin/ScheduledNotificationsScreen";
-import { NotificationsScreen } from "./admin/NotificationsScreen";
 import { ReportsScreen } from "./admin/ReportsScreen";
 import { AuditLogsScreen } from "./admin/AuditLogsScreen";
 import { SettingsScreen } from "./admin/SettingsScreen";
@@ -38,6 +37,7 @@ import { IntegrationsScreen } from "./admin/IntegrationsScreen";
 import { TaxesComplianceScreen } from "./admin/TaxesComplianceScreen";
 import { SettingsNotificationsScreen } from "./admin/SettingsNotificationsScreen";
 import { AdminsScreen } from "./admin/AdminsScreen";
+import EscalationRulesScreen from "./admin/EscalationRulesScreen";
 
 import { parseNumber } from "./admin/utils";
 import type { AdminConsoleScreen, RiderRecord } from "./admin/types";
@@ -416,6 +416,15 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             resolvedTickets={data.resolvedTickets}
             onIncidentAction={(id, status) => data.incidentReviewMutation.mutate({ incidentId: id, status })}
             isMutating={data.incidentReviewMutation.isPending}
+          />
+        );
+
+      case "escalationRules":
+        return (
+          <EscalationRulesScreen
+            rules={[]}
+            onToggleRule={() => {}}
+            onEditRule={() => {}}
           />
         );
 
