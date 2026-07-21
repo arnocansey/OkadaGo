@@ -14,6 +14,8 @@ type Props = TextInputProps & {
   suggestionsLoading?: boolean;
   suggestionsError?: string | null;
   showSuggestions?: boolean;
+  /** Expand the suggestions list (e.g. when the map is collapsed for search mode). */
+  expanded?: boolean;
   onSelectSuggestion: (suggestion: PlaceSuggestion) => void;
 };
 
@@ -25,6 +27,7 @@ export function AddressAutocompleteField({
   suggestionsLoading,
   suggestionsError,
   showSuggestions = false,
+  expanded = false,
   onSelectSuggestion,
   style,
   ...rest
@@ -33,7 +36,7 @@ export function AddressAutocompleteField({
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        wrap: { position: "relative", zIndex: 1 },
+        wrap: { position: "relative", zIndex: expanded ? 20 : 1 },
         dropdown: {
           marginTop: spacing.xs,
           borderWidth: 1,
@@ -41,7 +44,7 @@ export function AddressAutocompleteField({
           borderRadius: radius.md,
           backgroundColor: colors.surface,
           overflow: "hidden",
-          maxHeight: 180,
+          maxHeight: expanded ? 320 : 180,
         },
         suggestionRow: {
           flexDirection: "row",
@@ -51,6 +54,7 @@ export function AddressAutocompleteField({
           paddingVertical: spacing.md,
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
+          minHeight: 52,
         },
         suggestionRowLast: { borderBottomWidth: 0 },
         suggestionName: { ...typography.bodyMedium, color: colors.text, flex: 1 },
@@ -65,7 +69,7 @@ export function AddressAutocompleteField({
         statusText: { ...typography.caption, color: colors.textMuted },
         statusError: { ...typography.caption, color: colors.danger },
       }),
-    [colors, typography],
+    [colors, typography, expanded],
   );
 
   const visible = showSuggestions && (suggestionsLoading || suggestionsError || suggestions.length > 0);

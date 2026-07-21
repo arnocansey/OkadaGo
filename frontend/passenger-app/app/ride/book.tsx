@@ -131,7 +131,15 @@ export default function BookRideScreen() {
     () =>
       StyleSheet.create({
         screen: { flex: 1, backgroundColor: colors.background },
-        mapSection: { height: mapHeight, minHeight: 300 },
+        mapSection: { overflow: "hidden" },
+        searchBanner: {
+          paddingHorizontal: spacing.xl,
+          paddingVertical: spacing.sm,
+          backgroundColor: colors.primaryLight,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        },
+        searchBannerText: { ...typography.captionMedium, color: colors.primary },
         formSection: { flex: 1 },
         content: { padding: spacing.xl, gap: spacing.lg, paddingBottom: spacing.xxxl },
         fieldStack: { gap: spacing.md },
@@ -222,7 +230,7 @@ export default function BookRideScreen() {
         rideTypeSub: { ...typography.caption, color: colors.textMuted },
         rideTypeFare: { ...typography.captionMedium, color: colors.primary, marginTop: 2 },
       }),
-    [colors, typography, mapHeight],
+    [colors, typography],
   );
   const {
     address: pickup,
@@ -261,6 +269,12 @@ export default function BookRideScreen() {
   const [error, setError] = useState("");
   const [scheduleOption, setScheduleOption] = useState<ScheduleOptionId>("now");
   const scheduledForDate = useMemo(() => computeScheduledFor(scheduleOption), [scheduleOption]);
+  const isSearching = pickupFocused || destinationFocused;
+  const activeMapHeight = pinDropTarget
+    ? Math.max(220, Math.round(windowHeight * 0.36))
+    : isSearching
+      ? 0
+      : mapHeight;
 
   const pickupAutocomplete = useAddressAutocomplete({
     token: session?.token,
@@ -613,25 +627,31 @@ export default function BookRideScreen() {
         keyboardVerticalOffset={Platform.OS === "ios" ? 88 : 0}
       >
         <SafeAreaView style={styles.screen} edges={["bottom"]}>
-          <View style={styles.mapSection}>
-            <AppMap
-              style={StyleSheet.absoluteFillObject}
-              region={{ ...pickupCoords, latitudeDelta: 0.025, longitudeDelta: 0.025 }}
-              markers={markers}
-              routeCoordinates={routeCoordinates}
-              fitToMarkers={markers.length >= 2}
-              onMapPress={pinDropTarget ? handleMapPress : undefined}
-              pinDropHint={
-                pinDropTarget === "pickup"
-                  ? "Tap the map to drop your pickup pin"
-                  : pinDropTarget === "destination"
-                    ? `Tap the map to drop your ${isDelivery ? "drop-off" : "destination"} pin`
-                    : typeof pinDropTarget === "object" && pinDropTarget !== null
-                      ? "Tap the map to drop this stop's pin"
-                      : undefined
-              }
-            />
-          </View>
+          {activeMapHeight > 0 ? (
+            <View style={[styles.mapSection, { height: activeMapHeight }]}>
+              <AppMap
+                style={StyleSheet.absoluteFillObject}
+                region={{ ...pickupCoords, latitudeDelta: 0.025, longitudeDelta: 0.025 }}
+                markers={markers}
+                routeCoordinates={routeCoordinates}
+                fitToMarkers={markers.length >= 2}
+                onMapPress={pinDropTarget ? handleMapPress : undefined}
+                pinDropHint={
+                  pinDropTarget === "pickup"
+                    ? "Tap the map to drop your pickup pin"
+                    : pinDropTarget === "destination"
+                      ? `Tap the map to drop your ${isDelivery ? "drop-off" : "destination"} pin`
+                      : typeof pinDropTarget === "object" && pinDropTarget !== null
+                        ? "Tap the map to drop this stop's pin"
+                        : undefined
+                }
+              />
+            </View>
+          ) : (
+            <View style={styles.searchBanner}>
+              <Text style={styles.searchBannerText}>Searching addresses — map hidden</Text>
+            </View>
+          )}
 
           <ScrollView
             style={styles.formSection}
@@ -656,6 +676,7 @@ export default function BookRideScreen() {
                 suggestionsLoading={pickupAutocomplete.loading}
                 suggestionsError={pickupAutocomplete.error}
                 showSuggestions={pickupFocused}
+                expanded={isSearching && pickupFocused}
                 onSelectSuggestion={(suggestion) => void choosePickupSuggestion(suggestion)}
               />
             </View>
@@ -756,8 +777,8 @@ export default function BookRideScreen() {
                   isDelivery
                     ? additionalStops.length > 0
                       ? "Final drop-off address"
-                      : "Drop-off address"
-                    : "Destination"
+                      : t("book.dropoff")
+                    : t("book.destination")
                 }
                 value={destination}
                 onChangeText={(value) => {
@@ -766,11 +787,12 @@ export default function BookRideScreen() {
                 }}
                 onFocus={() => setDestinationFocused(true)}
                 onBlur={() => setTimeout(() => setDestinationFocused(false), 150)}
-                placeholder="Type an address in Accra…"
+                placeholder={t("book.destinationPlaceholder")}
                 suggestions={destinationAutocomplete.suggestions}
                 suggestionsLoading={destinationAutocomplete.loading}
                 suggestionsError={destinationAutocomplete.error}
                 showSuggestions={destinationFocused}
+                expanded={isSearching && destinationFocused}
                 onSelectSuggestion={(suggestion) => void chooseDestinationSuggestion(suggestion)}
               />
             </View>
