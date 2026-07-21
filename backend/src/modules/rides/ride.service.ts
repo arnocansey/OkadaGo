@@ -46,6 +46,7 @@ type RideIdParams = z.infer<typeof rideIdParamsSchema>;
 type RideStatusUpdateInput = z.infer<typeof rideStatusUpdateSchema>;
 
 const lifecycleTransitions: Record<string, string[]> = {
+  scheduled: ["searching", "assigned", "cancelled"],
   searching: ["assigned", "cancelled"],
   assigned: ["arriving", "cancelled"],
   arriving: ["arrived", "cancelled"],
@@ -59,6 +60,13 @@ const startActors = new Set(["rider", "admin", "dispatcher"]);
 const completionActors = new Set(["rider", "admin", "dispatcher", "system"]);
 const riderDeficitWarningThreshold = 100;
 const riderDeficitOfflineThreshold = 200;
+
+/**
+ * Rides scheduled further out than this window are held as SCHEDULED (no matching yet).
+ * Rides due within this window are dispatched immediately, either at creation time or by
+ * the periodic scheduled-ride dispatcher (see dispatchScheduledRides).
+ */
+export const SCHEDULED_RIDE_LOOKAHEAD_MS = 15 * 60 * 1000;
 
 const apiToDbRideStatus = {
   assigned: RideStatus.ASSIGNED,
@@ -148,6 +156,72 @@ const rideDetailsInclude = {
 export class RideService {
   private readonly fareService = new FareService();
   private readonly matchingService = new MatchingService();
+
+  private async matchRiderForZone(params: {
+    serviceZoneId: string;
+    pickupLatitude: number;
+    pickupLongitude: number;
+    requiredVehicleType: VehicleType;
+  }) {
+    const nearbyCandidates = await findNearbyRiderCandidates({
+      serviceZoneId: params.serviceZoneId,
+      latitude: params.pickupLatitude,
+      longitude: params.pickupLongitude,
+      radiusKm: 8
+    });
+
+    const riders = await prisma.riderProfile.findMany({
+      where: {
+        serviceZoneId: params.serviceZoneId,
+        onlineStatus: true,
+        approvalStatus: RiderApprovalStatus.APPROVED,
+        deletedAt: null,
+        jobPreference: { in: ridesJobPreferenceFilter },
+        vehicle: { vehicleType: params.requiredVehicleType },
+        ...(nearbyCandidates ? { id: { in: nearbyCandidates.map((candidate) => candidate.id) } } : {})
+      },
+      include: {
+        user: true
+      }
+    });
+
+    const rankedCandidates = this.matchingService.rankCandidates({
+      requestedServiceZoneId: params.serviceZoneId,
+      maxPickupRadiusKm: 8,
+      candidates: riders
+        .filter((rider) => rider.currentLatitude !== null && rider.currentLongitude !== null)
+        .map((rider) => {
+          const distanceToPickupKm = haversineDistanceKm(
+            Number(rider.currentLatitude),
+            Number(rider.currentLongitude),
+            params.pickupLatitude,
+            params.pickupLongitude
+          );
+          const etaMinutes = Math.max(2, Math.round((distanceToPickupKm / 22) * 60));
+
+          return {
+            riderId: rider.id,
+            displayName: rider.user.fullName,
+            serviceZoneId: rider.serviceZoneId ?? "",
+            distanceToPickupKm,
+            etaMinutes,
+            ratingAverage: Number(rider.ratingAverage),
+            acceptanceRate: Number(rider.acceptanceRate),
+            cancellationRate: Number(rider.cancellationRate),
+            isOnline: rider.onlineStatus,
+            isApproved: rider.approvalStatus === RiderApprovalStatus.APPROVED,
+            isAvailable: true
+          };
+        })
+    });
+
+    const selectedCandidate = rankedCandidates[0];
+    const selectedRider = selectedCandidate
+      ? riders.find((candidate) => candidate.id === selectedCandidate.riderId)
+      : undefined;
+
+    return { selectedRider, rankedCandidates };
+  }
 
   estimateRide(input: RideEstimateInput) {
     const fare = this.fareService.compute(input.pricing);
@@ -272,7 +346,9 @@ export class RideService {
         serviceZoneId: input.serviceZoneId,
         currentLatitude: input.latitude !== undefined ? roundCoordinate(input.latitude) : undefined,
         currentLongitude: input.longitude !== undefined ? roundCoordinate(input.longitude) : undefined,
-        lastOnlineAt: input.onlineStatus ? new Date() : undefined
+        lastOnlineAt: input.onlineStatus ? new Date() : undefined,
+        lastLocationMocked: input.isMocked ?? undefined,
+        lastLocationMockedAt: input.isMocked ? new Date() : undefined
       },
       include: {
         user: true,
@@ -329,63 +405,19 @@ export class RideService {
 
     const requiredVehicleType = requiredVehicleTypeForRideType(input.rideType);
 
-    const nearbyCandidates = await findNearbyRiderCandidates({
-      serviceZoneId: input.serviceZoneId,
-      latitude: input.pickup.latitude,
-      longitude: input.pickup.longitude,
-      radiusKm: 8
-    });
+    const scheduledForDate = input.scheduledFor ? new Date(input.scheduledFor) : undefined;
+    const isFutureSchedule = Boolean(
+      scheduledForDate && scheduledForDate.getTime() - Date.now() > SCHEDULED_RIDE_LOOKAHEAD_MS
+    );
 
-    const riders = await prisma.riderProfile.findMany({
-      where: {
-        serviceZoneId: input.serviceZoneId,
-        onlineStatus: true,
-        approvalStatus: RiderApprovalStatus.APPROVED,
-        deletedAt: null,
-        jobPreference: { in: ridesJobPreferenceFilter },
-        vehicle: { vehicleType: requiredVehicleType },
-        ...(nearbyCandidates ? { id: { in: nearbyCandidates.map((candidate) => candidate.id) } } : {})
-      },
-      include: {
-        user: true
-      }
-    });
-
-    const rankingInput = {
-      requestedServiceZoneId: input.serviceZoneId,
-      maxPickupRadiusKm: 8,
-      candidates: riders
-        .filter((rider) => rider.currentLatitude !== null && rider.currentLongitude !== null)
-        .map((rider) => {
-          const distanceToPickupKm = haversineDistanceKm(
-            Number(rider.currentLatitude),
-            Number(rider.currentLongitude),
-            input.pickup.latitude,
-            input.pickup.longitude
-          );
-          const etaMinutes = Math.max(2, Math.round((distanceToPickupKm / 22) * 60));
-
-          return {
-            riderId: rider.id,
-            displayName: rider.user.fullName,
-            serviceZoneId: rider.serviceZoneId ?? "",
-            distanceToPickupKm,
-            etaMinutes,
-            ratingAverage: Number(rider.ratingAverage),
-            acceptanceRate: Number(rider.acceptanceRate),
-            cancellationRate: Number(rider.cancellationRate),
-            isOnline: rider.onlineStatus,
-            isApproved: rider.approvalStatus === RiderApprovalStatus.APPROVED,
-            isAvailable: true
-          };
-        })
-    };
-
-    const rankedCandidates = this.matchingService.rankCandidates(rankingInput);
-    const selectedCandidate = rankedCandidates[0];
-    const selectedRider = selectedCandidate
-      ? riders.find((candidate) => candidate.id === selectedCandidate.riderId)
-      : undefined;
+    const { selectedRider, rankedCandidates } = isFutureSchedule
+      ? { selectedRider: undefined, rankedCandidates: [] as ReturnType<MatchingService["rankCandidates"]> }
+      : await this.matchRiderForZone({
+          serviceZoneId: input.serviceZoneId,
+          pickupLatitude: input.pickup.latitude,
+          pickupLongitude: input.pickup.longitude,
+          requiredVehicleType
+        });
     const commissionPercent = selectedRider ? Number(selectedRider.commissionPercent) : 12;
 
     let promoDiscount = input.promoDiscount;
@@ -453,14 +485,21 @@ export class RideService {
           riderId: selectedRider?.id,
           serviceZoneId: serviceZone.id,
           promoCodeId,
-          status: selectedRider ? RideStatus.ASSIGNED : RideStatus.SEARCHING,
+          status: isFutureSchedule
+            ? RideStatus.SCHEDULED
+            : selectedRider
+              ? RideStatus.ASSIGNED
+              : RideStatus.SEARCHING,
           paymentMethod: apiToDbPaymentMethod[input.paymentMethod],
           pickupAddress: input.pickup.address,
           pickupLatitude: roundCoordinate(input.pickup.latitude),
           pickupLongitude: roundCoordinate(input.pickup.longitude),
+          pickupLandmark: input.pickup.landmark,
           destinationAddress: input.destination.address,
           destinationLatitude: roundCoordinate(input.destination.latitude),
           destinationLongitude: roundCoordinate(input.destination.longitude),
+          destinationLandmark: input.destination.landmark,
+          pickupLocationMocked: Boolean(input.pickup.isMocked),
           estimatedDistanceKm: input.estimatedDistanceKm,
           estimatedDurationMinutes: input.estimatedDurationMinutes,
           estimatedFare: pricing.totalFare,
@@ -474,7 +513,7 @@ export class RideService {
           platformCommission: pricing.platformCommission,
           currency: serviceZone.currency,
           notes: input.notes,
-          scheduledFor: input.scheduledFor ? new Date(input.scheduledFor) : undefined,
+          scheduledFor: scheduledForDate,
           assignedAt: selectedRider ? new Date() : undefined
         },
         include: rideDetailsInclude
@@ -499,7 +538,7 @@ export class RideService {
                   eventType: "rider_assigned",
                   payload: {
                     riderProfileId: selectedRider.id,
-                    score: selectedCandidate?.score ?? null
+                    score: rankedCandidates[0]?.score ?? null
                   }
                 }
               ]
@@ -575,10 +614,12 @@ export class RideService {
     }
 
     void pushService.sendToUser(passenger.userId, {
-      title: ride.rider ? "Rider assigned" : "Ride requested",
+      title: ride.rider ? "Rider assigned" : isFutureSchedule ? "Ride scheduled" : "Ride requested",
       body: ride.rider
         ? `${ride.rider.user.fullName} is on the way`
-        : "Searching for a nearby rider",
+        : isFutureSchedule
+          ? `We'll find you a rider closer to ${scheduledForDate?.toLocaleString() ?? "your scheduled time"}`
+          : "Searching for a nearby rider",
       data: { rideId: ride.id, type: "ride_requested" }
     });
 
@@ -590,6 +631,93 @@ export class RideService {
         rankedCandidates
       }
     };
+  }
+
+  /**
+   * Periodic dispatcher for scheduled rides. Promotes SCHEDULED rides whose scheduledFor
+   * time has entered the lookahead window into active matching, mirroring the immediate
+   * ride-request flow. Intended to be invoked on an interval (see main.ts).
+   */
+  async dispatchScheduledRides() {
+    const dueBy = new Date(Date.now() + SCHEDULED_RIDE_LOOKAHEAD_MS);
+
+    const dueRides = await prisma.ride.findMany({
+      where: {
+        status: RideStatus.SCHEDULED,
+        scheduledFor: { lte: dueBy }
+      },
+      include: rideDetailsInclude
+    });
+
+    const results: Array<{ rideId: string; outcome: "assigned" | "searching" }> = [];
+
+    for (const dueRide of dueRides) {
+      const rideType = await getRideRequestedType(dueRide.id);
+      const requiredVehicleType = requiredVehicleTypeForRideType(rideType);
+
+      const { selectedRider } = dueRide.serviceZoneId
+        ? await this.matchRiderForZone({
+            serviceZoneId: dueRide.serviceZoneId,
+            pickupLatitude: Number(dueRide.pickupLatitude),
+            pickupLongitude: Number(dueRide.pickupLongitude),
+            requiredVehicleType
+          })
+        : { selectedRider: undefined };
+
+      const updatedRide = await prisma.ride.update({
+        where: { id: dueRide.id },
+        data: {
+          status: selectedRider ? RideStatus.ASSIGNED : RideStatus.SEARCHING,
+          riderId: selectedRider?.id,
+          assignedAt: selectedRider ? new Date() : undefined
+        },
+        include: rideDetailsInclude
+      });
+
+      await prisma.rideEvent.create({
+        data: {
+          rideId: dueRide.id,
+          eventType: selectedRider ? "rider_assigned" : "scheduled_ride_dispatched",
+          payload: {
+            source: "scheduled_dispatch",
+            riderProfileId: selectedRider?.id ?? null
+          }
+        }
+      });
+
+      const realtimeRide = serializeRideForRealtime(updatedRide);
+      if (updatedRide.rider?.userId) {
+        emitRideAssigned({
+          ride: realtimeRide,
+          passengerUserId: updatedRide.passenger.userId,
+          riderUserId: updatedRide.rider.userId
+        });
+        void pushService.sendToUser(updatedRide.rider.userId, {
+          title: "New ride assigned",
+          body: `Pickup: ${updatedRide.pickupAddress}`,
+          data: { rideId: updatedRide.id, type: "ride_assigned" }
+        });
+        void pushService.sendToUser(updatedRide.passenger.userId, {
+          title: "Rider assigned",
+          body: `${updatedRide.rider.user.fullName} is on the way for your scheduled ride`,
+          data: { rideId: updatedRide.id, type: "ride_requested" }
+        });
+      } else {
+        emitRideStatusUpdate({
+          ride: realtimeRide,
+          passengerUserId: updatedRide.passenger.userId
+        });
+        void pushService.sendToUser(updatedRide.passenger.userId, {
+          title: "Searching for your scheduled ride",
+          body: "We're now matching you with a nearby rider",
+          data: { rideId: updatedRide.id, type: "ride_requested" }
+        });
+      }
+
+      results.push({ rideId: dueRide.id, outcome: selectedRider ? "assigned" : "searching" });
+    }
+
+    return results;
   }
 
   async getRide(rideId: RideIdParams["rideId"]) {
@@ -689,7 +817,8 @@ export class RideService {
           longitude,
           speedKph: input.speedKph,
           heading: input.heading,
-          accuracyM: input.accuracyM
+          accuracyM: input.accuracyM,
+          isMocked: input.isMocked ?? false
         }
       });
 
@@ -701,7 +830,9 @@ export class RideService {
           onlineStatus: true,
           currentLatitude: latitude,
           currentLongitude: longitude,
-          lastOnlineAt: new Date()
+          lastOnlineAt: new Date(),
+          lastLocationMocked: input.isMocked ?? undefined,
+          lastLocationMockedAt: input.isMocked ? new Date() : undefined
         }
       });
     });

@@ -64,6 +64,7 @@ enum JobPreference {
 }
 
 enum RideStatus {
+  SCHEDULED
   SEARCHING
   ASSIGNED
   ARRIVING
@@ -320,6 +321,10 @@ model RiderProfile {
   /// Populated via raw SQL only (see prisma/postgis-setup.sql). Requires the
   /// postgis extension; matching falls back to Haversine when unavailable.
   currentLocation   Unsupported("geography(Point,4326)")?
+  /// True when the rider's most recent location/availability ping was flagged
+  /// by the device as a mocked/simulated GPS location (fake-GPS app or emulator).
+  lastLocationMocked   Boolean          @default(false)
+  lastLocationMockedAt DateTime?
   ratingAverage     Decimal             @default(0) @db.Decimal(3, 2)
   acceptanceRate    Decimal             @default(0) @db.Decimal(5, 2)
   cancellationRate  Decimal             @default(0) @db.Decimal(5, 2)
@@ -479,9 +484,12 @@ model Ride {
   pickupAddress            String              @db.VarChar(255)
   pickupLatitude           Decimal             @db.Decimal(10, 7)
   pickupLongitude          Decimal             @db.Decimal(10, 7)
+  pickupLandmark           String?             @db.VarChar(200)
   destinationAddress       String              @db.VarChar(255)
   destinationLatitude      Decimal             @db.Decimal(10, 7)
   destinationLongitude     Decimal             @db.Decimal(10, 7)
+  destinationLandmark      String?             @db.VarChar(200)
+  pickupLocationMocked     Boolean             @default(false)
   routePolyline            String?
   estimatedDistanceKm      Decimal?            @db.Decimal(10, 2)
   estimatedDurationMinutes Int?
@@ -538,13 +546,17 @@ model DeliveryRequest {
   pickupAddress            String             @db.VarChar(255)
   pickupLatitude           Decimal            @db.Decimal(10, 7)
   pickupLongitude          Decimal            @db.Decimal(10, 7)
+  pickupLandmark           String?            @db.VarChar(200)
   dropoffAddress           String             @db.VarChar(255)
   dropoffLatitude          Decimal            @db.Decimal(10, 7)
   dropoffLongitude         Decimal            @db.Decimal(10, 7)
+  dropoffLandmark          String?            @db.VarChar(200)
   recipientName            String             @db.VarChar(160)
   recipientPhoneE164       String             @db.VarChar(24)
   packageType              String             @default("parcel") @db.VarChar(60)
   packageDescription       String             @db.VarChar(255)
+  proofPhotoUrl            String?            @db.VarChar(500)
+  pickupLocationMocked     Boolean            @default(false)
   estimatedDistanceKm      Decimal?           @db.Decimal(10, 2)
   estimatedDurationMinutes Int?
   estimatedFee             Decimal?           @db.Decimal(12, 2)
@@ -558,11 +570,49 @@ model DeliveryRequest {
   passenger                PassengerProfile   @relation("PassengerDeliveries", fields: [passengerId], references: [id])
   rider                    RiderProfile?      @relation("RiderDeliveries", fields: [riderId], references: [id])
   serviceZone              ServiceZone?       @relation(fields: [serviceZoneId], references: [id])
+  ratings                  Rating[]
+  reviews                  Review[]
+  stops                    DeliveryStop[]
 
   @@index([status, requestedAt])
   @@index([serviceZoneId, status])
   @@index([riderId, status])
   @@index([passengerId, requestedAt])
+}
+
+enum DeliveryStopType {
+  PICKUP
+  DROPOFF
+}
+
+enum DeliveryStopStatus {
+  PENDING
+  ARRIVED
+  COMPLETED
+  SKIPPED
+}
+
+model DeliveryStop {
+  id                 String             @id @default(cuid())
+  deliveryId         String
+  sequence           Int
+  type               DeliveryStopType
+  status             DeliveryStopStatus @default(PENDING)
+  address            String             @db.VarChar(255)
+  latitude           Decimal            @db.Decimal(10, 7)
+  longitude          Decimal            @db.Decimal(10, 7)
+  landmark           String?            @db.VarChar(200)
+  recipientName      String?            @db.VarChar(160)
+  recipientPhoneE164 String?            @db.VarChar(24)
+  instructions       String?            @db.VarChar(300)
+  proofPhotoUrl      String?            @db.VarChar(500)
+  arrivedAt          DateTime?
+  completedAt        DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  delivery           DeliveryRequest    @relation(fields: [deliveryId], references: [id])
+
+  @@index([deliveryId, sequence])
 }
 
 model RideLocation {
@@ -574,6 +624,7 @@ model RideLocation {
   speedKph   Decimal? @db.Decimal(8, 2)
   heading    Decimal? @db.Decimal(6, 2)
   accuracyM  Decimal? @db.Decimal(8, 2)
+  isMocked   Boolean  @default(false)
   recordedAt DateTime @default(now())
   ride       Ride     @relation(fields: [rideId], references: [id])
 
@@ -685,35 +736,41 @@ model PayoutRequest {
 }
 
 model Rating {
-  id          String   @id @default(cuid())
-  rideId      String
+  id          String           @id @default(cuid())
+  rideId      String?
+  deliveryId  String?
   raterUserId String
   ratedUserId String
   score       Int
-  category    String?  @db.VarChar(80)
-  createdAt   DateTime @default(now())
-  ride        Ride     @relation(fields: [rideId], references: [id])
-  rater       User     @relation("RatingRater", fields: [raterUserId], references: [id])
-  rated       User     @relation("RatingRated", fields: [ratedUserId], references: [id])
+  category    String?          @db.VarChar(80)
+  createdAt   DateTime         @default(now())
+  ride        Ride?            @relation(fields: [rideId], references: [id])
+  delivery    DeliveryRequest? @relation(fields: [deliveryId], references: [id])
+  rater       User             @relation("RatingRater", fields: [raterUserId], references: [id])
+  rated       User             @relation("RatingRated", fields: [ratedUserId], references: [id])
   review      Review?
 
   @@unique([rideId, raterUserId, ratedUserId])
+  @@unique([deliveryId, raterUserId, ratedUserId])
   @@index([ratedUserId, createdAt])
 }
 
 model Review {
-  id        String   @id @default(cuid())
-  ratingId  String   @unique
-  rideId    String
-  authorId  String
-  body      String   @db.VarChar(500)
-  isFlagged Boolean  @default(false)
-  createdAt DateTime @default(now())
-  rating    Rating   @relation(fields: [ratingId], references: [id])
-  ride      Ride     @relation(fields: [rideId], references: [id])
-  author    User     @relation("ReviewAuthor", fields: [authorId], references: [id])
+  id         String           @id @default(cuid())
+  ratingId   String           @unique
+  rideId     String?
+  deliveryId String?
+  authorId   String
+  body       String           @db.VarChar(500)
+  isFlagged  Boolean          @default(false)
+  createdAt  DateTime         @default(now())
+  rating     Rating           @relation(fields: [ratingId], references: [id])
+  ride       Ride?            @relation(fields: [rideId], references: [id])
+  delivery   DeliveryRequest? @relation(fields: [deliveryId], references: [id])
+  author     User             @relation("ReviewAuthor", fields: [authorId], references: [id])
 
   @@index([rideId, createdAt])
+  @@index([deliveryId, createdAt])
 }
 
 model PromoCode {

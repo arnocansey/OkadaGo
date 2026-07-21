@@ -6,7 +6,9 @@ export const currencySchema = z.enum(["GHS", "NGN"]);
 export const locationSchema = z.object({
   address: z.string().min(3).max(255),
   latitude: z.number().min(-90).max(90),
-  longitude: z.number().min(-180).max(180)
+  longitude: z.number().min(-180).max(180),
+  landmark: z.string().trim().max(200).optional(),
+  isMocked: z.boolean().optional()
 });
 
 export const rideTypeSchema = z.enum(["standard_bike", "express_bike", "cargo_tricycle"]);
@@ -57,6 +59,7 @@ export const createRideRequestSchema = z.object({
 
 export const rideLifecycleValidationSchema = z.object({
   currentStatus: z.enum([
+    "scheduled",
     "searching",
     "assigned",
     "arriving",
@@ -100,7 +103,8 @@ export const riderAvailabilitySchema = z.object({
   onlineStatus: z.boolean(),
   serviceZoneId: z.string().cuid().optional(),
   latitude: z.number().min(-90).max(90).optional(),
-  longitude: z.number().min(-180).max(180).optional()
+  longitude: z.number().min(-180).max(180).optional(),
+  isMocked: z.boolean().optional()
 });
 
 export const rideLocationUpdateSchema = z.object({
@@ -112,7 +116,8 @@ export const rideLocationUpdateSchema = z.object({
   longitude: z.number().min(-180).max(180),
   speedKph: z.number().min(0).max(300).optional(),
   heading: z.number().min(0).max(360).optional(),
-  accuracyM: z.number().min(0).max(5000).optional()
+  accuracyM: z.number().min(0).max(5000).optional(),
+  isMocked: z.boolean().optional()
 });
 
 export const riderCandidateSchema = z.object({

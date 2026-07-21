@@ -51,6 +51,8 @@ export type ServiceZoneMinAggregateOutputType = {
   countryCode: string | null
   currency: string | null
   isActive: boolean | null
+  ridesEnabled: boolean | null
+  deliveriesEnabled: boolean | null
   baseFare: runtime.Decimal | null
   perKmFee: runtime.Decimal | null
   perMinuteFee: runtime.Decimal | null
@@ -69,6 +71,8 @@ export type ServiceZoneMaxAggregateOutputType = {
   countryCode: string | null
   currency: string | null
   isActive: boolean | null
+  ridesEnabled: boolean | null
+  deliveriesEnabled: boolean | null
   baseFare: runtime.Decimal | null
   perKmFee: runtime.Decimal | null
   perMinuteFee: runtime.Decimal | null
@@ -87,6 +91,8 @@ export type ServiceZoneCountAggregateOutputType = {
   countryCode: number
   currency: number
   isActive: number
+  ridesEnabled: number
+  deliveriesEnabled: number
   polygonGeoJson: number
   baseFare: number
   perKmFee: number
@@ -126,6 +132,8 @@ export type ServiceZoneMinAggregateInputType = {
   countryCode?: true
   currency?: true
   isActive?: true
+  ridesEnabled?: true
+  deliveriesEnabled?: true
   baseFare?: true
   perKmFee?: true
   perMinuteFee?: true
@@ -144,6 +152,8 @@ export type ServiceZoneMaxAggregateInputType = {
   countryCode?: true
   currency?: true
   isActive?: true
+  ridesEnabled?: true
+  deliveriesEnabled?: true
   baseFare?: true
   perKmFee?: true
   perMinuteFee?: true
@@ -162,6 +172,8 @@ export type ServiceZoneCountAggregateInputType = {
   countryCode?: true
   currency?: true
   isActive?: true
+  ridesEnabled?: true
+  deliveriesEnabled?: true
   polygonGeoJson?: true
   baseFare?: true
   perKmFee?: true
@@ -268,6 +280,8 @@ export type ServiceZoneGroupByOutputType = {
   countryCode: string
   currency: string
   isActive: boolean
+  ridesEnabled: boolean
+  deliveriesEnabled: boolean
   polygonGeoJson: runtime.JsonValue
   baseFare: runtime.Decimal
   perKmFee: runtime.Decimal
@@ -310,6 +324,8 @@ export type ServiceZoneWhereInput = {
   countryCode?: Prisma.StringFilter<"ServiceZone"> | string
   currency?: Prisma.StringFilter<"ServiceZone"> | string
   isActive?: Prisma.BoolFilter<"ServiceZone"> | boolean
+  ridesEnabled?: Prisma.BoolFilter<"ServiceZone"> | boolean
+  deliveriesEnabled?: Prisma.BoolFilter<"ServiceZone"> | boolean
   polygonGeoJson?: Prisma.JsonFilter<"ServiceZone">
   baseFare?: Prisma.DecimalFilter<"ServiceZone"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee?: Prisma.DecimalFilter<"ServiceZone"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -333,6 +349,8 @@ export type ServiceZoneOrderByWithRelationInput = {
   countryCode?: Prisma.SortOrder
   currency?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  ridesEnabled?: Prisma.SortOrder
+  deliveriesEnabled?: Prisma.SortOrder
   polygonGeoJson?: Prisma.SortOrder
   baseFare?: Prisma.SortOrder
   perKmFee?: Prisma.SortOrder
@@ -359,6 +377,8 @@ export type ServiceZoneWhereUniqueInput = Prisma.AtLeast<{
   countryCode?: Prisma.StringFilter<"ServiceZone"> | string
   currency?: Prisma.StringFilter<"ServiceZone"> | string
   isActive?: Prisma.BoolFilter<"ServiceZone"> | boolean
+  ridesEnabled?: Prisma.BoolFilter<"ServiceZone"> | boolean
+  deliveriesEnabled?: Prisma.BoolFilter<"ServiceZone"> | boolean
   polygonGeoJson?: Prisma.JsonFilter<"ServiceZone">
   baseFare?: Prisma.DecimalFilter<"ServiceZone"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee?: Prisma.DecimalFilter<"ServiceZone"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -382,6 +402,8 @@ export type ServiceZoneOrderByWithAggregationInput = {
   countryCode?: Prisma.SortOrder
   currency?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  ridesEnabled?: Prisma.SortOrder
+  deliveriesEnabled?: Prisma.SortOrder
   polygonGeoJson?: Prisma.SortOrder
   baseFare?: Prisma.SortOrder
   perKmFee?: Prisma.SortOrder
@@ -409,6 +431,8 @@ export type ServiceZoneScalarWhereWithAggregatesInput = {
   countryCode?: Prisma.StringWithAggregatesFilter<"ServiceZone"> | string
   currency?: Prisma.StringWithAggregatesFilter<"ServiceZone"> | string
   isActive?: Prisma.BoolWithAggregatesFilter<"ServiceZone"> | boolean
+  ridesEnabled?: Prisma.BoolWithAggregatesFilter<"ServiceZone"> | boolean
+  deliveriesEnabled?: Prisma.BoolWithAggregatesFilter<"ServiceZone"> | boolean
   polygonGeoJson?: Prisma.JsonWithAggregatesFilter<"ServiceZone">
   baseFare?: Prisma.DecimalWithAggregatesFilter<"ServiceZone"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee?: Prisma.DecimalWithAggregatesFilter<"ServiceZone"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -428,6 +452,8 @@ export type ServiceZoneCreateInput = {
   countryCode: string
   currency: string
   isActive?: boolean
+  ridesEnabled?: boolean
+  deliveriesEnabled?: boolean
   polygonGeoJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare: runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -451,6 +477,8 @@ export type ServiceZoneUncheckedCreateInput = {
   countryCode: string
   currency: string
   isActive?: boolean
+  ridesEnabled?: boolean
+  deliveriesEnabled?: boolean
   polygonGeoJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare: runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -474,6 +502,8 @@ export type ServiceZoneUpdateInput = {
   countryCode?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  ridesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deliveriesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   polygonGeoJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -497,6 +527,8 @@ export type ServiceZoneUncheckedUpdateInput = {
   countryCode?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  ridesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deliveriesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   polygonGeoJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -520,6 +552,8 @@ export type ServiceZoneCreateManyInput = {
   countryCode: string
   currency: string
   isActive?: boolean
+  ridesEnabled?: boolean
+  deliveriesEnabled?: boolean
   polygonGeoJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare: runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -539,6 +573,8 @@ export type ServiceZoneUpdateManyMutationInput = {
   countryCode?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  ridesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deliveriesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   polygonGeoJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -558,6 +594,8 @@ export type ServiceZoneUncheckedUpdateManyInput = {
   countryCode?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  ridesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deliveriesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   polygonGeoJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -582,6 +620,8 @@ export type ServiceZoneCountOrderByAggregateInput = {
   countryCode?: Prisma.SortOrder
   currency?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  ridesEnabled?: Prisma.SortOrder
+  deliveriesEnabled?: Prisma.SortOrder
   polygonGeoJson?: Prisma.SortOrder
   baseFare?: Prisma.SortOrder
   perKmFee?: Prisma.SortOrder
@@ -610,6 +650,8 @@ export type ServiceZoneMaxOrderByAggregateInput = {
   countryCode?: Prisma.SortOrder
   currency?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  ridesEnabled?: Prisma.SortOrder
+  deliveriesEnabled?: Prisma.SortOrder
   baseFare?: Prisma.SortOrder
   perKmFee?: Prisma.SortOrder
   perMinuteFee?: Prisma.SortOrder
@@ -628,6 +670,8 @@ export type ServiceZoneMinOrderByAggregateInput = {
   countryCode?: Prisma.SortOrder
   currency?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  ridesEnabled?: Prisma.SortOrder
+  deliveriesEnabled?: Prisma.SortOrder
   baseFare?: Prisma.SortOrder
   perKmFee?: Prisma.SortOrder
   perMinuteFee?: Prisma.SortOrder
@@ -719,6 +763,8 @@ export type ServiceZoneCreateWithoutRidersInput = {
   countryCode: string
   currency: string
   isActive?: boolean
+  ridesEnabled?: boolean
+  deliveriesEnabled?: boolean
   polygonGeoJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare: runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -741,6 +787,8 @@ export type ServiceZoneUncheckedCreateWithoutRidersInput = {
   countryCode: string
   currency: string
   isActive?: boolean
+  ridesEnabled?: boolean
+  deliveriesEnabled?: boolean
   polygonGeoJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare: runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -779,6 +827,8 @@ export type ServiceZoneUpdateWithoutRidersInput = {
   countryCode?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  ridesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deliveriesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   polygonGeoJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -801,6 +851,8 @@ export type ServiceZoneUncheckedUpdateWithoutRidersInput = {
   countryCode?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  ridesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deliveriesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   polygonGeoJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -823,6 +875,8 @@ export type ServiceZoneCreateWithoutPricingRulesInput = {
   countryCode: string
   currency: string
   isActive?: boolean
+  ridesEnabled?: boolean
+  deliveriesEnabled?: boolean
   polygonGeoJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare: runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -845,6 +899,8 @@ export type ServiceZoneUncheckedCreateWithoutPricingRulesInput = {
   countryCode: string
   currency: string
   isActive?: boolean
+  ridesEnabled?: boolean
+  deliveriesEnabled?: boolean
   polygonGeoJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare: runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -883,6 +939,8 @@ export type ServiceZoneUpdateWithoutPricingRulesInput = {
   countryCode?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  ridesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deliveriesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   polygonGeoJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -905,6 +963,8 @@ export type ServiceZoneUncheckedUpdateWithoutPricingRulesInput = {
   countryCode?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  ridesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deliveriesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   polygonGeoJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -927,6 +987,8 @@ export type ServiceZoneCreateWithoutRidesInput = {
   countryCode: string
   currency: string
   isActive?: boolean
+  ridesEnabled?: boolean
+  deliveriesEnabled?: boolean
   polygonGeoJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare: runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -949,6 +1011,8 @@ export type ServiceZoneUncheckedCreateWithoutRidesInput = {
   countryCode: string
   currency: string
   isActive?: boolean
+  ridesEnabled?: boolean
+  deliveriesEnabled?: boolean
   polygonGeoJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare: runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -987,6 +1051,8 @@ export type ServiceZoneUpdateWithoutRidesInput = {
   countryCode?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  ridesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deliveriesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   polygonGeoJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1009,6 +1075,8 @@ export type ServiceZoneUncheckedUpdateWithoutRidesInput = {
   countryCode?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  ridesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deliveriesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   polygonGeoJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1031,6 +1099,8 @@ export type ServiceZoneCreateWithoutDeliveriesInput = {
   countryCode: string
   currency: string
   isActive?: boolean
+  ridesEnabled?: boolean
+  deliveriesEnabled?: boolean
   polygonGeoJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare: runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1053,6 +1123,8 @@ export type ServiceZoneUncheckedCreateWithoutDeliveriesInput = {
   countryCode: string
   currency: string
   isActive?: boolean
+  ridesEnabled?: boolean
+  deliveriesEnabled?: boolean
   polygonGeoJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare: runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1091,6 +1163,8 @@ export type ServiceZoneUpdateWithoutDeliveriesInput = {
   countryCode?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  ridesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deliveriesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   polygonGeoJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1113,6 +1187,8 @@ export type ServiceZoneUncheckedUpdateWithoutDeliveriesInput = {
   countryCode?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  ridesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deliveriesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   polygonGeoJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   baseFare?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   perKmFee?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1193,6 +1269,8 @@ export type ServiceZoneSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   countryCode?: boolean
   currency?: boolean
   isActive?: boolean
+  ridesEnabled?: boolean
+  deliveriesEnabled?: boolean
   polygonGeoJson?: boolean
   baseFare?: boolean
   perKmFee?: boolean
@@ -1217,6 +1295,8 @@ export type ServiceZoneSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   countryCode?: boolean
   currency?: boolean
   isActive?: boolean
+  ridesEnabled?: boolean
+  deliveriesEnabled?: boolean
   polygonGeoJson?: boolean
   baseFare?: boolean
   perKmFee?: boolean
@@ -1236,6 +1316,8 @@ export type ServiceZoneSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   countryCode?: boolean
   currency?: boolean
   isActive?: boolean
+  ridesEnabled?: boolean
+  deliveriesEnabled?: boolean
   polygonGeoJson?: boolean
   baseFare?: boolean
   perKmFee?: boolean
@@ -1255,6 +1337,8 @@ export type ServiceZoneSelectScalar = {
   countryCode?: boolean
   currency?: boolean
   isActive?: boolean
+  ridesEnabled?: boolean
+  deliveriesEnabled?: boolean
   polygonGeoJson?: boolean
   baseFare?: boolean
   perKmFee?: boolean
@@ -1267,7 +1351,7 @@ export type ServiceZoneSelectScalar = {
   deletedAt?: boolean
 }
 
-export type ServiceZoneOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "city" | "countryCode" | "currency" | "isActive" | "polygonGeoJson" | "baseFare" | "perKmFee" | "perMinuteFee" | "minimumFare" | "cancellationFee" | "waitingFeePerMin" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["serviceZone"]>
+export type ServiceZoneOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "city" | "countryCode" | "currency" | "isActive" | "ridesEnabled" | "deliveriesEnabled" | "polygonGeoJson" | "baseFare" | "perKmFee" | "perMinuteFee" | "minimumFare" | "cancellationFee" | "waitingFeePerMin" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["serviceZone"]>
 export type ServiceZoneInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   pricingRules?: boolean | Prisma.ServiceZone$pricingRulesArgs<ExtArgs>
   rides?: boolean | Prisma.ServiceZone$ridesArgs<ExtArgs>
@@ -1293,6 +1377,8 @@ export type $ServiceZonePayload<ExtArgs extends runtime.Types.Extensions.Interna
     countryCode: string
     currency: string
     isActive: boolean
+    ridesEnabled: boolean
+    deliveriesEnabled: boolean
     polygonGeoJson: runtime.JsonValue
     baseFare: runtime.Decimal
     perKmFee: runtime.Decimal
@@ -1736,6 +1822,8 @@ export interface ServiceZoneFieldRefs {
   readonly countryCode: Prisma.FieldRef<"ServiceZone", 'String'>
   readonly currency: Prisma.FieldRef<"ServiceZone", 'String'>
   readonly isActive: Prisma.FieldRef<"ServiceZone", 'Boolean'>
+  readonly ridesEnabled: Prisma.FieldRef<"ServiceZone", 'Boolean'>
+  readonly deliveriesEnabled: Prisma.FieldRef<"ServiceZone", 'Boolean'>
   readonly polygonGeoJson: Prisma.FieldRef<"ServiceZone", 'Json'>
   readonly baseFare: Prisma.FieldRef<"ServiceZone", 'Decimal'>
   readonly perKmFee: Prisma.FieldRef<"ServiceZone", 'Decimal'>

@@ -1,6 +1,6 @@
 import { AppError } from "../../common/errors.js";
 import { prisma } from "../../common/prisma.js";
-import { RideStatus, UserRole } from "../../generated/prisma/enums.js";
+import { DeliveryStatus, RideStatus, UserRole } from "../../generated/prisma/enums.js";
 import type { z } from "zod";
 import { adminRatingsQuerySchema, createRideRatingSchema } from "./rating.schemas.js";
 
@@ -171,6 +171,114 @@ export class RatingService {
       await tx.riderProfile.update({
         where: {
           id: ride.rider!.id
+        },
+        data: {
+          ratingAverage: aggregate._avg.score ?? 0
+        }
+      });
+
+      return {
+        rating,
+        riderAverageScore: aggregate._avg.score ?? 0,
+        riderTotalRatings: aggregate._count.score
+      };
+    });
+
+    return result;
+  }
+
+  async createCurrentPassengerDeliveryRating(token: string, deliveryId: string, input: CreateRideRatingInput) {
+    const session = await this.getCurrentPassengerSession(token);
+
+    const delivery = await prisma.deliveryRequest.findUnique({
+      where: {
+        id: deliveryId
+      },
+      include: {
+        passenger: {
+          include: {
+            user: true
+          }
+        },
+        rider: {
+          include: {
+            user: true
+          }
+        }
+      }
+    });
+
+    if (!delivery) {
+      throw new AppError("Delivery could not be found.", 404, "DELIVERY_NOT_FOUND");
+    }
+
+    if (delivery.passenger.userId !== session.user.passengerProfile!.userId) {
+      throw new AppError("You can only rate your own deliveries.", 403, "RATING_FORBIDDEN");
+    }
+
+    if (!delivery.rider || !delivery.rider.userId) {
+      throw new AppError("This delivery has no assigned rider to rate.", 409, "RATED_USER_MISSING");
+    }
+
+    if (delivery.status !== DeliveryStatus.DELIVERED) {
+      throw new AppError("You can only rate completed deliveries.", 409, "DELIVERY_NOT_COMPLETED");
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      const rating = await tx.rating.upsert({
+        where: {
+          deliveryId_raterUserId_ratedUserId: {
+            deliveryId: delivery.id,
+            raterUserId: session.user.id,
+            ratedUserId: delivery.rider!.userId
+          }
+        },
+        update: {
+          score: input.score,
+          category: input.category?.trim() || null
+        },
+        create: {
+          deliveryId: delivery.id,
+          raterUserId: session.user.id,
+          ratedUserId: delivery.rider!.userId,
+          score: input.score,
+          category: input.category?.trim() || null
+        }
+      });
+
+      const reviewText = input.review?.trim();
+      if (reviewText) {
+        await tx.review.upsert({
+          where: {
+            ratingId: rating.id
+          },
+          update: {
+            body: reviewText
+          },
+          create: {
+            ratingId: rating.id,
+            deliveryId: delivery.id,
+            authorId: session.user.id,
+            body: reviewText
+          }
+        });
+      }
+
+      const aggregate = await tx.rating.aggregate({
+        where: {
+          ratedUserId: delivery.rider!.userId
+        },
+        _avg: {
+          score: true
+        },
+        _count: {
+          score: true
+        }
+      });
+
+      await tx.riderProfile.update({
+        where: {
+          id: delivery.rider!.id
         },
         data: {
           ratingAverage: aggregate._avg.score ?? 0

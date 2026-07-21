@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Bike } from "lucide-react-native";
+import { useTranslation } from "react-i18next";
 import { api, phoneParts, type AuthResponse } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -12,6 +13,7 @@ import { radius, spacing } from "@/theme/tokens";
 import type { AuthMode } from "@/types";
 
 export default function LoginScreen() {
+  const { t } = useTranslation();
   const { signIn } = useApp();
   const { colors, typography } = useTheme();
   const styles = useMemo(
@@ -75,7 +77,7 @@ export default function LoginScreen() {
       }
       router.replace("/(main)");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Authentication failed.");
+      setError(e instanceof Error ? e.message : t("auth.authFailed"));
     } finally {
       setLoading(false);
     }
@@ -85,8 +87,6 @@ export default function LoginScreen() {
     <SafeAreaView style={styles.screen}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-
-          {/* Hero section */}
           <View style={styles.hero}>
             <View style={styles.logoWrap}>
               <View style={styles.logo}>
@@ -94,30 +94,33 @@ export default function LoginScreen() {
               </View>
             </View>
             <Text style={styles.brand}>OkadaGo</Text>
-            <Text style={styles.title}>{mode === "login" ? "Welcome back" : "Create account"}</Text>
-            <Text style={styles.subtitle}>Fast rides, food & deliveries across Accra</Text>
+            <Text style={styles.title}>{mode === "login" ? t("auth.welcomeBack") : t("auth.createAccount")}</Text>
+            <Text style={styles.subtitle}>{t("auth.subtitle")}</Text>
           </View>
 
-          {/* Auth tabs */}
           <View style={styles.tabs}>
             {(["login", "signup"] as AuthMode[]).map((m) => (
               <Pressable key={m} onPress={() => setMode(m)} style={[styles.tab, mode === m && styles.tabActive]}>
                 <Text style={[styles.tabText, mode === m && styles.tabTextActive]}>
-                  {m === "login" ? "Sign in" : "Sign up"}
+                  {m === "login" ? t("auth.signIn") : t("auth.signUp")}
                 </Text>
               </Pressable>
             ))}
           </View>
 
-          {/* Form */}
           <View style={styles.form}>
             {mode === "signup" ? (
-              <Input label="Full name" value={fullName} onChangeText={setFullName} placeholder="Ama Mensah" autoCapitalize="words" />
+              <Input label={t("auth.fullName")} value={fullName} onChangeText={setFullName} placeholder="Ama Mensah" autoCapitalize="words" />
             ) : null}
-            <Input label="Phone" value={phone} onChangeText={setPhone} placeholder="024 123 4567" keyboardType="phone-pad" />
-            <Input label="Password" value={password} onChangeText={setPassword} placeholder="••••••••" secureTextEntry />
+            <Input label={t("auth.phone")} value={phone} onChangeText={setPhone} placeholder="024 123 4567" keyboardType="phone-pad" />
+            <Input label={t("auth.password")} value={password} onChangeText={setPassword} placeholder="••••••••" secureTextEntry />
             {error ? <Text style={styles.error}>{error}</Text> : null}
-            <Button label={mode === "login" ? "Continue" : "Create account"} loading={loading} onPress={submit} fullWidth />
+            <Button
+              label={mode === "login" ? t("auth.continue") : t("auth.createAccount")}
+              loading={loading}
+              onPress={submit}
+              fullWidth
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

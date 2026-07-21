@@ -9,6 +9,7 @@ import { useResolvedLocationAddress } from "@/hooks/useResolvedLocationAddress";
 import { useNearbyRestaurants } from "@/hooks/useNearbyRestaurants";
 import { formatDistanceKm } from "@/lib/geo";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { spacing } from "@/theme/tokens";
 import type { CartItem } from "@/types";
 

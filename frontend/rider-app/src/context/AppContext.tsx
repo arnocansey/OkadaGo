@@ -27,6 +27,7 @@ type AppState = {
   setOnline: (value: boolean) => void;
   activeRide: Ride | undefined;
   activeDelivery: Delivery | undefined;
+  incomingRide: Ride | undefined;
   incomingDelivery: Delivery | undefined;
 };
 
@@ -164,6 +165,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       d.rider?.id === session?.user.riderProfileId &&
       !["delivered", "cancelled"].includes((d.status ?? "").toLowerCase()),
   );
+  // A ride sits at "assigned" until the rider explicitly accepts (-> arriving) or
+  // declines (-> cancelled), mirroring the "searching" pending-decision window for deliveries.
+  const incomingRide = rides.find((r) => (r.status ?? "").toLowerCase() === "assigned");
   const incomingDelivery = deliveries.find((d) => (d.status ?? "").toLowerCase() === "searching");
 
   const value = useMemo(
@@ -189,9 +193,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setOnline,
       activeRide,
       activeDelivery,
+      incomingRide,
       incomingDelivery,
     }),
-    [session, restoring, loading, message, online, wallets, transactions, rides, deliveries, zones, payouts, refresh, refreshSession, updateUser, activeRide, activeDelivery, incomingDelivery],
+    [session, restoring, loading, message, online, wallets, transactions, rides, deliveries, zones, payouts, refresh, refreshSession, updateUser, activeRide, activeDelivery, incomingRide, incomingDelivery],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

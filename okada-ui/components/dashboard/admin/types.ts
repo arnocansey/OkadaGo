@@ -116,6 +116,8 @@ export type RiderRecord = {
   city: string | null;
   currentLatitude: string | number | null;
   currentLongitude: string | number | null;
+  lastLocationMocked?: boolean;
+  lastLocationMockedAt?: string | null;
   serviceZone: {
     id: string;
     name: string;

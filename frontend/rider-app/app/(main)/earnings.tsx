@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Card } from "@/components/ui/Card";
@@ -6,13 +6,21 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
-import { compactDate, money } from "@/lib/api";
+import { api, compactDate, money } from "@/lib/api";
 import { spacing } from "@/theme/tokens";
 
 export default function EarningsScreen() {
-  const { rides, deliveries, wallets } = useApp();
+  const { session, rides, deliveries, wallets } = useApp();
   const { colors, typography } = useTheme();
   const currency = wallets[0]?.currency ?? "GHS";
+  const [commissionPercent, setCommissionPercent] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!session?.token) return;
+    api<{ commissionPercent?: number }>("/auth/rider/settings", { token: session.token })
+      .then((data) => setCommissionPercent(typeof data.commissionPercent === "number" ? data.commissionPercent : null))
+      .catch(() => undefined);
+  }, [session?.token]);
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -58,7 +66,10 @@ export default function EarningsScreen() {
       <Card elevated style={styles.hero}>
         <Text style={styles.heroLabel}>Total earned</Text>
         <Text style={styles.heroAmount}>{money(total, currency)}</Text>
-        <Text style={styles.heroSub}>{completedRides.length + completedDeliveries.length} completed trips</Text>
+        <Text style={styles.heroSub}>
+          {completedRides.length + completedDeliveries.length} completed trips
+          {commissionPercent != null ? ` · ${commissionPercent}% platform commission` : ""}
+        </Text>
       </Card>
 
       <Text style={styles.section}>Recent</Text>

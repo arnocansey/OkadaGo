@@ -18,6 +18,7 @@ export function useResolvedLocationAddress() {
     loading: locationLoading,
     error: locationError,
     permissionGranted,
+    isMocked: liveLocationMocked,
     refresh: refreshLocation,
   } = useUserLocation();
 
@@ -32,6 +33,9 @@ export function useResolvedLocationAddress() {
     latitude: permissionGranted ? latitude : ACCRA_REGION.latitude,
     longitude: permissionGranted ? longitude : ACCRA_REGION.longitude,
   };
+  // A manually-selected address (autocomplete/pin drop) isn't sourced from the live GPS
+  // fix, so the mock-location signal only applies when using the current-location coords.
+  const isMocked = manualCoords ? false : liveLocationMocked;
 
   const setAddress = useCallback((value: string) => {
     userEditedRef.current = true;
@@ -106,6 +110,32 @@ export function useResolvedLocationAddress() {
     await refreshLocation();
   }, [refreshLocation]);
 
+  const pinDropLocation = useCallback(
+    async (lat: number, lon: number) => {
+      userEditedRef.current = true;
+      requestIdRef.current += 1;
+      setManualCoords({ latitude: lat, longitude: lon });
+      setAddressState(LOADING_TEXT);
+      setHint(null);
+
+      if (!session?.token) return;
+      setResolving(true);
+      try {
+        const result = await api<LocationResult>(
+          `/bootstrap/reverse-geocode?lat=${lat}&lon=${lon}`,
+          { token: session.token },
+        );
+        setAddressState(formatReverseGeocodeAddress(result));
+      } catch {
+        setAddressState("");
+        setHint(GEOCODE_FAILED_HINT);
+      } finally {
+        setResolving(false);
+      }
+    },
+    [session?.token],
+  );
+
   const inputValue =
     locationLoading || resolving
       ? LOADING_TEXT
@@ -117,11 +147,13 @@ export function useResolvedLocationAddress() {
     setAddress,
     selectAddress,
     coords,
+    isMocked,
     locationLoading,
     resolving,
     hint,
     permissionGranted,
     locationError,
     useCurrentLocation,
+    pinDropLocation,
   };
 }

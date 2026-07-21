@@ -21,6 +21,8 @@ type MapMarker = {
   pinColor?: string;
 };
 
+type MapPressCoordinate = { latitude: number; longitude: number };
+
 type Props = {
   region?: Region;
   markers?: MapMarker[];
@@ -31,6 +33,9 @@ type Props = {
   centerButtonInset?: { top?: number; right?: number; bottom?: number; left?: number };
   style?: object;
   children?: React.ReactNode;
+  /** When set, the map becomes tappable and reports the tapped coordinate (e.g. manual pin-drop). */
+  onMapPress?: (coordinate: MapPressCoordinate) => void;
+  pinDropHint?: string;
 };
 
 function MapUnavailable({ title, detail }: { title: string; detail: string }) {
@@ -55,6 +60,8 @@ export function AppMap({
   centerButtonInset,
   style,
   children,
+  onMapPress,
+  pinDropHint,
 }: Props) {
   const mapRef = useRef<MapViewBase>(null);
   const didAutoCenter = useRef(false);
@@ -150,6 +157,7 @@ export function AppMap({
         showsUserLocation
         showsMyLocationButton={false}
         onMapReady={handleMapReady}
+        onPress={onMapPress ? (event) => onMapPress(event.nativeEvent.coordinate) : undefined}
       >
         {routeCoordinates?.length ? (
           <Polyline coordinates={routeCoordinates} strokeColor={colors.mapRoute} strokeWidth={4} />
@@ -164,6 +172,13 @@ export function AppMap({
         ))}
         {children}
       </MapViewBase>
+
+      {onMapPress && pinDropHint ? (
+        <View style={[styles.pinDropBanner, { backgroundColor: colors.primary }]} pointerEvents="none">
+          <MapPin size={14} color={colors.textOnPrimary} />
+          <Text style={[styles.pinDropText, { color: colors.textOnPrimary }]}>{pinDropHint}</Text>
+        </View>
+      ) : null}
 
       {showCenterButton ? (
         <Pressable
@@ -217,5 +232,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  pinDropBanner: {
+    position: "absolute",
+    top: spacing.md,
+    left: spacing.lg,
+    right: spacing.lg,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.md,
+    ...shadows.md,
+  },
+  pinDropText: {
+    fontSize: 12,
+    fontWeight: "600",
+    flex: 1,
   },
 });

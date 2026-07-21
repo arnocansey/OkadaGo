@@ -45,6 +45,7 @@
         }
       ],
       "expo-location",
+      "expo-localization",
       "expo-notifications",
       "expo-router",
       [

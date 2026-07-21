@@ -709,7 +709,31 @@ export function RiderVerificationScreen({
                       onClick={() => setSelectedApplication(globalIdx)}
                     >
                       <td style={S.td}>
-                        <div style={{ fontWeight: 600 }}>{rider.user.fullName}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ fontWeight: 600 }}>{rider.user.fullName}</span>
+                          {rider.lastLocationMocked ? (
+                            <span
+                              title={
+                                rider.lastLocationMockedAt
+                                  ? `Mock GPS flagged ${formatDateTime(rider.lastLocationMockedAt)}`
+                                  : "Mock GPS flagged"
+                              }
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 4,
+                                padding: "2px 6px",
+                                borderRadius: 6,
+                                background: "rgba(239,68,68,0.12)",
+                                color: "#ef4444",
+                                fontSize: 11,
+                                fontWeight: 600,
+                              }}
+                            >
+                              <AlertTriangle size={12} /> Mock GPS
+                            </span>
+                          ) : null}
+                        </div>
                         <div style={{ fontSize: 12, color: "#64748b" }}>
                           {rider.user.phoneE164}
                         </div>

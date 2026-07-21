@@ -2,6 +2,9 @@ import { buildServer } from "./server.js";
 import { appConfig } from "./common/config.js";
 import { detectPostgisSupport } from "./common/geo.js";
 import { attachRealtimeServer } from "./modules/realtime/realtime.server.js";
+import { RideService } from "./modules/rides/ride.service.js";
+
+const SCHEDULED_RIDE_DISPATCH_INTERVAL_MS = 60 * 1000;
 
 async function main() {
   const server = buildServer();
@@ -41,6 +44,16 @@ async function main() {
         "GOOGLE_PLACES_API_KEY is not set — /bootstrap/places/* (Food & groceries) will return PLACES_NOT_CONFIGURED"
       );
     }
+
+    const rideService = new RideService();
+    setInterval(() => {
+      void rideService.dispatchScheduledRides().catch((error) => {
+        server.log.error(error, "Scheduled ride dispatch tick failed");
+      });
+    }, SCHEDULED_RIDE_DISPATCH_INTERVAL_MS);
+    server.log.info(
+      `Scheduled-ride dispatcher running every ${SCHEDULED_RIDE_DISPATCH_INTERVAL_MS / 1000}s`
+    );
   } catch (error) {
     server.log.error(error, "Failed to start OkadaGo backend");
     process.exit(1);

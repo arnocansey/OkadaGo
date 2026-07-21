@@ -64,6 +64,7 @@ export const ModelName = {
   PricingRule: 'PricingRule',
   Ride: 'Ride',
   DeliveryRequest: 'DeliveryRequest',
+  DeliveryStop: 'DeliveryStop',
   RideLocation: 'RideLocation',
   RideEvent: 'RideEvent',
   Payment: 'Payment',
@@ -177,8 +178,11 @@ export const RiderProfileScalarFieldEnum = {
   city: 'city',
   serviceZoneId: 'serviceZoneId',
   onlineStatus: 'onlineStatus',
+  jobPreference: 'jobPreference',
   currentLatitude: 'currentLatitude',
   currentLongitude: 'currentLongitude',
+  lastLocationMocked: 'lastLocationMocked',
+  lastLocationMockedAt: 'lastLocationMockedAt',
   ratingAverage: 'ratingAverage',
   acceptanceRate: 'acceptanceRate',
   cancellationRate: 'cancellationRate',
@@ -230,6 +234,7 @@ export const VehicleScalarFieldEnum = {
   plateNumber: 'plateNumber',
   registrationNumber: 'registrationNumber',
   insuranceNumber: 'insuranceNumber',
+  vehicleType: 'vehicleType',
   status: 'status',
   metadata: 'metadata',
   createdAt: 'createdAt',
@@ -265,6 +270,8 @@ export const ServiceZoneScalarFieldEnum = {
   countryCode: 'countryCode',
   currency: 'currency',
   isActive: 'isActive',
+  ridesEnabled: 'ridesEnabled',
+  deliveriesEnabled: 'deliveriesEnabled',
   polygonGeoJson: 'polygonGeoJson',
   baseFare: 'baseFare',
   perKmFee: 'perKmFee',
@@ -325,9 +332,12 @@ export const RideScalarFieldEnum = {
   pickupAddress: 'pickupAddress',
   pickupLatitude: 'pickupLatitude',
   pickupLongitude: 'pickupLongitude',
+  pickupLandmark: 'pickupLandmark',
   destinationAddress: 'destinationAddress',
   destinationLatitude: 'destinationLatitude',
   destinationLongitude: 'destinationLongitude',
+  destinationLandmark: 'destinationLandmark',
+  pickupLocationMocked: 'pickupLocationMocked',
   routePolyline: 'routePolyline',
   estimatedDistanceKm: 'estimatedDistanceKm',
   estimatedDurationMinutes: 'estimatedDurationMinutes',
@@ -369,13 +379,17 @@ export const DeliveryRequestScalarFieldEnum = {
   pickupAddress: 'pickupAddress',
   pickupLatitude: 'pickupLatitude',
   pickupLongitude: 'pickupLongitude',
+  pickupLandmark: 'pickupLandmark',
   dropoffAddress: 'dropoffAddress',
   dropoffLatitude: 'dropoffLatitude',
   dropoffLongitude: 'dropoffLongitude',
+  dropoffLandmark: 'dropoffLandmark',
   recipientName: 'recipientName',
   recipientPhoneE164: 'recipientPhoneE164',
   packageType: 'packageType',
   packageDescription: 'packageDescription',
+  proofPhotoUrl: 'proofPhotoUrl',
+  pickupLocationMocked: 'pickupLocationMocked',
   estimatedDistanceKm: 'estimatedDistanceKm',
   estimatedDurationMinutes: 'estimatedDurationMinutes',
   estimatedFee: 'estimatedFee',
@@ -391,6 +405,29 @@ export const DeliveryRequestScalarFieldEnum = {
 export type DeliveryRequestScalarFieldEnum = (typeof DeliveryRequestScalarFieldEnum)[keyof typeof DeliveryRequestScalarFieldEnum]
 
 
+export const DeliveryStopScalarFieldEnum = {
+  id: 'id',
+  deliveryId: 'deliveryId',
+  sequence: 'sequence',
+  type: 'type',
+  status: 'status',
+  address: 'address',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  landmark: 'landmark',
+  recipientName: 'recipientName',
+  recipientPhoneE164: 'recipientPhoneE164',
+  instructions: 'instructions',
+  proofPhotoUrl: 'proofPhotoUrl',
+  arrivedAt: 'arrivedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DeliveryStopScalarFieldEnum = (typeof DeliveryStopScalarFieldEnum)[keyof typeof DeliveryStopScalarFieldEnum]
+
+
 export const RideLocationScalarFieldEnum = {
   id: 'id',
   rideId: 'rideId',
@@ -400,6 +437,7 @@ export const RideLocationScalarFieldEnum = {
   speedKph: 'speedKph',
   heading: 'heading',
   accuracyM: 'accuracyM',
+  isMocked: 'isMocked',
   recordedAt: 'recordedAt'
 } as const
 
@@ -500,6 +538,7 @@ export type PayoutRequestScalarFieldEnum = (typeof PayoutRequestScalarFieldEnum)
 export const RatingScalarFieldEnum = {
   id: 'id',
   rideId: 'rideId',
+  deliveryId: 'deliveryId',
   raterUserId: 'raterUserId',
   ratedUserId: 'ratedUserId',
   score: 'score',
@@ -514,6 +553,7 @@ export const ReviewScalarFieldEnum = {
   id: 'id',
   ratingId: 'ratingId',
   rideId: 'rideId',
+  deliveryId: 'deliveryId',
   authorId: 'authorId',
   body: 'body',
   isFlagged: 'isFlagged',

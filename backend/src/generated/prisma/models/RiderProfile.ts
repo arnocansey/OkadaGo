@@ -54,8 +54,11 @@ export type RiderProfileMinAggregateOutputType = {
   city: string | null
   serviceZoneId: string | null
   onlineStatus: boolean | null
+  jobPreference: $Enums.JobPreference | null
   currentLatitude: runtime.Decimal | null
   currentLongitude: runtime.Decimal | null
+  lastLocationMocked: boolean | null
+  lastLocationMockedAt: Date | null
   ratingAverage: runtime.Decimal | null
   acceptanceRate: runtime.Decimal | null
   cancellationRate: runtime.Decimal | null
@@ -78,8 +81,11 @@ export type RiderProfileMaxAggregateOutputType = {
   city: string | null
   serviceZoneId: string | null
   onlineStatus: boolean | null
+  jobPreference: $Enums.JobPreference | null
   currentLatitude: runtime.Decimal | null
   currentLongitude: runtime.Decimal | null
+  lastLocationMocked: boolean | null
+  lastLocationMockedAt: Date | null
   ratingAverage: runtime.Decimal | null
   acceptanceRate: runtime.Decimal | null
   cancellationRate: runtime.Decimal | null
@@ -102,8 +108,11 @@ export type RiderProfileCountAggregateOutputType = {
   city: number
   serviceZoneId: number
   onlineStatus: number
+  jobPreference: number
   currentLatitude: number
   currentLongitude: number
+  lastLocationMocked: number
+  lastLocationMockedAt: number
   ratingAverage: number
   acceptanceRate: number
   cancellationRate: number
@@ -148,8 +157,11 @@ export type RiderProfileMinAggregateInputType = {
   city?: true
   serviceZoneId?: true
   onlineStatus?: true
+  jobPreference?: true
   currentLatitude?: true
   currentLongitude?: true
+  lastLocationMocked?: true
+  lastLocationMockedAt?: true
   ratingAverage?: true
   acceptanceRate?: true
   cancellationRate?: true
@@ -172,8 +184,11 @@ export type RiderProfileMaxAggregateInputType = {
   city?: true
   serviceZoneId?: true
   onlineStatus?: true
+  jobPreference?: true
   currentLatitude?: true
   currentLongitude?: true
+  lastLocationMocked?: true
+  lastLocationMockedAt?: true
   ratingAverage?: true
   acceptanceRate?: true
   cancellationRate?: true
@@ -196,8 +211,11 @@ export type RiderProfileCountAggregateInputType = {
   city?: true
   serviceZoneId?: true
   onlineStatus?: true
+  jobPreference?: true
   currentLatitude?: true
   currentLongitude?: true
+  lastLocationMocked?: true
+  lastLocationMockedAt?: true
   ratingAverage?: true
   acceptanceRate?: true
   cancellationRate?: true
@@ -307,8 +325,11 @@ export type RiderProfileGroupByOutputType = {
   city: string | null
   serviceZoneId: string | null
   onlineStatus: boolean
+  jobPreference: $Enums.JobPreference
   currentLatitude: runtime.Decimal | null
   currentLongitude: runtime.Decimal | null
+  lastLocationMocked: boolean
+  lastLocationMockedAt: Date | null
   ratingAverage: runtime.Decimal
   acceptanceRate: runtime.Decimal
   cancellationRate: runtime.Decimal
@@ -354,8 +375,11 @@ export type RiderProfileWhereInput = {
   city?: Prisma.StringNullableFilter<"RiderProfile"> | string | null
   serviceZoneId?: Prisma.StringNullableFilter<"RiderProfile"> | string | null
   onlineStatus?: Prisma.BoolFilter<"RiderProfile"> | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFilter<"RiderProfile"> | $Enums.JobPreference
   currentLatitude?: Prisma.DecimalNullableFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.DecimalNullableFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFilter<"RiderProfile"> | boolean
+  lastLocationMockedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   ratingAverage?: Prisma.DecimalFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -386,8 +410,11 @@ export type RiderProfileOrderByWithRelationInput = {
   city?: Prisma.SortOrderInput | Prisma.SortOrder
   serviceZoneId?: Prisma.SortOrderInput | Prisma.SortOrder
   onlineStatus?: Prisma.SortOrder
+  jobPreference?: Prisma.SortOrder
   currentLatitude?: Prisma.SortOrderInput | Prisma.SortOrder
   currentLongitude?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastLocationMocked?: Prisma.SortOrder
+  lastLocationMockedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   ratingAverage?: Prisma.SortOrder
   acceptanceRate?: Prisma.SortOrder
   cancellationRate?: Prisma.SortOrder
@@ -421,8 +448,11 @@ export type RiderProfileWhereUniqueInput = Prisma.AtLeast<{
   city?: Prisma.StringNullableFilter<"RiderProfile"> | string | null
   serviceZoneId?: Prisma.StringNullableFilter<"RiderProfile"> | string | null
   onlineStatus?: Prisma.BoolFilter<"RiderProfile"> | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFilter<"RiderProfile"> | $Enums.JobPreference
   currentLatitude?: Prisma.DecimalNullableFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.DecimalNullableFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFilter<"RiderProfile"> | boolean
+  lastLocationMockedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   ratingAverage?: Prisma.DecimalFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -453,8 +483,11 @@ export type RiderProfileOrderByWithAggregationInput = {
   city?: Prisma.SortOrderInput | Prisma.SortOrder
   serviceZoneId?: Prisma.SortOrderInput | Prisma.SortOrder
   onlineStatus?: Prisma.SortOrder
+  jobPreference?: Prisma.SortOrder
   currentLatitude?: Prisma.SortOrderInput | Prisma.SortOrder
   currentLongitude?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastLocationMocked?: Prisma.SortOrder
+  lastLocationMockedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   ratingAverage?: Prisma.SortOrder
   acceptanceRate?: Prisma.SortOrder
   cancellationRate?: Prisma.SortOrder
@@ -485,8 +518,11 @@ export type RiderProfileScalarWhereWithAggregatesInput = {
   city?: Prisma.StringNullableWithAggregatesFilter<"RiderProfile"> | string | null
   serviceZoneId?: Prisma.StringNullableWithAggregatesFilter<"RiderProfile"> | string | null
   onlineStatus?: Prisma.BoolWithAggregatesFilter<"RiderProfile"> | boolean
+  jobPreference?: Prisma.EnumJobPreferenceWithAggregatesFilter<"RiderProfile"> | $Enums.JobPreference
   currentLatitude?: Prisma.DecimalNullableWithAggregatesFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.DecimalNullableWithAggregatesFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolWithAggregatesFilter<"RiderProfile"> | boolean
+  lastLocationMockedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"RiderProfile"> | Date | string | null
   ratingAverage?: Prisma.DecimalWithAggregatesFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalWithAggregatesFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalWithAggregatesFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -507,8 +543,11 @@ export type RiderProfileCreateInput = {
   approvalStatus?: $Enums.RiderApprovalStatus
   city?: string | null
   onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
   currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
   ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -539,8 +578,11 @@ export type RiderProfileUncheckedCreateInput = {
   city?: string | null
   serviceZoneId?: string | null
   onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
   currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
   ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -567,8 +609,11 @@ export type RiderProfileUpdateInput = {
   approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
   currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -599,8 +644,11 @@ export type RiderProfileUncheckedUpdateInput = {
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   serviceZoneId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
   currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -629,8 +677,11 @@ export type RiderProfileCreateManyInput = {
   city?: string | null
   serviceZoneId?: string | null
   onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
   currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
   ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -651,8 +702,11 @@ export type RiderProfileUpdateManyMutationInput = {
   approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
   currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -675,8 +729,11 @@ export type RiderProfileUncheckedUpdateManyInput = {
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   serviceZoneId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
   currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -704,8 +761,11 @@ export type RiderProfileCountOrderByAggregateInput = {
   city?: Prisma.SortOrder
   serviceZoneId?: Prisma.SortOrder
   onlineStatus?: Prisma.SortOrder
+  jobPreference?: Prisma.SortOrder
   currentLatitude?: Prisma.SortOrder
   currentLongitude?: Prisma.SortOrder
+  lastLocationMocked?: Prisma.SortOrder
+  lastLocationMockedAt?: Prisma.SortOrder
   ratingAverage?: Prisma.SortOrder
   acceptanceRate?: Prisma.SortOrder
   cancellationRate?: Prisma.SortOrder
@@ -738,8 +798,11 @@ export type RiderProfileMaxOrderByAggregateInput = {
   city?: Prisma.SortOrder
   serviceZoneId?: Prisma.SortOrder
   onlineStatus?: Prisma.SortOrder
+  jobPreference?: Prisma.SortOrder
   currentLatitude?: Prisma.SortOrder
   currentLongitude?: Prisma.SortOrder
+  lastLocationMocked?: Prisma.SortOrder
+  lastLocationMockedAt?: Prisma.SortOrder
   ratingAverage?: Prisma.SortOrder
   acceptanceRate?: Prisma.SortOrder
   cancellationRate?: Prisma.SortOrder
@@ -762,8 +825,11 @@ export type RiderProfileMinOrderByAggregateInput = {
   city?: Prisma.SortOrder
   serviceZoneId?: Prisma.SortOrder
   onlineStatus?: Prisma.SortOrder
+  jobPreference?: Prisma.SortOrder
   currentLatitude?: Prisma.SortOrder
   currentLongitude?: Prisma.SortOrder
+  lastLocationMocked?: Prisma.SortOrder
+  lastLocationMockedAt?: Prisma.SortOrder
   ratingAverage?: Prisma.SortOrder
   acceptanceRate?: Prisma.SortOrder
   cancellationRate?: Prisma.SortOrder
@@ -837,6 +903,10 @@ export type RiderProfileUncheckedUpdateOneWithoutUserNestedInput = {
 
 export type EnumRiderApprovalStatusFieldUpdateOperationsInput = {
   set?: $Enums.RiderApprovalStatus
+}
+
+export type EnumJobPreferenceFieldUpdateOperationsInput = {
+  set?: $Enums.JobPreference
 }
 
 export type NullableDecimalFieldUpdateOperationsInput = {
@@ -985,8 +1055,11 @@ export type RiderProfileCreateWithoutUserInput = {
   approvalStatus?: $Enums.RiderApprovalStatus
   city?: string | null
   onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
   currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
   ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1015,8 +1088,11 @@ export type RiderProfileUncheckedCreateWithoutUserInput = {
   city?: string | null
   serviceZoneId?: string | null
   onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
   currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
   ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1059,8 +1135,11 @@ export type RiderProfileUpdateWithoutUserInput = {
   approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
   currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1089,8 +1168,11 @@ export type RiderProfileUncheckedUpdateWithoutUserInput = {
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   serviceZoneId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
   currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1117,8 +1199,11 @@ export type RiderProfileCreateWithoutVehicleInput = {
   approvalStatus?: $Enums.RiderApprovalStatus
   city?: string | null
   onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
   currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
   ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1148,8 +1233,11 @@ export type RiderProfileUncheckedCreateWithoutVehicleInput = {
   city?: string | null
   serviceZoneId?: string | null
   onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
   currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
   ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1191,8 +1279,11 @@ export type RiderProfileUpdateWithoutVehicleInput = {
   approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
   currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1222,8 +1313,11 @@ export type RiderProfileUncheckedUpdateWithoutVehicleInput = {
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   serviceZoneId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
   currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1249,8 +1343,11 @@ export type RiderProfileCreateWithoutDocumentsInput = {
   approvalStatus?: $Enums.RiderApprovalStatus
   city?: string | null
   onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
   currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
   ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1280,8 +1377,11 @@ export type RiderProfileUncheckedCreateWithoutDocumentsInput = {
   city?: string | null
   serviceZoneId?: string | null
   onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
   currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
   ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1323,8 +1423,11 @@ export type RiderProfileUpdateWithoutDocumentsInput = {
   approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
   currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1354,8 +1457,11 @@ export type RiderProfileUncheckedUpdateWithoutDocumentsInput = {
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   serviceZoneId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
   currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1381,8 +1487,11 @@ export type RiderProfileCreateWithoutServiceZoneInput = {
   approvalStatus?: $Enums.RiderApprovalStatus
   city?: string | null
   onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
   currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
   ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1411,8 +1520,11 @@ export type RiderProfileUncheckedCreateWithoutServiceZoneInput = {
   approvalStatus?: $Enums.RiderApprovalStatus
   city?: string | null
   onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
   currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
   ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1470,8 +1582,11 @@ export type RiderProfileScalarWhereInput = {
   city?: Prisma.StringNullableFilter<"RiderProfile"> | string | null
   serviceZoneId?: Prisma.StringNullableFilter<"RiderProfile"> | string | null
   onlineStatus?: Prisma.BoolFilter<"RiderProfile"> | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFilter<"RiderProfile"> | $Enums.JobPreference
   currentLatitude?: Prisma.DecimalNullableFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.DecimalNullableFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFilter<"RiderProfile"> | boolean
+  lastLocationMockedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   ratingAverage?: Prisma.DecimalFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1492,8 +1607,11 @@ export type RiderProfileCreateWithoutRidesInput = {
   approvalStatus?: $Enums.RiderApprovalStatus
   city?: string | null
   onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
   currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
   ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1523,8 +1641,11 @@ export type RiderProfileUncheckedCreateWithoutRidesInput = {
   city?: string | null
   serviceZoneId?: string | null
   onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
   currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
   ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1566,8 +1687,11 @@ export type RiderProfileUpdateWithoutRidesInput = {
   approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
   currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1597,8 +1721,11 @@ export type RiderProfileUncheckedUpdateWithoutRidesInput = {
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   serviceZoneId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
   currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1624,8 +1751,11 @@ export type RiderProfileCreateWithoutDeliveriesInput = {
   approvalStatus?: $Enums.RiderApprovalStatus
   city?: string | null
   onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
   currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
   ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1655,8 +1785,11 @@ export type RiderProfileUncheckedCreateWithoutDeliveriesInput = {
   city?: string | null
   serviceZoneId?: string | null
   onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
   currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
   ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1698,8 +1831,11 @@ export type RiderProfileUpdateWithoutDeliveriesInput = {
   approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
   currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1729,8 +1865,11 @@ export type RiderProfileUncheckedUpdateWithoutDeliveriesInput = {
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   serviceZoneId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
   currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1756,8 +1895,11 @@ export type RiderProfileCreateWithoutPayoutRequestsInput = {
   approvalStatus?: $Enums.RiderApprovalStatus
   city?: string | null
   onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
   currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
   ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1787,8 +1929,11 @@ export type RiderProfileUncheckedCreateWithoutPayoutRequestsInput = {
   city?: string | null
   serviceZoneId?: string | null
   onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
   currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
   ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1830,8 +1975,11 @@ export type RiderProfileUpdateWithoutPayoutRequestsInput = {
   approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
   currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1861,8 +2009,11 @@ export type RiderProfileUncheckedUpdateWithoutPayoutRequestsInput = {
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   serviceZoneId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
   currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1888,8 +2039,11 @@ export type RiderProfileCreateWithoutIncidentsInput = {
   approvalStatus?: $Enums.RiderApprovalStatus
   city?: string | null
   onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
   currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
   ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1919,8 +2073,11 @@ export type RiderProfileUncheckedCreateWithoutIncidentsInput = {
   city?: string | null
   serviceZoneId?: string | null
   onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
   currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
   ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1962,8 +2119,11 @@ export type RiderProfileUpdateWithoutIncidentsInput = {
   approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
   currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1993,8 +2153,11 @@ export type RiderProfileUncheckedUpdateWithoutIncidentsInput = {
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   serviceZoneId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
   currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -2021,8 +2184,11 @@ export type RiderProfileCreateManyServiceZoneInput = {
   approvalStatus?: $Enums.RiderApprovalStatus
   city?: string | null
   onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
   currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
   ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -2043,8 +2209,11 @@ export type RiderProfileUpdateWithoutServiceZoneInput = {
   approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
   currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -2073,8 +2242,11 @@ export type RiderProfileUncheckedUpdateWithoutServiceZoneInput = {
   approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
   currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -2102,8 +2274,11 @@ export type RiderProfileUncheckedUpdateManyWithoutServiceZoneInput = {
   approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
   currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -2193,8 +2368,11 @@ export type RiderProfileSelect<ExtArgs extends runtime.Types.Extensions.Internal
   city?: boolean
   serviceZoneId?: boolean
   onlineStatus?: boolean
+  jobPreference?: boolean
   currentLatitude?: boolean
   currentLongitude?: boolean
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: boolean
   ratingAverage?: boolean
   acceptanceRate?: boolean
   cancellationRate?: boolean
@@ -2226,8 +2404,11 @@ export type RiderProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   city?: boolean
   serviceZoneId?: boolean
   onlineStatus?: boolean
+  jobPreference?: boolean
   currentLatitude?: boolean
   currentLongitude?: boolean
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: boolean
   ratingAverage?: boolean
   acceptanceRate?: boolean
   cancellationRate?: boolean
@@ -2252,8 +2433,11 @@ export type RiderProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   city?: boolean
   serviceZoneId?: boolean
   onlineStatus?: boolean
+  jobPreference?: boolean
   currentLatitude?: boolean
   currentLongitude?: boolean
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: boolean
   ratingAverage?: boolean
   acceptanceRate?: boolean
   cancellationRate?: boolean
@@ -2278,8 +2462,11 @@ export type RiderProfileSelectScalar = {
   city?: boolean
   serviceZoneId?: boolean
   onlineStatus?: boolean
+  jobPreference?: boolean
   currentLatitude?: boolean
   currentLongitude?: boolean
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: boolean
   ratingAverage?: boolean
   acceptanceRate?: boolean
   cancellationRate?: boolean
@@ -2294,7 +2481,7 @@ export type RiderProfileSelectScalar = {
   deletedAt?: boolean
 }
 
-export type RiderProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "displayCode" | "approvalStatus" | "city" | "serviceZoneId" | "onlineStatus" | "currentLatitude" | "currentLongitude" | "ratingAverage" | "acceptanceRate" | "cancellationRate" | "completedTrips" | "commissionPercent" | "bio" | "approvedAt" | "suspendedAt" | "lastOnlineAt" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["riderProfile"]>
+export type RiderProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "displayCode" | "approvalStatus" | "city" | "serviceZoneId" | "onlineStatus" | "jobPreference" | "currentLatitude" | "currentLongitude" | "lastLocationMocked" | "lastLocationMockedAt" | "ratingAverage" | "acceptanceRate" | "cancellationRate" | "completedTrips" | "commissionPercent" | "bio" | "approvedAt" | "suspendedAt" | "lastOnlineAt" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["riderProfile"]>
 export type RiderProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   serviceZone?: boolean | Prisma.RiderProfile$serviceZoneArgs<ExtArgs>
@@ -2335,8 +2522,15 @@ export type $RiderProfilePayload<ExtArgs extends runtime.Types.Extensions.Intern
     city: string | null
     serviceZoneId: string | null
     onlineStatus: boolean
+    jobPreference: $Enums.JobPreference
     currentLatitude: runtime.Decimal | null
     currentLongitude: runtime.Decimal | null
+    /**
+     * True when the rider's most recent location/availability ping was flagged
+     * by the device as a mocked/simulated GPS location (fake-GPS app or emulator).
+     */
+    lastLocationMocked: boolean
+    lastLocationMockedAt: Date | null
     ratingAverage: runtime.Decimal
     acceptanceRate: runtime.Decimal
     cancellationRate: runtime.Decimal
@@ -2787,8 +2981,11 @@ export interface RiderProfileFieldRefs {
   readonly city: Prisma.FieldRef<"RiderProfile", 'String'>
   readonly serviceZoneId: Prisma.FieldRef<"RiderProfile", 'String'>
   readonly onlineStatus: Prisma.FieldRef<"RiderProfile", 'Boolean'>
+  readonly jobPreference: Prisma.FieldRef<"RiderProfile", 'JobPreference'>
   readonly currentLatitude: Prisma.FieldRef<"RiderProfile", 'Decimal'>
   readonly currentLongitude: Prisma.FieldRef<"RiderProfile", 'Decimal'>
+  readonly lastLocationMocked: Prisma.FieldRef<"RiderProfile", 'Boolean'>
+  readonly lastLocationMockedAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
   readonly ratingAverage: Prisma.FieldRef<"RiderProfile", 'Decimal'>
   readonly acceptanceRate: Prisma.FieldRef<"RiderProfile", 'Decimal'>
   readonly cancellationRate: Prisma.FieldRef<"RiderProfile", 'Decimal'>

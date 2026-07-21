@@ -1,14 +1,16 @@
 import { router } from "expo-router";
-import { useEffect, useMemo } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Power, TrendingUp } from "lucide-react-native";
+import { Power, ShieldAlert, TrendingUp } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
+import { useTranslation } from "react-i18next";
 import { AppMap } from "@/components/AppMap";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useRiderLocation } from "@/hooks/useRiderLocation";
 import { useUserLocation } from "@/hooks/useUserLocation";
-import { money } from "@/lib/api";
+import { api, money } from "@/lib/api";
 import { radius, shadows, spacing } from "@/theme/tokens";
 
 // Avatar background colors hashed from name
@@ -18,9 +20,22 @@ function avatarColor(name: string) {
 }
 
 export default function DashboardScreen() {
-  const { session, online, toggleOnline, wallets, rides, activeRide, activeDelivery, incomingDelivery, refresh } = useApp();
+  const { t } = useTranslation();
+  const { session, online, toggleOnline, wallets, rides, activeRide, activeDelivery, incomingRide, incomingDelivery, refresh } = useApp();
   const { colors, typography, isDark } = useTheme();
   const { latitude, longitude } = useUserLocation();
+  const [sosLoading, setSosLoading] = useState(false);
+
+  // Keeps currentLatitude/currentLongitude (and the PostGIS currentLocation
+  // column) fresh while the rider is online but not on a trip. Deliberately
+  // omits `activeTrip` — trip/[id].tsx already posts ride-location pings on
+  // its own faster interval while a trip is active, so passing it here would
+  // double-post to /rides/:id/location.
+  useRiderLocation({
+    token: session?.token,
+    riderProfileId: session?.user.riderProfileId,
+    online,
+  });
 
   useEffect(() => {
     const interval = setInterval(() => refresh(), 15000);
@@ -28,10 +43,46 @@ export default function DashboardScreen() {
   }, [refresh]);
 
   useEffect(() => {
+    if (incomingRide && online) {
+      router.push({ pathname: "/request/[id]", params: { id: incomingRide.id, kind: "ride" } });
+    }
+  }, [incomingRide?.id, online]);
+
+  useEffect(() => {
     if (incomingDelivery && online) {
       router.push({ pathname: "/request/[id]", params: { id: incomingDelivery.id, kind: "delivery" } });
     }
   }, [incomingDelivery?.id, online]);
+
+  async function sendSos() {
+    if (!session) return;
+    Alert.alert(t("drive.sosConfirmTitle"), t("drive.sosConfirmBody"), [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("drive.sendSos"),
+        style: "destructive",
+        onPress: async () => {
+          setSosLoading(true);
+          try {
+            await api("/safety/incidents", {
+              method: "POST",
+              token: session.token,
+              body: {
+                severity: "CRITICAL",
+                category: "SOS",
+                description: "Rider SOS triggered from dashboard (no active trip)",
+              },
+            });
+            Alert.alert(t("drive.sosSent"), t("drive.sosSentBody"));
+          } catch (e) {
+            Alert.alert(t("drive.sosFailed"), e instanceof Error ? e.message : t("drive.sosFailed"));
+          } finally {
+            setSosLoading(false);
+          }
+        },
+      },
+    ]);
+  }
 
   const todayEarnings = rides
     .filter((r) => (r.status ?? "").toLowerCase() === "completed")
@@ -81,6 +132,16 @@ export default function DashboardScreen() {
         },
         powerBtnOff: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
         powerBtnOn: { backgroundColor: colors.success, borderWidth: 2, borderColor: colors.success },
+        sosBtn: {
+          width: 44,
+          height: 44,
+          borderRadius: 22,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: colors.surface,
+          borderWidth: 1,
+          borderColor: colors.danger,
+        },
         sheet: {
           backgroundColor: colors.background,
           borderTopLeftRadius: radius.xxl,
@@ -155,9 +216,18 @@ export default function DashboardScreen() {
               <Text style={styles.avatarText}>{session?.user.fullName[0]}</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.greeting}>Hi, {session?.user.fullName.split(" ")[0]} 👋</Text>
-              <Text style={styles.sub}>{online ? "You're online" : "Go online to earn"}</Text>
+              <Text style={styles.greeting}>{t("drive.hi", { name: session?.user.fullName.split(" ")[0] })}</Text>
+              <Text style={styles.sub}>{online ? t("drive.onlineHint") : t("drive.offlineHint")}</Text>
             </View>
+            <Pressable
+              style={styles.sosBtn}
+              disabled={sosLoading}
+              onPress={() => void sendSos()}
+              accessibilityLabel={t("drive.sendSos")}
+              accessibilityRole="button"
+            >
+              <ShieldAlert size={20} color={colors.danger} />
+            </Pressable>
             <Pressable
               style={[styles.powerBtn, online ? styles.powerBtnOn : styles.powerBtnOff]}
               onPress={() => {
@@ -177,12 +247,12 @@ export default function DashboardScreen() {
               <TrendingUp size={20} color={colors.textOnPrimary} />
             </View>
             <View style={styles.earningsBody}>
-              <Text style={styles.earningsLabel}>Today's earnings</Text>
+              <Text style={styles.earningsLabel}>{t("drive.todayEarnings")}</Text>
               <Text style={styles.earningsValue}>{money(todayEarnings, wallet?.currency ?? "GHS")}</Text>
             </View>
             <View style={[styles.statusPill, online ? styles.statusOn : styles.statusOff]}>
               <Text style={[styles.statusText, online ? styles.statusTextOn : styles.statusTextOff]}>
-                {online ? "Online" : "Offline"}
+                {online ? t("drive.online") : t("drive.offline")}
               </Text>
             </View>
           </View>
@@ -199,7 +269,7 @@ export default function DashboardScreen() {
             >
               <View style={styles.activeDot} />
               <View style={{ flex: 1 }}>
-                <Text style={styles.activeLabel}>Active trip — tap to manage</Text>
+                <Text style={styles.activeLabel}>{t("drive.activeTrip")}</Text>
                 <Text style={styles.activeValue} numberOfLines={1}>
                   {activeRide?.destinationAddress ?? activeDelivery?.dropoffAddress}
                 </Text>

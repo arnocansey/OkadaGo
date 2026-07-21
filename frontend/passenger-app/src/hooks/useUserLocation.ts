@@ -15,11 +15,13 @@ export function useUserLocation() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [permissionGranted, setPermissionGranted] = useState(false);
+  const [isMocked, setIsMocked] = useState(false);
   const watchRef = useRef<Location.LocationSubscription | null>(null);
 
-  const applyPosition = useCallback((coords: Location.LocationObjectCoords) => {
+  const applyPosition = useCallback((coords: Location.LocationObjectCoords, mocked?: boolean) => {
     setLatitude(coords.latitude);
     setLongitude(coords.longitude);
+    if (mocked !== undefined) setIsMocked(mocked);
   }, []);
 
   const refresh = useCallback(async () => {
@@ -45,7 +47,7 @@ export function useUserLocation() {
       const position = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
-      applyPosition(position.coords);
+      applyPosition(position.coords, position.mocked);
 
       watchRef.current?.remove();
       watchRef.current = await Location.watchPositionAsync(
@@ -54,7 +56,7 @@ export function useUserLocation() {
           distanceInterval: 15,
           timeInterval: 5000,
         },
-        (update) => applyPosition(update.coords),
+        (update) => applyPosition(update.coords, update.mocked),
       );
     } catch (err) {
       applyPosition({ latitude: ACCRA_REGION.latitude, longitude: ACCRA_REGION.longitude } as Location.LocationObjectCoords);
@@ -77,6 +79,7 @@ export function useUserLocation() {
     loading,
     error,
     permissionGranted,
+    isMocked,
     hasFix: permissionGranted && !isAccraDefault(latitude, longitude),
     refresh,
   };

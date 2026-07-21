@@ -44,6 +44,7 @@ export type VehicleMinAggregateOutputType = {
   plateNumber: string | null
   registrationNumber: string | null
   insuranceNumber: string | null
+  vehicleType: $Enums.VehicleType | null
   status: $Enums.VehicleStatus | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -60,6 +61,7 @@ export type VehicleMaxAggregateOutputType = {
   plateNumber: string | null
   registrationNumber: string | null
   insuranceNumber: string | null
+  vehicleType: $Enums.VehicleType | null
   status: $Enums.VehicleStatus | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -76,6 +78,7 @@ export type VehicleCountAggregateOutputType = {
   plateNumber: number
   registrationNumber: number
   insuranceNumber: number
+  vehicleType: number
   status: number
   metadata: number
   createdAt: number
@@ -103,6 +106,7 @@ export type VehicleMinAggregateInputType = {
   plateNumber?: true
   registrationNumber?: true
   insuranceNumber?: true
+  vehicleType?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -119,6 +123,7 @@ export type VehicleMaxAggregateInputType = {
   plateNumber?: true
   registrationNumber?: true
   insuranceNumber?: true
+  vehicleType?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -135,6 +140,7 @@ export type VehicleCountAggregateInputType = {
   plateNumber?: true
   registrationNumber?: true
   insuranceNumber?: true
+  vehicleType?: true
   status?: true
   metadata?: true
   createdAt?: true
@@ -239,6 +245,7 @@ export type VehicleGroupByOutputType = {
   plateNumber: string
   registrationNumber: string | null
   insuranceNumber: string | null
+  vehicleType: $Enums.VehicleType
   status: $Enums.VehicleStatus
   metadata: runtime.JsonValue | null
   createdAt: Date
@@ -279,6 +286,7 @@ export type VehicleWhereInput = {
   plateNumber?: Prisma.StringFilter<"Vehicle"> | string
   registrationNumber?: Prisma.StringNullableFilter<"Vehicle"> | string | null
   insuranceNumber?: Prisma.StringNullableFilter<"Vehicle"> | string | null
+  vehicleType?: Prisma.EnumVehicleTypeFilter<"Vehicle"> | $Enums.VehicleType
   status?: Prisma.EnumVehicleStatusFilter<"Vehicle"> | $Enums.VehicleStatus
   metadata?: Prisma.JsonNullableFilter<"Vehicle">
   createdAt?: Prisma.DateTimeFilter<"Vehicle"> | Date | string
@@ -297,6 +305,7 @@ export type VehicleOrderByWithRelationInput = {
   plateNumber?: Prisma.SortOrder
   registrationNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   insuranceNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  vehicleType?: Prisma.SortOrder
   status?: Prisma.SortOrder
   metadata?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -318,6 +327,7 @@ export type VehicleWhereUniqueInput = Prisma.AtLeast<{
   year?: Prisma.IntNullableFilter<"Vehicle"> | number | null
   registrationNumber?: Prisma.StringNullableFilter<"Vehicle"> | string | null
   insuranceNumber?: Prisma.StringNullableFilter<"Vehicle"> | string | null
+  vehicleType?: Prisma.EnumVehicleTypeFilter<"Vehicle"> | $Enums.VehicleType
   status?: Prisma.EnumVehicleStatusFilter<"Vehicle"> | $Enums.VehicleStatus
   metadata?: Prisma.JsonNullableFilter<"Vehicle">
   createdAt?: Prisma.DateTimeFilter<"Vehicle"> | Date | string
@@ -336,6 +346,7 @@ export type VehicleOrderByWithAggregationInput = {
   plateNumber?: Prisma.SortOrder
   registrationNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   insuranceNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  vehicleType?: Prisma.SortOrder
   status?: Prisma.SortOrder
   metadata?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -361,6 +372,7 @@ export type VehicleScalarWhereWithAggregatesInput = {
   plateNumber?: Prisma.StringWithAggregatesFilter<"Vehicle"> | string
   registrationNumber?: Prisma.StringNullableWithAggregatesFilter<"Vehicle"> | string | null
   insuranceNumber?: Prisma.StringNullableWithAggregatesFilter<"Vehicle"> | string | null
+  vehicleType?: Prisma.EnumVehicleTypeWithAggregatesFilter<"Vehicle"> | $Enums.VehicleType
   status?: Prisma.EnumVehicleStatusWithAggregatesFilter<"Vehicle"> | $Enums.VehicleStatus
   metadata?: Prisma.JsonNullableWithAggregatesFilter<"Vehicle">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Vehicle"> | Date | string
@@ -377,6 +389,7 @@ export type VehicleCreateInput = {
   plateNumber: string
   registrationNumber?: string | null
   insuranceNumber?: string | null
+  vehicleType?: $Enums.VehicleType
   status?: $Enums.VehicleStatus
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -395,6 +408,7 @@ export type VehicleUncheckedCreateInput = {
   plateNumber: string
   registrationNumber?: string | null
   insuranceNumber?: string | null
+  vehicleType?: $Enums.VehicleType
   status?: $Enums.VehicleStatus
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -411,6 +425,7 @@ export type VehicleUpdateInput = {
   plateNumber?: Prisma.StringFieldUpdateOperationsInput | string
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   insuranceNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleType?: Prisma.EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
   status?: Prisma.EnumVehicleStatusFieldUpdateOperationsInput | $Enums.VehicleStatus
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -429,6 +444,7 @@ export type VehicleUncheckedUpdateInput = {
   plateNumber?: Prisma.StringFieldUpdateOperationsInput | string
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   insuranceNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleType?: Prisma.EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
   status?: Prisma.EnumVehicleStatusFieldUpdateOperationsInput | $Enums.VehicleStatus
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -446,6 +462,7 @@ export type VehicleCreateManyInput = {
   plateNumber: string
   registrationNumber?: string | null
   insuranceNumber?: string | null
+  vehicleType?: $Enums.VehicleType
   status?: $Enums.VehicleStatus
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -462,6 +479,7 @@ export type VehicleUpdateManyMutationInput = {
   plateNumber?: Prisma.StringFieldUpdateOperationsInput | string
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   insuranceNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleType?: Prisma.EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
   status?: Prisma.EnumVehicleStatusFieldUpdateOperationsInput | $Enums.VehicleStatus
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -479,6 +497,7 @@ export type VehicleUncheckedUpdateManyInput = {
   plateNumber?: Prisma.StringFieldUpdateOperationsInput | string
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   insuranceNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleType?: Prisma.EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
   status?: Prisma.EnumVehicleStatusFieldUpdateOperationsInput | $Enums.VehicleStatus
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -501,6 +520,7 @@ export type VehicleCountOrderByAggregateInput = {
   plateNumber?: Prisma.SortOrder
   registrationNumber?: Prisma.SortOrder
   insuranceNumber?: Prisma.SortOrder
+  vehicleType?: Prisma.SortOrder
   status?: Prisma.SortOrder
   metadata?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -522,6 +542,7 @@ export type VehicleMaxOrderByAggregateInput = {
   plateNumber?: Prisma.SortOrder
   registrationNumber?: Prisma.SortOrder
   insuranceNumber?: Prisma.SortOrder
+  vehicleType?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -538,6 +559,7 @@ export type VehicleMinOrderByAggregateInput = {
   plateNumber?: Prisma.SortOrder
   registrationNumber?: Prisma.SortOrder
   insuranceNumber?: Prisma.SortOrder
+  vehicleType?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -588,6 +610,10 @@ export type NullableIntFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type EnumVehicleTypeFieldUpdateOperationsInput = {
+  set?: $Enums.VehicleType
+}
+
 export type EnumVehicleStatusFieldUpdateOperationsInput = {
   set?: $Enums.VehicleStatus
 }
@@ -601,6 +627,7 @@ export type VehicleCreateWithoutRiderInput = {
   plateNumber: string
   registrationNumber?: string | null
   insuranceNumber?: string | null
+  vehicleType?: $Enums.VehicleType
   status?: $Enums.VehicleStatus
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -617,6 +644,7 @@ export type VehicleUncheckedCreateWithoutRiderInput = {
   plateNumber: string
   registrationNumber?: string | null
   insuranceNumber?: string | null
+  vehicleType?: $Enums.VehicleType
   status?: $Enums.VehicleStatus
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -649,6 +677,7 @@ export type VehicleUpdateWithoutRiderInput = {
   plateNumber?: Prisma.StringFieldUpdateOperationsInput | string
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   insuranceNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleType?: Prisma.EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
   status?: Prisma.EnumVehicleStatusFieldUpdateOperationsInput | $Enums.VehicleStatus
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -665,6 +694,7 @@ export type VehicleUncheckedUpdateWithoutRiderInput = {
   plateNumber?: Prisma.StringFieldUpdateOperationsInput | string
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   insuranceNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleType?: Prisma.EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
   status?: Prisma.EnumVehicleStatusFieldUpdateOperationsInput | $Enums.VehicleStatus
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -684,6 +714,7 @@ export type VehicleSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   plateNumber?: boolean
   registrationNumber?: boolean
   insuranceNumber?: boolean
+  vehicleType?: boolean
   status?: boolean
   metadata?: boolean
   createdAt?: boolean
@@ -702,6 +733,7 @@ export type VehicleSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   plateNumber?: boolean
   registrationNumber?: boolean
   insuranceNumber?: boolean
+  vehicleType?: boolean
   status?: boolean
   metadata?: boolean
   createdAt?: boolean
@@ -720,6 +752,7 @@ export type VehicleSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   plateNumber?: boolean
   registrationNumber?: boolean
   insuranceNumber?: boolean
+  vehicleType?: boolean
   status?: boolean
   metadata?: boolean
   createdAt?: boolean
@@ -738,6 +771,7 @@ export type VehicleSelectScalar = {
   plateNumber?: boolean
   registrationNumber?: boolean
   insuranceNumber?: boolean
+  vehicleType?: boolean
   status?: boolean
   metadata?: boolean
   createdAt?: boolean
@@ -745,7 +779,7 @@ export type VehicleSelectScalar = {
   deletedAt?: boolean
 }
 
-export type VehicleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "riderId" | "make" | "model" | "color" | "year" | "plateNumber" | "registrationNumber" | "insuranceNumber" | "status" | "metadata" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["vehicle"]>
+export type VehicleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "riderId" | "make" | "model" | "color" | "year" | "plateNumber" | "registrationNumber" | "insuranceNumber" | "vehicleType" | "status" | "metadata" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["vehicle"]>
 export type VehicleInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   rider?: boolean | Prisma.RiderProfileDefaultArgs<ExtArgs>
 }
@@ -771,6 +805,7 @@ export type $VehiclePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     plateNumber: string
     registrationNumber: string | null
     insuranceNumber: string | null
+    vehicleType: $Enums.VehicleType
     status: $Enums.VehicleStatus
     metadata: runtime.JsonValue | null
     createdAt: Date
@@ -1209,6 +1244,7 @@ export interface VehicleFieldRefs {
   readonly plateNumber: Prisma.FieldRef<"Vehicle", 'String'>
   readonly registrationNumber: Prisma.FieldRef<"Vehicle", 'String'>
   readonly insuranceNumber: Prisma.FieldRef<"Vehicle", 'String'>
+  readonly vehicleType: Prisma.FieldRef<"Vehicle", 'VehicleType'>
   readonly status: Prisma.FieldRef<"Vehicle", 'VehicleStatus'>
   readonly metadata: Prisma.FieldRef<"Vehicle", 'Json'>
   readonly createdAt: Prisma.FieldRef<"Vehicle", 'DateTime'>

@@ -24,7 +24,8 @@ import type {
   passengerSignupSchema,
   riderLoginSchema,
   riderSettingsUpdateSchema,
-  riderSignupSchema
+  riderSignupSchema,
+  riderVehicleUpdateSchema
 } from "./auth.schemas.js";
 import type { avatarUploadSchema } from "./auth.schemas.js";
 import type { z } from "zod";
@@ -41,6 +42,7 @@ type AdminLoginInput = z.infer<typeof adminLoginSchema>;
 type AdminPromoteInput = z.infer<typeof adminPromoteSchema>;
 type PassengerSettingsUpdateInput = z.infer<typeof passengerSettingsUpdateSchema>;
 type RiderSettingsUpdateInput = z.infer<typeof riderSettingsUpdateSchema>;
+type RiderVehicleUpdateInput = z.infer<typeof riderVehicleUpdateSchema>;
 type AvatarUploadInput = z.infer<typeof avatarUploadSchema>;
 type OtpRequestInput = z.infer<typeof otpRequestSchema>;
 type OtpVerifyInput = z.infer<typeof otpVerifySchema>;
@@ -74,6 +76,10 @@ type RiderSettingsUser = UserWithProfiles & {
     displayCode: string;
     city: string | null;
     approvalStatus: { toLowerCase(): string };
+    ratingAverage: { toString(): string } | number;
+    commissionPercent: { toString(): string } | number;
+    completedTrips: number;
+    jobPreference: { toLowerCase(): string };
   } | null;
 };
 
@@ -501,7 +507,24 @@ export class AuthService {
       throw new AppError("Rider access is required", 403, "RIDER_ACCESS_REQUIRED");
     }
 
-    return this.serializeRiderSettings(session.user as RiderSettingsUser);
+    const vehicle = await prisma.vehicle.findUnique({
+      where: { riderId: session.user.riderProfile.id }
+    });
+
+    return {
+      ...this.serializeRiderSettings(session.user as RiderSettingsUser),
+      vehicle: vehicle
+        ? {
+            make: vehicle.make,
+            model: vehicle.model,
+            plateNumber: vehicle.plateNumber,
+            color: vehicle.color,
+            year: vehicle.year,
+            insuranceNumber: vehicle.insuranceNumber,
+            vehicleType: vehicle.vehicleType.toLowerCase()
+          }
+        : null
+    };
   }
 
   async updateRiderSettings(token: string, input: RiderSettingsUpdateInput) {
@@ -540,6 +563,45 @@ export class AuthService {
       user: this.serializeUser(user),
       settings: this.serializeRiderSettings(user as RiderSettingsUser)
     };
+  }
+
+  async updateRiderVehicle(token: string, input: RiderVehicleUpdateInput) {
+    const session = await this.getActiveSession(token);
+
+    if (session.user.role !== UserRole.RIDER || !session.user.riderProfile) {
+      throw new AppError("Rider access is required", 403, "RIDER_ACCESS_REQUIRED");
+    }
+
+    const existing = await prisma.vehicle.findUnique({
+      where: { riderId: session.user.riderProfile.id }
+    });
+
+    if (!existing) {
+      throw new AppError("No vehicle is registered for this rider yet.", 404, "VEHICLE_NOT_FOUND");
+    }
+
+    const vehicle = await prisma.vehicle.update({
+      where: { id: existing.id },
+      data: {
+        make: input.make,
+        model: input.model,
+        plateNumber: input.plateNumber,
+        color: input.color,
+        year: input.year,
+        insuranceNumber: input.insuranceNumber,
+        vehicleType: input.vehicleType
+          ? {
+              okada: VehicleType.OKADA,
+              tricycle: VehicleType.TRICYCLE,
+              bicycle: VehicleType.BICYCLE
+            }[input.vehicleType]
+          : undefined
+      }
+    });
+
+    await this.touchSession(session.id);
+
+    return { vehicle };
   }
 
   async logout(token: string) {
@@ -867,7 +929,11 @@ export class AuthService {
       avatarUrl: user.avatarUrl ?? null,
       city: user.riderProfile?.city ?? null,
       displayCode: user.riderProfile?.displayCode ?? null,
-      approvalStatus: user.riderProfile?.approvalStatus.toLowerCase() ?? null
+      approvalStatus: user.riderProfile?.approvalStatus.toLowerCase() ?? null,
+      ratingAverage: user.riderProfile ? Number(user.riderProfile.ratingAverage) : 0,
+      commissionPercent: user.riderProfile ? Number(user.riderProfile.commissionPercent) : 0,
+      completedTrips: user.riderProfile?.completedTrips ?? 0,
+      jobPreference: user.riderProfile?.jobPreference.toLowerCase() ?? null
     };
   }
 }

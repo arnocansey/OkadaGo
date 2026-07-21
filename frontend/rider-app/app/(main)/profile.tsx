@@ -1,9 +1,10 @@
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ChevronRight, FileText, Headphones, Pencil, PhoneCall, Settings, Camera } from "lucide-react-native";
+import { ChevronRight, FileText, Headphones, Pencil, PhoneCall, ShieldAlert, Settings, Star, Camera } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
+import { useTranslation } from "react-i18next";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -12,17 +13,31 @@ import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/lib/api";
 import { spacing } from "@/theme/tokens";
 
+type RiderSettings = {
+  ratingAverage?: number;
+  completedTrips?: number;
+};
+
 export default function ProfileScreen() {
   const { session, signOut, refreshSession } = useApp();
   const { colors, typography } = useTheme();
+  const { t } = useTranslation();
   const user = session!.user;
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [riderSettings, setRiderSettings] = useState<RiderSettings | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       void refreshSession();
     }, [refreshSession]),
   );
+
+  useEffect(() => {
+    if (!session?.token) return;
+    api<RiderSettings>("/auth/rider/settings", { token: session.token })
+      .then(setRiderSettings)
+      .catch(() => undefined);
+  }, [session?.token]);
 
   const styles = useMemo(
     () =>
@@ -46,6 +61,8 @@ export default function ProfileScreen() {
         name: { ...typography.h2 },
         phone: { ...typography.body, color: colors.textSecondary },
         status: { ...typography.captionMedium, color: colors.success },
+        ratingRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 },
+        ratingText: { ...typography.captionMedium, color: colors.text },
         menu: { padding: 0, overflow: "hidden" },
         menuRow: {
           flexDirection: "row",
@@ -140,10 +157,10 @@ export default function ProfileScreen() {
   }
 
   function showAvatarOptions() {
-    Alert.alert("Change photo", "Choose an option", [
-      { text: "Take photo", onPress: takePhotoAndUpload },
-      { text: "Choose from library", onPress: pickAndUploadAvatar },
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("profile.changePhoto"), t("profile.choosePhotoOption"), [
+      { text: t("common.takePhoto"), onPress: takePhotoAndUpload },
+      { text: t("common.chooseFromLibrary"), onPress: pickAndUploadAvatar },
+      { text: t("common.cancel"), style: "cancel" },
     ]);
   }
 
@@ -158,43 +175,57 @@ export default function ProfileScreen() {
         </View>
         <Text style={styles.name}>{user.fullName}</Text>
         <Text style={styles.phone}>{user.phoneE164}</Text>
+        {riderSettings?.ratingAverage != null ? (
+          <View style={styles.ratingRow}>
+            <Star size={14} color={colors.primary} fill={colors.primary} />
+            <Text style={styles.ratingText}>
+              {riderSettings.ratingAverage.toFixed(1)}
+              {typeof riderSettings.completedTrips === "number" ? ` · ${riderSettings.completedTrips} trips` : ""}
+            </Text>
+          </View>
+        ) : null}
         {user.riderApprovalStatus ? (
-          <Text style={styles.status}>Status: {user.riderApprovalStatus}</Text>
+          <Text style={styles.status}>{t("profile.status")}: {user.riderApprovalStatus}</Text>
         ) : null}
       </View>
 
       <Card style={styles.menu}>
         <Pressable style={styles.menuRow} onPress={() => router.push("/edit-profile")}>
           <Pencil size={20} color={colors.text} />
-          <Text style={styles.menuLabel}>Edit Profile</Text>
+          <Text style={styles.menuLabel}>{t("profile.editProfile")}</Text>
           <ChevronRight size={18} color={colors.textMuted} />
         </Pressable>
         <Pressable style={styles.menuRow} onPress={() => router.push("/documents")}>
           <FileText size={20} color={colors.text} />
-          <Text style={styles.menuLabel}>Documents</Text>
+          <Text style={styles.menuLabel}>{t("profile.documents")}</Text>
+          <ChevronRight size={18} color={colors.textMuted} />
+        </Pressable>
+        <Pressable style={styles.menuRow} onPress={() => router.push("/emergency-contacts")}>
+          <ShieldAlert size={20} color={colors.text} />
+          <Text style={styles.menuLabel}>{t("profile.emergencyContacts")}</Text>
           <ChevronRight size={18} color={colors.textMuted} />
         </Pressable>
         <Pressable style={styles.menuRow} onPress={() => router.push("/support")}>
           <Headphones size={20} color={colors.text} />
-          <Text style={styles.menuLabel}>Support tickets</Text>
+          <Text style={styles.menuLabel}>{t("profile.supportTickets")}</Text>
           <ChevronRight size={18} color={colors.textMuted} />
         </Pressable>
         {user.isPhoneVerified === false ? (
           <Pressable style={styles.menuRow} onPress={() => router.push("/(auth)/verify-phone")}>
             <PhoneCall size={20} color={colors.text} />
-            <Text style={styles.menuLabel}>Verify phone number</Text>
+            <Text style={styles.menuLabel}>{t("profile.verifyPhone")}</Text>
             <ChevronRight size={18} color={colors.textMuted} />
           </Pressable>
         ) : null}
         <Pressable style={[styles.menuRow, { borderBottomWidth: 0 }]} onPress={() => router.push("/settings")}>
           <Settings size={20} color={colors.text} />
-          <Text style={styles.menuLabel}>Settings</Text>
+          <Text style={styles.menuLabel}>{t("profile.settings")}</Text>
           <ChevronRight size={18} color={colors.textMuted} />
         </Pressable>
       </Card>
 
       <Button
-        label="Sign out"
+        label={t("profile.signOut")}
         variant="outline"
         fullWidth
         onPress={async () => {

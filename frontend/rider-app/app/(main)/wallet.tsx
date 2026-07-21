@@ -12,6 +12,9 @@ import { SkeletonList } from "@/components/ui/Skeleton";
 import { compactDate, money } from "@/lib/api";
 import { spacing } from "@/theme/tokens";
 
+const RIDER_DEFICIT_WARNING_THRESHOLD = 100;
+const RIDER_DEFICIT_OFFLINE_THRESHOLD = 200;
+
 export default function WalletScreen() {
   const { session, wallets, transactions, payouts, loading, refresh, setMessage } = useApp();
   const { colors, typography } = useTheme();
@@ -19,6 +22,8 @@ export default function WalletScreen() {
   const [destination, setDestination] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const wallet = wallets[0];
+  const availableBalance = Number(wallet?.availableBalance ?? 0);
+  const deficit = availableBalance < 0 ? Math.abs(availableBalance) : 0;
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -27,6 +32,13 @@ export default function WalletScreen() {
         hero: { backgroundColor: colors.accentLight, borderColor: colors.accent, marginBottom: spacing.lg },
         heroLabel: { ...typography.captionMedium, color: colors.textSecondary },
         heroAmount: { ...typography.hero, color: colors.text, marginTop: spacing.sm },
+        deficitBanner: {
+          backgroundColor: colors.danger,
+          borderColor: colors.danger,
+          marginBottom: spacing.lg,
+        },
+        deficitTitle: { ...typography.bodySemibold, color: colors.textOnPrimary },
+        deficitBody: { ...typography.caption, color: colors.textOnPrimary, marginTop: spacing.xs, opacity: 0.9 },
         form: { gap: spacing.md, marginBottom: spacing.xxl },
         section: { ...typography.h3, marginBottom: spacing.lg, color: colors.text },
         tx: {
@@ -69,6 +81,19 @@ export default function WalletScreen() {
     >
     <SafeAreaView style={styles.screen}>
       <Text style={styles.title}>Wallet</Text>
+
+      {deficit >= RIDER_DEFICIT_WARNING_THRESHOLD ? (
+        <Card elevated style={styles.deficitBanner}>
+          <Text style={styles.deficitTitle}>
+            You owe {money(deficit, wallet?.currency ?? "GHS")}
+          </Text>
+          <Text style={styles.deficitBody}>
+            {deficit >= RIDER_DEFICIT_OFFLINE_THRESHOLD
+              ? `You've been taken offline until this is cleared below ${money(RIDER_DEFICIT_OFFLINE_THRESHOLD, wallet?.currency ?? "GHS")}.`
+              : `Clear your balance before it reaches ${money(RIDER_DEFICIT_OFFLINE_THRESHOLD, wallet?.currency ?? "GHS")} to keep earning online.`}
+          </Text>
+        </Card>
+      ) : null}
 
       <Card elevated style={styles.hero}>
         <Text style={styles.heroLabel}>Available balance</Text>

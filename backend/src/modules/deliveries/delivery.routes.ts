@@ -1,10 +1,12 @@
 import type { FastifyPluginAsync } from "fastify";
 import { parseBody, parseParams } from "../../common/validation.js";
 import {
+  completeDeliveryStopSchema,
   createDeliveryRequestSchema,
   deliveryEstimateSchema,
   deliveryIdParamsSchema,
-  deliveryStatusUpdateSchema
+  deliveryStatusUpdateSchema,
+  deliveryStopParamsSchema
 } from "./delivery.schemas.js";
 import { DeliveryService } from "./delivery.service.js";
 
@@ -35,5 +37,16 @@ export const deliveryRoutes: FastifyPluginAsync = async (server) => {
     const params = parseParams(request, deliveryIdParamsSchema);
     const input = parseBody(request, deliveryStatusUpdateSchema);
     return deliveryService.updateDeliveryStatus(params.deliveryId, input);
+  });
+
+  server.get("/deliveries/:deliveryId/stops", async (request) => {
+    const params = parseParams(request, deliveryIdParamsSchema);
+    return deliveryService.listDeliveryStops(params.deliveryId);
+  });
+
+  server.patch("/deliveries/:deliveryId/stops/:stopId/complete", async (request) => {
+    const params = parseParams(request, deliveryStopParamsSchema);
+    const input = parseBody(request, completeDeliveryStopSchema);
+    return deliveryService.completeDeliveryStop(params.deliveryId, params.stopId, input);
   });
 };

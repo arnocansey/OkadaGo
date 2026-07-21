@@ -48,7 +48,7 @@ export function statusTone(status: string): Tone {
   const s = status.toLowerCase();
   if (["completed", "delivered"].includes(s)) return "success";
   if (["cancelled", "failed"].includes(s)) return "danger";
-  if (["searching", "assigned", "arriving", "picked_up", "in_transit"].includes(s)) return "info";
+  if (["scheduled", "searching", "assigned", "arriving", "picked_up", "in_transit"].includes(s)) return "info";
   if (["started", "arrived"].includes(s)) return "warning";
   return "default";
 }

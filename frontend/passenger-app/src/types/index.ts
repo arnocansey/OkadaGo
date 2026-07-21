@@ -102,14 +102,17 @@ export type Ride = {
   pickupAddress: string;
   pickupLatitude?: number | string | null;
   pickupLongitude?: number | string | null;
+  pickupLandmark?: string | null;
   destinationAddress: string;
   destinationLatitude?: number | string | null;
   destinationLongitude?: number | string | null;
+  destinationLandmark?: string | null;
   estimatedFare?: string | number | null;
   finalFare?: string | number | null;
   currency?: string;
   paymentMethod?: string | null;
   promoDiscount?: string | number | null;
+  scheduledFor?: string | null;
   createdAt?: string;
   completedAt?: string | null;
   passenger?: { id: string; user?: { fullName: string } };
@@ -120,6 +123,20 @@ export type Ride = {
     currentLatitude?: number | string | null;
     currentLongitude?: number | string | null;
   } | null;
+};
+
+export type DeliveryStop = {
+  id: string;
+  deliveryId: string;
+  sequence: number;
+  type: "PICKUP" | "DROPOFF";
+  status: "PENDING" | "ARRIVED" | "COMPLETED" | "SKIPPED";
+  address: string;
+  latitude: number | string;
+  longitude: number | string;
+  landmark?: string | null;
+  recipientName?: string | null;
+  recipientPhoneE164?: string | null;
 };
 
 export type Delivery = {

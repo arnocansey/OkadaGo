@@ -2,8 +2,10 @@ import { Stack } from "expo-router";
 import { useMemo, useState } from "react";
 import { ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Bell, Moon, Sun, Volume2 } from "lucide-react-native";
+import { Bell, Globe, Moon, Sun, Volume2 } from "lucide-react-native";
+import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/Card";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTheme } from "@/context/ThemeContext";
 import { radius, spacing } from "@/theme/tokens";
 
@@ -68,6 +70,15 @@ function createStyles(colors: ReturnType<typeof useTheme>["colors"], typography:
     switchTrackFalse: { backgroundColor: colors.border },
     switchThumbOn: { backgroundColor: colors.primary },
     switchThumbOff: { backgroundColor: colors.surface },
+    languageHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.lg,
+      paddingBottom: spacing.sm,
+    },
+    languageCard: { padding: 0, overflow: "hidden" },
   });
 }
 
@@ -75,18 +86,19 @@ export default function SettingsScreen() {
   const [notifications, setNotifications] = useState(true);
   const [sound, setSound] = useState(true);
   const { colors, typography, isDark, setTheme, stackHeaderOptions } = useTheme();
+  const { t } = useTranslation();
   const styles = useMemo(() => createStyles(colors, typography), [colors, typography]);
 
   return (
     <>
-      <Stack.Screen options={{ headerShown: true, title: "Settings", ...stackHeaderOptions }} />
+      <Stack.Screen options={{ headerShown: true, title: t("settings.title"), ...stackHeaderOptions }} />
       <SafeAreaView style={styles.screen} edges={["bottom"]}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <Card style={styles.card}>
             <SettingRow
               icon={<Bell size={18} color={colors.text} />}
-              label="Push notifications"
-              hint="Trip requests and status updates"
+              label={t("settings.pushNotifications")}
+              hint={t("settings.pushNotificationsHint")}
               value={notifications}
               onChange={setNotifications}
               styles={styles}
@@ -94,8 +106,8 @@ export default function SettingsScreen() {
             <View style={styles.divider} />
             <SettingRow
               icon={<Volume2 size={18} color={colors.text} />}
-              label="Sound alerts"
-              hint="Play sound for new requests"
+              label={t("settings.soundAlerts")}
+              hint={t("settings.soundAlertsHint")}
               value={sound}
               onChange={setSound}
               styles={styles}
@@ -103,13 +115,22 @@ export default function SettingsScreen() {
             <View style={styles.divider} />
             <SettingRow
               icon={isDark ? <Moon size={18} color={colors.text} /> : <Sun size={18} color={colors.primary} />}
-              label={isDark ? "Dark mode" : "Light mode"}
-              hint="Toggle app appearance"
+              label={isDark ? t("settings.darkMode") : t("settings.lightMode")}
+              hint={t("settings.toggleAppearance")}
               value={isDark}
               onChange={(enabled) => setTheme(enabled ? "dark" : "light")}
               styles={styles}
             />
           </Card>
+
+          <Card style={styles.languageCard}>
+            <View style={styles.languageHeader}>
+              <Globe size={16} color={colors.primary} />
+              <Text style={styles.label}>{t("language.title")}</Text>
+            </View>
+            <LanguageSwitcher />
+          </Card>
+
           <Text style={styles.version}>OkadaGo Rider v1.0.0</Text>
         </ScrollView>
       </SafeAreaView>

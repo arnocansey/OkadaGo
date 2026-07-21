@@ -33,9 +33,10 @@ async function main() {
     }
   }
 
-  const [{ postgis_version: postgisVersion }] = await prisma.$queryRawUnsafe<
-    Array<{ postgis_version: string }>
-  >("SELECT postgis_version() as postgis_version");
+  const rows = await prisma.$queryRawUnsafe<Array<{ postgis_version: string }>>(
+    "SELECT postgis_version() as postgis_version"
+  );
+  const postgisVersion = rows[0]?.postgis_version ?? "unknown";
 
   console.log(`PostGIS is enabled (version ${postgisVersion}). Rider matching will use the fast geography path.`);
 }

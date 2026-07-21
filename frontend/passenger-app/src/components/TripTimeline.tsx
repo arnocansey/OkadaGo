@@ -290,6 +290,7 @@ export function TripTimeline({ steps, currentIndex, stepDetails = [], onStepPres
 }
 
 export const RIDE_STEPS = [
+  { key: "scheduled", label: "Scheduled" },
   { key: "searching", label: "Finding rider" },
   { key: "assigned", label: "Rider assigned" },
   { key: "arriving", label: "Rider arriving" },

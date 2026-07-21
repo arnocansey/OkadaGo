@@ -97,6 +97,16 @@ export const riderSettingsUpdateSchema = z.object({
   city: z.string().max(120).nullable()
 });
 
+export const riderVehicleUpdateSchema = z.object({
+  make: z.string().min(1).max(80).optional(),
+  model: z.string().min(1).max(80).optional(),
+  plateNumber: z.string().min(3).max(32).optional(),
+  color: z.string().max(50).nullable().optional(),
+  year: z.number().int().min(2000).max(2100).nullable().optional(),
+  insuranceNumber: z.string().max(80).nullable().optional(),
+  vehicleType: z.enum(["okada", "tricycle", "bicycle"]).optional()
+});
+
 export const otpRequestSchema = z.object({
   phoneE164: z.string().min(8).max(24)
 });

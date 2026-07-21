@@ -24,6 +24,7 @@ import { api, money } from "@/lib/api";
 import { passengerWs } from "@/lib/websocket";
 import { markersForDelivery, markersForRide } from "@/lib/tripMap";
 import { spacing } from "@/theme/tokens";
+import type { DeliveryStop } from "@/types";
 
 const ACTIVE_STATUSES = ["searching", "arriving", "arrived", "started", "assigned", "picked_up", "in_transit"];
 
@@ -118,6 +119,16 @@ export default function TrackScreen() {
         expandRiderInitial: { ...typography.bodyMedium, color: colors.primary },
         expandRiderName: { ...typography.bodyMedium, color: colors.text },
         expandRiderPlate: { ...typography.caption, color: colors.textSecondary },
+        stopRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: spacing.md,
+          paddingVertical: spacing.sm,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+        },
+        stopAddress: { ...typography.body, color: colors.text },
       }),
     [colors, typography],
   );
@@ -130,6 +141,7 @@ export default function TrackScreen() {
   const [ratingLoading, setRatingLoading] = useState(false);
   const [safetyLoading, setSafetyLoading] = useState(false);
   const [safetyContacts, setSafetyContacts] = useState<SafetyOverview["contacts"]>([]);
+  const [stops, setStops] = useState<DeliveryStop[]>([]);
 
   useTripRefresh(refresh, passengerWs, 8000);
 
@@ -139,6 +151,16 @@ export default function TrackScreen() {
       .then((overview) => setSafetyContacts(overview.contacts ?? []))
       .catch(() => setSafetyContacts([]));
   }, [session?.token]);
+
+  useEffect(() => {
+    if (isRide || !trip?.id || !session?.token) {
+      setStops([]);
+      return;
+    }
+    api<DeliveryStop[]>(`/deliveries/${trip.id}/stops`, { token: session.token })
+      .then(setStops)
+      .catch(() => setStops([]));
+  }, [isRide, trip?.id, trip?.status, session?.token]);
 
   const markers = useMemo(() => {
     if (!trip) return [];
@@ -271,8 +293,8 @@ export default function TrackScreen() {
     );
   }
 
-  const canCancel = ACTIVE_STATUSES.slice(0, 2).includes(status.toLowerCase());
-  const canRate = isRide && status.toLowerCase() === "completed";
+  const canCancel = ["scheduled", ...ACTIVE_STATUSES.slice(0, 2)].includes(status.toLowerCase());
+  const canRate = isRide ? status.toLowerCase() === "completed" : status.toLowerCase() === "delivered";
   const showReceipt = isRide ? status.toLowerCase() === "completed" : status.toLowerCase() === "delivered";
   const riderPhone = (trip.rider?.user as { phoneE164?: string } | undefined)?.phoneE164;
   const pickupAddress = isRide ? (trip as (typeof rides)[0]).pickupAddress : (trip as (typeof deliveries)[0]).pickupAddress;
@@ -333,10 +355,11 @@ export default function TrackScreen() {
   }
 
   async function submitRating() {
-    if (!session || !isRide) return;
+    if (!session || !trip) return;
     setRatingLoading(true);
     try {
-      await api(`/ratings/rides/${trip!.id}`, {
+      const endpoint = isRide ? `/ratings/rides/${trip.id}` : `/ratings/deliveries/${trip.id}`;
+      await api(endpoint, {
         method: "POST",
         token: session.token,
         body: { score: rating, review: review.trim() || undefined },
@@ -391,6 +414,27 @@ export default function TrackScreen() {
             <Text style={styles.section}>Timeline</Text>
             <TripTimeline steps={steps} currentIndex={currentIndex} stepDetails={stepDetails} />
           </Card>
+
+          {!isRide && stops.filter((s) => s.type === "DROPOFF").length > 1 ? (
+            <Card>
+              <Text style={styles.section}>Stops</Text>
+              {stops
+                .filter((s) => s.type === "DROPOFF")
+                .map((stop, index) => (
+                  <View key={stop.id} style={styles.stopRow}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.stopAddress} numberOfLines={1}>
+                        {index + 1}. {stop.address}
+                      </Text>
+                    </View>
+                    <Badge
+                      label={stop.status === "COMPLETED" ? "Delivered" : "Pending"}
+                      tone={stop.status === "COMPLETED" ? "success" : "default"}
+                    />
+                  </View>
+                ))}
+            </Card>
+          ) : null}
 
           {trip.rider?.user?.fullName ? (
             <Card>
@@ -463,7 +507,7 @@ export default function TrackScreen() {
 
           {canRate ? (
             <Card stacked>
-              <Text style={styles.section}>Rate your ride</Text>
+              <Text style={styles.section}>{isRide ? "Rate your ride" : "Rate your delivery"}</Text>
               <View style={styles.stars}>
                 {[1, 2, 3, 4, 5].map((value) => (
                   <Pressable key={value} style={styles.starBtn} onPress={() => setRating(value)}>
@@ -475,7 +519,12 @@ export default function TrackScreen() {
                   </Pressable>
                 ))}
               </View>
-              <Input label="Review (optional)" value={review} onChangeText={setReview} placeholder="How was your trip?" />
+              <Input
+                label="Review (optional)"
+                value={review}
+                onChangeText={setReview}
+                placeholder={isRide ? "How was your trip?" : "How was your delivery?"}
+              />
               <Button label="Submit rating" loading={ratingLoading} onPress={submitRating} fullWidth />
             </Card>
           ) : null}

@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Home, MapPin, Package, Search, UtensilsCrossed } from "lucide-react-native";
+import { useTranslation } from "react-i18next";
 import { AppMap } from "@/components/AppMap";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -11,10 +12,10 @@ import { api } from "@/lib/api";
 import { radius, shadows, spacing } from "@/theme/tokens";
 import type { HomeService, SavedPlace } from "@/types";
 
-const SERVICES: Array<{ id: HomeService; label: string; icon: typeof Search }> = [
-  { id: "ride", label: "Ride", icon: MapPin },
-  { id: "food", label: "Food", icon: UtensilsCrossed },
-  { id: "send", label: "Send", icon: Package },
+const SERVICES: Array<{ id: HomeService; labelKey: string; icon: typeof Search }> = [
+  { id: "ride", labelKey: "home.serviceRide", icon: MapPin },
+  { id: "food", labelKey: "home.serviceFood", icon: UtensilsCrossed },
+  { id: "send", labelKey: "home.serviceSend", icon: Package },
 ];
 
 const AVATAR_COLORS = ["#FFC107", "#3B82F6", "#A855F7", "#EC4899", "#F59E0B", "#FF3B30"];

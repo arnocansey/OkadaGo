@@ -1,6 +1,6 @@
 import { Stack, router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -11,6 +11,24 @@ import { api } from "@/lib/api";
 import { radius, spacing } from "@/theme/tokens";
 import type { SessionUser } from "@/types";
 
+type VehicleTypeOption = "okada" | "tricycle" | "bicycle";
+
+const VEHICLE_TYPE_OPTIONS: Array<{ id: VehicleTypeOption; label: string }> = [
+  { id: "okada", label: "Okada" },
+  { id: "tricycle", label: "Tricycle" },
+  { id: "bicycle", label: "Bicycle" },
+];
+
+type RiderVehicle = {
+  make: string;
+  model: string;
+  plateNumber: string;
+  color: string | null;
+  year: number | null;
+  insuranceNumber: string | null;
+  vehicleType: VehicleTypeOption;
+};
+
 type RiderSettings = {
   fullName: string;
   email: string | null;
@@ -19,6 +37,7 @@ type RiderSettings = {
   city: string | null;
   displayCode: string | null;
   approvalStatus: string | null;
+  vehicle: RiderVehicle | null;
 };
 
 type SettingsUpdateResponse = {
@@ -35,6 +54,15 @@ export default function EditProfileScreen() {
   const [phoneE164, setPhoneE164] = useState(user.phoneE164);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [hasVehicle, setHasVehicle] = useState(false);
+  const [vehicleMake, setVehicleMake] = useState("");
+  const [vehicleModel, setVehicleModel] = useState("");
+  const [vehiclePlate, setVehiclePlate] = useState("");
+  const [vehicleColor, setVehicleColor] = useState("");
+  const [vehicleInsurance, setVehicleInsurance] = useState("");
+  const [vehicleType, setVehicleType] = useState<VehicleTypeOption>("okada");
+  const [savingVehicle, setSavingVehicle] = useState(false);
+  const [vehicleError, setVehicleError] = useState("");
 
   useEffect(() => {
     if (!session?.token) return;
@@ -44,6 +72,15 @@ export default function EditProfileScreen() {
         setEmail(data.email ?? "");
         setCity(data.city ?? "");
         setPhoneE164(data.phoneE164);
+        if (data.vehicle) {
+          setHasVehicle(true);
+          setVehicleMake(data.vehicle.make);
+          setVehicleModel(data.vehicle.model);
+          setVehiclePlate(data.vehicle.plateNumber);
+          setVehicleColor(data.vehicle.color ?? "");
+          setVehicleInsurance(data.vehicle.insuranceNumber ?? "");
+          setVehicleType(data.vehicle.vehicleType);
+        }
       })
       .catch(() => undefined);
   }, [session?.token]);
@@ -65,6 +102,19 @@ export default function EditProfileScreen() {
           paddingVertical: spacing.md,
         },
         error: { ...typography.caption, color: colors.danger },
+        fieldLabel: { ...typography.captionMedium, color: colors.textSecondary },
+        chipRow: { flexDirection: "row", gap: spacing.sm, flexWrap: "wrap" },
+        chip: {
+          paddingHorizontal: spacing.md,
+          paddingVertical: spacing.sm,
+          borderRadius: radius.md,
+          borderWidth: 1,
+          borderColor: colors.border,
+          backgroundColor: colors.surface,
+        },
+        chipActive: { borderColor: colors.primary, backgroundColor: colors.primaryLight },
+        chipText: { ...typography.captionMedium, color: colors.textSecondary },
+        chipTextActive: { color: colors.primary },
       }),
     [colors, typography],
   );
@@ -91,6 +141,31 @@ export default function EditProfileScreen() {
       setError(e instanceof Error ? e.message : "Could not save profile.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function saveVehicle() {
+    if (!session?.token || !vehicleMake.trim() || !vehicleModel.trim() || !vehiclePlate.trim()) return;
+    setSavingVehicle(true);
+    setVehicleError("");
+    try {
+      await api<{ vehicle: unknown }>("/auth/rider/vehicle", {
+        method: "PATCH",
+        token: session.token,
+        body: {
+          make: vehicleMake.trim(),
+          model: vehicleModel.trim(),
+          plateNumber: vehiclePlate.trim().toUpperCase(),
+          color: vehicleColor.trim() || null,
+          insuranceNumber: vehicleInsurance.trim() || null,
+          vehicleType,
+        },
+      });
+      Alert.alert("Vehicle updated", "Your vehicle details were saved.");
+    } catch (e) {
+      setVehicleError(e instanceof Error ? e.message : "Could not save vehicle.");
+    } finally {
+      setSavingVehicle(false);
     }
   }
 
@@ -122,6 +197,41 @@ export default function EditProfileScreen() {
             {error ? <Text style={styles.error}>{error}</Text> : null}
             <Button label="Save profile" loading={saving} onPress={() => void saveProfile()} fullWidth />
           </Card>
+
+          {hasVehicle ? (
+            <Card stacked>
+              <Text style={styles.sectionHint}>Vehicle details</Text>
+              <View style={{ gap: spacing.sm }}>
+                <Text style={styles.fieldLabel}>Vehicle type</Text>
+                <View style={styles.chipRow}>
+                  {VEHICLE_TYPE_OPTIONS.map((option) => (
+                    <Pressable
+                      key={option.id}
+                      onPress={() => setVehicleType(option.id)}
+                      style={[styles.chip, vehicleType === option.id && styles.chipActive]}
+                    >
+                      <Text style={[styles.chipText, vehicleType === option.id && styles.chipTextActive]}>
+                        {option.label}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+              <Input label="Make" value={vehicleMake} onChangeText={setVehicleMake} placeholder="Honda" />
+              <Input label="Model" value={vehicleModel} onChangeText={setVehicleModel} placeholder="Ace 125" />
+              <Input label="Plate number" value={vehiclePlate} onChangeText={setVehiclePlate} autoCapitalize="characters" placeholder="GR-1234-24" />
+              <Input label="Color (optional)" value={vehicleColor} onChangeText={setVehicleColor} placeholder="Black" />
+              <Input
+                label="Insurance number (optional)"
+                value={vehicleInsurance}
+                onChangeText={setVehicleInsurance}
+                placeholder="INS-2026-000123"
+                autoCapitalize="characters"
+              />
+              {vehicleError ? <Text style={styles.error}>{vehicleError}</Text> : null}
+              <Button label="Save vehicle" loading={savingVehicle} onPress={() => void saveVehicle()} fullWidth />
+            </Card>
+          ) : null}
         </ScrollView>
         </SafeAreaView>
       </KeyboardAvoidingView>

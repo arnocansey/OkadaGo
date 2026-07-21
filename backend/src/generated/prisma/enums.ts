@@ -71,7 +71,26 @@ export const VehicleStatus = {
 export type VehicleStatus = (typeof VehicleStatus)[keyof typeof VehicleStatus]
 
 
+export const VehicleType = {
+  OKADA: 'OKADA',
+  TRICYCLE: 'TRICYCLE',
+  BICYCLE: 'BICYCLE'
+} as const
+
+export type VehicleType = (typeof VehicleType)[keyof typeof VehicleType]
+
+
+export const JobPreference = {
+  RIDES_ONLY: 'RIDES_ONLY',
+  DELIVERY_ONLY: 'DELIVERY_ONLY',
+  BOTH: 'BOTH'
+} as const
+
+export type JobPreference = (typeof JobPreference)[keyof typeof JobPreference]
+
+
 export const RideStatus = {
+  SCHEDULED: 'SCHEDULED',
   SEARCHING: 'SEARCHING',
   ASSIGNED: 'ASSIGNED',
   ARRIVING: 'ARRIVING',
@@ -274,3 +293,21 @@ export const PricingRuleScope = {
 } as const
 
 export type PricingRuleScope = (typeof PricingRuleScope)[keyof typeof PricingRuleScope]
+
+
+export const DeliveryStopType = {
+  PICKUP: 'PICKUP',
+  DROPOFF: 'DROPOFF'
+} as const
+
+export type DeliveryStopType = (typeof DeliveryStopType)[keyof typeof DeliveryStopType]
+
+
+export const DeliveryStopStatus = {
+  PENDING: 'PENDING',
+  ARRIVED: 'ARRIVED',
+  COMPLETED: 'COMPLETED',
+  SKIPPED: 'SKIPPED'
+} as const
+
+export type DeliveryStopStatus = (typeof DeliveryStopStatus)[keyof typeof DeliveryStopStatus]

@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Bike } from "lucide-react-native";
+import { useTranslation } from "react-i18next";
 import { api, phoneParts, type AuthResponse } from "@/lib/api";
 import { registerPushToken } from "@/lib/push";
 import { useApp } from "@/context/AppContext";
@@ -15,19 +16,8 @@ import type { AuthMode } from "@/types";
 type VehicleTypeOption = "okada" | "tricycle" | "bicycle";
 type JobPreferenceOption = "rides_only" | "delivery_only" | "both";
 
-const VEHICLE_TYPE_OPTIONS: Array<{ id: VehicleTypeOption; label: string }> = [
-  { id: "okada", label: "Okada" },
-  { id: "tricycle", label: "Tricycle" },
-  { id: "bicycle", label: "Bicycle" }
-];
-
-const JOB_PREFERENCE_OPTIONS: Array<{ id: JobPreferenceOption; label: string }> = [
-  { id: "both", label: "Rides & delivery" },
-  { id: "rides_only", label: "Rides only" },
-  { id: "delivery_only", label: "Delivery only" }
-];
-
 export default function LoginScreen() {
+  const { t } = useTranslation();
   const { signIn } = useApp();
   const { colors, typography } = useTheme();
   const styles = useMemo(
@@ -87,6 +77,18 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const vehicleTypeOptions: Array<{ id: VehicleTypeOption; label: string }> = [
+    { id: "okada", label: t("auth.okada") },
+    { id: "tricycle", label: t("auth.tricycle") },
+    { id: "bicycle", label: t("auth.bicycle") },
+  ];
+
+  const jobPreferenceOptions: Array<{ id: JobPreferenceOption; label: string }> = [
+    { id: "both", label: t("auth.jobBoth") },
+    { id: "rides_only", label: t("auth.jobRidesOnly") },
+    { id: "delivery_only", label: t("auth.jobDeliveryOnly") },
+  ];
+
   async function submit() {
     setError("");
     setLoading(true);
@@ -123,7 +125,7 @@ export default function LoginScreen() {
       }
       router.replace("/(main)");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Authentication failed.");
+      setError(e instanceof Error ? e.message : t("auth.authFailed"));
     } finally {
       setLoading(false);
     }
@@ -140,31 +142,33 @@ export default function LoginScreen() {
               </View>
             </View>
             <Text style={styles.brand}>OkadaGo Rider</Text>
-            <Text style={styles.title}>{mode === "login" ? "Driver login" : "Join as rider"}</Text>
-            <Text style={styles.subtitle}>Earn on rides and deliveries across Accra</Text>
+            <Text style={styles.title}>{mode === "login" ? t("auth.welcomeBack") : t("auth.createAccount")}</Text>
+            <Text style={styles.subtitle}>{t("auth.subtitle")}</Text>
           </View>
 
           <View style={styles.tabs}>
             {(["login", "signup"] as AuthMode[]).map((m) => (
               <Pressable key={m} onPress={() => setMode(m)} style={[styles.tab, mode === m && styles.tabActive]}>
-                <Text style={[styles.tabText, mode === m && styles.tabTextActive]}>{m === "login" ? "Sign in" : "Sign up"}</Text>
+                <Text style={[styles.tabText, mode === m && styles.tabTextActive]}>
+                  {m === "login" ? t("auth.signIn") : t("auth.signUp")}
+                </Text>
               </Pressable>
             ))}
           </View>
 
           <View style={styles.form}>
             {mode === "signup" ? (
-              <Input label="Full name" value={fullName} onChangeText={setFullName} placeholder="Kofi Asante" autoCapitalize="words" />
+              <Input label={t("auth.fullName")} value={fullName} onChangeText={setFullName} placeholder="Kofi Asante" autoCapitalize="words" />
             ) : null}
-            <Input label="Phone" value={phone} onChangeText={setPhone} placeholder="024 123 4567" keyboardType="phone-pad" />
-            <Input label="Password" value={password} onChangeText={setPassword} placeholder="••••••••" secureTextEntry />
+            <Input label={t("auth.phone")} value={phone} onChangeText={setPhone} placeholder="024 123 4567" keyboardType="phone-pad" />
+            <Input label={t("auth.password")} value={password} onChangeText={setPassword} placeholder="••••••••" secureTextEntry />
 
             {mode === "signup" ? (
               <>
                 <View style={styles.fieldGroup}>
-                  <Text style={styles.fieldLabel}>Vehicle type</Text>
+                  <Text style={styles.fieldLabel}>{t("auth.vehicleType")}</Text>
                   <View style={styles.chipRow}>
-                    {VEHICLE_TYPE_OPTIONS.map((option) => (
+                    {vehicleTypeOptions.map((option) => (
                       <Pressable
                         key={option.id}
                         onPress={() => setVehicleType(option.id)}
@@ -181,25 +185,31 @@ export default function LoginScreen() {
                 <View style={styles.vehicleRow}>
                   <Input
                     style={styles.vehicleField}
-                    label="Vehicle make"
+                    label={t("auth.vehicleMake")}
                     value={vehicleMake}
                     onChangeText={setVehicleMake}
                     placeholder="Bajaj"
                   />
                   <Input
                     style={styles.vehicleField}
-                    label="Model"
+                    label={t("auth.vehicleModel")}
                     value={vehicleModel}
                     onChangeText={setVehicleModel}
                     placeholder="Boxer"
                   />
                 </View>
-                <Input label="Plate number" value={vehiclePlate} onChangeText={setVehiclePlate} placeholder="GT 1234-24" autoCapitalize="characters" />
+                <Input
+                  label={t("auth.plateNumber")}
+                  value={vehiclePlate}
+                  onChangeText={setVehiclePlate}
+                  placeholder="GT 1234-24"
+                  autoCapitalize="characters"
+                />
 
                 <View style={styles.fieldGroup}>
-                  <Text style={styles.fieldLabel}>What kind of jobs do you want?</Text>
+                  <Text style={styles.fieldLabel}>{t("auth.jobPreference")}</Text>
                   <View style={styles.chipRow}>
-                    {JOB_PREFERENCE_OPTIONS.map((option) => (
+                    {jobPreferenceOptions.map((option) => (
                       <Pressable
                         key={option.id}
                         onPress={() => setJobPreference(option.id)}
@@ -216,7 +226,13 @@ export default function LoginScreen() {
             ) : null}
 
             {error ? <Text style={styles.error}>{error}</Text> : null}
-            <Button label={mode === "login" ? "Continue" : "Create account"} variant="accent" loading={loading} onPress={submit} fullWidth />
+            <Button
+              label={mode === "login" ? t("auth.continue") : t("auth.createAccountCta")}
+              variant="accent"
+              loading={loading}
+              onPress={submit}
+              fullWidth
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

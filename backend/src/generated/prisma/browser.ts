@@ -83,6 +83,11 @@ export type Ride = Prisma.RideModel
  */
 export type DeliveryRequest = Prisma.DeliveryRequestModel
 /**
+ * Model DeliveryStop
+ * 
+ */
+export type DeliveryStop = Prisma.DeliveryStopModel
+/**
  * Model RideLocation
  * 
  */
