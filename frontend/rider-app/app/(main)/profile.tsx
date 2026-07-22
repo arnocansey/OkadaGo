@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ChevronRight, FileText, Headphones, Pencil, PhoneCall, ShieldAlert, Settings, Star, Camera } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
@@ -43,7 +43,8 @@ export default function ProfileScreen() {
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        screen: { flex: 1, backgroundColor: colors.background, padding: spacing.xl, gap: spacing.lg },
+        screen: { flex: 1, backgroundColor: colors.background },
+        content: { padding: spacing.xl, gap: spacing.lg, paddingBottom: spacing.xxxl },
         header: { alignItems: "center", gap: spacing.sm, marginBottom: spacing.lg },
         avatarWrap: { position: "relative" },
         cameraBtn: {
@@ -167,88 +168,94 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <ScreenHeader title={t("nav.profile")} />
-      <View style={styles.header}>
-        <View style={styles.avatarWrap}>
-          <Avatar name={user.fullName} size={72} imageUri={user.avatarUrl ?? undefined} />
-          <Pressable style={styles.cameraBtn} onPress={showAvatarOptions} disabled={uploadingAvatar} hitSlop={8} accessibilityLabel="Change profile photo" accessibilityRole="button">
-            <Camera size={14} color={colors.textOnPrimary} />
-          </Pressable>
-        </View>
-        <Text style={styles.name}>{user.fullName}</Text>
-        <Text style={styles.phone}>{user.phoneE164}</Text>
-        {riderSettings?.ratingAverage != null ? (
-          <View style={styles.ratingRow}>
-            <Star size={14} color={colors.primary} fill={colors.primary} />
-            <Text style={styles.ratingText}>
-              {riderSettings.ratingAverage.toFixed(1)}
-              {typeof riderSettings.completedTrips === "number" ? ` · ${riderSettings.completedTrips} trips` : ""}
-            </Text>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <ScreenHeader title={t("nav.profile")} />
+        <View style={styles.header}>
+          <View style={styles.avatarWrap}>
+            <Avatar name={user.fullName} size={72} imageUri={user.avatarUrl ?? undefined} />
+            <Pressable style={styles.cameraBtn} onPress={showAvatarOptions} disabled={uploadingAvatar} hitSlop={8} accessibilityLabel="Change profile photo" accessibilityRole="button">
+              <Camera size={14} color={colors.textOnPrimary} />
+            </Pressable>
           </View>
-        ) : null}
-        {user.riderApprovalStatus ? (
-          <Text style={styles.status}>{t("profile.status")}: {user.riderApprovalStatus}</Text>
-        ) : null}
-      </View>
+          <Text style={styles.name}>{user.fullName}</Text>
+          <Text style={styles.phone}>{user.phoneE164}</Text>
+          {riderSettings?.ratingAverage != null ? (
+            <View style={styles.ratingRow}>
+              <Star size={14} color={colors.primary} fill={colors.primary} />
+              <Text style={styles.ratingText}>
+                {riderSettings.ratingAverage.toFixed(1)}
+                {typeof riderSettings.completedTrips === "number" ? ` · ${riderSettings.completedTrips} trips` : ""}
+              </Text>
+            </View>
+          ) : null}
+          {user.riderApprovalStatus ? (
+            <Text style={styles.status}>{t("profile.status")}: {user.riderApprovalStatus}</Text>
+          ) : null}
+        </View>
 
-      {user.riderApprovalStatus && !["APPROVED", "approved", "ACTIVE", "active"].includes(user.riderApprovalStatus) ? (
-        <Card elevated>
-          <Text style={[styles.name, { fontSize: 16 }]}>{t("profile.verificationTitle")}</Text>
-          <Text style={styles.phone}>{t("profile.verificationHint")}</Text>
-          <Button
-            label={t("profile.uploadDocuments")}
-            variant="accent"
-            fullWidth
-            onPress={() => router.push("/documents")}
-            style={{ marginTop: spacing.md }}
-          />
-        </Card>
-      ) : null}
+        {user.riderApprovalStatus && !["APPROVED", "approved", "ACTIVE", "active"].includes(user.riderApprovalStatus) ? (
+          <Card elevated>
+            <Text style={[styles.name, { fontSize: 16 }]}>{t("profile.verificationTitle")}</Text>
+            <Text style={styles.phone}>{t("profile.verificationHint")}</Text>
+            <Button
+              label={t("profile.uploadDocuments")}
+              variant="accent"
+              fullWidth
+              onPress={() => router.push("/documents")}
+              style={{ marginTop: spacing.md }}
+            />
+          </Card>
+        ) : null}
 
-      <Card style={styles.menu}>
-        <Pressable style={styles.menuRow} onPress={() => router.push("/edit-profile")}>
-          <Pencil size={20} color={colors.text} />
-          <Text style={styles.menuLabel}>{t("profile.editProfile")}</Text>
-          <ChevronRight size={18} color={colors.textMuted} />
-        </Pressable>
-        <Pressable style={styles.menuRow} onPress={() => router.push("/documents")}>
-          <FileText size={20} color={colors.text} />
-          <Text style={styles.menuLabel}>{t("profile.documents")}</Text>
-          <ChevronRight size={18} color={colors.textMuted} />
-        </Pressable>
-        <Pressable style={styles.menuRow} onPress={() => router.push("/emergency-contacts")}>
-          <ShieldAlert size={20} color={colors.danger} />
-          <Text style={styles.menuLabel}>{t("profile.emergencyContacts")}</Text>
-          <ChevronRight size={18} color={colors.textMuted} />
-        </Pressable>
-        <Pressable style={styles.menuRow} onPress={() => router.push("/support")}>
-          <Headphones size={20} color={colors.text} />
-          <Text style={styles.menuLabel}>{t("profile.supportTickets")}</Text>
-          <ChevronRight size={18} color={colors.textMuted} />
-        </Pressable>
-        {user.isPhoneVerified === false ? (
-          <Pressable style={styles.menuRow} onPress={() => router.push("/(auth)/verify-phone")}>
-            <PhoneCall size={20} color={colors.text} />
-            <Text style={styles.menuLabel}>{t("profile.verifyPhone")}</Text>
+        <Card style={styles.menu}>
+          <Pressable style={styles.menuRow} onPress={() => router.push("/edit-profile")}>
+            <Pencil size={20} color={colors.text} />
+            <Text style={styles.menuLabel}>{t("profile.editProfile")}</Text>
             <ChevronRight size={18} color={colors.textMuted} />
           </Pressable>
-        ) : null}
-        <Pressable style={[styles.menuRow, { borderBottomWidth: 0 }]} onPress={() => router.push("/settings")}>
-          <Settings size={20} color={colors.text} />
-          <Text style={styles.menuLabel}>{t("profile.settings")}</Text>
-          <ChevronRight size={18} color={colors.textMuted} />
-        </Pressable>
-      </Card>
+          <Pressable style={styles.menuRow} onPress={() => router.push("/documents")}>
+            <FileText size={20} color={colors.text} />
+            <Text style={styles.menuLabel}>{t("profile.documents")}</Text>
+            <ChevronRight size={18} color={colors.textMuted} />
+          </Pressable>
+          <Pressable style={styles.menuRow} onPress={() => router.push("/emergency-contacts")}>
+            <ShieldAlert size={20} color={colors.danger} />
+            <Text style={styles.menuLabel}>{t("profile.emergencyContacts")}</Text>
+            <ChevronRight size={18} color={colors.textMuted} />
+          </Pressable>
+          <Pressable style={styles.menuRow} onPress={() => router.push("/support")}>
+            <Headphones size={20} color={colors.text} />
+            <Text style={styles.menuLabel}>{t("profile.supportTickets")}</Text>
+            <ChevronRight size={18} color={colors.textMuted} />
+          </Pressable>
+          {user.isPhoneVerified === false ? (
+            <Pressable style={styles.menuRow} onPress={() => router.push("/(auth)/verify-phone")}>
+              <PhoneCall size={20} color={colors.text} />
+              <Text style={styles.menuLabel}>{t("profile.verifyPhone")}</Text>
+              <ChevronRight size={18} color={colors.textMuted} />
+            </Pressable>
+          ) : null}
+          <Pressable style={[styles.menuRow, { borderBottomWidth: 0 }]} onPress={() => router.push("/settings")}>
+            <Settings size={20} color={colors.text} />
+            <Text style={styles.menuLabel}>{t("profile.settings")}</Text>
+            <ChevronRight size={18} color={colors.textMuted} />
+          </Pressable>
+        </Card>
 
-      <Button
-        label={t("profile.signOut")}
-        variant="outline"
-        fullWidth
-        onPress={async () => {
-          await signOut();
-          router.replace("/(auth)/login");
-        }}
-      />
+        <Button
+          label={t("profile.signOut")}
+          variant="outline"
+          fullWidth
+          onPress={async () => {
+            await signOut();
+            router.replace("/(auth)/login");
+          }}
+        />
+      </ScrollView>
     </SafeAreaView>
   );
 }

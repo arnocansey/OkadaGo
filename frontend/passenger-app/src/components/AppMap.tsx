@@ -113,7 +113,7 @@ export function AppMap({
   }, [fitToMarkers, markers, routeCoordinates]);
 
   useEffect(() => {
-    if (!autoCenterOnLocation || didAutoCenter.current) return;
+    if (!autoCenterOnLocation || didAutoCenter.current || mapStatus !== "ready") return;
 
     const isDefault =
       Math.abs(region.latitude - ACCRA_REGION.latitude) < 0.001 &&
@@ -122,7 +122,14 @@ export function AppMap({
 
     mapRef.current?.animateToRegion(region, 600);
     didAutoCenter.current = true;
-  }, [autoCenterOnLocation, region.latitude, region.longitude, region.latitudeDelta, region.longitudeDelta]);
+  }, [
+    autoCenterOnLocation,
+    mapStatus,
+    region.latitude,
+    region.longitude,
+    region.latitudeDelta,
+    region.longitudeDelta,
+  ]);
 
   if (!hasConfiguredKey) {
     return (

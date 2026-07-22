@@ -47,8 +47,13 @@
   "language": {
     "title": "Kasa",
     "subtitle": "Paw kasa a wopɛ sɛ wode bedi dwuma wɔ app no mu.",
+    "select": "Paw kasa",
     "en": "Borɔfo Kasa (English)",
-    "tw": "Twi (Akan)"
+    "tw": "Twi (Akan)",
+    "fr": "Français",
+    "ga": "Ga",
+    "ee": "Eʋegbe (Ewe)",
+    "ha": "Hausa"
   },
   "home": {
     "greeting": "Wo Rekɔ He?",

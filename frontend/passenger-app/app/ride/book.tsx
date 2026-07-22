@@ -621,7 +621,10 @@ export default function BookRideScreen() {
                 region={{ ...pickupCoords, latitudeDelta: 0.025, longitudeDelta: 0.025 }}
                 markers={markers}
                 routeCoordinates={routeCoordinates}
-                fitToMarkers={markers.length >= 2}
+                autoCenterOnLocation
+                showCenterButton
+                centerButtonInset={{ bottom: spacing.lg, right: spacing.lg }}
+                fitToMarkers={markers.length >= 2 || Boolean(routeCoordinates?.length)}
                 onMapPress={pinDropTarget ? handleMapPress : undefined}
                 pinDropHint={
                   pinDropTarget === "pickup"
