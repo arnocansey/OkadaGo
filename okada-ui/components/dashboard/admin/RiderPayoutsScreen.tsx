@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAdminToast } from "./AdminToast";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
 import { SkeletonKPI, SkeletonTable, SkeletonCard } from "./AdminSkeleton";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { formatMoney } from "@/lib/currency";
 import { parseNumber, formatDateTime, statusTone } from "./utils";
 import type { PayoutRequestRecord } from "./types";
@@ -269,28 +270,16 @@ export function RiderPayoutsScreen({
   const tabs: TabOption[] = ["All Payouts", "Pending", "Processing", "Completed", "Failed"];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? 16 : 20, padding: isMobile ? "16px 12px" : "24px 28px", background: "var(--bg-primary)", minHeight: "100vh", fontFamily: "Inter, -apple-system, sans-serif" }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: isMobile ? "flex-start" : "center", justifyContent: "space-between", flexDirection: isMobile ? "column" : "row", gap: isMobile ? 8 : 0, flexWrap: "wrap" }}>
-        <div>
-          <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.5px" }}>
-            Rider Payouts
-          </h1>
-          <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-muted)" }}>
-            Manage rider payout requests, approvals, and processing
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={handleExportCsv}
-          style={{ ...btnBase, color: "var(--brand-orange)", borderColor: "var(--brand-orange)" }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = "color-mix(in srgb, var(--brand-orange) 10%, transparent)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-        >
-          <Download size={14} />
-          Export CSV
-        </button>
-      </div>
+    <div className="exact-admin-screen" style={{ padding: isMobile ? "16px 12px" : undefined }}>
+      <AdminPageHeader
+        title="Rider Payouts"
+        subtitle="Manage rider payout requests, approvals, and processing"
+        actions={
+          <button type="button" className="admin-btn-sm" onClick={handleExportCsv}>
+            <Download size={14} /> Export CSV
+          </button>
+        }
+      />
 
       {/* KPI Cards */}
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : isTablet ? "repeat(3, 1fr)" : "repeat(5, 1fr)", gap: 14 }}>

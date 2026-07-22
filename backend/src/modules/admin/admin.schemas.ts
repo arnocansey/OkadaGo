@@ -22,3 +22,37 @@ export type RiderSuspensionInput = z.infer<typeof riderSuspensionSchema>;
 export const riderSuspensionParamsSchema = z.object({
   riderProfileId: z.string().min(1)
 });
+
+export const createEscalationRuleSchema = z.object({
+  name: z.string().min(2).max(160),
+  description: z.string().min(2).max(500),
+  triggerCondition: z.string().min(2).max(160),
+  thresholdHours: z.number().int().positive().max(168).default(4),
+  action: z.string().min(2).max(160),
+  targetRole: z.string().min(2).max(40),
+  enabled: z.boolean().optional().default(true)
+});
+
+export type CreateEscalationRuleInput = z.infer<typeof createEscalationRuleSchema>;
+
+export const updateEscalationRuleSchema = createEscalationRuleSchema.partial();
+
+export type UpdateEscalationRuleInput = z.infer<typeof updateEscalationRuleSchema>;
+
+export const escalationRuleParamsSchema = z.object({
+  ruleId: z.string().min(1)
+});
+
+export const createScheduledBroadcastSchema = z.object({
+  title: z.string().min(2).max(160),
+  body: z.string().min(2).max(500),
+  targetAudience: z.enum(["all", "riders", "passengers", "zone"]).default("all"),
+  targetZoneId: z.string().min(1).optional(),
+  scheduledAt: z.string().datetime()
+});
+
+export type CreateScheduledBroadcastInput = z.infer<typeof createScheduledBroadcastSchema>;
+
+export const scheduledBroadcastParamsSchema = z.object({
+  broadcastId: z.string().min(1)
+});

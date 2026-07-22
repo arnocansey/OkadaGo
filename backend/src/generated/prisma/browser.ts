@@ -177,3 +177,13 @@ export type SavedPlace = Prisma.SavedPlaceModel
  * 
  */
 export type AuditLog = Prisma.AuditLogModel
+/**
+ * Model EscalationRule
+ * 
+ */
+export type EscalationRule = Prisma.EscalationRuleModel
+/**
+ * Model ScheduledBroadcast
+ * 
+ */
+export type ScheduledBroadcast = Prisma.ScheduledBroadcastModel

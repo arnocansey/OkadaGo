@@ -95,7 +95,7 @@ export function RiderVerificationScreen({
 
   if (dataLoading) {
     return (
-      <div style={{ padding: 32, background: "var(--admin-bg, #0b0f19)", minHeight: "100vh", display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ padding: 32, background: "var(--bg-primary)", minHeight: "100vh", display: "flex", flexDirection: "column", gap: 20 }}>
         <SkeletonKPI count={4} />
         <SkeletonTable rows={6} cols={5} />
       </div>
@@ -138,40 +138,40 @@ export function RiderVerificationScreen({
       label: "Pending",
       value: riderVerificationStats.pending,
       sub: "Awaiting review",
-      color: "#f59e0b",
-      bg: "rgba(245,158,11,0.12)",
+      color: "var(--accent-yellow)",
+      bg: "var(--accent-yellow-light)",
       icon: Clock,
     },
     {
       label: "Under Review",
       value: riderVerificationStats.underReview,
       sub: "In verification",
-      color: "#6366f1",
-      bg: "rgba(99,102,241,0.12)",
+      color: "var(--accent-orange)",
+      bg: "color-mix(in srgb, var(--accent-orange) 15%, transparent)",
       icon: Eye,
     },
     {
       label: "Approved",
       value: riderVerificationStats.approved,
       sub: "Fully verified",
-      color: "#22c55e",
-      bg: "rgba(34,197,94,0.12)",
+      color: "var(--color-success)",
+      bg: "color-mix(in srgb, var(--color-success) 15%, transparent)",
       icon: CheckCircle,
     },
     {
       label: "Rejected",
       value: riderVerificationStats.rejected,
       sub: "Declined",
-      color: "#ef4444",
-      bg: "rgba(239,68,68,0.12)",
+      color: "var(--color-danger)",
+      bg: "color-mix(in srgb, var(--color-danger) 15%, transparent)",
       icon: XCircle,
     },
     {
       label: "Applied Today",
       value: riderVerificationStats.today,
       sub: "New applicants",
-      color: "#06b6d4",
-      bg: "rgba(6,182,212,0.12)",
+      color: "var(--text-secondary)",
+      bg: "color-mix(in srgb, var(--text-secondary) 15%, transparent)",
       icon: BadgeCheck,
     },
   ];
@@ -210,12 +210,11 @@ export function RiderVerificationScreen({
 
   const S = {
     root: {
-      background: "var(--admin-bg, #0b0f19)",
+      background: "var(--bg-primary)",
       minHeight: "100vh",
       padding: 32,
-      fontFamily:
-        "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      color: "var(--admin-text, #e2e8f0)",
+      fontFamily: "var(--font-family)",
+      color: "var(--text-primary)",
       position: "relative" as const,
     } as React.CSSProperties,
 
@@ -253,21 +252,21 @@ export function RiderVerificationScreen({
     } as React.CSSProperties,
     kpiLabel: {
       fontSize: 12,
-      color: "#94a3b8",
+      color: "var(--text-secondary)",
       textTransform: "uppercase" as const,
       letterSpacing: 0.6,
       marginTop: 2,
     } as React.CSSProperties,
     kpiSub: {
       fontSize: 11,
-      color: "#64748b",
+      color: "var(--text-secondary)",
       marginTop: 1,
     } as React.CSSProperties,
 
     /* card shell */
     card: {
-      background: "var(--admin-card, #111827)",
-      border: "1px solid var(--admin-border, #1e293b)",
+      background: "var(--bg-card)",
+      border: "1px solid var(--border-color)",
       borderRadius: 16,
       overflow: "hidden",
     } as React.CSSProperties,
@@ -283,11 +282,11 @@ export function RiderVerificationScreen({
       fontSize: 18,
       fontWeight: 700,
       margin: 0,
-      color: "#f1f5f9",
+      color: "var(--text-primary)",
     } as React.CSSProperties,
     subtitle: {
       fontSize: 13,
-      color: "#64748b",
+      color: "var(--text-secondary)",
       marginTop: 2,
     } as React.CSSProperties,
 
@@ -296,7 +295,7 @@ export function RiderVerificationScreen({
       display: "flex",
       gap: 4,
       padding: "16px 24px 0",
-      borderBottom: "1px solid var(--admin-border, #1e293b)",
+      borderBottom: "1px solid var(--border-color)",
       overflowX: "auto" as const,
     } as React.CSSProperties,
     tab: (active: boolean): React.CSSProperties => ({
@@ -330,8 +329,8 @@ export function RiderVerificationScreen({
       padding: "10px 14px 10px 40px",
       fontSize: 13,
       borderRadius: 10,
-      border: "1px solid var(--admin-border, #1e293b)",
-      background: "var(--admin-bg, #0b0f19)",
+      border: "1px solid var(--border-color)",
+      background: "var(--bg-primary)",
       color: "#e2e8f0",
       outline: "none",
       transition: "border-color .15s",
@@ -340,8 +339,8 @@ export function RiderVerificationScreen({
       padding: "10px 14px",
       fontSize: 13,
       borderRadius: 10,
-      border: "1px solid var(--admin-border, #1e293b)",
-      background: "var(--admin-bg, #0b0f19)",
+      border: "1px solid var(--border-color)",
+      background: "var(--bg-primary)",
       color: "#e2e8f0",
       outline: "none",
       cursor: "pointer",
@@ -364,7 +363,7 @@ export function RiderVerificationScreen({
         primary: { background: "#6366f1", color: "#fff" },
         outline: {
           background: "transparent",
-          border: "1px solid var(--admin-border, #1e293b)",
+          border: "1px solid var(--border-color)",
           color: "#e2e8f0",
         },
         danger: { background: "#dc2626", color: "#fff" },
@@ -391,12 +390,12 @@ export function RiderVerificationScreen({
       textTransform: "uppercase" as const,
       letterSpacing: 0.7,
       color: "#64748b",
-      borderBottom: "1px solid var(--admin-border, #1e293b)",
+      borderBottom: "1px solid var(--border-color)",
       whiteSpace: "nowrap" as const,
     } as React.CSSProperties,
     td: {
       padding: "14px 16px",
-      borderBottom: "1px solid var(--admin-border, #1e293b)",
+      borderBottom: "1px solid var(--border-color)",
       verticalAlign: "middle" as const,
     } as React.CSSProperties,
     tr: (i: number): React.CSSProperties => ({
@@ -431,7 +430,7 @@ export function RiderVerificationScreen({
       alignItems: "center",
       justifyContent: "space-between",
       padding: "16px 24px",
-      borderTop: "1px solid var(--admin-border, #1e293b)",
+      borderTop: "1px solid var(--border-color)",
     } as React.CSSProperties,
     pageBtn: (active: boolean): React.CSSProperties => ({
       width: 34,
@@ -440,7 +439,7 @@ export function RiderVerificationScreen({
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      border: active ? "none" : "1px solid var(--admin-border, #1e293b)",
+      border: active ? "none" : "1px solid var(--border-color)",
       background: active ? "#6366f1" : "transparent",
       color: active ? "#fff" : "#94a3b8",
       fontSize: 13,
@@ -463,8 +462,8 @@ export function RiderVerificationScreen({
       width: 520,
       maxWidth: "100%",
       height: "100%",
-      background: "var(--admin-card, #111827)",
-      borderLeft: "1px solid var(--admin-border, #1e293b)",
+      background: "var(--bg-card)",
+      borderLeft: "1px solid var(--border-color)",
       overflowY: "auto" as const,
       padding: 32,
       position: "relative" as const,
@@ -474,7 +473,7 @@ export function RiderVerificationScreen({
       top: 16,
       right: 16,
       background: "rgba(255,255,255,0.05)",
-      border: "1px solid var(--admin-border, #1e293b)",
+      border: "1px solid var(--border-color)",
       borderRadius: 8,
       width: 34,
       height: 34,
@@ -502,7 +501,7 @@ export function RiderVerificationScreen({
       alignItems: "center",
       gap: 12,
       padding: "10px 0",
-      borderBottom: "1px solid var(--admin-border, #1e293b)",
+      borderBottom: "1px solid var(--border-color)",
       fontSize: 13,
     } as React.CSSProperties,
     infoIcon: {
@@ -522,7 +521,7 @@ export function RiderVerificationScreen({
       gap: 14,
       padding: "14px 16px",
       borderRadius: 10,
-      border: `1px solid ${done ? "#22c55e33" : "var(--admin-border, #1e293b)"}`,
+      border: `1px solid ${done ? "#22c55e33" : "var(--border-color)"}`,
       background: done ? "rgba(34,197,94,0.06)" : "rgba(255,255,255,0.02)",
       marginBottom: 10,
     }),
@@ -540,7 +539,7 @@ export function RiderVerificationScreen({
     docCard: {
       padding: "16px",
       borderRadius: 10,
-      border: "1px solid var(--admin-border, #1e293b)",
+      border: "1px solid var(--border-color)",
       background: "rgba(255,255,255,0.02)",
       marginBottom: 10,
       display: "flex",
@@ -564,7 +563,7 @@ export function RiderVerificationScreen({
       gap: 10,
       marginTop: 24,
       paddingTop: 24,
-      borderTop: "1px solid var(--admin-border, #1e293b)",
+      borderTop: "1px solid var(--border-color)",
     } as React.CSSProperties,
   };
 

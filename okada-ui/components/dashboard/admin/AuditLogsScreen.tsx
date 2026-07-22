@@ -1,5 +1,7 @@
 import { ClipboardList, Shield, User, Search } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
+import { AdminKpiRow } from "./ui/AdminKpiRow";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { AuditLogRecord } from "./types";
 import { formatDateTime } from "./utils";
 import { useState } from "react";
@@ -9,42 +11,11 @@ export type AuditLogsScreenProps = {
   totalAdmins: number;
 };
 
-const AUDIT_SAMPLE: AuditLogRecord[] = [
-  {
-    id: "audit-1",
-    action: "UPDATE_PAYOUT_STATUS",
-    entity: "PayoutRequest",
-    entityId: "pr-abc123",
-    details: { action: "mark_paid", status: "PAID" },
-    createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-    actor: { id: "adm-1", fullName: "Admin User", email: "admin@okadago.com", role: "admin" }
-  },
-  {
-    id: "audit-2",
-    action: "CREATE_ADMIN_ACCOUNT",
-    entity: "AdminAccount",
-    entityId: "adm-new",
-    details: { email: "ops@okadago.com" },
-    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-    actor: { id: "adm-1", fullName: "Admin User", email: "admin@okadago.com", role: "admin" }
-  },
-  {
-    id: "audit-3",
-    action: "RESOLVE_INCIDENT",
-    entity: "Incident",
-    entityId: "inc-xyz",
-    details: { status: "RESOLVED" },
-    createdAt: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
-    actor: { id: "adm-1", fullName: "Admin User", email: "admin@okadago.com", role: "admin" }
-  }
-];
-
 export function AuditLogsScreen({ auditLogs, totalAdmins }: AuditLogsScreenProps) {
   const [search, setSearch] = useState("");
   const [entityFilter, setEntityFilter] = useState("");
 
-  // Use provided audit logs or sample if empty
-  const logs = auditLogs.length > 0 ? auditLogs : AUDIT_SAMPLE;
+  const logs = auditLogs;
 
   const filtered = logs.filter((log) => {
     const matchSearch =
@@ -70,40 +41,19 @@ export function AuditLogsScreen({ auditLogs, totalAdmins }: AuditLogsScreenProps
 
   return (
     <div className="exact-admin-screen">
-      <section className="admin-reference-kpis">
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon yellow"><ClipboardList size={22} /></div>
-          <div>
-            <span>Total Events</span>
-            <strong>{logs.length}</strong>
-            <small>Admin actions logged</small>
-          </div>
-        </article>
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon green"><Shield size={22} /></div>
-          <div>
-            <span>Entities Affected</span>
-            <strong>{entities.length}</strong>
-            <small>Resource types</small>
-          </div>
-        </article>
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon yellow"><User size={22} /></div>
-          <div>
-            <span>Admin Actors</span>
-            <strong>{totalAdmins}</strong>
-            <small>Active operators</small>
-          </div>
-        </article>
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon yellow"><ClipboardList size={22} /></div>
-          <div>
-            <span>Action Types</span>
-            <strong>{Object.keys(actionCounts).length}</strong>
-            <small>Distinct operations</small>
-          </div>
-        </article>
-      </section>
+      <AdminPageHeader
+        title="Audit Logs"
+        subtitle="Live admin actions from the platform audit trail."
+      />
+
+      <AdminKpiRow
+        items={[
+          { label: "Total Events", value: logs.length, hint: "Admin actions logged", icon: <ClipboardList size={22} />, tone: "yellow" },
+          { label: "Entities Affected", value: entities.length, hint: "Resource types", icon: <Shield size={22} />, tone: "green" },
+          { label: "Admin Actors", value: totalAdmins, hint: "Active operators", icon: <User size={22} />, tone: "yellow" },
+          { label: "Action Types", value: Object.keys(actionCounts).length, hint: "Distinct operations", icon: <ClipboardList size={22} />, tone: "yellow" }
+        ]}
+      />
 
       <div className="admin-filter-bar">
         <Search size={14} />
@@ -135,7 +85,10 @@ export function AuditLogsScreen({ auditLogs, totalAdmins }: AuditLogsScreenProps
             </div>
           </div>
           {filtered.length === 0 ? (
-            <EmptyCard title="No audit events found." body="Admin actions will be logged here when backend audit endpoints are connected." />
+            <EmptyCard
+              title="No audit events yet."
+              body="Admin actions will appear here as operators approve riders, review payouts, and resolve incidents."
+            />
           ) : (
             <div className="admin-table-wrapper">
               <table className="admin-table">
@@ -162,14 +115,12 @@ export function AuditLogsScreen({ auditLogs, totalAdmins }: AuditLogsScreenProps
                           <small>{log.actor?.email ?? "—"}</small>
                         </td>
                         <td>
-                          <code style={{ fontSize: 11, background: "#f3f4f6", padding: "2px 6px", borderRadius: 4 }}>
-                            {log.action}
-                          </code>
+                          <code className="admin-inline-code">{log.action}</code>
                         </td>
                         <td><em className="admin-reference-tag neutral">{log.entity}</em></td>
                         <td>
                           {log.entityId ? (
-                            <code style={{ fontSize: 11 }}>{log.entityId.slice(-12)}</code>
+                            <code className="admin-inline-code">{log.entityId.slice(-12)}</code>
                           ) : (
                             "—"
                           )}
@@ -195,27 +146,17 @@ export function AuditLogsScreen({ auditLogs, totalAdmins }: AuditLogsScreenProps
               <div><h3>Top Actions</h3><p>Most frequent operations</p></div>
             </div>
             {topActions.length === 0 ? (
-              <EmptyCard title="No action data." body="" />
+              <EmptyCard title="No action data." body="Counts appear after the first audited events." />
             ) : (
               <ul className="admin-summary-list">
                 {topActions.map(([action, count]) => (
                   <li key={action}>
-                    <code style={{ fontSize: 11 }}>{action}</code>
+                    <code className="admin-inline-code">{action}</code>
                     <strong>{count}</strong>
                   </li>
                 ))}
               </ul>
             )}
-          </article>
-
-          <article className="admin-reference-card">
-            <div className="admin-reference-cardhead">
-              <div><h3>Integration Note</h3></div>
-            </div>
-            <div style={{ padding: "8px 0", fontSize: 13 }}>
-              <p>Connect <code>/admin/audit-logs</code> to enable live audit tracking.</p>
-              <p style={{ marginTop: 8 }}>Current display includes sample data for UI demonstration.</p>
-            </div>
           </article>
         </aside>
       </div>

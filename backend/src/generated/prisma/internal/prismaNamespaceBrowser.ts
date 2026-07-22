@@ -82,7 +82,9 @@ export const ModelName = {
   Incident: 'Incident',
   EmergencyContact: 'EmergencyContact',
   SavedPlace: 'SavedPlace',
-  AuditLog: 'AuditLog'
+  AuditLog: 'AuditLog',
+  EscalationRule: 'EscalationRule',
+  ScheduledBroadcast: 'ScheduledBroadcast'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -723,6 +725,39 @@ export const AuditLogScalarFieldEnum = {
 } as const
 
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const EscalationRuleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  triggerCondition: 'triggerCondition',
+  thresholdHours: 'thresholdHours',
+  action: 'action',
+  targetRole: 'targetRole',
+  enabled: 'enabled',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EscalationRuleScalarFieldEnum = (typeof EscalationRuleScalarFieldEnum)[keyof typeof EscalationRuleScalarFieldEnum]
+
+
+export const ScheduledBroadcastScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  body: 'body',
+  targetAudience: 'targetAudience',
+  targetZoneId: 'targetZoneId',
+  scheduledAt: 'scheduledAt',
+  status: 'status',
+  sentCount: 'sentCount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  cancelledAt: 'cancelledAt'
+} as const
+
+export type ScheduledBroadcastScalarFieldEnum = (typeof ScheduledBroadcastScalarFieldEnum)[keyof typeof ScheduledBroadcastScalarFieldEnum]
 
 
 export const SortOrder = {

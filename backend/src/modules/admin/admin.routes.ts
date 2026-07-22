@@ -13,11 +13,17 @@ import {
   adminWalletTransactionsQuerySchema
 } from "../wallets/wallet.schemas.js";
 import { AdminRiderService } from "./admin.service.js";
+import { AdminOpsService } from "./admin-ops.service.js";
 import {
   riderApprovalParamsSchema,
   riderApprovalSchema,
   riderSuspensionParamsSchema,
-  riderSuspensionSchema
+  riderSuspensionSchema,
+  createEscalationRuleSchema,
+  updateEscalationRuleSchema,
+  escalationRuleParamsSchema,
+  createScheduledBroadcastSchema,
+  scheduledBroadcastParamsSchema
 } from "./admin.schemas.js";
 
 import { prisma } from "../../common/prisma.js";
@@ -26,6 +32,7 @@ const authService = new AuthService();
 const walletService = new WalletService();
 const ratingService = new RatingService();
 const adminRiderService = new AdminRiderService();
+const adminOpsService = new AdminOpsService();
 
 function extractBearerToken(authorizationHeader?: string) {
   if (!authorizationHeader?.startsWith("Bearer ")) {
@@ -162,5 +169,42 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
     const params = parseParams(request, riderSuspensionParamsSchema);
     const input = parseBody(request, riderSuspensionSchema);
     return adminRiderService.suspendRider(token, params.riderProfileId, input);
+  });
+
+  server.get("/admin/escalation-rules", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return adminOpsService.listEscalationRules(token);
+  });
+
+  server.post("/admin/escalation-rules", async (request, reply) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const input = parseBody(request, createEscalationRuleSchema);
+    const rule = await adminOpsService.createEscalationRule(token, input);
+    return reply.status(201).send(rule);
+  });
+
+  server.patch("/admin/escalation-rules/:ruleId", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, escalationRuleParamsSchema);
+    const input = parseBody(request, updateEscalationRuleSchema);
+    return adminOpsService.updateEscalationRule(token, params.ruleId, input);
+  });
+
+  server.get("/admin/scheduled-broadcasts", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return adminOpsService.listScheduledBroadcasts(token);
+  });
+
+  server.post("/admin/scheduled-broadcasts", async (request, reply) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const input = parseBody(request, createScheduledBroadcastSchema);
+    const broadcast = await adminOpsService.createScheduledBroadcast(token, input);
+    return reply.status(201).send(broadcast);
+  });
+
+  server.patch("/admin/scheduled-broadcasts/:broadcastId/cancel", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, scheduledBroadcastParamsSchema);
+    return adminOpsService.cancelScheduledBroadcast(token, params.broadcastId);
   });
 };

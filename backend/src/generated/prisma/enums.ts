@@ -311,3 +311,23 @@ export const DeliveryStopStatus = {
 } as const
 
 export type DeliveryStopStatus = (typeof DeliveryStopStatus)[keyof typeof DeliveryStopStatus]
+
+
+export const BroadcastAudience = {
+  ALL: 'ALL',
+  RIDERS: 'RIDERS',
+  PASSENGERS: 'PASSENGERS',
+  ZONE: 'ZONE'
+} as const
+
+export type BroadcastAudience = (typeof BroadcastAudience)[keyof typeof BroadcastAudience]
+
+
+export const BroadcastStatus = {
+  PENDING: 'PENDING',
+  SENT: 'SENT',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type BroadcastStatus = (typeof BroadcastStatus)[keyof typeof BroadcastStatus]

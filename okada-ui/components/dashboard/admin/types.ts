@@ -20,6 +20,7 @@ export type AdminConsoleScreen =
   | "promotions"
   | "zones"
   | "supportTickets"
+  | "sosIncidents"
   | "notifications"
   | "reports"
   | "auditLogs"
@@ -393,4 +394,54 @@ export type RiderFinancialRow = {
   ratingCount: number;
   walletMovement: number;
   payoutTotal: number;
+};
+
+export type AdminSupportTicketRecord = {
+  id: string;
+  title: string;
+  category: string;
+  status: string;
+  priority: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+  closedAt: string | null;
+  createdBy?: {
+    id: string;
+    fullName: string;
+    phoneE164?: string | null;
+    email?: string | null;
+  } | null;
+  assignedTo?: {
+    id: string;
+    fullName: string;
+    email?: string | null;
+  } | null;
+  ride?: {
+    id: string;
+    status: string;
+  } | null;
+};
+
+export type EscalationRuleRecord = {
+  id: string;
+  name: string;
+  description: string;
+  triggerCondition: string;
+  thresholdHours: number;
+  action: string;
+  targetRole: string;
+  enabled: boolean;
+};
+
+export type ScheduledBroadcastRecord = {
+  id: string;
+  title: string;
+  body: string;
+  targetAudience: "all" | "riders" | "passengers" | "zone";
+  targetZone?: string;
+  scheduledAt: string;
+  status: "pending" | "sent" | "failed" | "cancelled";
+  sentCount?: number;
+  createdAt: string;
 };

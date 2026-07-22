@@ -51,6 +51,7 @@ export type AdminShellBadgeData = {
   adminAccountsCount: number;
   ratingsCount: number;
   openSupportTicketsCount: number;
+  openSosCount: number;
   deliveriesCount: number;
   completedDeliveriesCount: number;
 };
@@ -92,6 +93,7 @@ const screenPermissions: Partial<Record<AdminConsoleScreen, string>> = {
   promotions: "promotions.view",
   zones: "zones.view",
   supportTickets: "support.view",
+  sosIncidents: "support.view",
   escalationRules: "support.view",
   notifications: "notifications.view",
   reports: "reports.view",
@@ -276,6 +278,15 @@ const screenMeta: Record<AdminConsoleScreen, AdminScreenMeta> = {
     quickActionHref: "/admin/riders/complaints",
     quickActionNote: "Cross-check app support tickets with rider-linked incident reports."
   },
+  sosIncidents: {
+    eyebrow: "Safety operations",
+    title: "SOS & Emergencies",
+    description: "Critical SOS and emergency incidents from riders and passengers.",
+    searchLabel: "Search SOS incidents...",
+    quickActionLabel: "Open support",
+    quickActionHref: "/admin/support-tickets",
+    quickActionNote: "Escalate non-critical cases to the support queue."
+  },
   escalationRules: {
     eyebrow: "Support operations",
     title: "Escalation Rules",
@@ -381,7 +392,11 @@ export function AdminShell({
   const [expandedNavSections, setExpandedNavSections] = useState<Record<string, boolean>>({});
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [desktopOpen, setDesktopOpen] = useState(true);
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    if (typeof window === "undefined") return "dark";
+    const stored = window.localStorage.getItem("okadago.admin-theme");
+    return stored === "light" || stored === "dark" ? stored : "dark";
+  });
   const toggleSidebar = useCallback(() => {
     if (typeof window !== "undefined" && window.innerWidth > 1024) {
       setDesktopOpen((prev) => !prev);
@@ -391,7 +406,13 @@ export function AdminShell({
   }, []);
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
   const toggleTheme = useCallback(() => {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+    setTheme((prev) => {
+      const next = prev === "light" ? "dark" : "light";
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("okadago.admin-theme", next);
+      }
+      return next;
+    });
   }, []);
 
   const permittedScreens = useMemo(() => {
@@ -568,6 +589,15 @@ export function AdminShell({
         group: "system",
         hint: "Passenger and rider cases",
         badge: `${badgeData.openSupportTicketsCount}`
+      },
+      {
+        label: "SOS & Emergencies",
+        href: "/admin/sos",
+        icon: ShieldAlert,
+        screen: "sosIncidents",
+        group: "main",
+        hint: "Critical SOS queue",
+        badge: `${badgeData.openSosCount}`
       },
       {
         label: "Escalation Rules",

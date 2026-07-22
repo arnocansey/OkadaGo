@@ -1,6 +1,11 @@
+"use client";
+
+import { useState } from "react";
 import { Headphones, CheckCircle, Clock, AlertTriangle } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
-import type { AdminIncidentRecord } from "./types";
+import { AdminKpiRow } from "./ui/AdminKpiRow";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
+import type { AdminIncidentRecord, AdminSupportTicketRecord } from "./types";
 import { formatDateTime, statusTone, formatEnumLabel } from "./utils";
 
 export type SupportTicketsScreenProps = {
@@ -8,6 +13,10 @@ export type SupportTicketsScreenProps = {
   openTickets: AdminIncidentRecord[];
   inProgressTickets: AdminIncidentRecord[];
   resolvedTickets: AdminIncidentRecord[];
+  supportTickets: AdminSupportTicketRecord[];
+  openSupportTickets: AdminSupportTicketRecord[];
+  inProgressSupportTickets: AdminSupportTicketRecord[];
+  resolvedSupportTickets: AdminSupportTicketRecord[];
   onIncidentAction: (
     incidentId: string,
     status: "UNDER_REVIEW" | "ACTIONED" | "RESOLVED" | "CLOSED"
@@ -20,267 +29,134 @@ export function SupportTicketsScreen({
   openTickets,
   inProgressTickets,
   resolvedTickets,
+  supportTickets,
+  openSupportTickets,
+  inProgressSupportTickets,
+  resolvedSupportTickets,
   onIncidentAction,
   isMutating
 }: SupportTicketsScreenProps) {
+  const [tab, setTab] = useState<"tickets" | "incidents">("tickets");
+
   return (
     <div className="exact-admin-screen">
-      <section className="admin-reference-kpis">
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon red"><AlertTriangle size={22} /></div>
-          <div>
-            <span>Open Tickets</span>
-            <strong>{openTickets.length}</strong>
-            <small>Awaiting first response</small>
-          </div>
-        </article>
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon yellow"><Clock size={22} /></div>
-          <div>
-            <span>In Progress</span>
-            <strong>{inProgressTickets.length}</strong>
-            <small>Under review or actioned</small>
-          </div>
-        </article>
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon green"><CheckCircle size={22} /></div>
-          <div>
-            <span>Resolved</span>
-            <strong>{resolvedTickets.length}</strong>
-            <small>Closed tickets</small>
-          </div>
-        </article>
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon yellow"><Headphones size={22} /></div>
-          <div>
-            <span>Total Tickets</span>
-            <strong>{incidents.length}</strong>
-            <small>All time</small>
-          </div>
-        </article>
-      </section>
+      <AdminPageHeader
+        title="Support"
+        subtitle="Passenger/rider support tickets and safety incidents in one place."
+      />
 
-      <div className="admin-screen-grid-2">
-        {/* Open tickets priority list */}
-        <div>
-          <article className="admin-reference-card" style={{ marginBottom: 16 }}>
+      <div className="admin-tabs">
+        <button type="button" className={`admin-tab ${tab === "tickets" ? "active" : ""}`} onClick={() => setTab("tickets")}>
+          Support tickets ({supportTickets.length})
+        </button>
+        <button type="button" className={`admin-tab ${tab === "incidents" ? "active" : ""}`} onClick={() => setTab("incidents")}>
+          Safety incidents ({incidents.length})
+        </button>
+      </div>
+
+      {tab === "tickets" ? (
+        <>
+          <AdminKpiRow
+            items={[
+              { label: "Open Tickets", value: openSupportTickets.length, hint: "Awaiting first response", icon: <AlertTriangle size={22} />, tone: "red" },
+              { label: "In Progress", value: inProgressSupportTickets.length, hint: "Assigned / working", icon: <Clock size={22} />, tone: "yellow" },
+              { label: "Resolved", value: resolvedSupportTickets.length, hint: "Closed tickets", icon: <CheckCircle size={22} />, tone: "green" },
+              { label: "Total Tickets", value: supportTickets.length, hint: "All support cases", icon: <Headphones size={22} />, tone: "yellow" }
+            ]}
+          />
+          <article className="admin-reference-card">
             <div className="admin-reference-cardhead">
               <div>
-                <h3>Open & In Progress</h3>
-                <p>Tickets requiring admin attention.</p>
+                <h3>Support ticket queue</h3>
+                <p>From /admin/support/tickets</p>
+              </div>
+            </div>
+            {supportTickets.length === 0 ? (
+              <EmptyCard title="No support tickets yet." body="Tickets created by passengers and riders will show here." />
+            ) : (
+              <div className="admin-table-wrapper">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Created</th>
+                      <th>Title</th>
+                      <th>Category</th>
+                      <th>Priority</th>
+                      <th>Requester</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {supportTickets
+                      .slice()
+                      .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
+                      .map((ticket) => (
+                        <tr key={ticket.id}>
+                          <td><small>{formatDateTime(ticket.createdAt)}</small></td>
+                          <td>
+                            <strong>{ticket.title}</strong>
+                            <br />
+                            <small>{ticket.description}</small>
+                          </td>
+                          <td>{formatEnumLabel(ticket.category)}</td>
+                          <td>{formatEnumLabel(ticket.priority)}</td>
+                          <td>{ticket.createdBy?.fullName ?? "—"}</td>
+                          <td>
+                            <em className={`admin-reference-tag ${statusTone(ticket.status)}`}>
+                              {formatEnumLabel(ticket.status)}
+                            </em>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </article>
+        </>
+      ) : (
+        <>
+          <AdminKpiRow
+            items={[
+              { label: "Open Incidents", value: openTickets.length, hint: "Awaiting first response", icon: <AlertTriangle size={22} />, tone: "red" },
+              { label: "In Progress", value: inProgressTickets.length, hint: "Under review or actioned", icon: <Clock size={22} />, tone: "yellow" },
+              { label: "Resolved", value: resolvedTickets.length, hint: "Closed incidents", icon: <CheckCircle size={22} />, tone: "green" },
+              { label: "Total Incidents", value: incidents.length, hint: "All safety cases", icon: <Headphones size={22} />, tone: "yellow" }
+            ]}
+          />
+          <article className="admin-reference-card">
+            <div className="admin-reference-cardhead">
+              <div>
+                <h3>Open & in progress incidents</h3>
+                <p>Safety/incident queue (use SOS board for critical alerts)</p>
               </div>
             </div>
             {openTickets.length === 0 && inProgressTickets.length === 0 ? (
-              <EmptyCard title="No open tickets." body="All caught up! Tickets will appear as they're submitted." />
+              <EmptyCard title="No open incidents." body="All caught up." />
             ) : (
               <div className="admin-incident-list">
                 {[...openTickets, ...inProgressTickets]
                   .slice()
-                  .sort((a, b) => {
-                    const severityOrder = { HIGH: 0, MEDIUM: 1, LOW: 2 };
-                    return (severityOrder[a.severity as keyof typeof severityOrder] ?? 3) -
-                      (severityOrder[b.severity as keyof typeof severityOrder] ?? 3);
-                  })
+                  .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
                   .map((ticket) => (
-                    <article key={ticket.id} className="admin-incident-card">
-                      <div className="admin-incident-card-head">
-                        <div>
-                          <strong>{ticket.category}</strong>
-                          <small>
-                            {ticket.reporter.fullName} · {ticket.reporter.phoneE164}
-                          </small>
-                        </div>
-                        <div style={{ display: "flex", gap: 8 }}>
-                          <em
-                            className={`admin-reference-tag ${ticket.severity === "HIGH" ? "danger" : ticket.severity === "MEDIUM" ? "warning" : "neutral"}`}
-                          >
-                            {ticket.severity}
-                          </em>
-                          <em className={`admin-reference-tag ${statusTone(ticket.status)}`}>
-                            {formatEnumLabel(ticket.status)}
-                          </em>
-                        </div>
+                    <div key={ticket.id} className="admin-incident-item">
+                      <div>
+                        <strong>{ticket.reporter.fullName}</strong>
+                        <p>{ticket.description}</p>
+                        <small>{formatDateTime(ticket.createdAt)} · {formatEnumLabel(ticket.severity)} · {formatEnumLabel(ticket.category)}</small>
                       </div>
-                      <p className="admin-incident-desc">{ticket.description}</p>
-                      {ticket.ride && (
-                        <div className="admin-incident-ride">
-                          <small>
-                            Ride: {ticket.ride.pickupAddress} → {ticket.ride.destinationAddress}
-                          </small>
-                        </div>
-                      )}
-                      {ticket.rider && (
-                        <div className="admin-incident-rider">
-                          <small>
-                            Rider: {ticket.rider.user.fullName} ({ticket.rider.displayCode})
-                          </small>
-                        </div>
-                      )}
-                      {ticket.assignedTo && (
-                        <div className="admin-incident-rider">
-                          <small>Assigned to: {ticket.assignedTo.fullName}</small>
-                        </div>
-                      )}
-                      <div className="admin-incident-footer">
-                        <small>{formatDateTime(ticket.createdAt)}</small>
+                      <div className="admin-action-row">
+                        <em className={`admin-reference-tag ${statusTone(ticket.status)}`}>{formatEnumLabel(ticket.status)}</em>
+                        <button type="button" className="admin-btn-secondary" disabled={isMutating} onClick={() => onIncidentAction(ticket.id, "UNDER_REVIEW")}>Review</button>
+                        <button type="button" className="admin-btn-primary" disabled={isMutating} onClick={() => onIncidentAction(ticket.id, "RESOLVED")}>Resolve</button>
                       </div>
-                      <div className="admin-incident-actions">
-                        <button
-                          type="button"
-                          className="button-sm"
-                          disabled={isMutating}
-                          onClick={() => onIncidentAction(ticket.id, "UNDER_REVIEW")}
-                        >
-                          Review
-                        </button>
-                        <button
-                          type="button"
-                          className="button-sm"
-                          disabled={isMutating}
-                          onClick={() => onIncidentAction(ticket.id, "ACTIONED")}
-                        >
-                          Action
-                        </button>
-                        <button
-                          type="button"
-                          className="button-sm success"
-                          disabled={isMutating}
-                          onClick={() => onIncidentAction(ticket.id, "RESOLVED")}
-                        >
-                          <CheckCircle size={14} /> Resolve
-                        </button>
-                        <button
-                          type="button"
-                          className="button-sm"
-                          disabled={isMutating}
-                          onClick={() => onIncidentAction(ticket.id, "CLOSED")}
-                        >
-                          Close
-                        </button>
-                      </div>
-                    </article>
+                    </div>
                   ))}
               </div>
             )}
           </article>
-        </div>
-
-        {/* All tickets sidebar */}
-        <aside className="admin-sidebar-panel">
-          <article className="admin-reference-card" style={{ marginBottom: 16 }}>
-            <div className="admin-reference-cardhead">
-              <div><h3>Ticket Status</h3></div>
-            </div>
-            <ul className="admin-summary-list">
-              <li>
-                <span>Open</span>
-                <em className="admin-reference-tag danger">{openTickets.length}</em>
-              </li>
-              <li>
-                <span>In Progress</span>
-                <em className="admin-reference-tag warning">{inProgressTickets.length}</em>
-              </li>
-              <li>
-                <span>Resolved</span>
-                <em className="admin-reference-tag success">{resolvedTickets.length}</em>
-              </li>
-              <li>
-                <span>Resolution Rate</span>
-                <strong>
-                  {incidents.length > 0 ? Math.round((resolvedTickets.length / incidents.length) * 100) : 0}%
-                </strong>
-              </li>
-            </ul>
-          </article>
-
-          <article className="admin-reference-card">
-            <div className="admin-reference-cardhead">
-              <div><h3>Severity Breakdown</h3></div>
-            </div>
-            <ul className="admin-summary-list">
-              {["HIGH", "MEDIUM", "LOW"].map((severity) => (
-                <li key={severity}>
-                  <em
-                    className={`admin-reference-tag ${severity === "HIGH" ? "danger" : severity === "MEDIUM" ? "warning" : "neutral"}`}
-                  >
-                    {severity}
-                  </em>
-                  <strong>
-                    {incidents.filter((i) => i.severity.toUpperCase() === severity).length}
-                  </strong>
-                </li>
-              ))}
-            </ul>
-          </article>
-        </aside>
-      </div>
-
-      {/* All tickets table */}
-      <article className="admin-reference-card" style={{ marginTop: 16 }}>
-        <div className="admin-reference-cardhead">
-          <div>
-            <h3>All Tickets</h3>
-            <p>Complete history of support tickets.</p>
-          </div>
-        </div>
-        {incidents.length === 0 ? (
-          <EmptyCard title="No support tickets." body="Tickets will appear here when submitted via the app." />
-        ) : (
-          <div className="admin-table-wrapper">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Reporter</th>
-                  <th>Category</th>
-                  <th>Severity</th>
-                  <th>Status</th>
-                  <th>Rider</th>
-                  <th>Assigned To</th>
-                  <th>Created</th>
-                  <th>Resolved</th>
-                </tr>
-              </thead>
-              <tbody>
-                {incidents
-                  .slice()
-                  .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
-                  .map((ticket) => (
-                    <tr key={ticket.id}>
-                      <td>
-                        <strong>{ticket.reporter.fullName}</strong>
-                        <br />
-                        <small>{ticket.reporter.phoneE164}</small>
-                      </td>
-                      <td><small>{ticket.category}</small></td>
-                      <td>
-                        <em
-                          className={`admin-reference-tag ${ticket.severity === "HIGH" ? "danger" : ticket.severity === "MEDIUM" ? "warning" : "neutral"}`}
-                        >
-                          {ticket.severity}
-                        </em>
-                      </td>
-                      <td>
-                        <em className={`admin-reference-tag ${statusTone(ticket.status)}`}>
-                          {formatEnumLabel(ticket.status)}
-                        </em>
-                      </td>
-                      <td>
-                        <small>{ticket.rider?.user.fullName ?? "—"}</small>
-                      </td>
-                      <td>
-                        <small>{ticket.assignedTo?.fullName ?? "Unassigned"}</small>
-                      </td>
-                      <td><small>{formatDateTime(ticket.createdAt)}</small></td>
-                      <td>
-                        <small>{ticket.resolvedAt ? formatDateTime(ticket.resolvedAt) : "—"}</small>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </article>
+        </>
+      )}
     </div>
   );
 }

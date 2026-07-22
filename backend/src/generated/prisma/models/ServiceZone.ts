@@ -340,6 +340,7 @@ export type ServiceZoneWhereInput = {
   rides?: Prisma.RideListRelationFilter
   deliveries?: Prisma.DeliveryRequestListRelationFilter
   riders?: Prisma.RiderProfileListRelationFilter
+  broadcasts?: Prisma.ScheduledBroadcastListRelationFilter
 }
 
 export type ServiceZoneOrderByWithRelationInput = {
@@ -365,6 +366,7 @@ export type ServiceZoneOrderByWithRelationInput = {
   rides?: Prisma.RideOrderByRelationAggregateInput
   deliveries?: Prisma.DeliveryRequestOrderByRelationAggregateInput
   riders?: Prisma.RiderProfileOrderByRelationAggregateInput
+  broadcasts?: Prisma.ScheduledBroadcastOrderByRelationAggregateInput
 }
 
 export type ServiceZoneWhereUniqueInput = Prisma.AtLeast<{
@@ -393,6 +395,7 @@ export type ServiceZoneWhereUniqueInput = Prisma.AtLeast<{
   rides?: Prisma.RideListRelationFilter
   deliveries?: Prisma.DeliveryRequestListRelationFilter
   riders?: Prisma.RiderProfileListRelationFilter
+  broadcasts?: Prisma.ScheduledBroadcastListRelationFilter
 }, "id" | "name">
 
 export type ServiceZoneOrderByWithAggregationInput = {
@@ -468,6 +471,7 @@ export type ServiceZoneCreateInput = {
   rides?: Prisma.RideCreateNestedManyWithoutServiceZoneInput
   deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutServiceZoneInput
   riders?: Prisma.RiderProfileCreateNestedManyWithoutServiceZoneInput
+  broadcasts?: Prisma.ScheduledBroadcastCreateNestedManyWithoutTargetZoneInput
 }
 
 export type ServiceZoneUncheckedCreateInput = {
@@ -493,6 +497,7 @@ export type ServiceZoneUncheckedCreateInput = {
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutServiceZoneInput
   deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutServiceZoneInput
   riders?: Prisma.RiderProfileUncheckedCreateNestedManyWithoutServiceZoneInput
+  broadcasts?: Prisma.ScheduledBroadcastUncheckedCreateNestedManyWithoutTargetZoneInput
 }
 
 export type ServiceZoneUpdateInput = {
@@ -518,6 +523,7 @@ export type ServiceZoneUpdateInput = {
   rides?: Prisma.RideUpdateManyWithoutServiceZoneNestedInput
   deliveries?: Prisma.DeliveryRequestUpdateManyWithoutServiceZoneNestedInput
   riders?: Prisma.RiderProfileUpdateManyWithoutServiceZoneNestedInput
+  broadcasts?: Prisma.ScheduledBroadcastUpdateManyWithoutTargetZoneNestedInput
 }
 
 export type ServiceZoneUncheckedUpdateInput = {
@@ -543,6 +549,7 @@ export type ServiceZoneUncheckedUpdateInput = {
   rides?: Prisma.RideUncheckedUpdateManyWithoutServiceZoneNestedInput
   deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutServiceZoneNestedInput
   riders?: Prisma.RiderProfileUncheckedUpdateManyWithoutServiceZoneNestedInput
+  broadcasts?: Prisma.ScheduledBroadcastUncheckedUpdateManyWithoutTargetZoneNestedInput
 }
 
 export type ServiceZoneCreateManyInput = {
@@ -756,6 +763,22 @@ export type ServiceZoneUpdateOneWithoutDeliveriesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ServiceZoneUpdateToOneWithWhereWithoutDeliveriesInput, Prisma.ServiceZoneUpdateWithoutDeliveriesInput>, Prisma.ServiceZoneUncheckedUpdateWithoutDeliveriesInput>
 }
 
+export type ServiceZoneCreateNestedOneWithoutBroadcastsInput = {
+  create?: Prisma.XOR<Prisma.ServiceZoneCreateWithoutBroadcastsInput, Prisma.ServiceZoneUncheckedCreateWithoutBroadcastsInput>
+  connectOrCreate?: Prisma.ServiceZoneCreateOrConnectWithoutBroadcastsInput
+  connect?: Prisma.ServiceZoneWhereUniqueInput
+}
+
+export type ServiceZoneUpdateOneWithoutBroadcastsNestedInput = {
+  create?: Prisma.XOR<Prisma.ServiceZoneCreateWithoutBroadcastsInput, Prisma.ServiceZoneUncheckedCreateWithoutBroadcastsInput>
+  connectOrCreate?: Prisma.ServiceZoneCreateOrConnectWithoutBroadcastsInput
+  upsert?: Prisma.ServiceZoneUpsertWithoutBroadcastsInput
+  disconnect?: Prisma.ServiceZoneWhereInput | boolean
+  delete?: Prisma.ServiceZoneWhereInput | boolean
+  connect?: Prisma.ServiceZoneWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ServiceZoneUpdateToOneWithWhereWithoutBroadcastsInput, Prisma.ServiceZoneUpdateWithoutBroadcastsInput>, Prisma.ServiceZoneUncheckedUpdateWithoutBroadcastsInput>
+}
+
 export type ServiceZoneCreateWithoutRidersInput = {
   id?: string
   name: string
@@ -778,6 +801,7 @@ export type ServiceZoneCreateWithoutRidersInput = {
   pricingRules?: Prisma.PricingRuleCreateNestedManyWithoutServiceZoneInput
   rides?: Prisma.RideCreateNestedManyWithoutServiceZoneInput
   deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutServiceZoneInput
+  broadcasts?: Prisma.ScheduledBroadcastCreateNestedManyWithoutTargetZoneInput
 }
 
 export type ServiceZoneUncheckedCreateWithoutRidersInput = {
@@ -802,6 +826,7 @@ export type ServiceZoneUncheckedCreateWithoutRidersInput = {
   pricingRules?: Prisma.PricingRuleUncheckedCreateNestedManyWithoutServiceZoneInput
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutServiceZoneInput
   deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutServiceZoneInput
+  broadcasts?: Prisma.ScheduledBroadcastUncheckedCreateNestedManyWithoutTargetZoneInput
 }
 
 export type ServiceZoneCreateOrConnectWithoutRidersInput = {
@@ -842,6 +867,7 @@ export type ServiceZoneUpdateWithoutRidersInput = {
   pricingRules?: Prisma.PricingRuleUpdateManyWithoutServiceZoneNestedInput
   rides?: Prisma.RideUpdateManyWithoutServiceZoneNestedInput
   deliveries?: Prisma.DeliveryRequestUpdateManyWithoutServiceZoneNestedInput
+  broadcasts?: Prisma.ScheduledBroadcastUpdateManyWithoutTargetZoneNestedInput
 }
 
 export type ServiceZoneUncheckedUpdateWithoutRidersInput = {
@@ -866,6 +892,7 @@ export type ServiceZoneUncheckedUpdateWithoutRidersInput = {
   pricingRules?: Prisma.PricingRuleUncheckedUpdateManyWithoutServiceZoneNestedInput
   rides?: Prisma.RideUncheckedUpdateManyWithoutServiceZoneNestedInput
   deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutServiceZoneNestedInput
+  broadcasts?: Prisma.ScheduledBroadcastUncheckedUpdateManyWithoutTargetZoneNestedInput
 }
 
 export type ServiceZoneCreateWithoutPricingRulesInput = {
@@ -890,6 +917,7 @@ export type ServiceZoneCreateWithoutPricingRulesInput = {
   rides?: Prisma.RideCreateNestedManyWithoutServiceZoneInput
   deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutServiceZoneInput
   riders?: Prisma.RiderProfileCreateNestedManyWithoutServiceZoneInput
+  broadcasts?: Prisma.ScheduledBroadcastCreateNestedManyWithoutTargetZoneInput
 }
 
 export type ServiceZoneUncheckedCreateWithoutPricingRulesInput = {
@@ -914,6 +942,7 @@ export type ServiceZoneUncheckedCreateWithoutPricingRulesInput = {
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutServiceZoneInput
   deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutServiceZoneInput
   riders?: Prisma.RiderProfileUncheckedCreateNestedManyWithoutServiceZoneInput
+  broadcasts?: Prisma.ScheduledBroadcastUncheckedCreateNestedManyWithoutTargetZoneInput
 }
 
 export type ServiceZoneCreateOrConnectWithoutPricingRulesInput = {
@@ -954,6 +983,7 @@ export type ServiceZoneUpdateWithoutPricingRulesInput = {
   rides?: Prisma.RideUpdateManyWithoutServiceZoneNestedInput
   deliveries?: Prisma.DeliveryRequestUpdateManyWithoutServiceZoneNestedInput
   riders?: Prisma.RiderProfileUpdateManyWithoutServiceZoneNestedInput
+  broadcasts?: Prisma.ScheduledBroadcastUpdateManyWithoutTargetZoneNestedInput
 }
 
 export type ServiceZoneUncheckedUpdateWithoutPricingRulesInput = {
@@ -978,6 +1008,7 @@ export type ServiceZoneUncheckedUpdateWithoutPricingRulesInput = {
   rides?: Prisma.RideUncheckedUpdateManyWithoutServiceZoneNestedInput
   deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutServiceZoneNestedInput
   riders?: Prisma.RiderProfileUncheckedUpdateManyWithoutServiceZoneNestedInput
+  broadcasts?: Prisma.ScheduledBroadcastUncheckedUpdateManyWithoutTargetZoneNestedInput
 }
 
 export type ServiceZoneCreateWithoutRidesInput = {
@@ -1002,6 +1033,7 @@ export type ServiceZoneCreateWithoutRidesInput = {
   pricingRules?: Prisma.PricingRuleCreateNestedManyWithoutServiceZoneInput
   deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutServiceZoneInput
   riders?: Prisma.RiderProfileCreateNestedManyWithoutServiceZoneInput
+  broadcasts?: Prisma.ScheduledBroadcastCreateNestedManyWithoutTargetZoneInput
 }
 
 export type ServiceZoneUncheckedCreateWithoutRidesInput = {
@@ -1026,6 +1058,7 @@ export type ServiceZoneUncheckedCreateWithoutRidesInput = {
   pricingRules?: Prisma.PricingRuleUncheckedCreateNestedManyWithoutServiceZoneInput
   deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutServiceZoneInput
   riders?: Prisma.RiderProfileUncheckedCreateNestedManyWithoutServiceZoneInput
+  broadcasts?: Prisma.ScheduledBroadcastUncheckedCreateNestedManyWithoutTargetZoneInput
 }
 
 export type ServiceZoneCreateOrConnectWithoutRidesInput = {
@@ -1066,6 +1099,7 @@ export type ServiceZoneUpdateWithoutRidesInput = {
   pricingRules?: Prisma.PricingRuleUpdateManyWithoutServiceZoneNestedInput
   deliveries?: Prisma.DeliveryRequestUpdateManyWithoutServiceZoneNestedInput
   riders?: Prisma.RiderProfileUpdateManyWithoutServiceZoneNestedInput
+  broadcasts?: Prisma.ScheduledBroadcastUpdateManyWithoutTargetZoneNestedInput
 }
 
 export type ServiceZoneUncheckedUpdateWithoutRidesInput = {
@@ -1090,6 +1124,7 @@ export type ServiceZoneUncheckedUpdateWithoutRidesInput = {
   pricingRules?: Prisma.PricingRuleUncheckedUpdateManyWithoutServiceZoneNestedInput
   deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutServiceZoneNestedInput
   riders?: Prisma.RiderProfileUncheckedUpdateManyWithoutServiceZoneNestedInput
+  broadcasts?: Prisma.ScheduledBroadcastUncheckedUpdateManyWithoutTargetZoneNestedInput
 }
 
 export type ServiceZoneCreateWithoutDeliveriesInput = {
@@ -1114,6 +1149,7 @@ export type ServiceZoneCreateWithoutDeliveriesInput = {
   pricingRules?: Prisma.PricingRuleCreateNestedManyWithoutServiceZoneInput
   rides?: Prisma.RideCreateNestedManyWithoutServiceZoneInput
   riders?: Prisma.RiderProfileCreateNestedManyWithoutServiceZoneInput
+  broadcasts?: Prisma.ScheduledBroadcastCreateNestedManyWithoutTargetZoneInput
 }
 
 export type ServiceZoneUncheckedCreateWithoutDeliveriesInput = {
@@ -1138,6 +1174,7 @@ export type ServiceZoneUncheckedCreateWithoutDeliveriesInput = {
   pricingRules?: Prisma.PricingRuleUncheckedCreateNestedManyWithoutServiceZoneInput
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutServiceZoneInput
   riders?: Prisma.RiderProfileUncheckedCreateNestedManyWithoutServiceZoneInput
+  broadcasts?: Prisma.ScheduledBroadcastUncheckedCreateNestedManyWithoutTargetZoneInput
 }
 
 export type ServiceZoneCreateOrConnectWithoutDeliveriesInput = {
@@ -1178,6 +1215,7 @@ export type ServiceZoneUpdateWithoutDeliveriesInput = {
   pricingRules?: Prisma.PricingRuleUpdateManyWithoutServiceZoneNestedInput
   rides?: Prisma.RideUpdateManyWithoutServiceZoneNestedInput
   riders?: Prisma.RiderProfileUpdateManyWithoutServiceZoneNestedInput
+  broadcasts?: Prisma.ScheduledBroadcastUpdateManyWithoutTargetZoneNestedInput
 }
 
 export type ServiceZoneUncheckedUpdateWithoutDeliveriesInput = {
@@ -1202,6 +1240,123 @@ export type ServiceZoneUncheckedUpdateWithoutDeliveriesInput = {
   pricingRules?: Prisma.PricingRuleUncheckedUpdateManyWithoutServiceZoneNestedInput
   rides?: Prisma.RideUncheckedUpdateManyWithoutServiceZoneNestedInput
   riders?: Prisma.RiderProfileUncheckedUpdateManyWithoutServiceZoneNestedInput
+  broadcasts?: Prisma.ScheduledBroadcastUncheckedUpdateManyWithoutTargetZoneNestedInput
+}
+
+export type ServiceZoneCreateWithoutBroadcastsInput = {
+  id?: string
+  name: string
+  city: string
+  countryCode: string
+  currency: string
+  isActive?: boolean
+  ridesEnabled?: boolean
+  deliveriesEnabled?: boolean
+  polygonGeoJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  baseFare: runtime.Decimal | runtime.DecimalJsLike | number | string
+  perKmFee: runtime.Decimal | runtime.DecimalJsLike | number | string
+  perMinuteFee: runtime.Decimal | runtime.DecimalJsLike | number | string
+  minimumFare: runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationFee: runtime.Decimal | runtime.DecimalJsLike | number | string
+  waitingFeePerMin: runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  pricingRules?: Prisma.PricingRuleCreateNestedManyWithoutServiceZoneInput
+  rides?: Prisma.RideCreateNestedManyWithoutServiceZoneInput
+  deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutServiceZoneInput
+  riders?: Prisma.RiderProfileCreateNestedManyWithoutServiceZoneInput
+}
+
+export type ServiceZoneUncheckedCreateWithoutBroadcastsInput = {
+  id?: string
+  name: string
+  city: string
+  countryCode: string
+  currency: string
+  isActive?: boolean
+  ridesEnabled?: boolean
+  deliveriesEnabled?: boolean
+  polygonGeoJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  baseFare: runtime.Decimal | runtime.DecimalJsLike | number | string
+  perKmFee: runtime.Decimal | runtime.DecimalJsLike | number | string
+  perMinuteFee: runtime.Decimal | runtime.DecimalJsLike | number | string
+  minimumFare: runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationFee: runtime.Decimal | runtime.DecimalJsLike | number | string
+  waitingFeePerMin: runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  pricingRules?: Prisma.PricingRuleUncheckedCreateNestedManyWithoutServiceZoneInput
+  rides?: Prisma.RideUncheckedCreateNestedManyWithoutServiceZoneInput
+  deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutServiceZoneInput
+  riders?: Prisma.RiderProfileUncheckedCreateNestedManyWithoutServiceZoneInput
+}
+
+export type ServiceZoneCreateOrConnectWithoutBroadcastsInput = {
+  where: Prisma.ServiceZoneWhereUniqueInput
+  create: Prisma.XOR<Prisma.ServiceZoneCreateWithoutBroadcastsInput, Prisma.ServiceZoneUncheckedCreateWithoutBroadcastsInput>
+}
+
+export type ServiceZoneUpsertWithoutBroadcastsInput = {
+  update: Prisma.XOR<Prisma.ServiceZoneUpdateWithoutBroadcastsInput, Prisma.ServiceZoneUncheckedUpdateWithoutBroadcastsInput>
+  create: Prisma.XOR<Prisma.ServiceZoneCreateWithoutBroadcastsInput, Prisma.ServiceZoneUncheckedCreateWithoutBroadcastsInput>
+  where?: Prisma.ServiceZoneWhereInput
+}
+
+export type ServiceZoneUpdateToOneWithWhereWithoutBroadcastsInput = {
+  where?: Prisma.ServiceZoneWhereInput
+  data: Prisma.XOR<Prisma.ServiceZoneUpdateWithoutBroadcastsInput, Prisma.ServiceZoneUncheckedUpdateWithoutBroadcastsInput>
+}
+
+export type ServiceZoneUpdateWithoutBroadcastsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  countryCode?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  ridesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deliveriesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  polygonGeoJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  baseFare?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  perKmFee?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  perMinuteFee?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  minimumFare?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationFee?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  waitingFeePerMin?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pricingRules?: Prisma.PricingRuleUpdateManyWithoutServiceZoneNestedInput
+  rides?: Prisma.RideUpdateManyWithoutServiceZoneNestedInput
+  deliveries?: Prisma.DeliveryRequestUpdateManyWithoutServiceZoneNestedInput
+  riders?: Prisma.RiderProfileUpdateManyWithoutServiceZoneNestedInput
+}
+
+export type ServiceZoneUncheckedUpdateWithoutBroadcastsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  countryCode?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  ridesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deliveriesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  polygonGeoJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  baseFare?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  perKmFee?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  perMinuteFee?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  minimumFare?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationFee?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  waitingFeePerMin?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pricingRules?: Prisma.PricingRuleUncheckedUpdateManyWithoutServiceZoneNestedInput
+  rides?: Prisma.RideUncheckedUpdateManyWithoutServiceZoneNestedInput
+  deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutServiceZoneNestedInput
+  riders?: Prisma.RiderProfileUncheckedUpdateManyWithoutServiceZoneNestedInput
 }
 
 
@@ -1214,6 +1369,7 @@ export type ServiceZoneCountOutputType = {
   rides: number
   deliveries: number
   riders: number
+  broadcasts: number
 }
 
 export type ServiceZoneCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1221,6 +1377,7 @@ export type ServiceZoneCountOutputTypeSelect<ExtArgs extends runtime.Types.Exten
   rides?: boolean | ServiceZoneCountOutputTypeCountRidesArgs
   deliveries?: boolean | ServiceZoneCountOutputTypeCountDeliveriesArgs
   riders?: boolean | ServiceZoneCountOutputTypeCountRidersArgs
+  broadcasts?: boolean | ServiceZoneCountOutputTypeCountBroadcastsArgs
 }
 
 /**
@@ -1261,6 +1418,13 @@ export type ServiceZoneCountOutputTypeCountRidersArgs<ExtArgs extends runtime.Ty
   where?: Prisma.RiderProfileWhereInput
 }
 
+/**
+ * ServiceZoneCountOutputType without action
+ */
+export type ServiceZoneCountOutputTypeCountBroadcastsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ScheduledBroadcastWhereInput
+}
+
 
 export type ServiceZoneSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1285,6 +1449,7 @@ export type ServiceZoneSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   rides?: boolean | Prisma.ServiceZone$ridesArgs<ExtArgs>
   deliveries?: boolean | Prisma.ServiceZone$deliveriesArgs<ExtArgs>
   riders?: boolean | Prisma.ServiceZone$ridersArgs<ExtArgs>
+  broadcasts?: boolean | Prisma.ServiceZone$broadcastsArgs<ExtArgs>
   _count?: boolean | Prisma.ServiceZoneCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["serviceZone"]>
 
@@ -1357,6 +1522,7 @@ export type ServiceZoneInclude<ExtArgs extends runtime.Types.Extensions.Internal
   rides?: boolean | Prisma.ServiceZone$ridesArgs<ExtArgs>
   deliveries?: boolean | Prisma.ServiceZone$deliveriesArgs<ExtArgs>
   riders?: boolean | Prisma.ServiceZone$ridersArgs<ExtArgs>
+  broadcasts?: boolean | Prisma.ServiceZone$broadcastsArgs<ExtArgs>
   _count?: boolean | Prisma.ServiceZoneCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ServiceZoneIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1369,6 +1535,7 @@ export type $ServiceZonePayload<ExtArgs extends runtime.Types.Extensions.Interna
     rides: Prisma.$RidePayload<ExtArgs>[]
     deliveries: Prisma.$DeliveryRequestPayload<ExtArgs>[]
     riders: Prisma.$RiderProfilePayload<ExtArgs>[]
+    broadcasts: Prisma.$ScheduledBroadcastPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1787,6 +1954,7 @@ export interface Prisma__ServiceZoneClient<T, Null = never, ExtArgs extends runt
   rides<T extends Prisma.ServiceZone$ridesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ServiceZone$ridesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RidePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   deliveries<T extends Prisma.ServiceZone$deliveriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ServiceZone$deliveriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeliveryRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   riders<T extends Prisma.ServiceZone$ridersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ServiceZone$ridersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RiderProfilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  broadcasts<T extends Prisma.ServiceZone$broadcastsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ServiceZone$broadcastsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ScheduledBroadcastPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2320,6 +2488,30 @@ export type ServiceZone$ridersArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.RiderProfileScalarFieldEnum | Prisma.RiderProfileScalarFieldEnum[]
+}
+
+/**
+ * ServiceZone.broadcasts
+ */
+export type ServiceZone$broadcastsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ScheduledBroadcast
+   */
+  select?: Prisma.ScheduledBroadcastSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ScheduledBroadcast
+   */
+  omit?: Prisma.ScheduledBroadcastOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ScheduledBroadcastInclude<ExtArgs> | null
+  where?: Prisma.ScheduledBroadcastWhereInput
+  orderBy?: Prisma.ScheduledBroadcastOrderByWithRelationInput | Prisma.ScheduledBroadcastOrderByWithRelationInput[]
+  cursor?: Prisma.ScheduledBroadcastWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ScheduledBroadcastScalarFieldEnum | Prisma.ScheduledBroadcastScalarFieldEnum[]
 }
 
 /**

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Bell, Send, Clock, XCircle } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { formatDateTime } from "./utils";
 
 export type ScheduledNotification = {
@@ -56,6 +57,10 @@ export function ScheduledNotificationsScreen({
 
   return (
     <div className="exact-admin-screen">
+      <AdminPageHeader
+        title="Notifications"
+        subtitle="Schedule broadcast messages to riders, passengers, or a service zone."
+      />
       <section className="admin-reference-kpis">
         <article className="admin-reference-kpi">
           <div className="admin-reference-kpi-icon yellow"><Bell size={22} /></div>

@@ -3,6 +3,7 @@ import { MapPin, Download } from "lucide-react";
 import { downloadCsv } from "@/lib/export-csv";
 import { OperationsMap } from "@/components/maps/operations-map";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { RiderRecord } from "./types";
 import { statusTone } from "./utils";
 import { parseNumber } from "./utils";
@@ -73,6 +74,10 @@ export function RidersScreen({
 
   return (
     <div className="exact-admin-screen">
+      <AdminPageHeader
+        title="Riders"
+        subtitle="Fleet map, onboarding pipeline, and rider distribution by zone."
+      />
       <section className="admin-reference-kpis">
         <article className="admin-reference-kpi">
           <div className="admin-reference-kpi-icon green"><MapPin size={22} /></div>

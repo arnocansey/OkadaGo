@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Bike, Package, CheckCircle, XCircle, Clock, Filter } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { RideRecord, DeliveryRecord } from "./types";
 import { parseNumber, formatDateTime, statusTone, formatEnumLabel } from "./utils";
 
@@ -107,6 +108,11 @@ export function RequestDashboardScreen({
 
   return (
     <div className="exact-admin-screen">
+      <AdminPageHeader
+        title="Request dashboard"
+        subtitle="Accept or decline live ride and delivery requests."
+      />
+
       {/* Tab switcher */}
       <div className="admin-tab-bar">
         <button

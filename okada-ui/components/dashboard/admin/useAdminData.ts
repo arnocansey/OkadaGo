@@ -20,7 +20,10 @@ import type {
   AdminAccountRecord,
   ServiceZoneRecord,
   RiderFinancialRow,
-  AuditLogRecord
+  AuditLogRecord,
+  AdminSupportTicketRecord,
+  EscalationRuleRecord,
+  ScheduledBroadcastRecord
 } from "./types";
 
 // ─── query key constants ──────────────────────────────────────────────────────
@@ -37,7 +40,10 @@ export const QK = {
   adminPermissions: (token?: string | null) => ["admin-permissions", token],
   adminModules: (token?: string | null) => ["admin-modules", token],
   zones: (token?: string | null) => ["service-zones", token],
-  auditLogs: (token?: string | null) => ["admin-audit-logs", token]
+  auditLogs: (token?: string | null) => ["admin-audit-logs", token],
+  supportTickets: (token?: string | null) => ["admin-support-tickets", token],
+  escalationRules: (token?: string | null) => ["admin-escalation-rules", token],
+  scheduledBroadcasts: (token?: string | null) => ["admin-scheduled-broadcasts", token]
 } as const;
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -213,7 +219,33 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     queryKey: QK.auditLogs(token),
     queryFn: async () => {
       try {
-        return await requestJson<AuditLogRecord[]>("/admin/audit-logs", { token });
+        const rows = await requestJson<Array<{
+          id: string;
+          action: string;
+          entityType?: string;
+          entity?: string;
+          entityId: string | null;
+          changes?: Record<string, unknown> | null;
+          details?: Record<string, unknown> | null;
+          createdAt: string;
+          actor?: { id: string; fullName: string; email: string | null; role?: string } | null;
+        }>>("/admin/audit-logs", { token });
+        return rows.map((row) => ({
+          id: row.id,
+          action: row.action,
+          entity: row.entity ?? row.entityType ?? "Unknown",
+          entityId: row.entityId,
+          details: row.details ?? row.changes ?? null,
+          createdAt: row.createdAt,
+          actor: row.actor
+            ? {
+                id: row.actor.id,
+                fullName: row.actor.fullName,
+                email: row.actor.email,
+                role: row.actor.role ?? "admin"
+              }
+            : null
+        }));
       } catch (err) {
         console.warn("Audit logs not available in backend", err);
         return [];
@@ -221,6 +253,52 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     },
     enabled: isAdmin,
     staleTime: 60000
+  });
+
+  const { data: supportTicketsData } = useQuery<AdminSupportTicketRecord[]>({
+    queryKey: QK.supportTickets(token),
+    queryFn: () => requestJson("/admin/support/tickets", { token }),
+    enabled: isAdmin,
+    refetchInterval: 30000,
+    staleTime: 25000
+  });
+
+  const { data: escalationRulesData } = useQuery<EscalationRuleRecord[]>({
+    queryKey: QK.escalationRules(token),
+    queryFn: () => requestJson("/admin/escalation-rules", { token }),
+    enabled: isAdmin,
+    staleTime: 30000
+  });
+
+  const { data: scheduledBroadcastsData } = useQuery<ScheduledBroadcastRecord[]>({
+    queryKey: QK.scheduledBroadcasts(token),
+    queryFn: async () => {
+      const rows = await requestJson<Array<{
+        id: string;
+        title: string;
+        body: string;
+        targetAudience: string;
+        targetZoneId?: string | null;
+        targetZone?: { id: string; name: string } | null;
+        scheduledAt: string;
+        status: string;
+        sentCount?: number;
+        createdAt: string;
+      }>>("/admin/scheduled-broadcasts", { token });
+      return rows.map((row) => ({
+        id: row.id,
+        title: row.title,
+        body: row.body,
+        targetAudience: row.targetAudience.toLowerCase() as ScheduledBroadcastRecord["targetAudience"],
+        targetZone: row.targetZone?.name,
+        scheduledAt: row.scheduledAt,
+        status: row.status.toLowerCase() as ScheduledBroadcastRecord["status"],
+        sentCount: row.sentCount,
+        createdAt: row.createdAt
+      }));
+    },
+    enabled: isAdmin,
+    staleTime: 20000
   });
 
   // ── raw data ────────────────────────────────────────────────────────────────
@@ -235,6 +313,9 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
   const adminAccounts = useMemo(() => adminAccountsData ?? [], [adminAccountsData]);
   const zones = useMemo(() => zonesData ?? [], [zonesData]);
   const auditLogs = useMemo(() => auditLogsData ?? [], [auditLogsData]);
+  const supportTickets = useMemo(() => supportTicketsData ?? [], [supportTicketsData]);
+  const escalationRules = useMemo(() => escalationRulesData ?? [], [escalationRulesData]);
+  const scheduledBroadcasts = useMemo(() => scheduledBroadcastsData ?? [], [scheduledBroadcastsData]);
   const adminRoleEntries = useMemo(
     () => Object.entries(adminPermissionsData?.roles ?? {}),
     [adminPermissionsData]
@@ -596,6 +677,36 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
   );
   const resolvedTickets = useMemo(
     () => incidents.filter((i) => ["resolved", "closed"].includes(i.status.toLowerCase())),
+    [incidents]
+  );
+
+  const openSupportTicketRows = useMemo(
+    () =>
+      supportTickets.filter((t) =>
+        ["open", "pending", "pending_passenger", "pending_rider"].includes(t.status.toLowerCase())
+      ),
+    [supportTickets]
+  );
+  const inProgressSupportTicketRows = useMemo(
+    () =>
+      supportTickets.filter((t) =>
+        ["in_progress", "assigned", "under_review", "escalated"].includes(t.status.toLowerCase())
+      ),
+    [supportTickets]
+  );
+  const resolvedSupportTicketRows = useMemo(
+    () => supportTickets.filter((t) => ["resolved", "closed"].includes(t.status.toLowerCase())),
+    [supportTickets]
+  );
+
+  const openSosCount = useMemo(
+    () =>
+      incidents.filter((i) => {
+        const severity = (i.severity ?? "").toUpperCase();
+        const category = (i.category ?? "").toUpperCase();
+        const isSos = severity === "CRITICAL" || category === "SOS" || category.includes("SOS");
+        return isSos && ["pending", "open", "under_review", "actioned"].includes(i.status.toLowerCase());
+      }).length,
     [incidents]
   );
 
@@ -1108,6 +1219,79 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     }
   });
 
+  const createEscalationRuleMutation = useMutation({
+    mutationFn: async (input: Omit<EscalationRuleRecord, "id">) =>
+      requestJson("/admin/escalation-rules", {
+        method: "POST",
+        token,
+        body: JSON.stringify(input)
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: QK.escalationRules(token) });
+      addToast("Escalation rule created", "success");
+    },
+    onError: (error) => addToast((error as Error).message || "Could not create rule", "error")
+  });
+
+  const toggleEscalationRuleMutation = useMutation({
+    mutationFn: async ({ id, enabled }: { id: string; enabled: boolean }) =>
+      requestJson(`/admin/escalation-rules/${id}`, {
+        method: "PATCH",
+        token,
+        body: JSON.stringify({ enabled })
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: QK.escalationRules(token) });
+      addToast("Escalation rule updated", "success");
+    },
+    onError: (error) => addToast((error as Error).message || "Could not update rule", "error")
+  });
+
+  const scheduleBroadcastMutation = useMutation({
+    mutationFn: async (input: {
+      title: string;
+      body: string;
+      targetAudience: "all" | "riders" | "passengers" | "zone";
+      targetZone?: string;
+      scheduledAt: string;
+    }) => {
+      const zoneId =
+        input.targetAudience === "zone"
+          ? zones.find((z) => z.name === input.targetZone)?.id
+          : undefined;
+      return requestJson("/admin/scheduled-broadcasts", {
+        method: "POST",
+        token,
+        body: JSON.stringify({
+          title: input.title,
+          body: input.body,
+          targetAudience: input.targetAudience,
+          targetZoneId: zoneId,
+          scheduledAt: new Date(input.scheduledAt).toISOString()
+        })
+      });
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: QK.scheduledBroadcasts(token) });
+      addToast("Broadcast scheduled", "success");
+    },
+    onError: (error) => addToast((error as Error).message || "Could not schedule broadcast", "error")
+  });
+
+  const cancelBroadcastMutation = useMutation({
+    mutationFn: async (id: string) =>
+      requestJson(`/admin/scheduled-broadcasts/${id}/cancel`, {
+        method: "PATCH",
+        token,
+        body: JSON.stringify({})
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: QK.scheduledBroadcasts(token) });
+      addToast("Broadcast cancelled", "success");
+    },
+    onError: (error) => addToast((error as Error).message || "Could not cancel broadcast", "error")
+  });
+
   // ── badge data ──────────────────────────────────────────────────────────────
   const badgeData = useMemo(() => ({
     activeTripsCount: activeRides.length,
@@ -1129,14 +1313,15 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     zonesActiveCount: zones.filter((z) => z.isActive).length,
     adminAccountsCount: adminAccounts.length,
     ratingsCount: ratings.length,
-    openSupportTicketsCount: openTickets.length,
+    openSupportTicketsCount: openSupportTicketRows.length || openTickets.length,
+    openSosCount,
     deliveriesCount: deliveries.length,
     completedDeliveriesCount: completedDeliveries.length
   }), [
     activeRides, completedRides, activeRiders, riders, riderVerificationStats,
     riderDocumentStats, riderFinancialRows, riderWalletTransactions, requestedRiderPayouts,
     riderIncidents, ridersWithCoords, suspendedRiders, passengers, pendingPayoutRequests,
-    promoAdjustedTrips, zones, adminAccounts, ratings, openTickets, deliveries, completedDeliveries
+    promoAdjustedTrips, zones, adminAccounts, ratings, openTickets, openSupportTicketRows, openSosCount, deliveries, completedDeliveries
   ]);
 
   // ── screen highlights ───────────────────────────────────────────────────────
@@ -1218,12 +1403,16 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
       { label: "Total zones", value: `${zones.length}` }
     ],
     supportTickets: [
-      { label: "Open", value: `${openTickets.length}` },
-      { label: "Resolved", value: `${resolvedTickets.length}` }
+      { label: "Tickets", value: `${supportTickets.length}` },
+      { label: "Open incidents", value: `${openTickets.length}` }
+    ],
+    sosIncidents: [
+      { label: "Open SOS", value: `${openSosCount}` },
+      { label: "Total incidents", value: `${incidents.length}` }
     ],
     notifications: [
-      { label: "Riders", value: `${riders.length}` },
-      { label: "Passengers", value: `${passengers.length}` }
+      { label: "Scheduled", value: `${scheduledBroadcasts.length}` },
+      { label: "Pending", value: `${scheduledBroadcasts.filter((b) => b.status === "pending").length}` }
     ],
     reports: [
       { label: "Total rides", value: `${rides.length}` },
@@ -1247,15 +1436,16 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
       { label: "Compliant", value: "100%" }
     ],
     settingsNotifications: [
-      { label: "Riders", value: `${riders.length}` },
-      { label: "Passengers", value: `${passengers.length}` }
+      { label: "Broadcasts", value: `${scheduledBroadcasts.length}` },
+      { label: "Open SOS", value: `${openSosCount}` }
     ],
     admins: [
       { label: "Admins", value: `${adminAccounts.length}` },
       { label: "Eligible passengers", value: `${eligiblePassengers.length}` }
     ],
     escalationRules: [
-      { label: "Rules", value: "—" }
+      { label: "Rules", value: `${escalationRules.length}` },
+      { label: "Active", value: `${escalationRules.filter((r) => r.enabled).length}` }
     ]
   }), [
     activeRides, activeRiders, adminCurrency, totalDashboardRevenue, rides, completedRides,
@@ -1264,7 +1454,8 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     riderWalletTransactions, riderWalletCredits, requestedRiderPayouts, paidPayoutRequests,
     riderComplaintOpen, riderComplaintResolved, ridersWithCoords, suspendedRiders, passengers,
     blockedUsers, totalRevenue, pendingPayoutRequests, ratings, promoAdjustedTrips, promoSpend,
-    zones, openTickets, resolvedTickets, auditLogs, adminAccounts, eligiblePassengers
+    zones, openTickets, resolvedTickets, auditLogs, adminAccounts, eligiblePassengers,
+    supportTickets, openSosCount, incidents, scheduledBroadcasts, escalationRules
   ]);
 
   const dataLoading = ridesPending || deliveriesPending || ridersPending || walletTxPending || payoutPending || ratingsPending || incidentsPending;
@@ -1292,6 +1483,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     rides, deliveries, riders, passengers, passengersTotal, ridersTotal,
     walletTransactions, payoutRequests, ratings, incidents,
     adminAccounts, adminRoleEntries, adminModules, zones, auditLogs,
+    supportTickets, escalationRules, scheduledBroadcasts,
 
     // Derived data
     activeRiders, ridersWithCoords, suspendedRiders, vehicleCount,
@@ -1316,6 +1508,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     riderPayoutMethodSnapshot, riderPayoutMethodTotal,
     riderIncidents, riderComplaintOpen, riderComplaintInProgress, riderComplaintResolved,
     openTickets, inProgressTickets, resolvedTickets,
+    openSupportTicketRows, inProgressSupportTicketRows, resolvedSupportTicketRows, openSosCount,
     filteredRatings, riderRatingAverage, riderRatingDistribution,
     riderVerificationRows, riderVerificationStats,
     riderDocumentRows, riderDocumentStats,
@@ -1341,6 +1534,10 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     promotePassengerMutation,
     riderApprovalMutation,
     riderSuspensionMutation,
-    zoneUpdateMutation
+    zoneUpdateMutation,
+    createEscalationRuleMutation,
+    toggleEscalationRuleMutation,
+    scheduleBroadcastMutation,
+    cancelBroadcastMutation
   };
 }

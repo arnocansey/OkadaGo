@@ -415,7 +415,9 @@ export const ModelName = {
   Incident: 'Incident',
   EmergencyContact: 'EmergencyContact',
   SavedPlace: 'SavedPlace',
-  AuditLog: 'AuditLog'
+  AuditLog: 'AuditLog',
+  EscalationRule: 'EscalationRule',
+  ScheduledBroadcast: 'ScheduledBroadcast'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -431,7 +433,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "adminProfile" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "deliveryRequest" | "deliveryStop" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog"
+    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "adminProfile" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "deliveryRequest" | "deliveryStop" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog" | "escalationRule" | "scheduledBroadcast"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2803,6 +2805,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    EscalationRule: {
+      payload: Prisma.$EscalationRulePayload<ExtArgs>
+      fields: Prisma.EscalationRuleFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EscalationRuleFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationRulePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EscalationRuleFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationRulePayload>
+        }
+        findFirst: {
+          args: Prisma.EscalationRuleFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationRulePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EscalationRuleFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationRulePayload>
+        }
+        findMany: {
+          args: Prisma.EscalationRuleFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationRulePayload>[]
+        }
+        create: {
+          args: Prisma.EscalationRuleCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationRulePayload>
+        }
+        createMany: {
+          args: Prisma.EscalationRuleCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EscalationRuleCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationRulePayload>[]
+        }
+        delete: {
+          args: Prisma.EscalationRuleDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationRulePayload>
+        }
+        update: {
+          args: Prisma.EscalationRuleUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationRulePayload>
+        }
+        deleteMany: {
+          args: Prisma.EscalationRuleDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EscalationRuleUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EscalationRuleUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationRulePayload>[]
+        }
+        upsert: {
+          args: Prisma.EscalationRuleUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationRulePayload>
+        }
+        aggregate: {
+          args: Prisma.EscalationRuleAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEscalationRule>
+        }
+        groupBy: {
+          args: Prisma.EscalationRuleGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EscalationRuleGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EscalationRuleCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EscalationRuleCountAggregateOutputType> | number
+        }
+      }
+    }
+    ScheduledBroadcast: {
+      payload: Prisma.$ScheduledBroadcastPayload<ExtArgs>
+      fields: Prisma.ScheduledBroadcastFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ScheduledBroadcastFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledBroadcastPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ScheduledBroadcastFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledBroadcastPayload>
+        }
+        findFirst: {
+          args: Prisma.ScheduledBroadcastFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledBroadcastPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ScheduledBroadcastFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledBroadcastPayload>
+        }
+        findMany: {
+          args: Prisma.ScheduledBroadcastFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledBroadcastPayload>[]
+        }
+        create: {
+          args: Prisma.ScheduledBroadcastCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledBroadcastPayload>
+        }
+        createMany: {
+          args: Prisma.ScheduledBroadcastCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ScheduledBroadcastCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledBroadcastPayload>[]
+        }
+        delete: {
+          args: Prisma.ScheduledBroadcastDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledBroadcastPayload>
+        }
+        update: {
+          args: Prisma.ScheduledBroadcastUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledBroadcastPayload>
+        }
+        deleteMany: {
+          args: Prisma.ScheduledBroadcastDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ScheduledBroadcastUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ScheduledBroadcastUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledBroadcastPayload>[]
+        }
+        upsert: {
+          args: Prisma.ScheduledBroadcastUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledBroadcastPayload>
+        }
+        aggregate: {
+          args: Prisma.ScheduledBroadcastAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateScheduledBroadcast>
+        }
+        groupBy: {
+          args: Prisma.ScheduledBroadcastGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScheduledBroadcastGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ScheduledBroadcastCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScheduledBroadcastCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3466,6 +3616,39 @@ export const AuditLogScalarFieldEnum = {
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
 
 
+export const EscalationRuleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  triggerCondition: 'triggerCondition',
+  thresholdHours: 'thresholdHours',
+  action: 'action',
+  targetRole: 'targetRole',
+  enabled: 'enabled',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EscalationRuleScalarFieldEnum = (typeof EscalationRuleScalarFieldEnum)[keyof typeof EscalationRuleScalarFieldEnum]
+
+
+export const ScheduledBroadcastScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  body: 'body',
+  targetAudience: 'targetAudience',
+  targetZoneId: 'targetZoneId',
+  scheduledAt: 'scheduledAt',
+  status: 'status',
+  sentCount: 'sentCount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  cancelledAt: 'cancelledAt'
+} as const
+
+export type ScheduledBroadcastScalarFieldEnum = (typeof ScheduledBroadcastScalarFieldEnum)[keyof typeof ScheduledBroadcastScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -4004,6 +4187,34 @@ export type ListEnumIncidentStatusFieldRefInput<$PrismaModel> = FieldRefInputTyp
 
 
 /**
+ * Reference to a field of type 'BroadcastAudience'
+ */
+export type EnumBroadcastAudienceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BroadcastAudience'>
+    
+
+
+/**
+ * Reference to a field of type 'BroadcastAudience[]'
+ */
+export type ListEnumBroadcastAudienceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BroadcastAudience[]'>
+    
+
+
+/**
+ * Reference to a field of type 'BroadcastStatus'
+ */
+export type EnumBroadcastStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BroadcastStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'BroadcastStatus[]'
+ */
+export type ListEnumBroadcastStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BroadcastStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -4158,6 +4369,8 @@ export type GlobalOmitConfig = {
   emergencyContact?: Prisma.EmergencyContactOmit
   savedPlace?: Prisma.SavedPlaceOmit
   auditLog?: Prisma.AuditLogOmit
+  escalationRule?: Prisma.EscalationRuleOmit
+  scheduledBroadcast?: Prisma.ScheduledBroadcastOmit
 }
 
 /* Types for Logging */

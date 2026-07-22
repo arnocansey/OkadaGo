@@ -2,6 +2,7 @@ import { CreditCard, TrendingUp, TrendingDown, Filter, Download } from "lucide-r
 import { formatMoney } from "@/lib/currency";
 import { downloadCsv } from "@/lib/export-csv";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { WalletTransactionRecord, PayoutRequestRecord } from "./types";
 import { parseNumber, formatDateTime, statusTone, formatEnumLabel } from "./utils";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
@@ -93,6 +94,10 @@ export function FinanceScreen({
   }
   return (
     <div className="exact-admin-screen">
+      <AdminPageHeader
+        title="Finance"
+        subtitle="Wallet volume, commission, and payout outflow for the selected window."
+      />
       <style>{`
         @media (max-width: 767px) {
           .admin-reference-kpis { grid-template-columns: 1fr 1fr !important; }

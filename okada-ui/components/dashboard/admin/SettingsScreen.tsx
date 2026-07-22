@@ -30,7 +30,7 @@ import {
 import { useAdminToast } from "./AdminToast";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
 import { SkeletonForm } from "./AdminSkeleton";
-import type { ServiceZoneRecord, AdminAccountRecord } from "./types";
+import type { ServiceZoneRecord, AdminAccountRecord, AuditLogRecord } from "./types";
 
 export type SettingsScreenProps = {
   zones: ServiceZoneRecord[];
@@ -38,6 +38,7 @@ export type SettingsScreenProps = {
   adminRoleEntries: [string, string[]][];
   adminModules: string[];
   adminCurrency: string;
+  auditLogs?: AuditLogRecord[];
   dataLoading?: boolean;
 };
 
@@ -63,29 +64,29 @@ const SECTIONS: { key: SectionKey; label: string; icon: typeof SettingsIcon }[] 
 ];
 
 const DARK = {
-  bg: "#0f1117",
-  surface: "#1a1d27",
-  surfaceAlt: "#222633",
-  border: "#2a2e3d",
-  text: "#e8eaf0",
-  textMuted: "#8b8fa3",
-  accent: "#6c5ce7",
-  accentHover: "#7e6ff0",
-  green: "#00c853",
-  greenBg: "#0f2e1a",
-  red: "#ff5252",
-  redBg: "#2e0f0f",
-  yellow: "#ffc107",
-  yellowBg: "#2e2a0f",
-  blue: "#448aff",
-  blueBg: "#0f1e2e",
-  input: "#161922",
-  inputBorder: "#2a2e3d",
-  navItem: "#1a1d27",
-  navActive: "#6c5ce7",
-  navHover: "#222633",
-  dangerZone: "#2e0f0f",
-  dangerBorder: "#5c1a1a",
+  bg: "var(--bg-primary)",
+  surface: "var(--bg-card)",
+  surfaceAlt: "color-mix(in srgb, var(--bg-card) 85%, var(--text-primary))",
+  border: "var(--border-color)",
+  text: "var(--text-primary)",
+  textMuted: "var(--text-secondary)",
+  accent: "var(--accent-orange)",
+  accentHover: "var(--accent-yellow)",
+  green: "var(--color-success)",
+  greenBg: "color-mix(in srgb, var(--color-success) 15%, transparent)",
+  red: "var(--color-danger)",
+  redBg: "color-mix(in srgb, var(--color-danger) 15%, transparent)",
+  yellow: "var(--accent-yellow)",
+  yellowBg: "var(--accent-yellow-light)",
+  blue: "var(--accent-orange)",
+  blueBg: "color-mix(in srgb, var(--accent-orange) 15%, transparent)",
+  input: "var(--bg-primary)",
+  inputBorder: "var(--border-color)",
+  navItem: "var(--bg-card)",
+  navActive: "var(--accent-yellow)",
+  navHover: "color-mix(in srgb, var(--bg-card) 85%, var(--text-primary))",
+  dangerZone: "color-mix(in srgb, var(--color-danger) 12%, transparent)",
+  dangerBorder: "color-mix(in srgb, var(--color-danger) 40%, transparent)",
 } as const;
 
 const s = (overrides: Record<string, string | number>) =>
@@ -142,6 +143,7 @@ export function SettingsScreen({
   adminRoleEntries,
   adminModules,
   adminCurrency,
+  auditLogs = [],
   dataLoading = false,
 }: SettingsScreenProps) {
   const { addToast } = useAdminToast();
@@ -200,15 +202,19 @@ export function SettingsScreen({
     addToast("Audit logs exported", "success");
   };
 
-  const mockLogs = useMemo(
-    () => [
-      { id: "1", action: "login", user: "admin@okadago.com", time: "2026-07-10 09:14", detail: "Successful login" },
-      { id: "2", action: "zone_update", user: "admin@okadago.com", time: "2026-07-10 08:45", detail: "Updated Zone: Accra" },
-      { id: "3", action: "settings_change", user: "super@okadago.com", time: "2026-07-09 17:30", detail: "Tax rate changed to 15%" },
-      { id: "4", action: "admin_created", user: "super@okadago.com", time: "2026-07-09 14:12", detail: "New admin added" },
-      { id: "5", action: "payment_config", user: "admin@okadago.com", time: "2026-07-08 11:00", detail: "MTN MoMo configured" },
-    ],
-    []
+  const activityLogs = useMemo(
+    () =>
+      auditLogs.slice(0, 20).map((log) => ({
+        id: log.id,
+        action: log.action,
+        user: log.actor?.email ?? log.actor?.fullName ?? "System",
+        time: log.createdAt.replace("T", " ").slice(0, 16),
+        detail:
+          typeof log.details === "object" && log.details
+            ? JSON.stringify(log.details).slice(0, 120)
+            : `${log.entity}${log.entityId ? ` · ${log.entityId}` : ""}`
+      })),
+    [auditLogs]
   );
 
   if (dataLoading) {
@@ -569,20 +575,28 @@ export function SettingsScreen({
             </tr>
           </thead>
           <tbody>
-            {mockLogs.map((log) => (
-              <tr key={log.id} style={{ borderBottom: `1px solid ${DARK.border}` }}>
-                <td style={{ padding: "10px 14px", color: DARK.text }}>
-                  <span style={{
-                    display: "inline-block", padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600,
-                    background: log.action.includes("update") || log.action.includes("change") ? DARK.yellowBg : log.action.includes("create") ? DARK.greenBg : DARK.blueBg,
-                    color: log.action.includes("update") || log.action.includes("change") ? DARK.yellow : log.action.includes("create") ? DARK.green : DARK.blue,
-                  }}>{log.action}</span>
+            {activityLogs.length === 0 ? (
+              <tr>
+                <td colSpan={4} style={{ padding: "16px 14px", color: DARK.textMuted }}>
+                  No audit activity yet. Admin actions will appear here.
                 </td>
-                <td style={{ padding: "10px 14px", color: DARK.textMuted }}>{log.user}</td>
-                <td style={{ padding: "10px 14px", color: DARK.textMuted }}>{log.time}</td>
-                <td style={{ padding: "10px 14px", color: DARK.text }}>{log.detail}</td>
               </tr>
-            ))}
+            ) : (
+              activityLogs.map((log) => (
+                <tr key={log.id} style={{ borderBottom: `1px solid ${DARK.border}` }}>
+                  <td style={{ padding: "10px 14px", color: DARK.text }}>
+                    <span style={{
+                      display: "inline-block", padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600,
+                      background: log.action.includes("update") || log.action.includes("change") ? DARK.yellowBg : log.action.includes("create") ? DARK.greenBg : DARK.blueBg,
+                      color: log.action.includes("update") || log.action.includes("change") ? DARK.yellow : log.action.includes("create") ? DARK.green : DARK.blue,
+                    }}>{log.action}</span>
+                  </td>
+                  <td style={{ padding: "10px 14px", color: DARK.textMuted }}>{log.user}</td>
+                  <td style={{ padding: "10px 14px", color: DARK.textMuted }}>{log.time}</td>
+                  <td style={{ padding: "10px 14px", color: DARK.text }}>{log.detail}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

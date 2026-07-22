@@ -435,6 +435,7 @@ model ServiceZone {
   rides            Ride[]
   deliveries       DeliveryRequest[]
   riders           RiderProfile[]
+  broadcasts       ScheduledBroadcast[]
 
   @@index([city, isActive])
 }
@@ -947,4 +948,51 @@ model AuditLog {
 
   @@index([entityType, entityId, createdAt])
   @@index([actorUserId, createdAt])
+}
+
+enum BroadcastAudience {
+  ALL
+  RIDERS
+  PASSENGERS
+  ZONE
+}
+
+enum BroadcastStatus {
+  PENDING
+  SENT
+  FAILED
+  CANCELLED
+}
+
+model EscalationRule {
+  id               String   @id @default(cuid())
+  name             String   @db.VarChar(160)
+  description      String   @db.VarChar(500)
+  triggerCondition String   @db.VarChar(160)
+  thresholdHours   Int      @default(4)
+  action           String   @db.VarChar(160)
+  targetRole       String   @db.VarChar(40)
+  enabled          Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([enabled, createdAt])
+}
+
+model ScheduledBroadcast {
+  id             String            @id @default(cuid())
+  title          String            @db.VarChar(160)
+  body           String            @db.VarChar(500)
+  targetAudience BroadcastAudience @default(ALL)
+  targetZoneId   String?
+  scheduledAt    DateTime
+  status         BroadcastStatus   @default(PENDING)
+  sentCount      Int               @default(0)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  cancelledAt    DateTime?
+  targetZone     ServiceZone?      @relation(fields: [targetZoneId], references: [id])
+
+  @@index([status, scheduledAt])
+  @@index([targetZoneId])
 }

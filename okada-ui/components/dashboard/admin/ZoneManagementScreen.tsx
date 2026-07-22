@@ -1,6 +1,7 @@
 import { Globe, DollarSign, MapPin, Settings } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { ServiceZoneRecord } from "./types";
 import { parseNumber } from "./utils";
 
@@ -57,6 +58,10 @@ export function ZoneManagementScreen({
 
   return (
     <div className="exact-admin-screen">
+      <AdminPageHeader
+        title="Service zones"
+        subtitle="Toggle zone availability and ride/delivery dispatch flags."
+      />
       <section className="admin-reference-kpis">
         <article className="admin-reference-kpi">
           <div className="admin-reference-kpi-icon green"><Globe size={22} /></div>

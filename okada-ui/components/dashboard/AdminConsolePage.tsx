@@ -28,6 +28,7 @@ import { PromotionsScreen } from "./admin/PromotionsScreen";
 import { PromoPerformanceScreen } from "./admin/PromoPerformanceScreen";
 import { ZoneManagementScreen } from "./admin/ZoneManagementScreen";
 import { SupportTicketsScreen } from "./admin/SupportTicketsScreen";
+import { SosIncidentsScreen } from "./admin/SosIncidentsScreen";
 import { ScheduledNotificationsScreen } from "./admin/ScheduledNotificationsScreen";
 import { ReportsScreen } from "./admin/ReportsScreen";
 import { AuditLogsScreen } from "./admin/AuditLogsScreen";
@@ -414,6 +415,19 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             openTickets={data.openTickets}
             inProgressTickets={data.inProgressTickets}
             resolvedTickets={data.resolvedTickets}
+            supportTickets={data.supportTickets}
+            openSupportTickets={data.openSupportTicketRows}
+            inProgressSupportTickets={data.inProgressSupportTicketRows}
+            resolvedSupportTickets={data.resolvedSupportTicketRows}
+            onIncidentAction={(id, status) => data.incidentReviewMutation.mutate({ incidentId: id, status })}
+            isMutating={data.incidentReviewMutation.isPending}
+          />
+        );
+
+      case "sosIncidents":
+        return (
+          <SosIncidentsScreen
+            incidents={data.incidents}
             onIncidentAction={(id, status) => data.incidentReviewMutation.mutate({ incidentId: id, status })}
             isMutating={data.incidentReviewMutation.isPending}
           />
@@ -422,21 +436,26 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
       case "escalationRules":
         return (
           <EscalationRulesScreen
-            rules={[]}
-            onToggleRule={() => {}}
-            onEditRule={() => {}}
+            rules={data.escalationRules}
+            onToggleRule={(id, enabled) => data.toggleEscalationRuleMutation.mutate({ id, enabled })}
+            onCreateRule={(rule) => data.createEscalationRuleMutation.mutate(rule)}
+            isMutating={
+              data.createEscalationRuleMutation.isPending || data.toggleEscalationRuleMutation.isPending
+            }
           />
         );
 
       case "notifications":
         return (
           <ScheduledNotificationsScreen
-            notifications={[]}
+            notifications={data.scheduledBroadcasts}
             ridersCount={data.ridersTotal}
             passengersCount={data.passengersTotal}
-            onSchedule={() => {}}
-            onCancel={() => {}}
-            isMutating={false}
+            onSchedule={(notification) => data.scheduleBroadcastMutation.mutate(notification)}
+            onCancel={(id) => data.cancelBroadcastMutation.mutate(id)}
+            isMutating={
+              data.scheduleBroadcastMutation.isPending || data.cancelBroadcastMutation.isPending
+            }
           />
         );
 
@@ -467,6 +486,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             adminRoleEntries={data.adminRoleEntries}
             adminModules={data.adminModules}
             adminCurrency={data.adminCurrency}
+            auditLogs={data.auditLogs}
             dataLoading={data.dataLoading}
           />
         );
@@ -481,7 +501,14 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
         return <TaxesComplianceScreen dataLoading={data.dataLoading} />;
 
       case "settingsNotifications":
-        return <SettingsNotificationsScreen dataLoading={data.dataLoading} />;
+        return (
+          <SettingsNotificationsScreen
+            dataLoading={data.dataLoading}
+            broadcasts={data.scheduledBroadcasts}
+            openSosCount={data.openSosCount}
+            recentIncidents={data.incidents.slice(0, 10)}
+          />
+        );
 
       case "admins":
         return (

@@ -2,6 +2,7 @@ import { Bike, CreditCard, Package, Users } from "lucide-react";
 import { OperationsMap } from "@/components/maps/operations-map";
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { RideRecord, DeliveryRecord, RiderRecord, PassengerRecord } from "./types";
 import { parseNumber, formatDateTime, statusTone } from "./utils";
 
@@ -88,31 +89,37 @@ export function DashboardScreen({
 }: DashboardScreenProps) {
   return (
     <div className="exact-admin-dashboard">
-      <section className="admin-date-range-filter" style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-        <label style={{ fontSize: 13, fontWeight: 500 }}>From</label>
-        <input
-          type="date"
-          className="admin-input-sm"
-          value={dashboardDateRange.from}
-          onChange={(e) => onDateRangeChange({ ...dashboardDateRange, from: e.target.value })}
-        />
-        <label style={{ fontSize: 13, fontWeight: 500 }}>To</label>
-        <input
-          type="date"
-          className="admin-input-sm"
-          value={dashboardDateRange.to}
-          onChange={(e) => onDateRangeChange({ ...dashboardDateRange, to: e.target.value })}
-        />
-        {(dashboardDateRange.from || dashboardDateRange.to) && (
-          <button
-            className="admin-btn-sm"
-            onClick={() => onDateRangeChange({ from: "", to: "" })}
-            style={{ fontSize: 12, padding: "4px 10px" }}
-          >
-            Reset
-          </button>
-        )}
-      </section>
+      <AdminPageHeader
+        title="Operations dashboard"
+        subtitle="Live rides, deliveries, riders, and revenue across service zones."
+        actions={
+          <section className="admin-date-range-filter" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <label style={{ fontSize: 13, fontWeight: 500 }}>From</label>
+            <input
+              type="date"
+              className="admin-input-sm"
+              value={dashboardDateRange.from}
+              onChange={(e) => onDateRangeChange({ ...dashboardDateRange, from: e.target.value })}
+            />
+            <label style={{ fontSize: 13, fontWeight: 500 }}>To</label>
+            <input
+              type="date"
+              className="admin-input-sm"
+              value={dashboardDateRange.to}
+              onChange={(e) => onDateRangeChange({ ...dashboardDateRange, to: e.target.value })}
+            />
+            {(dashboardDateRange.from || dashboardDateRange.to) && (
+              <button
+                className="admin-btn-sm"
+                onClick={() => onDateRangeChange({ from: "", to: "" })}
+                style={{ fontSize: 12, padding: "4px 10px" }}
+              >
+                Reset
+              </button>
+            )}
+          </section>
+        }
+      />
 
       <section className="admin-reference-kpis" aria-label="Admin dashboard metrics">
         {dashboardMetrics.map((metric) => {
