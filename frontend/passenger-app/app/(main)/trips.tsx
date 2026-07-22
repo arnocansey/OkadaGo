@@ -3,7 +3,9 @@ import { useMemo } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CalendarClock, ChevronRight, MapPin, Package } from "lucide-react-native";
+import { useTranslation } from "react-i18next";
 import { Badge, statusTone } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { SkeletonList } from "@/components/ui/Skeleton";
@@ -13,6 +15,7 @@ import { compactDate, money } from "@/lib/api";
 import { radius, spacing } from "@/theme/tokens";
 
 export default function TripsScreen() {
+  const { t } = useTranslation();
   const { rides, deliveries, loading } = useApp();
   const { colors, typography } = useTheme();
   const styles = useMemo(
@@ -66,11 +69,16 @@ export default function TripsScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <ScreenHeader title="Your trips" />
+      <ScreenHeader title={t("trips.title")} />
       {loading && items.length === 0 && upcoming.length === 0 ? (
         <SkeletonList count={4} />
       ) : items.length === 0 && upcoming.length === 0 ? (
-        <EmptyState title="No trips yet" message="Book a ride or order food to see your history here." />
+        <EmptyState
+          icon={<MapPin size={28} color={colors.primary} />}
+          title={t("trips.emptyTitle")}
+          message={t("trips.emptyMessage")}
+          action={<Button label={t("home.bookRide")} onPress={() => router.push("/ride/book")} />}
+        />
       ) : (
         <FlatList
           data={items}

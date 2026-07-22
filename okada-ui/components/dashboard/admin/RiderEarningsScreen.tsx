@@ -3,6 +3,7 @@ import { useAdminToast } from "./AdminToast";
 import { formatMoney } from "@/lib/currency";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
 import { SkeletonKPI, SkeletonTable, SkeletonChart, SkeletonDonut } from "./AdminSkeleton";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { RiderFinancialRow } from "./types";
 import {
   CreditCard,
@@ -56,7 +57,7 @@ export function RiderEarningsScreen({
 
   if (dataLoading) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 20, padding: isMobile ? "16px 12px" : "24px 28px", background: "var(--bg-primary)", minHeight: "100vh" }}>
+      <div className="exact-admin-screen" style={{ display: "flex", flexDirection: "column", gap: 20, padding: isMobile ? "16px 12px" : "24px 28px", minHeight: "100vh" }}>
         <SkeletonKPI count={5} />
         <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr", gap: 14 }}>
           <SkeletonChart />
@@ -144,48 +145,43 @@ export function RiderEarningsScreen({
   const rankColors = ["var(--brand-orange)", "var(--brand-yellow)", "#cd7f32"];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20, padding: isMobile ? "16px 12px" : "24px 28px", background: "var(--bg-primary)", minHeight: "100vh", fontFamily: "Inter, -apple-system, sans-serif" }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4, flexWrap: isMobile ? "wrap" : undefined, gap: isMobile ? 8 : undefined }}>
-        <div>
-          <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.5px" }}>
-            Rider Earnings Dashboard
-          </h1>
-          <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-muted)" }}>
-            Track rider earnings, commissions, and incentive programs
-          </p>
-        </div>
-        <div style={{ display: "flex", gap: 10 }}>
-          {(["View All", "View Full History"] as const).map((label) => (
-            <button
-              key={label}
-              onClick={() => addToast(label + " clicked")}
-              style={{
-                padding: "8px 18px",
-                fontSize: 13,
-                fontWeight: 600,
-                color: "var(--text-primary)",
-                background: "var(--bg-card)",
-                border: "1px solid var(--border)",
-                borderRadius: 8,
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "var(--brand-orange)";
-                e.currentTarget.style.background = "color-mix(in srgb, var(--brand-orange) 10%, transparent)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "var(--border)";
-                e.currentTarget.style.background = "var(--bg-card)";
-              }}
-            >
-              {label === "View All" ? <Eye size={14} style={{ marginRight: 6, verticalAlign: -2 }} /> : <Download size={14} style={{ marginRight: 6, verticalAlign: -2 }} />}
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="exact-admin-screen" style={{ display: "flex", flexDirection: "column", gap: 20, padding: isMobile ? "16px 12px" : "24px 28px", minHeight: "100vh", fontFamily: "var(--font-family)" }}>
+      <AdminPageHeader
+        title="Rider Earnings"
+        subtitle="Review rider earnings estimated from completed trips and platform commission."
+        actions={
+          <div style={{ display: "flex", gap: 10 }}>
+            {(["View All", "View Full History"] as const).map((label) => (
+              <button
+                key={label}
+                onClick={() => addToast(label + " clicked")}
+                style={{
+                  padding: "8px 18px",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--text-primary)",
+                  background: "var(--bg-card)",
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "var(--accent-orange)";
+                  e.currentTarget.style.background = "color-mix(in srgb, var(--accent-orange) 10%, transparent)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "var(--border-color)";
+                  e.currentTarget.style.background = "var(--bg-card)";
+                }}
+              >
+                {label === "View All" ? <Eye size={14} style={{ marginRight: 6, verticalAlign: -2 }} /> : <Download size={14} style={{ marginRight: 6, verticalAlign: -2 }} />}
+                {label}
+              </button>
+            ))}
+          </div>
+        }
+      />
 
       {/* Tabs */}
       <div style={{ display: "flex", gap: 4, background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 10, padding: 4, width: isMobile ? "100%" : "fit-content", overflowX: isMobile ? "auto" : undefined }}>

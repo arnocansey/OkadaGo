@@ -2,11 +2,11 @@ import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Bike } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { api, phoneParts, type AuthResponse } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
+import { BrandLogo } from "@/components/BrandLogo";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { radius, spacing } from "@/theme/tokens";
@@ -24,14 +24,6 @@ export default function LoginScreen() {
         content: { padding: spacing.xxl, gap: spacing.xxl },
         hero: { gap: spacing.sm, alignItems: "flex-start" },
         logoWrap: { marginBottom: spacing.sm },
-        logo: {
-          width: 60,
-          height: 60,
-          borderRadius: radius.xl,
-          backgroundColor: colors.primary,
-          alignItems: "center",
-          justifyContent: "center",
-        },
         brand: { ...typography.label, color: colors.primary, letterSpacing: 1.5 },
         title: { ...typography.hero, color: colors.text },
         subtitle: { ...typography.body, color: colors.textSecondary },
@@ -89,11 +81,9 @@ export default function LoginScreen() {
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.hero}>
             <View style={styles.logoWrap}>
-              <View style={styles.logo}>
-                <Bike size={28} color={colors.textOnPrimary} />
-              </View>
+              <BrandLogo variant="icon" size={60} />
             </View>
-            <Text style={styles.brand}>OkadaGo</Text>
+            <BrandLogo variant="wordmark" size={28} />
             <Text style={styles.title}>{mode === "login" ? t("auth.welcomeBack") : t("auth.createAccount")}</Text>
             <Text style={styles.subtitle}>{t("auth.subtitle")}</Text>
           </View>

@@ -203,7 +203,7 @@ export default function ProfileScreen() {
           <ChevronRight size={18} color={colors.textMuted} />
         </Pressable>
         <Pressable style={styles.menuRow} onPress={() => router.push("/emergency-contacts")}>
-          <ShieldAlert size={20} color={colors.text} />
+          <ShieldAlert size={20} color={colors.danger} />
           <Text style={styles.menuLabel}>{t("profile.emergencyContacts")}</Text>
           <ChevronRight size={18} color={colors.textMuted} />
         </Pressable>

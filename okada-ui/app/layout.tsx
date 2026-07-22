@@ -26,7 +26,10 @@ export const metadata: Metadata = {
   applicationName: "OkadaGo",
   metadataBase: new URL("https://okadago.local"),
   icons: {
-    icon: "/icon.svg"
+    icon: [
+      { url: "/branding/okadago-icon-yellow.png", type: "image/png" },
+      { url: "/icon.svg" }
+    ]
   }
 };
 

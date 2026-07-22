@@ -1,13 +1,14 @@
 import { Redirect } from "expo-router";
 import { useMemo } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { BrandLogo } from "@/components/BrandLogo";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { spacing } from "@/theme/tokens";
 
 export default function Index() {
   const { session, restoring } = useApp();
-  const { colors, typography } = useTheme();
+  const { colors } = useTheme();
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -16,29 +17,18 @@ export default function Index() {
           backgroundColor: colors.background,
           alignItems: "center",
           justifyContent: "center",
+          gap: spacing.lg,
         },
-        logo: {
-          width: 72,
-          height: 72,
-          borderRadius: 20,
-          backgroundColor: colors.primary,
-          alignItems: "center",
-          justifyContent: "center",
-        },
-        logoText: { ...typography.hero, color: colors.textOnPrimary },
-        title: { ...typography.h2, marginTop: spacing.lg, color: colors.text },
       }),
-    [colors, typography],
+    [colors],
   );
 
   if (restoring) {
     return (
       <View style={styles.splash}>
-        <View style={styles.logo}>
-          <Text style={styles.logoText}>O</Text>
-        </View>
-        <Text style={styles.title}>OkadaGo Rider</Text>
-        <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.xl }} />
+        <BrandLogo variant="icon" size={72} />
+        <BrandLogo variant="wordmark" size={32} />
+        <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.md }} />
       </View>
     );
   }

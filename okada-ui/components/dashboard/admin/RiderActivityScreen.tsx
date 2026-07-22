@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { OperationsMap } from "@/components/maps/operations-map";
 import { EmptyCard } from "./EmptyCard";
 import { SkeletonKPI, SkeletonCard, SkeletonTable } from "./AdminSkeleton";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { RiderFinancialRow } from "./types";
 import { parseNumber } from "./utils";
 import { useAdminToast } from "./AdminToast";
@@ -50,14 +51,14 @@ type Tab = (typeof tabs)[number];
 const quickFilters = ["All", "Online", "On Trip", "Idle"] as const;
 
 const D = {
-  bg: "#0f1117",
-  surface: "#1a1b1e",
-  surfaceAlt: "#1f2125",
-  surfaceHover: "#26282c",
-  border: "#2a2b2e",
-  borderLight: "#353639",
-  textPrimary: "#f0f0f0",
-  textSecondary: "#9ca3af",
+  bg: "var(--bg-primary)",
+  surface: "var(--bg-card)",
+  surfaceAlt: "var(--bg-card)",
+  surfaceHover: "color-mix(in srgb, var(--bg-card) 90%, var(--text-primary))",
+  border: "var(--border-color)",
+  borderLight: "var(--border-color)",
+  textPrimary: "var(--text-primary)",
+  textSecondary: "var(--text-secondary)",
   textMuted: "#6b7280",
   green: "#22c55e",
   greenBg: "#0f3d1a",
@@ -231,15 +232,12 @@ export function RiderActivityScreen({
   ];
 
   return (
-    <div style={{ background: D.bg, minHeight: "100vh", padding: isMobile ? "0 12px" : 24, color: D.textPrimary, fontFamily: "inherit" }}>
+    <div className="exact-admin-screen" style={{ background: D.bg, minHeight: "100vh", padding: isMobile ? "0 12px" : 24, color: D.textPrimary, fontFamily: "var(--font-family)" }}>
       <div style={{ maxWidth: isMobile ? "100%" : 1400, margin: "0 auto" }}>
-        {/* Header */}
-        <div style={{ marginBottom: 24 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: D.textPrimary }}>Rider Activity</h1>
-          <p style={{ fontSize: 13, color: D.textSecondary, marginTop: 4 }}>
-            Real-time monitoring of rider locations, trips, and activity status.
-          </p>
-        </div>
+        <AdminPageHeader
+          title="Activity Tracking"
+          subtitle="Track online state, location availability, zone coverage, and active trip load."
+        />
 
         {/* KPI Cards */}
         <div

@@ -166,8 +166,10 @@ export default function HomeScreen() {
         <View style={styles.topBarWrap}>
           <View style={styles.topBar}>
             <View>
-              <Text style={styles.greeting}>Hello, {session?.user.fullName.split(" ")[0]} 👋</Text>
-              <Text style={styles.sub}>Where to today?</Text>
+              <Text style={styles.greeting}>
+                {t("home.hello", { name: session?.user.fullName.split(" ")[0] ?? "" })}
+              </Text>
+              <Text style={styles.sub}>{t("home.whereToToday")}</Text>
             </View>
             <Pressable onPress={() => router.push("/(main)/profile")} accessibilityRole="button">
               <Avatar name={session?.user.fullName ?? "A"} size={40} imageUri={session?.user.avatarUrl ?? undefined} />
@@ -188,7 +190,7 @@ export default function HomeScreen() {
             >
               <View style={styles.activeDot} />
               <View style={{ flex: 1 }}>
-                <Text style={styles.activeLabel}>Active trip — tap to track</Text>
+                <Text style={styles.activeLabel}>{t("home.activeTripLabel")}</Text>
                 <Text style={styles.activeValue} numberOfLines={1}>
                   {activeRide?.destinationAddress ?? activeDelivery?.dropoffAddress}
                 </Text>
@@ -215,13 +217,17 @@ export default function HomeScreen() {
           <Pressable style={styles.searchBar} onPress={() => openService()}>
             <Search size={20} color={colors.textMuted} />
             <Text style={styles.searchPlaceholder}>
-              {service === "ride" ? "Search destination" : service === "food" ? "Restaurants & groceries" : "Send a package"}
+              {service === "ride"
+                ? t("home.searchRide")
+                : service === "food"
+                  ? t("home.searchFood")
+                  : t("home.searchSend")}
             </Text>
           </Pressable>
 
           {savedPlaces.length > 0 ? (
             <View style={styles.savedSection}>
-              <Text style={styles.savedTitle}>Saved places</Text>
+              <Text style={styles.savedTitle}>{t("home.savedPlaces")}</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.savedRow}>
                 {savedPlaces.map((place) => (
                   <Pressable key={place.id} style={styles.savedChip} onPress={() => openService(place.id)}>

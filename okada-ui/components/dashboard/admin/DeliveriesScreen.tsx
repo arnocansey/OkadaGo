@@ -1,6 +1,7 @@
 import { Package, Truck, CheckCircle, XCircle } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { DeliveryRecord } from "./types";
 import { parseNumber, formatDateTime, statusTone, formatEnumLabel } from "./utils";
 
@@ -33,6 +34,11 @@ export function DeliveriesScreen({
 
   return (
     <div className="exact-admin-screen">
+      <AdminPageHeader
+        title="Deliveries"
+        subtitle="Monitor all package delivery requests, statuses, routes, and courier assignments."
+      />
+
       <section className="admin-reference-kpis">
         <article className="admin-reference-kpi">
           <div className="admin-reference-kpi-icon yellow"><Package size={22} /></div>

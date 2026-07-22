@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { Tag, TrendingUp, Users, Percent } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { RideRecord } from "./types";
 import { parseNumber } from "./utils";
 import { formatMoney } from "@/lib/currency";
@@ -70,6 +71,11 @@ export function PromoPerformanceScreen({ rides, adminCurrency }: PromoPerformanc
 
   return (
     <div className="exact-admin-screen">
+      <AdminPageHeader
+        title="Promo Performance"
+        subtitle="Analyze promo and referral discount performance across trips and service zones."
+      />
+
       <section className="admin-reference-kpis">
         <article className="admin-reference-kpi">
           <div className="admin-reference-kpi-icon yellow"><Tag size={22} /></div>

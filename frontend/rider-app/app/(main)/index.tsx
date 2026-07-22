@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Power, ShieldAlert, TrendingUp } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
@@ -170,17 +170,30 @@ export default function DashboardScreen() {
           ...shadows.md,
         },
         powerBtnOff: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-        powerBtnOn: { backgroundColor: colors.success, borderWidth: 2, borderColor: colors.success },
+        powerBtnOn: { backgroundColor: colors.online, borderWidth: 2, borderColor: colors.online },
         sosBtn: {
-          width: 44,
+          minWidth: 44,
           height: 44,
           borderRadius: 22,
+          paddingHorizontal: spacing.md,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: colors.surface,
-          borderWidth: 1,
-          borderColor: colors.danger,
+          flexDirection: "row",
+          gap: spacing.xs,
+          backgroundColor: colors.danger,
         },
+        sosLabel: { ...typography.label, color: colors.textOnDanger },
+        floatBanner: {
+          backgroundColor: colors.warningLight,
+          borderRadius: radius.lg,
+          padding: spacing.lg,
+          borderWidth: 1,
+          borderColor: colors.warning,
+          gap: spacing.sm,
+        },
+        floatTitle: { ...typography.bodySemibold, color: colors.text },
+        floatBody: { ...typography.caption, color: colors.textSecondary },
+        floatLink: { ...typography.captionMedium, color: colors.accent },
         earningsHero: {
           flexDirection: "row",
           alignItems: "center",
@@ -247,7 +260,14 @@ export default function DashboardScreen() {
               accessibilityLabel={t("drive.sendSos")}
               accessibilityRole="button"
             >
-              <ShieldAlert size={20} color={colors.danger} />
+              {sosLoading ? (
+                <ActivityIndicator color={colors.textOnDanger} size="small" />
+              ) : (
+                <>
+                  <ShieldAlert size={16} color={colors.textOnDanger} />
+                  <Text style={styles.sosLabel}>SOS</Text>
+                </>
+              )}
             </Pressable>
             <Pressable
               style={[styles.powerBtn, online ? styles.powerBtnOn : styles.powerBtnOff]}
@@ -264,6 +284,16 @@ export default function DashboardScreen() {
         </View>
 
         <MapBottomSheet>
+          {!online && Number(wallet?.availableBalance ?? 0) < RIDER_MIN_ONLINE_BALANCE ? (
+            <Pressable style={styles.floatBanner} onPress={() => router.push("/(main)/wallet")}>
+              <Text style={styles.floatTitle}>Wallet float needed</Text>
+              <Text style={styles.floatBody}>
+                Keep at least GH₵ {RIDER_MIN_ONLINE_BALANCE} available to go online and receive jobs.
+              </Text>
+              <Text style={styles.floatLink}>Open wallet →</Text>
+            </Pressable>
+          ) : null}
+
           <View style={styles.earningsHero}>
             <View style={styles.earningsIcon}>
               <TrendingUp size={20} color={colors.textOnPrimary} />

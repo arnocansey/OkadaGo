@@ -11,7 +11,6 @@ import {
   Globe,
   Save,
   RotateCcw,
-  HardDrive,
   Key,
   AlertTriangle,
   ExternalLink,
@@ -27,6 +26,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { useAdminToast } from "./AdminToast";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
 import { SkeletonForm } from "./AdminSkeleton";
@@ -615,7 +615,12 @@ export function SettingsScreen({
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? 16 : 20, minHeight: "100%", color: DARK.text, fontFamily: "inherit" }}>
+    <div className="exact-admin-screen" style={{ display: "flex", flexDirection: "column", gap: 16, minHeight: "100%", color: DARK.text, fontFamily: "inherit" }}>
+      <AdminPageHeader
+        title="Settings"
+        subtitle="Platform preferences, security, and integrations overview."
+      />
+      <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? 16 : 20, minHeight: "100%" }}>
       {/* Left Sidebar */}
       <div style={{
         width: isMobile ? "100%" : 240, flexShrink: 0, background: DARK.surface, borderRadius: 14,
@@ -631,8 +636,8 @@ export function SettingsScreen({
               style={{
                 display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 10,
                 border: "none", cursor: "pointer", fontSize: 13, fontWeight: active ? 700 : 500,
-                background: active ? DARK.accent : "transparent",
-                color: active ? "#fff" : DARK.textMuted,
+                background: active ? DARK.yellow : "transparent",
+                color: active ? "#0b0f19" : DARK.textMuted,
                 transition: "all 0.15s", textAlign: "left", width: "100%",
               }}
               onMouseEnter={(e) => { if (!active) (e.currentTarget.style.background = DARK.navHover); }}
@@ -652,7 +657,7 @@ export function SettingsScreen({
         </div>
         <div style={{ display: "flex", gap: isMobile ? 8 : 12, flexWrap: "wrap" }}>
           <button
-            style={{ ...btnBase, background: DARK.accent, color: "#fff", padding: "11px 24px" }}
+            style={{ ...btnBase, background: DARK.yellow, color: "#0b0f19", padding: "11px 24px" }}
             onClick={handleSave}
           >
             <Save size={16} /> Save Changes
@@ -672,10 +677,9 @@ export function SettingsScreen({
         <div style={{ ...cardStyle }}>
           <h4 style={{ color: DARK.text, fontSize: 13, fontWeight: 700, margin: "0 0 14px" }}>Platform Info</h4>
           {[
-            { label: "Version", value: "2.4.1" },
-            { label: "Environment", value: "Production" },
             { label: "Currency", value: adminCurrency },
             { label: "Active Zones", value: `${zones.filter((z) => z.isActive).length} / ${zones.length}` },
+            { label: "Admins", value: `${adminAccounts.length}` },
           ].map(({ label, value }) => (
             <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: `1px solid ${DARK.border}` }}>
               <span style={{ color: DARK.textMuted, fontSize: 12 }}>{label}</span>
@@ -684,40 +688,19 @@ export function SettingsScreen({
           ))}
         </div>
 
-        {/* Storage */}
-        <div style={{ ...cardStyle }}>
-          <h4 style={{ color: DARK.text, fontSize: 13, fontWeight: 700, margin: "0 0 12px" }}>
-            <HardDrive size={14} style={{ marginRight: 6, verticalAlign: -2 }} />
-            Storage
-          </h4>
-          <div style={{ height: 6, borderRadius: 3, background: DARK.surfaceAlt, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: "62%", borderRadius: 3, background: DARK.accent }} />
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
-            <span style={{ color: DARK.textMuted, fontSize: 11 }}>62% used</span>
-            <span style={{ color: DARK.textMuted, fontSize: 11 }}>5.1 / 8 GB</span>
-          </div>
-        </div>
-
-        {/* API Info */}
+        {/* Live modules */}
         <div style={{ ...cardStyle }}>
           <h4 style={{ color: DARK.text, fontSize: 13, fontWeight: 700, margin: "0 0 12px" }}>
             <Key size={14} style={{ marginRight: 6, verticalAlign: -2 }} />
-            API
+            Enabled modules
           </h4>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ color: DARK.textMuted, fontSize: 12 }}>Requests today</span>
-              <span style={{ color: DARK.text, fontSize: 12, fontWeight: 600 }}>14,832</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ color: DARK.textMuted, fontSize: 12 }}>Rate limit</span>
-              <span style={{ color: DARK.text, fontSize: 12, fontWeight: 600 }}>1,000 / min</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ color: DARK.textMuted, fontSize: 12 }}>Uptime</span>
-              <span style={{ color: DARK.green, fontSize: 12, fontWeight: 600 }}>99.97%</span>
-            </div>
+            {(modules.length ? modules : ["No modules listed"]).slice(0, 8).map((mod) => (
+              <div key={mod} style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: DARK.textMuted, fontSize: 12 }}>{mod}</span>
+                <span style={{ color: DARK.green, fontSize: 12, fontWeight: 600 }}>On</span>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -739,6 +722,7 @@ export function SettingsScreen({
             This action is irreversible and will delete all platform data.
           </p>
         </div>
+      </div>
       </div>
     </div>
   );

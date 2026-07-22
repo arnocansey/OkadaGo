@@ -28,6 +28,7 @@ import {
 import type { RiderRecord } from "./types";
 import { formatDateTime, statusTone } from "./utils";
 import { useAdminToast } from "./AdminToast";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
 import { SkeletonKPI, SkeletonTable } from "./AdminSkeleton";
 
@@ -303,9 +304,9 @@ export function RiderVerificationScreen({
       fontSize: 13,
       fontWeight: active ? 600 : 400,
       color: active ? "#f1f5f9" : "#64748b",
-      background: active ? "rgba(99,102,241,0.15)" : "transparent",
+      background: active ? "var(--accent-yellow-light)" : "transparent",
       border: "none",
-      borderBottom: active ? "2px solid #6366f1" : "2px solid transparent",
+      borderBottom: active ? "2px solid var(--accent-orange)" : "2px solid transparent",
       borderRadius: "8px 8px 0 0",
       cursor: "pointer",
       whiteSpace: "nowrap" as const,
@@ -360,7 +361,7 @@ export function RiderVerificationScreen({
         whiteSpace: "nowrap" as const,
       };
       const map: Record<string, React.CSSProperties> = {
-        primary: { background: "#6366f1", color: "#fff" },
+        primary: { background: "var(--accent-orange)", color: "#fff" },
         outline: {
           background: "transparent",
           border: "1px solid var(--border-color)",
@@ -399,7 +400,7 @@ export function RiderVerificationScreen({
       verticalAlign: "middle" as const,
     } as React.CSSProperties,
     tr: (i: number): React.CSSProperties => ({
-      background: hoveredRow === i ? "rgba(99,102,241,0.06)" : "transparent",
+      background: hoveredRow === i ? "color-mix(in srgb, var(--accent-orange) 6%, transparent)" : "transparent",
       cursor: "pointer",
       transition: "background .12s",
     }),
@@ -440,7 +441,7 @@ export function RiderVerificationScreen({
       alignItems: "center",
       justifyContent: "center",
       border: active ? "none" : "1px solid var(--border-color)",
-      background: active ? "#6366f1" : "transparent",
+      background: active ? "var(--accent-orange)" : "transparent",
       color: active ? "#fff" : "#94a3b8",
       fontSize: 13,
       fontWeight: 600,
@@ -508,12 +509,12 @@ export function RiderVerificationScreen({
       width: 32,
       height: 32,
       borderRadius: 8,
-      background: "rgba(99,102,241,0.1)",
+      background: "var(--accent-yellow-light)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       flexShrink: 0,
-      color: "#6366f1",
+      color: "var(--accent-orange)",
     } as React.CSSProperties,
     stepCard: (done: boolean): React.CSSProperties => ({
       display: "flex",
@@ -571,7 +572,12 @@ export function RiderVerificationScreen({
   /*  RENDER                                                       */
   /* ════════════════════════════════════════════════════════════════ */
   return (
-    <div style={S.root}>
+    <div className="exact-admin-screen" style={S.root}>
+      <AdminPageHeader
+        title="Rider Verification"
+        subtitle="Review rider approval readiness using live profile, vehicle, zone, and account data."
+      />
+
       {/* ── KPI Cards ── */}
       <div style={{ ...S.kpiRow, gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : isTablet ? "repeat(3, 1fr)" : S.kpiRow.gridTemplateColumns }}>
         {kpis.map((k) => {
@@ -742,8 +748,8 @@ export function RiderVerificationScreen({
                           style={{
                             padding: "3px 8px",
                             borderRadius: 6,
-                            background: "rgba(99,102,241,0.1)",
-                            color: "#818cf8",
+                            background: "var(--accent-yellow-light)",
+                            color: "var(--accent-orange)",
                             fontSize: 12,
                           }}
                         >
@@ -886,14 +892,14 @@ export function RiderVerificationScreen({
                   width: 56,
                   height: 56,
                   borderRadius: 16,
-                  background: "rgba(99,102,241,0.12)",
+                  background: "var(--accent-yellow-light)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   marginBottom: 16,
                 }}
               >
-                <User size={26} color="#6366f1" />
+                <User size={26} color="var(--accent-orange)" />
               </div>
               <h2
                 style={{
@@ -1031,7 +1037,7 @@ export function RiderVerificationScreen({
                           ? "#22c55e"
                           : doc.status === "Pending"
                             ? "#f59e0b"
-                            : "#6366f1",
+                            : "var(--accent-orange)",
                       ),
                       fontSize: 11,
                     }}

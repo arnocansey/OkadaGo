@@ -219,7 +219,7 @@ export function RiderPayoutsScreen({
   const donutStroke = 10;
   const donutCircumference = 2 * Math.PI * donutRadius;
 
-  const donutColors = ["var(--brand-orange)", "var(--success)", "var(--info, #3b82f6)", "var(--brand-yellow)", "var(--danger)", "#a855f7"];
+  const donutColors = ["var(--accent-orange)", "var(--color-success)", "var(--accent-yellow)", "var(--color-danger)", "var(--text-secondary)"];
 
   let donutOffset = 0;
   const donutSegments = riderPayoutMethodSnapshot.map(([method, amount], i) => {

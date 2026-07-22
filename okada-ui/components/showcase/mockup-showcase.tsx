@@ -47,9 +47,9 @@ export function MockupScreenCanvas({ slug }: { slug: string[] }) {
     <ImmersivePage className="mockup-showcase-page">
       <header className="mockup-showcase-topbar">
         <div>
-          <p className="workspace-tag">UI library</p>
+          <p className="workspace-tag">Showcase · not production</p>
           <h1>{selected.title}</h1>
-          <p>{selected.description}</p>
+          <p>{selected.description} — mockup reference, not the live app.</p>
         </div>
         <div className="button-row">
           <Link href="/ui" className="button-ghost">
@@ -76,10 +76,10 @@ export function MockupShowcase({ slug }: { slug?: string[] }) {
     <ImmersivePage className="mockup-showcase-page">
       <header className="mockup-showcase-topbar">
         <div>
-          <p className="workspace-tag">UI library</p>
+          <p className="workspace-tag">Showcase · not production</p>
           <h1>All Provided Mockups</h1>
           <p>
-            Every supplied passenger, rider, admin, web, and combined mockup screen is now cataloged here.
+            Design reference only — live product UIs live under /passenger, /rider, and /admin. Do not treat these mockups as the console.
           </p>
         </div>
         <div className="mockup-count-chip">{Object.keys(groups).length} groups</div>

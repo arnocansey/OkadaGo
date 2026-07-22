@@ -2,7 +2,7 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Moon, Sun, Camera, Globe } from "lucide-react-native";
+import { Moon, Sun, Camera, Globe, ChevronRight } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useTranslation } from "react-i18next";
 import { Avatar } from "@/components/ui/Avatar";
@@ -111,6 +111,16 @@ export default function ProfileScreen() {
           borderWidth: 2,
           borderColor: colors.background,
         },
+        linkRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingVertical: spacing.md,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        },
+        linkRowLast: { borderBottomWidth: 0 },
+        linkLabel: { ...typography.bodyMedium, color: colors.text, flex: 1 },
       }),
     [colors, typography],
   );
@@ -252,13 +262,26 @@ export default function ProfileScreen() {
 
         <Card stacked>
           <Text style={styles.sectionTitle}>{t("profile.safetyAccount")}</Text>
-          <Button label={t("profile.editProfile")} variant="outline" fullWidth onPress={() => router.push("/edit-profile")} />
-          <Button label={t("profile.emergencyContacts")} variant="outline" fullWidth onPress={() => router.push("/emergency-contacts")} />
-          <Button label={t("profile.savedPlaces")} variant="outline" fullWidth onPress={() => router.push("/saved-places")} />
-          <Button label={t("profile.supportTickets")} variant="outline" fullWidth onPress={() => router.push("/support")} />
-          {user.isPhoneVerified === false ? (
-            <Button label={t("profile.verifyPhone")} fullWidth onPress={() => router.push("/(auth)/verify-phone")} />
-          ) : null}
+          {(
+            [
+              { label: t("profile.editProfile"), href: "/edit-profile" },
+              { label: t("profile.emergencyContacts"), href: "/emergency-contacts" },
+              { label: t("profile.savedPlaces"), href: "/saved-places" },
+              { label: t("profile.supportTickets"), href: "/support" },
+              ...(user.isPhoneVerified === false
+                ? [{ label: t("profile.verifyPhone"), href: "/(auth)/verify-phone" }]
+                : []),
+            ] as Array<{ label: string; href: string }>
+          ).map((item, index, arr) => (
+            <Pressable
+              key={item.href}
+              style={[styles.linkRow, index === arr.length - 1 && styles.linkRowLast]}
+              onPress={() => router.push(item.href as never)}
+            >
+              <Text style={styles.linkLabel}>{item.label}</Text>
+              <ChevronRight size={18} color={colors.textMuted} />
+            </Pressable>
+          ))}
         </Card>
 
         <Card stacked>

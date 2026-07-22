@@ -3,6 +3,7 @@ import { useAdminToast } from "./AdminToast";
 import { EmptyCard } from "./EmptyCard";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
 import { SkeletonKPI, SkeletonTable } from "./AdminSkeleton";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 
 const DOCUMENT_TABS = [
   "All",
@@ -96,8 +97,8 @@ export function RiderDocumentsScreen({
       label: "Total Documents",
       value: riderDocumentStats.total,
       icon: "\u{1F4CB}",
-      color: "#6366f1",
-      bg: "rgba(99,102,241,0.12)",
+      color: "var(--accent-orange)",
+      bg: "var(--accent-yellow-light)",
     },
     {
       label: "Compliant",
@@ -130,13 +131,11 @@ export function RiderDocumentsScreen({
   ];
 
   return (
-    <div style={{ ...styles.container, padding: isMobile ? "16px 12px" : styles.container.padding }}>
-      <div style={styles.header}>
-        <h2 style={styles.title}>Rider Documents</h2>
-        <p style={styles.subtitle}>
-          Monitor document compliance, expiry dates, and verification status for all riders.
-        </p>
-      </div>
+    <div className="exact-admin-screen" style={{ ...styles.container, padding: isMobile ? "16px 12px" : styles.container.padding }}>
+      <AdminPageHeader
+        title="Rider Documents"
+        subtitle="Track rider document readiness and missing operational requirements from live records."
+      />
 
       {/* KPI Cards */}
       <div style={{ ...styles.kpiGrid, gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : isTablet ? "repeat(3, 1fr)" : styles.kpiGrid.gridTemplateColumns }}>
@@ -208,7 +207,7 @@ export function RiderDocumentsScreen({
             style={styles.searchInput}
             onFocus={(e) => {
               (e.currentTarget as HTMLInputElement).style.borderColor =
-                "#6366f1";
+                "var(--accent-orange)";
             }}
             onBlur={(e) => {
               (e.currentTarget as HTMLInputElement).style.borderColor =
@@ -330,15 +329,15 @@ export function RiderDocumentsScreen({
                           }
                           onMouseEnter={(e) => {
                             (e.currentTarget as HTMLButtonElement).style.background =
-                              "rgba(99,102,241,0.2)";
+                              "color-mix(in srgb, var(--accent-orange) 20%, transparent)";
                             (e.currentTarget as HTMLButtonElement).style.color =
-                              "#818cf8";
+                              "var(--accent-orange)";
                           }}
                           onMouseLeave={(e) => {
                             (e.currentTarget as HTMLButtonElement).style.background =
-                              "rgba(99,102,241,0.1)";
+                              "var(--accent-yellow-light)";
                             (e.currentTarget as HTMLButtonElement).style.color =
-                              "#6366f1";
+                              "var(--accent-orange)";
                           }}
                         >
                           View
@@ -429,24 +428,9 @@ const styles: Record<string, React.CSSProperties> = {
   container: {
     padding: "32px",
     minHeight: "100vh",
-    background: "#0f1117",
-    color: "#e2e8f0",
-    fontFamily:
-      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  },
-  header: {
-    marginBottom: "32px",
-  },
-  title: {
-    fontSize: "28px",
-    fontWeight: 700,
-    color: "#f1f5f9",
-    margin: "0 0 8px 0",
-  },
-  subtitle: {
-    fontSize: "14px",
-    color: "#64748b",
-    margin: 0,
+    background: "var(--bg-primary)",
+    color: "var(--text-primary)",
+    fontFamily: "var(--font-family)",
   },
   kpiGrid: {
     display: "grid",
@@ -513,9 +497,9 @@ const styles: Record<string, React.CSSProperties> = {
     whiteSpace: "nowrap" as const,
   },
   tabActive: {
-    background: "rgba(99,102,241,0.15)",
-    color: "#818cf8",
-    boxShadow: "0 0 0 1px rgba(99,102,241,0.3)",
+    background: "var(--accent-yellow-light)",
+    color: "var(--accent-orange)",
+    boxShadow: "0 0 0 1px color-mix(in srgb, var(--accent-orange) 30%, transparent)",
   },
   filterRow: {
     display: "flex",
@@ -605,7 +589,7 @@ const styles: Record<string, React.CSSProperties> = {
     transition: "background 0.15s ease",
   },
   trHover: {
-    background: "rgba(99,102,241,0.04)",
+    background: "color-mix(in srgb, var(--accent-orange) 4%, transparent)",
   },
   td: {
     padding: "14px 16px",
@@ -629,10 +613,10 @@ const styles: Record<string, React.CSSProperties> = {
     padding: "4px 10px",
     fontSize: "12px",
     fontWeight: 500,
-    color: "#a78bfa",
-    background: "rgba(167,139,250,0.1)",
+    color: "var(--accent-yellow)",
+    background: "var(--accent-yellow-light)",
     borderRadius: "6px",
-    border: "1px solid rgba(167,139,250,0.2)",
+    border: "1px solid color-mix(in srgb, var(--accent-yellow) 20%, transparent)",
   },
   docNumber: {
     fontFamily: "monospace",
@@ -665,8 +649,8 @@ const styles: Record<string, React.CSSProperties> = {
     padding: "6px 14px",
     fontSize: "12px",
     fontWeight: 500,
-    background: "rgba(99,102,241,0.1)",
-    color: "#6366f1",
+    background: "var(--accent-yellow-light)",
+    color: "var(--accent-orange)",
     border: "none",
     borderRadius: "6px",
     cursor: "pointer",
@@ -713,8 +697,8 @@ const styles: Record<string, React.CSSProperties> = {
     transition: "all 0.2s ease",
   },
   pageNumActive: {
-    background: "rgba(99,102,241,0.15)",
-    color: "#818cf8",
-    border: "1px solid rgba(99,102,241,0.3)",
+    background: "var(--accent-yellow-light)",
+    color: "var(--accent-orange)",
+    border: "1px solid color-mix(in srgb, var(--accent-orange) 30%, transparent)",
   },
 };

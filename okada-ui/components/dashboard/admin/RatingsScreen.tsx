@@ -5,6 +5,7 @@ import { useBreakpoint } from "../../../hooks/use-breakpoint";
 import { useAdminToast } from "./AdminToast";
 import { EmptyCard } from "./EmptyCard";
 import { SkeletonKPI, SkeletonTable, SkeletonDonut } from "./AdminSkeleton";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { AdminRatingRecord, AdminIncidentRecord } from "./types";
 import { formatDateTime } from "./utils";
 
@@ -32,10 +33,10 @@ const s = {
     flexDirection: "column" as const,
     gap: 20,
     padding: 24,
-    background: "#0d0f12",
+    background: "var(--bg-primary)",
     minHeight: "100%",
-    color: "#e4e4e7",
-    fontFamily: "system-ui, -apple-system, sans-serif",
+    color: "var(--text-primary)",
+    fontFamily: "var(--font-family)",
   },
   kpiRow: {
     display: "grid",
@@ -268,7 +269,7 @@ export function RatingsScreen({
 
   if (dataLoading) {
     return (
-      <div style={{ padding: "24px 28px", minHeight: "100vh", display: "flex", flexDirection: "column", gap: 20 }}>
+      <div className="exact-admin-screen" style={{ padding: "24px 28px", minHeight: "100vh", display: "flex", flexDirection: "column", gap: 20 }}>
         <SkeletonKPI count={4} />
         <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 340px", gap: 18 }}>
           <SkeletonTable rows={5} cols={5} />
@@ -305,7 +306,17 @@ export function RatingsScreen({
   }
 
   return (
-    <div style={{ ...s.root, padding: isMobile ? "16px 12px" : s.root.padding }}>
+    <div className="exact-admin-screen" style={{ ...s.root, padding: isMobile ? "16px 12px" : s.root.padding }}>
+      <AdminPageHeader
+        title="Reports & Analytics"
+        subtitle="Verify passenger rating submissions with rider, ride, and date-level filters."
+        actions={
+          <button type="button" style={s.exportBtn} onClick={handleExport}>
+            <Download size={14} /> Export CSV
+          </button>
+        }
+      />
+
       {/* KPI Cards */}
       <div style={{ ...s.kpiRow, gridTemplateColumns: isMobile || isTablet ? "repeat(2, 1fr)" : "repeat(4, 1fr)" }}>
         <div style={s.kpi}>
@@ -379,9 +390,6 @@ export function RatingsScreen({
           value={ratingToDateFilter}
           onChange={(e) => onToDateChange(e.target.value)}
         />
-        <button style={s.exportBtn} onClick={handleExport}>
-          <Download size={14} /> Export CSV
-        </button>
       </div>
 
       {/* Main Grid */}

@@ -1,6 +1,7 @@
 import { Tag, TrendingDown, Map } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { RideRecord } from "./types";
 import { parseNumber, formatDateTime } from "./utils";
 
@@ -25,6 +26,11 @@ export function PromotionsScreen({
 
   return (
     <div className="exact-admin-screen">
+      <AdminPageHeader
+        title="Promotions"
+        subtitle="Track promo-assisted trips and referral-driven discounts from live ride records."
+      />
+
       <section className="admin-reference-kpis">
         <article className="admin-reference-kpi">
           <div className="admin-reference-kpi-icon yellow"><Tag size={22} /></div>

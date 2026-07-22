@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { useAdminToast } from "./AdminToast";
 import { SkeletonKPI, SkeletonChart, SkeletonDonut, SkeletonTable } from "./AdminSkeleton";
 import type { RiderFinancialRow } from "./types";
@@ -64,12 +65,12 @@ const D = {
   warnDim: "rgba(245,158,11,0.12)",
   danger: "var(--danger, #ef4444)",
   dangerDim: "rgba(239,68,68,0.12)",
-  info: "var(--info, #6366f1)",
-  infoDim: "rgba(99,102,241,0.12)",
+  info: "var(--accent-orange)",
+  infoDim: "var(--accent-yellow-light)",
   blue: "#3b82f6",
   blueDim: "rgba(59,130,246,0.12)",
-  purple: "#a855f7",
-  purpleDim: "rgba(168,85,247,0.12)",
+  purple: "var(--accent-yellow)",
+  purpleDim: "var(--accent-yellow-light)",
   radius: 14,
   radiusSm: 10,
   radiusXs: 6,
@@ -465,9 +466,13 @@ export function RiderPerformanceScreen({
   };
 
   return (
-    <div style={{ background: D.bg, minHeight: "100vh", color: D.text, fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+    <div className="exact-admin-screen" style={{ background: D.bg, minHeight: "100vh", color: D.text, fontFamily: "var(--font-family)" }}>
+      <AdminPageHeader
+        title="Rider Performance"
+        subtitle="Compare rider trip volume, completion load, earnings, and rating signals from live operations."
+      />
+
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         .rp-kpi:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.4); }
         .rp-btn:hover { background: var(--bg-surface-3, #22232b) !important; border-color: var(--accent, #10b981) !important; color: var(--accent, #10b981) !important; }
         .rp-btn-primary:hover { background: var(--accent-hover, #34d399) !important; color: #000 !important; }
@@ -575,7 +580,7 @@ export function RiderPerformanceScreen({
             ))}
             <path d={buildAreaPath(tripsData, chartW, chartH, chartPad)} fill="rgba(16,185,129,0.06)" />
             <path d={buildAreaPath(earningsData, chartW, chartH, chartPad)} fill="rgba(59,130,246,0.06)" />
-            <path d={buildAreaPath(revenueData, chartW, chartH, chartPad)} fill="rgba(168,85,247,0.06)" />
+            <path d={buildAreaPath(revenueData, chartW, chartH, chartPad)} fill="color-mix(in srgb, var(--accent-yellow) 6%, transparent)" />
             <path d={buildSmoothPath(tripsData, chartW, chartH, chartPad)} fill="none" stroke={D.accent} strokeWidth={2.5} strokeLinecap="round" />
             <path d={buildSmoothPath(earningsData, chartW, chartH, chartPad)} fill="none" stroke={D.blue} strokeWidth={2.5} strokeLinecap="round" />
             <path d={buildSmoothPath(revenueData, chartW, chartH, chartPad)} fill="none" stroke={D.purple} strokeWidth={2.5} strokeLinecap="round" />

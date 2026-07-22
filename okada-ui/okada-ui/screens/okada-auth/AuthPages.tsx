@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Shield, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import authBg from "../../images/auth-bg.png";
+import { BrandMark } from "@/components/brand/BrandMark";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
@@ -300,11 +301,8 @@ export function AuthPages({
           <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#0a0b0d]/70 to-transparent" />
         </div>
 
-        <Link href="/" className="relative z-10 flex items-center gap-2 w-fit">
-          <div className="w-10 h-10 rounded bg-primary flex items-center justify-center text-[#0a0b0d] font-bold text-2xl">
-            O
-          </div>
-          <span className="font-bold text-2xl tracking-tight">OkadaGo</span>
+        <Link href="/" className="relative z-10 flex items-center w-fit">
+          <BrandMark variant="wordmark" onDark height={32} priority />
         </Link>
 
         <motion.div 
@@ -337,11 +335,8 @@ export function AuthPages({
             </Link>
           </div>
 
-          <Link href="/" className="mb-10 flex items-center justify-center gap-2 md:hidden w-fit">
-            <div className="flex h-10 w-10 items-center justify-center rounded bg-primary text-2xl font-bold text-[#0a0b0d]">
-              O
-            </div>
-            <span className="text-2xl font-bold tracking-tight text-[#0a0b0d]">OkadaGo</span>
+          <Link href="/" className="mb-10 flex items-center md:hidden w-fit">
+            <BrandMark variant="wordmark" height={30} priority />
           </Link>
 
           <AnimatePresence mode="wait">

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Clock, LayoutDashboard, LogOut, TrendingUp, User } from "lucide-react";
+import { BrandMark } from "@/components/brand/BrandMark";
 import { useAuth } from "@/lib/auth";
 import { useRiderSignOut } from "@/components/rider/hooks/use-rider-sign-out";
 import { initials } from "@/components/rider/types";
@@ -22,7 +23,7 @@ export function RiderSidebar() {
   return (
     <aside className="rdr-sidebar" aria-label="Rider navigation">
       <div className="rdr-sidebar-brand">
-        <div className="rdr-sidebar-mark">OG</div>
+        <BrandMark variant="icon" height={36} />
         <div>
           <strong>OkadaGo</strong>
           <span>Rider</span>

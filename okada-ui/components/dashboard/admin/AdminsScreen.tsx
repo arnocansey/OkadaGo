@@ -1,5 +1,6 @@
 import { ShieldAlert, UserPlus, CheckCircle } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { AdminAccountRecord, PassengerRecord } from "./types";
 import { formatDateTime, statusTone } from "./utils";
 
@@ -50,6 +51,11 @@ export function AdminsScreen({
 }: AdminsScreenProps) {
   return (
     <div className="exact-admin-screen">
+      <AdminPageHeader
+        title="Admins"
+        subtitle="Create and review admin accounts through an authenticated admin-only workflow."
+      />
+
       <section className="admin-reference-kpis">
         <article className="admin-reference-kpi">
           <div className="admin-reference-kpi-icon yellow"><ShieldAlert size={22} /></div>

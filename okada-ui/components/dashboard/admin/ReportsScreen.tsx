@@ -1,6 +1,7 @@
 import { TrendingUp, Bike, Package, Users, CreditCard, Download } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
 import { downloadCsv } from "@/lib/export-csv";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { RideRecord, DeliveryRecord, RiderRecord, PassengerRecord } from "./types";
 import { parseNumber, shortDate } from "./utils";
 
@@ -76,6 +77,11 @@ export function ReportsScreen({
 
   return (
     <div className="exact-admin-screen">
+      <AdminPageHeader
+        title="Reports"
+        subtitle="Aggregate platform performance data across rides, revenue, riders, and passengers over time."
+      />
+
       <section className="admin-reference-kpis">
         <article className="admin-reference-kpi">
           <div className="admin-reference-kpi-icon green"><TrendingUp size={22} /></div>

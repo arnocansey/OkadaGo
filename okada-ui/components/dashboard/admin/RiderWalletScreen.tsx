@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useAdminToast } from "./AdminToast";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
 import { SkeletonKPI, SkeletonTable, SkeletonCard, SkeletonDonut } from "./AdminSkeleton";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { formatMoney } from "@/lib/currency";
 import { formatDateTime, formatEnumLabel, statusTone, parseNumber } from "./utils";
 import type { WalletTransactionRecord } from "./types";
@@ -85,7 +86,7 @@ export function RiderWalletScreen({
 
   if (dataLoading) {
     return (
-      <div style={{ padding: isMobile ? "16px 12px" : "24px 0", minHeight: "100vh", display: "flex", flexDirection: "column", gap: 20 }}>
+      <div className="exact-admin-screen" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", gap: 20 }}>
         <SkeletonKPI count={5} />
         <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr", gap: 16 }}>
           <SkeletonCard lines={4} />
@@ -149,14 +150,21 @@ export function RiderWalletScreen({
 
   return (
     <div
+      className="exact-admin-screen"
       style={{
         display: "flex",
         flexDirection: "column",
         gap: isMobile ? 16 : 24,
         padding: isMobile ? "16px 12px" : "24px 0",
-        color: "var(--text-primary, #f0f0f0)"
+        color: "var(--text-primary, #f0f0f0)",
+        fontFamily: "var(--font-family)",
       }}
     >
+      <AdminPageHeader
+        title="Rider Wallet"
+        subtitle="Inspect rider wallet movement from admin-visible wallet transactions."
+      />
+
       {/* KPI Row */}
       <section
         style={{
@@ -198,7 +206,7 @@ export function RiderWalletScreen({
             label: "Locked Balance",
             value: formatMoney(adminCurrency, riderWalletLockedBalance),
             icon: <Lock size={20} />,
-            color: "#a78bfa",
+            color: "var(--accent-yellow)",
             sub: "Held for disputes"
           }
         ].map((kpi) => (
@@ -257,7 +265,7 @@ export function RiderWalletScreen({
             {[
               { label: "Cash Out", icon: <Banknote size={16} />, color: "#22c55e", msg: "Cash out flow initiated" },
               { label: "Add Money", icon: <Coins size={16} />, color: "#38bdf8", msg: "Add money flow opened" },
-              { label: "Transaction History", icon: <History size={16} />, color: "#a78bfa", msg: "Transaction history exported" },
+              { label: "Transaction History", icon: <History size={16} />, color: "var(--accent-yellow)", msg: "Transaction history exported" },
               { label: "Earnings Summary", icon: <BarChart3 size={16} />, color: "#f97316", msg: "Earnings summary generated" }
             ].map((action) => (
               <button
@@ -312,7 +320,7 @@ export function RiderWalletScreen({
               <circle
                 cx="18" cy="18" r="15.915"
                 fill="none"
-                stroke="#a78bfa"
+                stroke="var(--accent-yellow)"
                 strokeWidth="3"
                 strokeDasharray={`${lockedPct} ${100 - lockedPct}`}
                 strokeDashoffset={25 - availablePct}
@@ -337,7 +345,7 @@ export function RiderWalletScreen({
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {[
                 { label: "Available", pct: availablePct, color: "#22c55e" },
-                { label: "Locked", pct: lockedPct, color: "#a78bfa" },
+                { label: "Locked", pct: lockedPct, color: "var(--accent-yellow)" },
                 { label: "Pending", pct: pendingPct, color: "#eab308" }
               ].map((item) => (
                 <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>

@@ -1,5 +1,6 @@
 import { Users, MapPin, Search } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { PassengerRecord, RiderRecord } from "./types";
 import { statusTone, formatDateTime } from "./utils";
 import { Bike, User } from "lucide-react";
@@ -48,6 +49,11 @@ export function UsersManagementScreen({
 }: UsersManagementScreenProps) {
   return (
     <div className="exact-admin-screen">
+      <AdminPageHeader
+        title="Users Management"
+        subtitle="Review passenger profiles, referral codes, and city distribution from the live backend."
+      />
+
       <section className="admin-reference-kpis">
         <article className="admin-reference-kpi">
           <div className="admin-reference-kpi-icon green"><Users size={22} /></div>

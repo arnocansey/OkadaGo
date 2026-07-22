@@ -1,40 +1,41 @@
 :root {
-  /* Horizon UI Light Theme Palette */
-  --bg-primary: #f4f7fe;
+  /* OkadaGo light admin palette */
+  --bg-primary: #f7f4ef;
   --bg-card: #ffffff;
   --bg-sidebar: #ffffff;
-  --border-color: #e2e8f0;
-  --text-primary: #1b2559;
-  --text-secondary: #a3aed0;
+  --border-color: #e8e2d9;
+  --text-primary: #0b0f19;
+  --text-secondary: #6b7280;
   --accent-orange: #ff6b00;
   --accent-yellow: #facc15;
-  --accent-yellow-light: rgba(250, 204, 21, 0.15);
-  --shadow-main: 14px 17px 40px 4px rgba(112, 144, 176, 0.08);
-  --shadow-hover: 14px 17px 40px 4px rgba(112, 144, 176, 0.16);
+  --accent-yellow-light: rgba(250, 204, 21, 0.18);
+  --shadow-main: 14px 17px 40px 4px rgba(15, 23, 42, 0.08);
+  --shadow-hover: 14px 17px 40px 4px rgba(15, 23, 42, 0.14);
   --font-family: var(--font-body), sans-serif;
-  --color-success: #01b574;
-  --color-warning: #ffb547;
-  --color-danger: #ee5d50;
-  --color-neutral: #a3aed0;
+  --color-success: #16a34a;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-neutral: #6b7280;
 }
 
 [data-theme="dark"] {
-  /* Horizon UI Dark Theme Palette (Orange, Yellow, Black/Dark-navy) */
-  --bg-primary: #0b1437;
-  --bg-card: #111c44;
-  --bg-sidebar: #111c44;
+  /* OkadaGo dark admin palette */
+  --bg-primary: #0b0f19;
+  --bg-card: #151c2c;
+  --bg-sidebar: #111827;
   --border-color: rgba(255, 255, 255, 0.08);
   --text-primary: #ffffff;
-  --text-secondary: #8f9bba;
+  --text-secondary: #94a3b8;
   --accent-orange: #ff6b00;
   --accent-yellow: #facc15;
   --accent-yellow-light: rgba(250, 204, 21, 0.2);
   --shadow-main: 14px 17px 40px 4px rgba(0, 0, 0, 0.35);
   --shadow-hover: 14px 17px 40px 4px rgba(0, 0, 0, 0.5);
-  --color-success: #05cd99;
-  --color-warning: #ffb547;
-  --color-danger: #e31a1a;
-  --color-neutral: #8f9bba;
+  --font-family: var(--font-body), sans-serif;
+  --color-success: #22c55e;
+  --color-warning: #facc15;
+  --color-danger: #ef4444;
+  --color-neutral: #94a3b8;
 }
 
 /* Global Reset & Transition rules */

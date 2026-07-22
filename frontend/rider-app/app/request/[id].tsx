@@ -16,6 +16,7 @@ export default function RequestScreen() {
   const { id, kind } = useLocalSearchParams<{ id: string; kind?: string }>();
   const { session, rides, deliveries, refresh } = useApp();
   const { colors, typography, stackHeaderOptions } = useTheme();
+  const [acting, setActing] = useState(false);
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -96,8 +97,9 @@ export default function RequestScreen() {
   }, [trip, isRide]);
 
   async function accept() {
-    if (!trip || !session) return;
+    if (!trip || !session || acting) return;
     const nextStatus = isRide ? "arriving" : "assigned";
+    setActing(true);
     try {
       if (isRide) {
         await api(`/rides/${trip.id}/status`, {
@@ -117,11 +119,15 @@ export default function RequestScreen() {
     } catch (e) {
       Alert.alert("Accept failed", e instanceof Error ? e.message : "Could not accept request.");
       router.back();
+    } finally {
+      setActing(false);
     }
   }
 
   async function decline() {
     if (!trip || !session) return router.back();
+    if (acting) return;
+    setActing(true);
     try {
       if (isRide) {
         await api(`/rides/${trip.id}/status`, {
@@ -215,8 +221,8 @@ export default function RequestScreen() {
           </View>
 
           <View style={styles.actions}>
-            <Button label="Decline" variant="outline" onPress={decline} fullWidth />
-            <Button label="Accept" variant="accent" onPress={accept} fullWidth />
+            <Button label="Accept" variant="accent" loading={acting} onPress={accept} fullWidth />
+            <Button label="Decline" variant="outline" disabled={acting} onPress={decline} fullWidth />
           </View>
         </SafeAreaView>
       </View>

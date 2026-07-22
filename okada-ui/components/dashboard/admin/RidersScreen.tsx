@@ -123,7 +123,7 @@ export function RidersScreen({
             { label: "Signed Up", count: onboardingPipeline.signedUp, color: "#6b7280" },
             { label: "Vehicle Added", count: onboardingPipeline.hasVehicle, color: "#d97706" },
             { label: "Zone Assigned", count: onboardingPipeline.hasZone, color: "#2563eb" },
-            { label: "Verified", count: onboardingPipeline.verified, color: "#7c3aed" },
+            { label: "Verified", count: onboardingPipeline.verified, color: "var(--color-success)" },
             { label: "Active", count: onboardingPipeline.active, color: "#16a34a" }
           ].map((stage, i) => {
             const pct = onboardingPipeline.total > 0 ? (stage.count / onboardingPipeline.total) * 100 : 0;

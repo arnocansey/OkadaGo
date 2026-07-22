@@ -2,10 +2,12 @@ import { Stack, router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Pencil, Trash2 } from "lucide-react-native";
+import { Pencil, Trash2, ShieldAlert } from "lucide-react-native";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/Input";
+import { SkeletonList } from "@/components/ui/Skeleton";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { api, phoneParts } from "@/lib/api";
@@ -152,9 +154,13 @@ export default function EmergencyContactsScreen() {
           </Card>
 
           {loading ? (
-            <Text style={styles.meta}>Loading contacts…</Text>
+            <SkeletonList count={3} />
           ) : contacts.length === 0 ? (
-            <Text style={styles.meta}>No emergency contacts yet.</Text>
+            <EmptyState
+              icon={<ShieldAlert size={28} color={colors.danger} />}
+              title="No emergency contacts yet"
+              message="Add someone we can reach if you need help on a trip."
+            />
           ) : (
             contacts.map((contact) => (
               <Card key={contact.id} stacked>

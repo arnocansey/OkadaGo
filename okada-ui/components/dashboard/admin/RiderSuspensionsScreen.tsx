@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useAdminToast } from "./AdminToast";
 import { SkeletonKPI, SkeletonTable } from "./AdminSkeleton";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
 
 export type RiderSuspensionsScreenProps = {
@@ -128,7 +129,7 @@ export function RiderSuspensionsScreen({
 
   if (dataLoading) {
     return (
-      <div style={{ padding: "24px 28px", minHeight: "100vh", display: "flex", flexDirection: "column", gap: 20 }}>
+      <div className="exact-admin-screen" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", gap: 20 }}>
         <SkeletonKPI count={4} />
         <SkeletonTable rows={5} cols={5} />
       </div>
@@ -197,7 +198,20 @@ export function RiderSuspensionsScreen({
   };
 
   return (
-    <div style={{ padding: isMobile ? "16px 12px" : 24, background: "#0f1117", minHeight: "100vh", color: "#e5e7eb", fontFamily: "Inter, system-ui, sans-serif" }}>
+    <div
+      className="exact-admin-screen"
+      style={{
+        padding: isMobile ? "16px 12px" : 24,
+        minHeight: "100vh",
+        color: "var(--text-primary)",
+        fontFamily: "var(--font-family)",
+      }}
+    >
+      <AdminPageHeader
+        title="Suspensions"
+        subtitle="Review riders whose account status indicates blocked, suspended, or rejected access."
+      />
+
       {/* ── KPI Row ── */}
       <section style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : isTablet ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
         {/* Total Suspended */}
@@ -246,11 +260,11 @@ export function RiderSuspensionsScreen({
         </article>
 
         {/* Avg Duration */}
-        <article style={{ background: "#1e2028", borderRadius: 14, padding: "18px 20px", border: "1px solid #2a2d35", display: "flex", alignItems: "center", gap: 14, transition: "border-color 0.2s, box-shadow 0.2s" }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(139,92,246,0.4)"; e.currentTarget.style.boxShadow = "0 0 16px rgba(139,92,246,0.1)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#2a2d35"; e.currentTarget.style.boxShadow = "none"; }}
+        <article style={{ background: "var(--bg-card)", borderRadius: 14, padding: "18px 20px", border: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: 14, transition: "border-color 0.2s, box-shadow 0.2s" }}
+          onMouseEnter={(e) => { e.currentTarget.style.borderColor = "color-mix(in srgb, var(--accent-yellow) 40%, transparent)"; e.currentTarget.style.boxShadow = "0 0 16px color-mix(in srgb, var(--accent-yellow) 10%, transparent)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border-color)"; e.currentTarget.style.boxShadow = "none"; }}
         >
-          <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(139,92,246,0.15)", color: "#a78bfa", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 10, background: "var(--accent-yellow-light)", color: "var(--accent-yellow)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <Hourglass size={22} />
           </div>
           <div>

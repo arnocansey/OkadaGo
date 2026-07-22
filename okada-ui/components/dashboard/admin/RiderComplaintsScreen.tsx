@@ -17,6 +17,7 @@ import {
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
 import { useAdminToast } from "./AdminToast";
 import { SkeletonKPI, SkeletonCard } from "./AdminSkeleton";
+import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { AdminIncidentRecord } from "./types";
 import { formatDateTime, statusTone, formatEnumLabel } from "./utils";
 
@@ -165,6 +166,11 @@ export function RiderComplaintsScreen({
 
   return (
     <div className="exact-admin-screen">
+      <AdminPageHeader
+        title="Complaints & Support"
+        subtitle="Review rider-linked incidents and complaint reports from support operations."
+      />
+
       {/* ── KPI Cards ── */}
       <section
         style={{
@@ -204,8 +210,8 @@ export function RiderComplaintsScreen({
             value: riderIncidents.length,
             sub: "All rider-linked",
             icon: <BarChart3 size={20} />,
-            color: "#a78bfa",
-            bg: "rgba(139,92,246,0.12)",
+            color: "var(--accent-yellow)",
+            bg: "var(--accent-yellow-light)",
           },
           {
             label: "Avg Response Time",
@@ -477,8 +483,8 @@ export function RiderComplaintsScreen({
                             <span
                               style={{
                                 fontSize: 11,
-                                background: "rgba(139,92,246,0.12)",
-                                color: "#a78bfa",
+                                background: "var(--accent-yellow-light)",
+                                color: "var(--accent-yellow)",
                                 padding: "2px 8px",
                                 borderRadius: 6,
                               }}
@@ -771,8 +777,8 @@ export function RiderComplaintsScreen({
                   style={{
                     ...btnBase,
                     flex: 1,
-                    background: "rgba(139,92,246,0.15)",
-                    color: "#a78bfa",
+                    background: "var(--accent-yellow-light)",
+                    color: "var(--accent-yellow)",
                     opacity: isMutating ? 0.5 : 1,
                     cursor: isMutating ? "not-allowed" : "pointer",
                   }}

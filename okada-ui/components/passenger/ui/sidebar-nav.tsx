@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Clock, Home, LogOut, Package, User, Wallet } from "lucide-react";
+import { BrandMark } from "@/components/brand/BrandMark";
 import { useAuth } from "@/lib/auth";
 import { usePassengerSignOut } from "@/components/passenger/hooks/use-passenger-sign-out";
 import { initials } from "@/components/passenger/types";
@@ -23,7 +24,7 @@ export function PassengerSidebar() {
   return (
     <aside className="pax-sidebar" aria-label="Passenger navigation">
       <div className="pax-sidebar-brand">
-        <div className="pax-sidebar-mark">OG</div>
+        <BrandMark variant="icon" height={36} />
         <div>
           <strong>OkadaGo</strong>
           <span>Passenger</span>
