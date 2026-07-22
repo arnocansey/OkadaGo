@@ -10,8 +10,10 @@ import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useRiderLocation } from "@/hooks/useRiderLocation";
 import { useUserLocation } from "@/hooks/useUserLocation";
-import { api, money } from "@/lib/api";
+import { ApiError, api, money } from "@/lib/api";
 import { radius, shadows, spacing } from "@/theme/tokens";
+
+const RIDER_MIN_ONLINE_BALANCE = 30;
 
 // Avatar background colors hashed from name
 const AVATAR_COLORS = ["#FFC107", "#3B82F6", "#A855F7", "#EC4899", "#F59E0B", "#FF3B30"];
@@ -53,6 +55,55 @@ export default function DashboardScreen() {
       router.push({ pathname: "/request/[id]", params: { id: incomingDelivery.id, kind: "delivery" } });
     }
   }, [incomingDelivery?.id, online]);
+
+  async function handleToggleOnline() {
+    // Going offline never needs a balance check.
+    if (online) {
+      try {
+        await toggleOnline();
+      } catch {
+        // toggleOnline already sets the banner message
+      }
+      return;
+    }
+
+    const settlementWallet =
+      wallets.find((w) => (w.type ?? "").toLowerCase() === "rider_settlement") ?? wallets[0];
+    const balance = Number(settlementWallet?.availableBalance ?? 0);
+    if (balance < RIDER_MIN_ONLINE_BALANCE) {
+      Alert.alert(
+        "Insufficient Balance",
+        `Please top up at least GH₵ ${RIDER_MIN_ONLINE_BALANCE} via MoMo to ride.`,
+        [
+          { text: t("common.cancel"), style: "cancel" },
+          {
+            text: "Top Up Now",
+            onPress: () => router.push("/(main)/wallet"),
+          },
+        ],
+      );
+      return;
+    }
+
+    try {
+      await toggleOnline();
+    } catch (error) {
+      if (error instanceof ApiError && error.code === "RIDER_INSUFFICIENT_BALANCE") {
+        Alert.alert(
+          "Insufficient Balance",
+          error.message || `Please top up at least GH₵ ${RIDER_MIN_ONLINE_BALANCE} via MoMo to ride.`,
+          [
+            { text: t("common.cancel"), style: "cancel" },
+            {
+              text: "Top Up Now",
+              onPress: () => router.push("/(main)/wallet"),
+            },
+          ],
+        );
+      }
+      // Other errors (e.g. deficit lock) already surface via context message.
+    }
+  }
 
   async function sendSos() {
     if (!session) return;
@@ -232,8 +283,10 @@ export default function DashboardScreen() {
               style={[styles.powerBtn, online ? styles.powerBtnOn : styles.powerBtnOff]}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                toggleOnline();
+                void handleToggleOnline();
               }}
+              accessibilityLabel={online ? t("drive.offline") : t("drive.online")}
+              accessibilityRole="button"
             >
               <Power size={22} color={online ? colors.textOnPrimary : colors.text} />
             </Pressable>

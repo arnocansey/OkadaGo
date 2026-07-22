@@ -156,6 +156,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       setOnline(false);
       setMessage(error instanceof Error ? error.message : "Could not update availability.");
+      throw error;
     }
   }
 

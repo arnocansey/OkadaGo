@@ -1,6 +1,18 @@
 export const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL ?? "https://okadago-backend.onrender.com/v1";
 
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly code?: string,
+    public readonly details?: unknown,
+    public readonly status?: number,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
 export async function api<T>(
   path: string,
   options: { method?: string; token?: string; body?: unknown } = {},
@@ -24,8 +36,13 @@ export async function api<T>(
   }
 
   if (!response.ok) {
-    const err = payload as { message?: string; error?: string };
-    throw new Error(err?.message ?? err?.error ?? `Request failed with ${response.status}`);
+    const err = payload as { message?: string; error?: string; code?: string; details?: unknown };
+    throw new ApiError(
+      err?.message ?? err?.error ?? `Request failed with ${response.status}`,
+      err?.code,
+      err?.details,
+      response.status,
+    );
   }
 
   return payload as T;

@@ -60,6 +60,8 @@ const startActors = new Set(["rider", "admin", "dispatcher"]);
 const completionActors = new Set(["rider", "admin", "dispatcher", "system"]);
 const riderDeficitWarningThreshold = 100;
 const riderDeficitOfflineThreshold = 200;
+/** Minimum positive settlement-wallet balance required before a rider can go online. */
+const riderMinOnlineBalance = 30;
 
 /**
  * Rides scheduled further out than this window are held as SCHEDULED (no matching yet).
@@ -313,7 +315,10 @@ export class RideService {
         }
       });
 
-      const deficitAmount = riderDeficitFromBalance(Number(settlementWallet?.availableBalance ?? 0));
+      const balance = Number(settlementWallet?.availableBalance ?? 0);
+      const currency = settlementWallet?.currency ?? riderProfile.user.preferredCurrency;
+      const deficitAmount = riderDeficitFromBalance(balance);
+
       if (deficitAmount >= riderDeficitOfflineThreshold) {
         await prisma.riderProfile.update({
           where: {
@@ -325,13 +330,35 @@ export class RideService {
         });
 
         throw new AppError(
-          `Your rider deficit is ${settlementWallet?.currency ?? riderProfile.user.preferredCurrency} ${deficitAmount.toFixed(2)}. Clear it below GHS ${riderDeficitOfflineThreshold} before going online again.`,
+          `Your rider deficit is ${currency} ${deficitAmount.toFixed(2)}. Clear it below GHS ${riderDeficitOfflineThreshold} before going online again.`,
           409,
           "RIDER_OFFLINE_DEFICIT_LOCKED",
           {
             deficitAmount,
             warningThreshold: riderDeficitWarningThreshold,
             offlineThreshold: riderDeficitOfflineThreshold
+          }
+        );
+      }
+
+      if (balance < riderMinOnlineBalance) {
+        await prisma.riderProfile.update({
+          where: {
+            id: riderProfileId
+          },
+          data: {
+            onlineStatus: false
+          }
+        });
+
+        throw new AppError(
+          `Insufficient Balance. Please top up at least GH₵ ${riderMinOnlineBalance} via MoMo to ride.`,
+          409,
+          "RIDER_INSUFFICIENT_BALANCE",
+          {
+            availableBalance: balance,
+            requiredBalance: riderMinOnlineBalance,
+            currency
           }
         );
       }
