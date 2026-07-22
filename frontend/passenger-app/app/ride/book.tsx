@@ -121,10 +121,10 @@ export default function BookRideScreen() {
   const scheduleOptions: Array<{ id: ScheduleOptionId; label: string }> = useMemo(
     () => [
       { id: "now", label: t("book.now") },
-      { id: "30m", label: "In 30 min" },
-      { id: "1h", label: "In 1 hour" },
-      { id: "2h", label: "In 2 hours" },
-      { id: "tomorrow_morning", label: "Tomorrow, 8:00 AM" },
+      { id: "30m", label: t("book.in30m") },
+      { id: "1h", label: t("book.in1h") },
+      { id: "2h", label: t("book.in2h") },
+      { id: "tomorrow_morning", label: t("book.tomorrowMorning") },
     ],
     [t],
   );
@@ -847,7 +847,7 @@ export default function BookRideScreen() {
 
           {!isDelivery ? (
             <View>
-              <Text style={styles.sectionLabel}>When</Text>
+              <Text style={styles.sectionLabel}>{t("book.when")}</Text>
               <View style={[styles.chipRow, { marginTop: spacing.sm }]}>
                 {scheduleOptions.map((option) => (
                   <Chip
@@ -860,8 +860,7 @@ export default function BookRideScreen() {
               </View>
               {scheduledForDate ? (
                 <Text style={styles.promoHint}>
-                  Scheduled for {formatScheduledFor(scheduledForDate)}. We&apos;ll match you with a rider closer to
-                  your pickup time.
+                  {t("book.scheduledHint")} ({formatScheduledFor(scheduledForDate)})
                 </Text>
               ) : null}
             </View>

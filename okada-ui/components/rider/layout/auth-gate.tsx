@@ -25,7 +25,7 @@ export function RiderAuthGate({ children }: { children: React.ReactNode }) {
 
   if (status !== "authenticated" || session?.user.role !== "rider") {
     return (
-      <div className="rdr-auth-wall">
+      <div className="rdr-app rdr-auth-wall">
         <div className="rdr-auth-mark">OG</div>
         <h1>Drive with OkadaGo</h1>
         <p>Go online, accept trips, and earn on your schedule across Ghana.</p>
@@ -43,7 +43,7 @@ export function RiderAuthGate({ children }: { children: React.ReactNode }) {
 
   if (!session.user.riderProfileId) {
     return (
-      <div className="rdr-auth-wall">
+      <div className="rdr-app rdr-auth-wall">
         <div className="rdr-auth-mark">OG</div>
         <h1>Rider profile pending</h1>
         <p>Your account is signed in but rider onboarding is not complete yet.</p>

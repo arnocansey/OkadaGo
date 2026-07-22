@@ -25,7 +25,7 @@ export function PassengerAuthGate({ children }: { children: React.ReactNode }) {
 
   if (status !== "authenticated" || session?.user.role !== "passenger") {
     return (
-      <div className="pax-auth-wall">
+      <div className="pax-app pax-auth-wall">
         <div className="pax-auth-mark">OG</div>
         <h1>Ride with OkadaGo</h1>
         <p>Fast, safe motorcycle rides across Ghana. Sign in to book your next trip.</p>

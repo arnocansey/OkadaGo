@@ -93,8 +93,10 @@ export default function RequestScreen() {
 
   const markers = useMemo(() => {
     if (!trip) return [];
-    return isRide ? markersForRide(trip as (typeof rides)[0]) : markersForDelivery(trip as (typeof deliveries)[0]);
-  }, [trip, isRide]);
+    return isRide
+      ? markersForRide(trip as (typeof rides)[0], colors)
+      : markersForDelivery(trip as (typeof deliveries)[0], colors);
+  }, [trip, isRide, colors, rides, deliveries]);
 
   async function accept() {
     if (!trip || !session || acting) return;

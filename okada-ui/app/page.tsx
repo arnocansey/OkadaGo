@@ -1,6 +1,5 @@
-import {LandingPage} from "@/okada-ui/screens/okada-landing/LandingPage";
+import { ResponsiveLandingPage } from "@/components/landing/responsive-landing-page";
 
 export default function HomePage() {
-  // return <ExactLandingPage />;
-  return <LandingPage />;
+  return <ResponsiveLandingPage />;
 }

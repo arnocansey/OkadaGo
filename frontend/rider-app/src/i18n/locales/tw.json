@@ -32,7 +32,10 @@
     "signOut": "Fi Adi",
     "changePhoto": "Sesa Mfonini",
     "choosePhotoOption": "Paw Ɔkwan Biara",
-    "status": "Tebea"
+    "status": "Tebea",
+    "verificationTitle": "Wie nsusuwsoɔ",
+    "verificationHint": "Fa wo nkrataa so na yɛn tumi agye wo atom na wo ntumi nkɔ so.",
+    "uploadDocuments": "Fa nkrataa so"
   },
   "settings": {
     "title": "Nhyehyɛe",

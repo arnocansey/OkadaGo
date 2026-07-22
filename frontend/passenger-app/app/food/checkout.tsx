@@ -83,7 +83,7 @@ export default function FoodCheckoutScreen() {
           recipientName: session!.user.fullName,
           recipientPhoneE164: session!.user.phoneE164,
           packageType: "food",
-          packageDescription: `Food order from ${restaurant.name}: ${orderDescription || "Custom pickup"} · Delivery GHS ${deliveryFee.toFixed(2)}`,
+          packageDescription: `Courier pickup from ${restaurant.name}: ${orderDescription || "Pickup order"} · Courier fee GHS ${deliveryFee.toFixed(2)} (store items paid separately)`,
         },
       });
       await refresh();
@@ -115,10 +115,10 @@ export default function FoodCheckoutScreen() {
       >
         <SafeAreaView style={styles.screen} edges={["bottom"]}>
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Text style={styles.title}>{restaurant?.name ?? "Order"}</Text>
+          <Text style={styles.title}>{restaurant?.name ?? "Pickup"}</Text>
           {restaurant ? (
             <Text style={styles.subtitle}>
-              Pickup {formatDistanceKm(restaurant.distanceKm)} away · ~{restaurant.etaMin} min
+              Courier pickup {formatDistanceKm(restaurant.distanceKm)} away · ~{restaurant.etaMin} min · food paid at store
             </Text>
           ) : null}
           {cart.map((item) => (
@@ -131,16 +131,16 @@ export default function FoodCheckoutScreen() {
           ))}
           {notes ? (
             <View style={styles.notesBox}>
-              <Text style={styles.notesLabel}>Order notes</Text>
+              <Text style={styles.notesLabel}>Pickup instructions</Text>
               <Text style={styles.notesText}>{notes}</Text>
             </View>
           ) : null}
           <View style={styles.row}>
-            <Text style={styles.rowLabel}>Delivery fee</Text>
+            <Text style={styles.rowLabel}>Courier fee</Text>
             <Text style={styles.rowVal}>GHS {deliveryFee.toFixed(2)}</Text>
           </View>
           <View style={[styles.row, styles.totalRow]}>
-            <Text style={styles.totalLabel}>Total</Text>
+            <Text style={styles.totalLabel}>Due in app</Text>
             <Text style={styles.totalVal}>GHS {total.toFixed(2)}</Text>
           </View>
 
@@ -156,7 +156,7 @@ export default function FoodCheckoutScreen() {
             style={styles.addressInput}
           />
           {error ? <Text style={styles.error}>{error}</Text> : null}
-          <Button label="Place order" loading={loading} disabled={!restaurant} onPress={submit} fullWidth />
+          <Button label="Request courier" loading={loading} disabled={!restaurant} onPress={submit} fullWidth />
         </ScrollView>
         </SafeAreaView>
       </KeyboardAvoidingView>

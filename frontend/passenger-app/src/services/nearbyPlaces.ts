@@ -43,16 +43,16 @@ const THUMB_COLORS = ["#FFC107", "#F59E0B", "#3B82F6", "#FF3B30", "#10B981", "#8
 
 export const GENERIC_ORDER_MENU: MenuItem[] = [
   {
-    id: "custom-order",
-    name: "Custom order",
-    description: "Describe what you want — a rider will pick it up from this place",
+    id: "pickup-order",
+    name: "Pickup order",
+    description: "Tell the courier what to collect — this is not a restaurant menu checkout",
     price: 0,
     popular: true,
   },
   {
     id: "groceries-run",
-    name: "Groceries run",
-    description: "Essentials and groceries from this store",
+    name: "Store run",
+    description: "Essentials or groceries from this place, delivered by OkadaGo",
     price: 0,
   },
 ];

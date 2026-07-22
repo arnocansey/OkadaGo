@@ -204,8 +204,8 @@ export default function RestaurantScreen() {
           }))
         : [
             {
-              menuItemId: "custom-order",
-              name: "Custom order",
+              menuItemId: "pickup-order",
+              name: "Pickup order",
               price: 0,
               quantity: 1,
             },
@@ -230,6 +230,7 @@ export default function RestaurantScreen() {
             <>
               <View style={[styles.hero, { backgroundColor: restaurant.color }]}>
                 <Text style={styles.heroTitle}>{restaurant.name}</Text>
+                <Text style={styles.heroSub}>Courier pickup · not in-app menu ordering</Text>
                 <Text style={styles.heroSub}>
                   {restaurant.cuisine}
                   {restaurant.rating > 0 ? ` · ★ ${restaurant.rating.toFixed(1)}` : ""}
@@ -258,21 +259,21 @@ export default function RestaurantScreen() {
               </View>
 
               <View style={styles.notesBlock}>
-                <Text style={styles.notesLabel}>What should we pick up?</Text>
+                <Text style={styles.notesLabel}>Pickup instructions for your courier</Text>
                 <TextInput
                   style={styles.notesInput}
                   value={orderNotes}
                   onChangeText={setOrderNotes}
-                  placeholder="e.g. 2x jollof, 1x Coke, bread & eggs…"
+                  placeholder="e.g. 2x jollof, 1x Coke — ask for Ama at the counter"
                   placeholderTextColor={colors.textMuted}
                   multiline
                 />
                 <Text style={styles.notesHint}>
-                  Prices are paid at the store unless you arrange prepayment by phone.
+                  OkadaGo sends a rider to collect from this place. Pay at the store unless you arrange otherwise.
                 </Text>
               </View>
 
-              <Text style={styles.sectionTitle}>Order options</Text>
+              <Text style={styles.sectionTitle}>How should we collect it?</Text>
             </>
           }
           data={restaurant.menu}

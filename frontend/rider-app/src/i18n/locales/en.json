@@ -32,7 +32,10 @@
     "signOut": "Sign out",
     "changePhoto": "Change photo",
     "choosePhotoOption": "Choose an option",
-    "status": "Status"
+    "status": "Status",
+    "verificationTitle": "Finish verification",
+    "verificationHint": "Upload your documents so we can approve you to go online.",
+    "uploadDocuments": "Upload documents"
   },
   "settings": {
     "title": "Settings",

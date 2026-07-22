@@ -1071,6 +1071,7 @@
 /* ── Auth wall ── */
 
 .pax-auth-wall {
+  /* Tokens live on .pax-app — keep both classes on the auth wall root */
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -1078,8 +1079,8 @@
   justify-content: center;
   padding: 2rem;
   text-align: center;
-  background: var(--pax-bg);
-  color: var(--pax-text);
+  background: var(--pax-bg, #000000);
+  color: var(--pax-text, #ffffff);
 }
 
 .pax-auth-wall h1 {
@@ -1087,10 +1088,11 @@
   font-size: 1.75rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
+  color: var(--pax-text, #ffffff);
 }
 
 .pax-auth-wall p {
-  color: var(--pax-text-secondary);
+  color: var(--pax-text-secondary, #8e8e93);
   margin-bottom: 2rem;
   max-width: 22rem;
 }
@@ -1098,9 +1100,9 @@
 .pax-auth-mark {
   width: 4rem;
   height: 4rem;
-  border-radius: var(--pax-radius-lg);
-  background: var(--pax-primary);
-  color: var(--pax-text-on-primary);
+  border-radius: var(--pax-radius-lg, 16px);
+  background: var(--pax-primary, #ffc107);
+  color: var(--pax-text-on-primary, #000000);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1133,14 +1135,14 @@
 }
 
 .pax-auth-signup {
-  background: var(--pax-primary);
-  color: var(--pax-text-on-primary);
+  background: var(--pax-primary, #ffc107);
+  color: var(--pax-text-on-primary, #000000);
 }
 
 .pax-auth-login {
-  background: var(--pax-surface);
-  color: var(--pax-text);
-  border: 1px solid var(--pax-border-strong);
+  background: var(--pax-surface, #1c1c1e);
+  color: var(--pax-text, #ffffff);
+  border: 1px solid var(--pax-border-strong, #3a3a3c);
 }
 
 /* ── Profile hero ── */

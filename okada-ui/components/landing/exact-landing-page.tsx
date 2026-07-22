@@ -20,6 +20,7 @@ import {
 import authBg from "@/okada-ui/images/auth-bg.png";
 import heroRider from "@/okada-ui/images/hero-rider.png";
 import streetScene from "@/okada-ui/images/street-scene.png";
+import { BrandMark } from "@/components/brand/BrandMark";
 import { ImmersivePage } from "@/components/layout/immersive-page";
 
 const features = [
@@ -98,9 +99,8 @@ export function ExactLandingPage() {
 
       <nav className={`exact-landing-nav${isScrolled ? " scrolled" : ""}`}>
         <div className="exact-landing-container exact-landing-nav-inner">
-          <Link href="/" className="exact-landing-brand">
-            <div className="exact-landing-brandmark">OK</div>
-            <span>OKADAGO</span>
+          <Link href="/" className="exact-landing-brand" aria-label="OkadaGo home">
+            <BrandMark variant="wordmark" height={28} priority />
           </Link>
 
           <div className="exact-landing-nav-links">
@@ -369,9 +369,8 @@ export function ExactLandingPage() {
       <footer className="exact-landing-footer">
         <div className="exact-landing-container exact-footer-grid">
           <div className="exact-footer-brandcol">
-            <Link href="/" className="exact-landing-brand">
-              <div className="exact-landing-brandmark">OK</div>
-              <span>OKADAGO</span>
+            <Link href="/" className="exact-landing-brand" aria-label="OkadaGo home">
+              <BrandMark variant="wordmark" onDark height={28} />
             </Link>
             <p>
               Moving cities forward. Fast, safe, and reliable motorcycle rides across West Africa.

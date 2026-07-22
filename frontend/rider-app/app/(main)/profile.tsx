@@ -191,6 +191,20 @@ export default function ProfileScreen() {
         ) : null}
       </View>
 
+      {user.riderApprovalStatus && !["APPROVED", "approved", "ACTIVE", "active"].includes(user.riderApprovalStatus) ? (
+        <Card elevated>
+          <Text style={[styles.name, { fontSize: 16 }]}>{t("profile.verificationTitle")}</Text>
+          <Text style={styles.phone}>{t("profile.verificationHint")}</Text>
+          <Button
+            label={t("profile.uploadDocuments")}
+            variant="accent"
+            fullWidth
+            onPress={() => router.push("/documents")}
+            style={{ marginTop: spacing.md }}
+          />
+        </Card>
+      ) : null}
+
       <Card style={styles.menu}>
         <Pressable style={styles.menuRow} onPress={() => router.push("/edit-profile")}>
           <Pencil size={20} color={colors.text} />

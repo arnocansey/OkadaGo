@@ -121,17 +121,28 @@ export default function WalletScreen() {
   }
 
   async function requestPayout() {
+    const amount = Number(payoutAmount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      Alert.alert("Invalid amount", "Enter a payout amount greater than zero.");
+      return;
+    }
+    if (!destination.trim()) {
+      Alert.alert("Destination needed", "Enter the mobile money number for this payout.");
+      return;
+    }
     setPayoutLoading(true);
     try {
       await api("/wallets/rider/payout-requests", {
         method: "POST",
         token: session!.token,
-        body: { amount: Number(payoutAmount), method: "mobile_money", destinationLabel: destination },
+        body: { amount, method: "mobile_money", destinationLabel: destination.trim() },
       });
       setPayoutAmount("");
       setDestination("");
       await refresh();
+      Alert.alert("Payout requested", "We'll review this and pay out to your MoMo number.");
     } catch (e) {
+      Alert.alert("Payout failed", e instanceof Error ? e.message : "Payout request failed.");
       setMessage(e instanceof Error ? e.message : "Payout request failed.");
     } finally {
       setPayoutLoading(false);
@@ -258,7 +269,12 @@ export default function WalletScreen() {
                 </View>
               ))}
             </>
-          ) : null}
+          ) : (
+            <>
+              <Text style={[styles.section, { marginTop: spacing.xl }]}>Payout requests</Text>
+              <EmptyState title="No payout requests" message="Request a payout above when you have available balance." />
+            </>
+          )}
         </ScrollView>
       </SafeAreaView>
     </KeyboardAvoidingView>

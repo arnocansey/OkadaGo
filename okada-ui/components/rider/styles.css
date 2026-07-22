@@ -1080,8 +1080,8 @@
   justify-content: center;
   padding: 2rem;
   text-align: center;
-  background: var(--rdr-bg);
-  color: var(--rdr-text);
+  background: var(--rdr-bg, #000000);
+  color: var(--rdr-text, #ffffff);
 }
 
 .rdr-auth-wall h1 {
@@ -1089,10 +1089,11 @@
   font-size: 1.75rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
+  color: var(--rdr-text, #ffffff);
 }
 
 .rdr-auth-wall p {
-  color: var(--rdr-text-secondary);
+  color: var(--rdr-text-secondary, #8e8e93);
   margin-bottom: 2rem;
   max-width: 22rem;
 }
@@ -1100,9 +1101,9 @@
 .rdr-auth-mark {
   width: 4rem;
   height: 4rem;
-  border-radius: var(--rdr-radius-lg);
-  background: var(--rdr-primary);
-  color: var(--rdr-text-on-primary);
+  border-radius: var(--rdr-radius-lg, 16px);
+  background: var(--rdr-primary, #ffc107);
+  color: var(--rdr-text-on-primary, #000000);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1135,14 +1136,14 @@
 }
 
 .rdr-auth-signup {
-  background: var(--rdr-primary);
-  color: var(--rdr-text-on-primary);
+  background: var(--rdr-primary, #ffc107);
+  color: var(--rdr-text-on-primary, #000000);
 }
 
 .rdr-auth-login {
-  background: var(--rdr-surface);
-  color: var(--rdr-text);
-  border: 1px solid var(--rdr-border-strong);
+  background: var(--rdr-surface, #1c1c1e);
+  color: var(--rdr-text, #ffffff);
+  border: 1px solid var(--rdr-border-strong, #3a3a3c);
 }
 
 /* ── Profile hero ── */

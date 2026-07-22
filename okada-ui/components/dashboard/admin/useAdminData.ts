@@ -1100,7 +1100,8 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
         queryClient.invalidateQueries({ queryKey: QK.walletTx(token) })
       ]);
       addToast("Payout request processed", "success");
-    }
+    },
+    onError: (error) => addToast((error as Error).message || "Could not process payout", "error")
   });
 
   const rideRequestActionMutation = useMutation({
@@ -1184,7 +1185,8 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: QK.riders(token) });
       addToast("Rider approval status updated", "success");
-    }
+    },
+    onError: (error) => addToast((error as Error).message || "Could not update rider approval", "error")
   });
 
   const riderSuspensionMutation = useMutation({
@@ -1197,7 +1199,8 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: QK.riders(token) });
       addToast("Rider suspension updated", "success");
-    }
+    },
+    onError: (error) => addToast((error as Error).message || "Could not update rider suspension", "error")
   });
 
   const zoneUpdateMutation = useMutation({

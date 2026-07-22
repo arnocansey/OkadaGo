@@ -111,7 +111,9 @@ export default function FoodHomeScreen() {
             <>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Near you</Text>
-                <Text style={styles.sectionSub}>Sorted by distance from your location</Text>
+                <Text style={styles.sectionSub}>
+                  Courier pickup from nearby places — not in-app restaurant menus
+                </Text>
               </View>
 
               <View style={styles.categories}>

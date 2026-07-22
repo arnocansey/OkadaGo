@@ -16,6 +16,7 @@ import { Badge, statusTone } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { SkeletonList } from "@/components/ui/Skeleton";
 import { Input } from "@/components/ui/Input";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -61,7 +62,7 @@ const DELIVERY_SUB_LABELS: Record<string, Record<string, string>> = {
 
 export default function TrackScreen() {
   const { id, kind } = useLocalSearchParams<{ id: string; kind?: string }>();
-  const { session, rides, deliveries, refresh } = useApp();
+  const { session, rides, deliveries, refresh, loading, restoring } = useApp();
   const { colors, typography, stackHeaderOptions } = useTheme();
   const prevIndexRef = useRef<number>(-1);
   const [stepTimestamps, setStepTimestamps] = useState<Record<number, string>>({});
@@ -143,8 +144,10 @@ export default function TrackScreen() {
 
   const markers = useMemo(() => {
     if (!trip) return [];
-    return isRide ? markersForRide(trip as (typeof rides)[0]) : markersForDelivery(trip as (typeof deliveries)[0]);
-  }, [trip, isRide]);
+    return isRide
+      ? markersForRide(trip as (typeof rides)[0], colors)
+      : markersForDelivery(trip as (typeof deliveries)[0], colors);
+  }, [trip, isRide, colors, rides, deliveries]);
 
   const status = trip?.status ?? "searching";
   const isActiveTrip = ACTIVE_STATUSES.includes(status.toLowerCase());
@@ -263,6 +266,15 @@ export default function TrackScreen() {
   }, [currentIndex, steps, subLabels, currentStatusKey, livePreview, stepTimestamps, trip, isRide, colors]);
 
   if (!trip) {
+    if (loading || restoring) {
+      return (
+        <View style={styles.screen}>
+          <View style={{ padding: spacing.xl, marginTop: spacing.xxl }}>
+            <SkeletonList count={4} />
+          </View>
+        </View>
+      );
+    }
     return (
       <View style={styles.screen}>
         <EmptyState title="Trip not found" message="This trip may have been completed or cancelled." />
@@ -279,24 +291,33 @@ export default function TrackScreen() {
 
   async function reportSos() {
     if (!session) return;
-    setSafetyLoading(true);
-    try {
-      await api("/safety/incidents", {
-        method: "POST",
-        token: session.token,
-        body: {
-          rideId: isRide ? trip!.id : undefined,
-          severity: "CRITICAL",
-          category: "SOS",
-          description: `Passenger SOS during ${isRide ? "ride" : "delivery"} ${trip!.id}`,
+    Alert.alert("Send SOS?", "We'll alert OkadaGo safety and keep this trip marked critical.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Send SOS",
+        style: "destructive",
+        onPress: async () => {
+          setSafetyLoading(true);
+          try {
+            await api("/safety/incidents", {
+              method: "POST",
+              token: session.token,
+              body: {
+                rideId: isRide ? trip!.id : undefined,
+                severity: "CRITICAL",
+                category: "SOS",
+                description: `Passenger SOS during ${isRide ? "ride" : "delivery"} ${trip!.id}`,
+              },
+            });
+            Alert.alert("SOS sent", "Our safety team has been notified. Stay on the line if you can.");
+          } catch (e) {
+            Alert.alert("SOS failed", e instanceof Error ? e.message : "Could not send SOS.");
+          } finally {
+            setSafetyLoading(false);
+          }
         },
-      });
-      Alert.alert("SOS sent", "Our safety team has been notified.");
-    } catch (e) {
-      Alert.alert("SOS failed", e instanceof Error ? e.message : "Could not send SOS.");
-    } finally {
-      setSafetyLoading(false);
-    }
+      },
+    ]);
   }
 
   async function shareTrip() {
@@ -310,11 +331,18 @@ export default function TrackScreen() {
           rideId: trip!.id,
           mode: "START",
           channel: "LINK",
-          note: `Track my OkadaGo trip from ${pickupAddress} to ${dropoffAddress}`,
+          note: `I'm on an OkadaGo trip from ${pickupAddress} to ${dropoffAddress}`,
         },
       });
-      const message = result.message ?? result.shareUrl ?? `Track my trip: ${pickupAddress} → ${dropoffAddress}`;
-      await Share.share({ message });
+      const fallback = [
+        "I'm on an OkadaGo trip right now.",
+        `${pickupAddress} → ${dropoffAddress}`,
+        result.shareUrl ? `Live track: ${result.shareUrl}` : null,
+      ]
+        .filter(Boolean)
+        .join("\n");
+      const message = result.message?.trim() || fallback;
+      await Share.share({ message, title: "OkadaGo trip" });
     } catch (e) {
       Alert.alert("Share failed", e instanceof Error ? e.message : "Could not share trip.");
     } finally {
