@@ -6,6 +6,7 @@ import * as ImagePicker from "expo-image-picker";
 import { Camera, MapPin, Navigation, Phone, Share2, ShieldAlert, Star } from "lucide-react-native";
 import { AppMap } from "@/components/AppMap";
 import { TripTimeline, stepIndexForStatus, RIDE_STEPS, DELIVERY_STEPS } from "@/components/TripTimeline";
+import { Avatar } from "@/components/ui/Avatar";
 import { Badge, statusTone } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -53,33 +54,22 @@ export default function TripScreen() {
         header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
         fare: { ...typography.h3, color: colors.text },
         passengerRow: { flexDirection: "row", alignItems: "center", gap: spacing.lg },
-        passengerAvatar: {
-          width: 44,
-          height: 44,
-          borderRadius: 22,
-          backgroundColor: colors.accentLight,
-          alignItems: "center",
-          justifyContent: "center",
-          borderWidth: 2,
-          borderColor: colors.accent,
-        },
-        passengerInitial: { ...typography.bodySemibold, color: colors.primary },
         passengerLabel: { ...typography.caption, color: colors.textMuted },
-        passengerName: { ...typography.bodySemibold, marginTop: 2, color: colors.text },
-        passengerPhone: { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
+        passengerName: { ...typography.bodySemibold, marginTop: spacing.xs, color: colors.text },
+        passengerPhone: { ...typography.caption, color: colors.textSecondary, marginTop: spacing.xs },
         callBtn: {
           width: 44,
           height: 44,
           borderRadius: 22,
-          backgroundColor: colors.accentLight,
+          backgroundColor: colors.primaryLight,
           alignItems: "center",
           justifyContent: "center",
-          borderWidth: 1.5,
-          borderColor: colors.accent,
+          borderWidth: 1,
+          borderColor: colors.primary,
         },
         section: { ...typography.h3, color: colors.text },
         navDestination: { ...typography.body, color: colors.text, marginTop: spacing.xs },
-        navLandmark: { ...typography.caption, color: colors.textMuted, marginTop: spacing.xs / 2, marginBottom: spacing.sm },
+        navLandmark: { ...typography.caption, color: colors.textMuted, marginTop: spacing.xs, marginBottom: spacing.sm },
         navRow: { flexDirection: "row", gap: spacing.sm },
         navBtn: { flex: 1 },
         safetyRow: { flexDirection: "row", gap: spacing.sm },
@@ -410,11 +400,7 @@ export default function TripScreen() {
 
           <Card>
             <View style={styles.passengerRow}>
-              <View style={styles.passengerAvatar}>
-                <Text style={styles.passengerInitial}>
-                  {(trip.passenger?.user?.fullName ?? "P")[0]}
-                </Text>
-              </View>
+              <Avatar name={trip.passenger?.user?.fullName ?? "Passenger"} size={44} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.passengerLabel}>Passenger</Text>
                 <Text style={styles.passengerName}>{trip.passenger?.user?.fullName ?? "Passenger"}</Text>

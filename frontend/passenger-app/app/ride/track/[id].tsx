@@ -11,6 +11,7 @@ import {
   DELIVERY_STEPS,
   type StepDetail,
 } from "@/components/TripTimeline";
+import { Avatar } from "@/components/ui/Avatar";
 import { Badge, statusTone } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -74,22 +75,11 @@ export default function TrackScreen() {
         header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
         fare: { ...typography.h3, color: colors.text },
         label: { ...typography.caption, color: colors.textMuted },
-        address: { ...typography.bodySemibold, marginTop: 4, color: colors.text },
+        address: { ...typography.bodySemibold, marginTop: spacing.xs, color: colors.text },
         section: { ...typography.h3, color: colors.text },
         riderRow: { flexDirection: "row", alignItems: "center", gap: spacing.lg },
-        riderAvatar: {
-          width: 44,
-          height: 44,
-          borderRadius: 22,
-          backgroundColor: colors.primaryLight,
-          alignItems: "center",
-          justifyContent: "center",
-          borderWidth: 2,
-          borderColor: colors.primary,
-        },
-        riderInitial: { ...typography.bodySemibold, color: colors.primary },
-        riderName: { ...typography.bodySemibold, marginTop: 2, color: colors.text },
-        plate: { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
+        riderName: { ...typography.bodySemibold, marginTop: spacing.xs, color: colors.text },
+        plate: { ...typography.caption, color: colors.textSecondary, marginTop: spacing.xs },
         callBtn: {
           width: 44,
           height: 44,
@@ -106,17 +96,6 @@ export default function TrackScreen() {
         starBtn: { padding: spacing.sm },
         wsStatus: { ...typography.caption, color: colors.textMuted, textAlign: "center" },
         expandRiderRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
-        expandRiderAvatar: {
-          width: 36,
-          height: 36,
-          borderRadius: 18,
-          backgroundColor: colors.primaryLight,
-          alignItems: "center",
-          justifyContent: "center",
-          borderWidth: 1,
-          borderColor: colors.primary,
-        },
-        expandRiderInitial: { ...typography.bodyMedium, color: colors.primary },
         expandRiderName: { ...typography.bodyMedium, color: colors.text },
         expandRiderPlate: { ...typography.caption, color: colors.textSecondary },
         stopRow: {
@@ -245,9 +224,7 @@ export default function TrackScreen() {
             expandContent = (
               <View>
                 <View style={styles.expandRiderRow}>
-                  <View style={styles.expandRiderAvatar}>
-                    <Text style={styles.expandRiderInitial}>{riderName[0]}</Text>
-                  </View>
+                  <Avatar name={riderName} size={36} />
                   <View style={{ flex: 1 }}>
                     <Text style={styles.expandRiderName}>{riderName}</Text>
                     {plateNumber ? <Text style={styles.expandRiderPlate}>{plateNumber}</Text> : null}
@@ -439,9 +416,7 @@ export default function TrackScreen() {
           {trip.rider?.user?.fullName ? (
             <Card>
               <View style={styles.riderRow}>
-                <View style={styles.riderAvatar}>
-                  <Text style={styles.riderInitial}>{trip.rider.user.fullName[0]}</Text>
-                </View>
+                <Avatar name={trip.rider.user.fullName} size={44} />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.label}>Your rider</Text>
                   <Text style={styles.riderName}>{trip.rider.user.fullName}</Text>

@@ -9,6 +9,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -61,7 +62,7 @@ export default function ProfileScreen() {
           justifyContent: "space-between",
           alignItems: "center",
           paddingHorizontal: spacing.lg,
-          paddingVertical: spacing.md,
+          paddingVertical: spacing.lg,
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
         },
@@ -222,11 +223,12 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <ScreenHeader title={t("nav.profile")} />
         <View style={styles.header}>
           <View style={styles.avatarWrap}>
             <Avatar name={user.fullName} size={80} imageUri={user.avatarUrl ?? undefined} />
             <Pressable style={styles.cameraBtn} onPress={showAvatarOptions} disabled={uploadingAvatar} hitSlop={8} accessibilityLabel="Change profile photo" accessibilityRole="button">
-              <Camera size={14} color="#fff" />
+              <Camera size={14} color={colors.textOnPrimary} />
             </Pressable>
           </View>
           <Text style={styles.name}>{user.fullName}</Text>

@@ -1,7 +1,6 @@
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
   FlatList,
   Linking,
   Pressable,
@@ -18,6 +17,8 @@ import { formatDistanceKm } from "@/lib/geo";
 import { fetchPlaceDetails } from "@/services/googlePlaces";
 import type { NearbyRestaurant } from "@/services/nearbyPlaces";
 import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { SkeletonList } from "@/components/ui/Skeleton";
 import { useTheme } from "@/context/ThemeContext";
 import { radius, spacing } from "@/theme/tokens";
 
@@ -28,15 +29,15 @@ export default function RestaurantScreen() {
     () =>
       StyleSheet.create({
         screen: { flex: 1, backgroundColor: colors.background },
-        loader: { marginTop: spacing.xxxl },
-        notFound: { ...typography.body, color: colors.textMuted, textAlign: "center", marginTop: spacing.xxxl },
-        hero: { padding: spacing.xl, borderRadius: radius.lg, margin: spacing.xl, marginBottom: spacing.md, gap: 6 },
+        loadingPad: { padding: spacing.xl, marginTop: spacing.xxl },
+        notFoundPad: { padding: spacing.xl, marginTop: spacing.xxl },
+        hero: { padding: spacing.xl, borderRadius: radius.lg, margin: spacing.xl, marginBottom: spacing.md, gap: spacing.sm },
         heroTitle: { ...typography.h2, color: colors.textOnPrimary },
         heroSub: { ...typography.caption, color: "rgba(255,255,255,0.85)" },
-        heroAddress: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 },
+        heroAddress: { flexDirection: "row", alignItems: "center", gap: spacing.xs, marginTop: spacing.xs },
         heroAddressText: { ...typography.caption, color: "rgba(255,255,255,0.85)", flex: 1 },
         heroMeta: { ...typography.caption, color: "rgba(255,255,255,0.85)" },
-        phoneRow: { flexDirection: "row", alignItems: "center", gap: 4 },
+        phoneRow: { flexDirection: "row", alignItems: "center", gap: spacing.xs },
         notesBlock: { paddingHorizontal: spacing.xl, gap: spacing.sm, marginBottom: spacing.lg },
         notesLabel: { ...typography.bodySemibold, color: colors.text },
         notesInput: {
@@ -60,10 +61,10 @@ export default function RestaurantScreen() {
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
         },
-        itemBody: { flex: 1, gap: 4 },
+        itemBody: { flex: 1, gap: spacing.xs },
         itemName: { ...typography.bodySemibold, color: colors.text },
         itemDesc: { ...typography.caption, color: colors.textSecondary },
-        itemPrice: { ...typography.captionMedium, color: colors.text, marginTop: 4 },
+        itemPrice: { ...typography.captionMedium, color: colors.text, marginTop: spacing.xs },
         qty: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
         qtyBtn: {
           width: 44,
@@ -163,7 +164,9 @@ export default function RestaurantScreen() {
   if ((loading || detailsLoading) && !restaurant) {
     return (
       <SafeAreaView style={styles.screen}>
-        <ActivityIndicator color={colors.primary} style={styles.loader} />
+        <View style={styles.loadingPad}>
+          <SkeletonList count={5} />
+        </View>
       </SafeAreaView>
     );
   }
@@ -171,7 +174,9 @@ export default function RestaurantScreen() {
   if (!restaurant) {
     return (
       <SafeAreaView style={styles.screen}>
-        <Text style={styles.notFound}>Place not found</Text>
+        <View style={styles.notFoundPad}>
+          <EmptyState title="Place not found" message="This restaurant may be unavailable. Go back and try another." />
+        </View>
       </SafeAreaView>
     );
   }

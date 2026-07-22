@@ -24,6 +24,18 @@ export async function fetchJson<TResponse>(path: string): Promise<TResponse> {
   return requestJson<TResponse>(path);
 }
 
+/** Normalize bootstrap list endpoints that return either an array or `{ data, total }`. */
+export function unwrapListResponse<T>(payload: T[] | { data?: T[] | null } | null | undefined): T[] {
+  if (Array.isArray(payload)) return payload;
+  if (payload && Array.isArray(payload.data)) return payload.data;
+  return [];
+}
+
+export async function fetchListJson<T>(path: string): Promise<T[]> {
+  const payload = await fetchJson<T[] | { data?: T[] | null }>(path);
+  return unwrapListResponse(payload);
+}
+
 export async function postJson<TResponse, TBody>(path: string, body: TBody): Promise<TResponse> {
   return requestJson<TResponse>(path, {
     method: "POST",

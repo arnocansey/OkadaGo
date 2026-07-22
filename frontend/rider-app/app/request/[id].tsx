@@ -7,6 +7,7 @@ import { api, money } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { markersForDelivery, markersForRide } from "@/lib/tripMap";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { radius, spacing } from "@/theme/tokens";
@@ -24,28 +25,17 @@ export default function RequestScreen() {
         progressBar: { height: 4, backgroundColor: colors.accent },
         headerRow: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" },
         kicker: { ...typography.label, color: colors.textMuted },
-        title: { ...typography.h1, marginTop: 4, color: colors.text },
+        title: { ...typography.h1, marginTop: spacing.xs, color: colors.text },
         farePill: {
           backgroundColor: colors.primary,
           borderRadius: radius.full,
           paddingHorizontal: spacing.lg,
           paddingVertical: spacing.sm,
           alignSelf: "flex-start",
-          marginTop: 4,
+          marginTop: spacing.xs,
         },
         fareText: { ...typography.bodySemibold, color: colors.textOnPrimary },
         timerRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
-        timerBadge: {
-          width: 40,
-          height: 40,
-          borderRadius: 20,
-          backgroundColor: colors.accentLight,
-          borderWidth: 2,
-          borderColor: colors.accent,
-          alignItems: "center",
-          justifyContent: "center",
-        },
-        timerText: { ...typography.label, color: colors.primary },
         timerLabel: { ...typography.caption, color: colors.textMuted },
         routeCard: {
           flexDirection: "row",
@@ -54,16 +44,16 @@ export default function RequestScreen() {
           borderRadius: radius.lg,
           padding: spacing.lg,
         },
-        routeLine: { alignItems: "center", paddingTop: 4, gap: 0 },
+        routeLine: { alignItems: "center", paddingTop: spacing.xs, gap: 0 },
         dot: { width: 12, height: 12, borderRadius: 6 },
         dotStart: { backgroundColor: colors.primary },
         dotEnd: { backgroundColor: colors.danger },
-        connector: { flex: 1, width: 2, backgroundColor: colors.border, minHeight: 32, marginVertical: 4 },
+        connector: { flex: 1, width: 2, backgroundColor: colors.border, minHeight: 32, marginVertical: spacing.xs },
         routeLabels: { flex: 1, justifyContent: "space-between", gap: spacing.lg },
         routeItem: {},
         routeItemEnd: {},
         routeLabel: { ...typography.caption, color: colors.textMuted },
-        routeAddress: { ...typography.bodySemibold, marginTop: 2, color: colors.text },
+        routeAddress: { ...typography.bodySemibold, marginTop: spacing.xs, color: colors.text },
         actions: { gap: spacing.md },
       }),
     [colors, typography],
@@ -200,11 +190,8 @@ export default function RequestScreen() {
             ) : null}
           </View>
 
-          {/* Timer badge */}
           <View style={styles.timerRow}>
-            <View style={styles.timerBadge}>
-              <Text style={styles.timerText}>{countdown}s</Text>
-            </View>
+            <Badge label={`${countdown}s`} tone={countdown <= 5 ? "danger" : "warning"} />
             <Text style={styles.timerLabel}>Auto-declines in {countdown} seconds</Text>
           </View>
 

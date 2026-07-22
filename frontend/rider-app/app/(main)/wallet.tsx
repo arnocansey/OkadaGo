@@ -13,10 +13,13 @@ import { api, compactDate, money } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { PaystackCheckout } from "@/components/PaystackCheckout";
+import { Badge, statusTone } from "@/components/ui/Badge";
+import { BalanceHero } from "@/components/ui/BalanceHero";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/Input";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { spacing } from "@/theme/tokens";
 
@@ -44,19 +47,14 @@ export default function WalletScreen() {
       StyleSheet.create({
         screen: { flex: 1, backgroundColor: colors.background },
         content: { padding: spacing.xl, paddingBottom: spacing.xxxl },
-        title: { ...typography.h1, marginBottom: spacing.xl, color: colors.text },
-        hero: { backgroundColor: colors.accentLight, borderColor: colors.accent, marginBottom: spacing.lg },
-        heroLabel: { ...typography.captionMedium, color: colors.textSecondary },
-        heroAmount: { ...typography.hero, color: colors.text, marginTop: spacing.sm },
-        heroHint: { ...typography.caption, color: colors.textMuted, marginTop: spacing.sm },
         deficitBanner: {
           backgroundColor: colors.danger,
           borderColor: colors.danger,
           marginBottom: spacing.lg,
         },
         floatBanner: {
-          backgroundColor: colors.primary,
-          borderColor: colors.primary,
+          backgroundColor: colors.warning,
+          borderColor: colors.warning,
           marginBottom: spacing.lg,
         },
         bannerTitle: { ...typography.bodySemibold, color: colors.textOnPrimary },
@@ -66,13 +64,16 @@ export default function WalletScreen() {
         tx: {
           flexDirection: "row",
           justifyContent: "space-between",
+          alignItems: "center",
+          gap: spacing.md,
           paddingVertical: spacing.md,
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
         },
         txTitle: { ...typography.bodyMedium, color: colors.text },
-        txSub: { ...typography.caption, color: colors.textMuted },
+        txSub: { ...typography.caption, color: colors.textMuted, marginTop: spacing.xs },
         txAmount: { ...typography.bodySemibold, color: colors.primary },
+        badgeWrap: { marginTop: spacing.sm },
       }),
     [colors, typography],
   );
@@ -151,7 +152,7 @@ export default function WalletScreen() {
           onCancel={handleCheckoutCancel}
         />
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Text style={styles.title}>Wallet</Text>
+          <ScreenHeader title="Wallet" />
 
           {deficit >= RIDER_DEFICIT_WARNING_THRESHOLD ? (
             <Card elevated style={styles.deficitBanner}>
@@ -173,13 +174,11 @@ export default function WalletScreen() {
             </Card>
           ) : null}
 
-          <Card elevated style={styles.hero}>
-            <Text style={styles.heroLabel}>Available balance</Text>
-            <Text style={styles.heroAmount}>{money(wallet?.availableBalance, wallet?.currency ?? "GHS")}</Text>
-            <Text style={styles.heroHint}>
-              Online float requirement: GH₵ {RIDER_MIN_ONLINE_BALANCE}
-            </Text>
-          </Card>
+          <BalanceHero
+            label="Available balance"
+            amount={money(wallet?.availableBalance, wallet?.currency ?? "GHS")}
+            hint={`Online float requirement: GH₵ ${RIDER_MIN_ONLINE_BALANCE}`}
+          />
 
           <Card style={styles.form}>
             <Text style={styles.section}>Top up via MoMo</Text>
@@ -229,7 +228,15 @@ export default function WalletScreen() {
           ) : (
             transactions.slice(0, 10).map((tx) => (
               <View key={tx.id} style={styles.tx}>
-                <Text style={styles.txTitle}>{tx.description ?? tx.type}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.txTitle}>{tx.description ?? tx.type}</Text>
+                  <Text style={styles.txSub}>{compactDate(tx.createdAt)}</Text>
+                  {tx.status ? (
+                    <View style={styles.badgeWrap}>
+                      <Badge label={String(tx.status).replace(/_/g, " ")} tone={statusTone(String(tx.status))} />
+                    </View>
+                  ) : null}
+                </View>
                 <Text style={styles.txAmount}>{money(tx.amount, tx.currency)}</Text>
               </View>
             ))
@@ -240,11 +247,12 @@ export default function WalletScreen() {
               <Text style={[styles.section, { marginTop: spacing.xl }]}>Payout requests</Text>
               {payouts.slice(0, 5).map((p) => (
                 <View key={p.id} style={styles.tx}>
-                  <View>
+                  <View style={{ flex: 1 }}>
                     <Text style={styles.txTitle}>{p.destinationLabel}</Text>
-                    <Text style={styles.txSub}>
-                      {p.status} · {compactDate(p.requestedAt)}
-                    </Text>
+                    <Text style={styles.txSub}>{compactDate(p.requestedAt)}</Text>
+                    <View style={styles.badgeWrap}>
+                      <Badge label={p.status.replace(/_/g, " ")} tone={statusTone(p.status)} />
+                    </View>
                   </View>
                   <Text style={styles.txAmount}>{money(p.amount, p.currency)}</Text>
                 </View>

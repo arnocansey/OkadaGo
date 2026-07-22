@@ -9,6 +9,7 @@ import { registerPushToken } from "@/lib/push";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { Button } from "@/components/ui/Button";
+import { Chip } from "@/components/ui/Chip";
 import { Input } from "@/components/ui/Input";
 import { radius, spacing } from "@/theme/tokens";
 import type { AuthMode } from "@/types";
@@ -49,17 +50,6 @@ export default function LoginScreen() {
         fieldGroup: { gap: spacing.sm },
         fieldLabel: { ...typography.captionMedium, color: colors.textSecondary },
         chipRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-        chip: {
-          paddingVertical: spacing.sm,
-          paddingHorizontal: spacing.lg,
-          borderRadius: radius.lg,
-          borderWidth: 1.5,
-          borderColor: colors.border,
-          backgroundColor: colors.surface,
-        },
-        chipActive: { borderColor: colors.primary, backgroundColor: colors.primary },
-        chipText: { ...typography.bodyMedium, color: colors.text },
-        chipTextActive: { color: colors.textOnPrimary },
         vehicleRow: { flexDirection: "row", gap: spacing.md },
         vehicleField: { flex: 1 },
       }),
@@ -169,15 +159,12 @@ export default function LoginScreen() {
                   <Text style={styles.fieldLabel}>{t("auth.vehicleType")}</Text>
                   <View style={styles.chipRow}>
                     {vehicleTypeOptions.map((option) => (
-                      <Pressable
+                      <Chip
                         key={option.id}
+                        label={option.label}
+                        selected={vehicleType === option.id}
                         onPress={() => setVehicleType(option.id)}
-                        style={[styles.chip, vehicleType === option.id && styles.chipActive]}
-                      >
-                        <Text style={[styles.chipText, vehicleType === option.id && styles.chipTextActive]}>
-                          {option.label}
-                        </Text>
-                      </Pressable>
+                      />
                     ))}
                   </View>
                 </View>
@@ -210,15 +197,12 @@ export default function LoginScreen() {
                   <Text style={styles.fieldLabel}>{t("auth.jobPreference")}</Text>
                   <View style={styles.chipRow}>
                     {jobPreferenceOptions.map((option) => (
-                      <Pressable
+                      <Chip
                         key={option.id}
+                        label={option.label}
+                        selected={jobPreference === option.id}
                         onPress={() => setJobPreference(option.id)}
-                        style={[styles.chip, jobPreference === option.id && styles.chipActive]}
-                      >
-                        <Text style={[styles.chipText, jobPreference === option.id && styles.chipTextActive]}>
-                          {option.label}
-                        </Text>
-                      </Pressable>
+                      />
                     ))}
                   </View>
                 </View>

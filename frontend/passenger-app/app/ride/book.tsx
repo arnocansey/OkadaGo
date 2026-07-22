@@ -13,6 +13,7 @@ import { formatReverseGeocodeAddress } from "@/lib/geocode";
 import { AddressAutocompleteField } from "@/components/AddressAutocompleteField";
 import { AppMap } from "@/components/AppMap";
 import { Button } from "@/components/ui/Button";
+import { Chip } from "@/components/ui/Chip";
 import { Input } from "@/components/ui/Input";
 import { radius, spacing } from "@/theme/tokens";
 import type { LocationResult, PaymentMethod, PlaceSuggestion, RoutePreview, SavedPlace, ServiceZone } from "@/types";
@@ -196,20 +197,6 @@ export default function BookRideScreen() {
         estimateDivider: { width: 1, height: 20, backgroundColor: colors.primary, opacity: 0.3 },
         sectionLabel: { ...typography.captionMedium, color: colors.textMuted },
         chipRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-        chip: {
-          paddingHorizontal: spacing.md,
-          paddingVertical: spacing.sm,
-          borderRadius: radius.md,
-          borderWidth: 1,
-          borderColor: colors.border,
-          backgroundColor: colors.surface,
-        },
-        chipActive: {
-          borderColor: colors.primary,
-          backgroundColor: colors.primaryLight,
-        },
-        chipText: { ...typography.captionMedium, color: colors.textSecondary },
-        chipTextActive: { color: colors.primary },
         promoHint: { ...typography.caption, color: colors.success },
         error: { ...typography.caption, color: colors.danger },
         rideTypeRow: { flexDirection: "row", gap: spacing.sm },
@@ -819,15 +806,12 @@ export default function BookRideScreen() {
                 <Text style={styles.sectionLabel}>Package type</Text>
                 <View style={[styles.chipRow, { marginTop: spacing.sm }]}>
                   {PACKAGE_TYPE_OPTIONS.map((option) => (
-                    <Pressable
+                    <Chip
                       key={option.id}
-                      style={[styles.chip, packageType === option.id && styles.chipActive]}
+                      label={option.label}
+                      selected={packageType === option.id}
                       onPress={() => setPackageType(option.id)}
-                    >
-                      <Text style={[styles.chipText, packageType === option.id && styles.chipTextActive]}>
-                        {option.label}
-                      </Text>
-                    </Pressable>
+                    />
                   ))}
                 </View>
               </View>
@@ -866,15 +850,12 @@ export default function BookRideScreen() {
               <Text style={styles.sectionLabel}>When</Text>
               <View style={[styles.chipRow, { marginTop: spacing.sm }]}>
                 {scheduleOptions.map((option) => (
-                  <Pressable
+                  <Chip
                     key={option.id}
-                    style={[styles.chip, scheduleOption === option.id && styles.chipActive]}
+                    label={option.label}
+                    selected={scheduleOption === option.id}
                     onPress={() => setScheduleOption(option.id)}
-                  >
-                    <Text style={[styles.chipText, scheduleOption === option.id && styles.chipTextActive]}>
-                      {option.label}
-                    </Text>
-                  </Pressable>
+                  />
                 ))}
               </View>
               {scheduledForDate ? (
@@ -905,15 +886,12 @@ export default function BookRideScreen() {
               <Text style={styles.sectionLabel}>Payment method</Text>
               <View style={[styles.chipRow, { marginTop: spacing.sm }]}>
                 {paymentOptions.map((option) => (
-                  <Pressable
+                  <Chip
                     key={option.id}
-                    style={[styles.chip, paymentMethod === option.id && styles.chipActive]}
+                    label={option.label}
+                    selected={paymentMethod === option.id}
                     onPress={() => setPaymentMethod(option.id)}
-                  >
-                    <Text style={[styles.chipText, paymentMethod === option.id && styles.chipTextActive]}>
-                      {option.label}
-                    </Text>
-                  </Pressable>
+                  />
                 ))}
               </View>
             </View>

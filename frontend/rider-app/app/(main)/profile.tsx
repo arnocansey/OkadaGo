@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/lib/api";
@@ -61,7 +62,7 @@ export default function ProfileScreen() {
         name: { ...typography.h2 },
         phone: { ...typography.body, color: colors.textSecondary },
         status: { ...typography.captionMedium, color: colors.success },
-        ratingRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 },
+        ratingRow: { flexDirection: "row", alignItems: "center", gap: spacing.xs, marginTop: spacing.xs },
         ratingText: { ...typography.captionMedium, color: colors.text },
         menu: { padding: 0, overflow: "hidden" },
         menuRow: {
@@ -72,7 +73,7 @@ export default function ProfileScreen() {
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
         },
-        menuLabel: { ...typography.bodyMedium, flex: 1 },
+        menuLabel: { ...typography.bodyMedium, flex: 1, color: colors.text },
       }),
     [colors, typography],
   );
@@ -166,11 +167,12 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
+      <ScreenHeader title={t("nav.profile")} />
       <View style={styles.header}>
         <View style={styles.avatarWrap}>
           <Avatar name={user.fullName} size={72} imageUri={user.avatarUrl ?? undefined} />
           <Pressable style={styles.cameraBtn} onPress={showAvatarOptions} disabled={uploadingAvatar} hitSlop={8} accessibilityLabel="Change profile photo" accessibilityRole="button">
-            <Camera size={14} color="#fff" />
+            <Camera size={14} color={colors.textOnPrimary} />
           </Pressable>
         </View>
         <Text style={styles.name}>{user.fullName}</Text>

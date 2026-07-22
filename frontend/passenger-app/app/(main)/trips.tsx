@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { CalendarClock, ChevronRight, MapPin, Package } from "lucide-react-native";
 import { Badge, statusTone } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -18,7 +19,6 @@ export default function TripsScreen() {
     () =>
       StyleSheet.create({
         screen: { flex: 1, backgroundColor: colors.background, padding: spacing.xl },
-        title: { ...typography.h1, marginBottom: spacing.xl, color: colors.text },
         list: { gap: spacing.md },
         row: {
           flexDirection: "row",
@@ -66,7 +66,7 @@ export default function TripsScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <Text style={styles.title}>Your trips</Text>
+      <ScreenHeader title="Your trips" />
       {loading && items.length === 0 && upcoming.length === 0 ? (
         <SkeletonList count={4} />
       ) : items.length === 0 && upcoming.length === 0 ? (

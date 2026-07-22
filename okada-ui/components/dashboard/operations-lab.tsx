@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchJson, hasExternalApiBaseUrl, patchJson, postJson } from "@/lib/api";
+import { fetchJson, fetchListJson, hasExternalApiBaseUrl, patchJson, postJson } from "@/lib/api";
 
 interface ServiceZoneRecord {
   id: string;
@@ -142,13 +142,13 @@ export function OperationsLab() {
 
   const passengersQuery = useQuery({
     queryKey: ["passengers"],
-    queryFn: () => fetchJson<PassengerRecord[]>("/bootstrap/passengers?limit=100"),
+    queryFn: () => fetchListJson<PassengerRecord>("/bootstrap/passengers?limit=100"),
     enabled: hasExternalApiBaseUrl
   });
 
   const ridersQuery = useQuery({
     queryKey: ["riders"],
-    queryFn: () => fetchJson<RiderRecord[]>("/bootstrap/riders?limit=100"),
+    queryFn: () => fetchListJson<RiderRecord>("/bootstrap/riders?limit=100"),
     enabled: hasExternalApiBaseUrl
   });
 

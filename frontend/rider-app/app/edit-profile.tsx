@@ -1,9 +1,10 @@
 import { Stack, router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { Chip } from "@/components/ui/Chip";
 import { Input } from "@/components/ui/Input";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -104,17 +105,6 @@ export default function EditProfileScreen() {
         error: { ...typography.caption, color: colors.danger },
         fieldLabel: { ...typography.captionMedium, color: colors.textSecondary },
         chipRow: { flexDirection: "row", gap: spacing.sm, flexWrap: "wrap" },
-        chip: {
-          paddingHorizontal: spacing.md,
-          paddingVertical: spacing.sm,
-          borderRadius: radius.md,
-          borderWidth: 1,
-          borderColor: colors.border,
-          backgroundColor: colors.surface,
-        },
-        chipActive: { borderColor: colors.primary, backgroundColor: colors.primaryLight },
-        chipText: { ...typography.captionMedium, color: colors.textSecondary },
-        chipTextActive: { color: colors.primary },
       }),
     [colors, typography],
   );
@@ -205,15 +195,12 @@ export default function EditProfileScreen() {
                 <Text style={styles.fieldLabel}>Vehicle type</Text>
                 <View style={styles.chipRow}>
                   {VEHICLE_TYPE_OPTIONS.map((option) => (
-                    <Pressable
+                    <Chip
                       key={option.id}
+                      label={option.label}
+                      selected={vehicleType === option.id}
                       onPress={() => setVehicleType(option.id)}
-                      style={[styles.chip, vehicleType === option.id && styles.chipActive]}
-                    >
-                      <Text style={[styles.chipText, vehicleType === option.id && styles.chipTextActive]}>
-                        {option.label}
-                      </Text>
-                    </Pressable>
+                    />
                   ))}
                 </View>
               </View>

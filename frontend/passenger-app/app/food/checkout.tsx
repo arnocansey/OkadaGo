@@ -1,6 +1,6 @@
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
@@ -10,6 +10,7 @@ import { useNearbyRestaurants } from "@/hooks/useNearbyRestaurants";
 import { formatDistanceKm } from "@/lib/geo";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { SkeletonList } from "@/components/ui/Skeleton";
 import { spacing } from "@/theme/tokens";
 import type { CartItem } from "@/types";
 
@@ -25,7 +26,7 @@ export default function FoodCheckoutScreen() {
     () =>
       StyleSheet.create({
         screen: { flex: 1, backgroundColor: colors.background },
-        loader: { marginTop: spacing.xxxl },
+        loadingPad: { padding: spacing.xl, marginTop: spacing.xxl },
         content: { padding: spacing.xl, gap: spacing.lg },
         addressInput: { minHeight: 64, paddingTop: spacing.md },
         title: { ...typography.h2, color: colors.text },
@@ -97,7 +98,9 @@ export default function FoodCheckoutScreen() {
   if (restaurantLoading && !restaurant) {
     return (
       <SafeAreaView style={styles.screen}>
-        <ActivityIndicator color={colors.primary} style={styles.loader} />
+        <View style={styles.loadingPad}>
+          <SkeletonList count={4} />
+        </View>
       </SafeAreaView>
     );
   }

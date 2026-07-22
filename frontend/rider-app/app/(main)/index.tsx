@@ -6,6 +6,9 @@ import { Power, ShieldAlert, TrendingUp } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { useTranslation } from "react-i18next";
 import { AppMap } from "@/components/AppMap";
+import { Avatar } from "@/components/ui/Avatar";
+import { Badge } from "@/components/ui/Badge";
+import { MapBottomSheet, MAP_SHEET_CENTER_INSET } from "@/components/ui/MapBottomSheet";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useRiderLocation } from "@/hooks/useRiderLocation";
@@ -14,12 +17,6 @@ import { ApiError, api, money } from "@/lib/api";
 import { radius, shadows, spacing } from "@/theme/tokens";
 
 const RIDER_MIN_ONLINE_BALANCE = 30;
-
-// Avatar background colors hashed from name
-const AVATAR_COLORS = ["#FFC107", "#3B82F6", "#A855F7", "#EC4899", "#F59E0B", "#FF3B30"];
-function avatarColor(name: string) {
-  return AVATAR_COLORS[(name.charCodeAt(0) ?? 0) % AVATAR_COLORS.length];
-}
 
 export default function DashboardScreen() {
   const { t } = useTranslation();
@@ -140,7 +137,6 @@ export default function DashboardScreen() {
     .reduce((sum, r) => sum + Number(r.riderEarnings ?? r.finalFare ?? 0), 0);
 
   const wallet = wallets[0];
-  const bgColor = avatarColor(session?.user.fullName ?? "A");
 
   const styles = useMemo(
     () =>
@@ -163,14 +159,6 @@ export default function DashboardScreen() {
           paddingHorizontal: spacing.lg,
           paddingVertical: spacing.md,
         },
-        avatar: {
-          width: 40,
-          height: 40,
-          borderRadius: 20,
-          alignItems: "center",
-          justifyContent: "center",
-        },
-        avatarText: { ...typography.bodySemibold, color: colors.textOnPrimary },
         greeting: { ...typography.h3, color: colors.text },
         sub: { ...typography.caption, color: colors.textSecondary },
         powerBtn: {
@@ -193,15 +181,6 @@ export default function DashboardScreen() {
           borderWidth: 1,
           borderColor: colors.danger,
         },
-        sheet: {
-          backgroundColor: colors.background,
-          borderTopLeftRadius: radius.xxl,
-          borderTopRightRadius: radius.xxl,
-          padding: spacing.xl,
-          paddingBottom: spacing.xxxl,
-          ...shadows.sheet,
-          gap: spacing.lg,
-        },
         earningsHero: {
           flexDirection: "row",
           alignItems: "center",
@@ -220,13 +199,7 @@ export default function DashboardScreen() {
         },
         earningsBody: { flex: 1 },
         earningsLabel: { ...typography.caption, color: colors.textOnPrimary },
-        earningsValue: { ...typography.h2, color: colors.textOnPrimary, marginTop: 2 },
-        statusPill: { paddingHorizontal: spacing.md, paddingVertical: spacing.xs, borderRadius: radius.full },
-        statusOn: { backgroundColor: colors.successLight },
-        statusOff: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-        statusText: { ...typography.label },
-        statusTextOn: { color: colors.success },
-        statusTextOff: { color: colors.textMuted },
+        earningsValue: { ...typography.h2, color: colors.textOnPrimary, marginTop: spacing.xs },
         activeCard: {
           flexDirection: "row",
           alignItems: "center",
@@ -239,7 +212,7 @@ export default function DashboardScreen() {
         },
         activeDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.primary },
         activeLabel: { ...typography.label, color: colors.textMuted },
-        activeValue: { ...typography.bodySemibold, marginTop: 2, color: colors.text },
+        activeValue: { ...typography.bodySemibold, marginTop: spacing.xs, color: colors.text },
         activeArrow: { fontSize: 22, color: colors.textMuted, fontWeight: "300" },
       }),
     [colors, typography, isDark],
@@ -256,16 +229,13 @@ export default function DashboardScreen() {
         }}
         autoCenterOnLocation
         showCenterButton
-        centerButtonInset={{ bottom: 240, right: spacing.lg }}
+        centerButtonInset={{ bottom: MAP_SHEET_CENTER_INSET, right: spacing.lg }}
       />
 
       <SafeAreaView style={styles.overlay} pointerEvents="box-none">
-        {/* Frosted-glass top bar */}
         <View style={styles.topBarWrap}>
           <View style={styles.top}>
-            <View style={[styles.avatar, { backgroundColor: bgColor }]}>
-              <Text style={styles.avatarText}>{session?.user.fullName[0]}</Text>
-            </View>
+            <Avatar name={session?.user.fullName ?? "A"} size={40} imageUri={session?.user.avatarUrl ?? undefined} />
             <View style={{ flex: 1 }}>
               <Text style={styles.greeting}>{t("drive.hi", { name: session?.user.fullName.split(" ")[0] })}</Text>
               <Text style={styles.sub}>{online ? t("drive.onlineHint") : t("drive.offlineHint")}</Text>
@@ -293,8 +263,7 @@ export default function DashboardScreen() {
           </View>
         </View>
 
-        {/* Bottom sheet */}
-        <View style={styles.sheet}>
+        <MapBottomSheet>
           <View style={styles.earningsHero}>
             <View style={styles.earningsIcon}>
               <TrendingUp size={20} color={colors.textOnPrimary} />
@@ -303,11 +272,7 @@ export default function DashboardScreen() {
               <Text style={styles.earningsLabel}>{t("drive.todayEarnings")}</Text>
               <Text style={styles.earningsValue}>{money(todayEarnings, wallet?.currency ?? "GHS")}</Text>
             </View>
-            <View style={[styles.statusPill, online ? styles.statusOn : styles.statusOff]}>
-              <Text style={[styles.statusText, online ? styles.statusTextOn : styles.statusTextOff]}>
-                {online ? t("drive.online") : t("drive.offline")}
-              </Text>
-            </View>
+            <Badge label={online ? t("drive.online") : t("drive.offline")} tone={online ? "success" : "default"} />
           </View>
 
           {(activeRide || activeDelivery) && (
@@ -330,7 +295,7 @@ export default function DashboardScreen() {
               <Text style={styles.activeArrow}>›</Text>
             </Pressable>
           )}
-        </View>
+        </MapBottomSheet>
       </SafeAreaView>
     </View>
   );
