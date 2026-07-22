@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
-  Linking,
   Platform,
   ScrollView,
   StyleSheet,
@@ -13,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { api, compactDate, money } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
+import { PaystackCheckout } from "@/components/PaystackCheckout";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -32,6 +32,7 @@ export default function WalletScreen() {
   const [destination, setDestination] = useState("");
   const [topUpLoading, setTopUpLoading] = useState(false);
   const [payoutLoading, setPayoutLoading] = useState(false);
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const wallet =
     wallets.find((w) => (w.type ?? "").toLowerCase() === "rider_settlement") ?? wallets[0];
   const availableBalance = Number(wallet?.availableBalance ?? 0);
@@ -100,17 +101,22 @@ export default function WalletScreen() {
         },
       });
 
-      await Linking.openURL(result.authorizationUrl);
-      Alert.alert(
-        "Complete payment",
-        "Finish the MoMo/card payment in your browser, then return here and refresh Wallet to see the new balance.",
-      );
-      await refresh();
+      setCheckoutUrl(result.authorizationUrl);
     } catch (e) {
       Alert.alert("Top-up failed", e instanceof Error ? e.message : "Could not start Paystack checkout.");
     } finally {
       setTopUpLoading(false);
     }
+  }
+
+  async function handleCheckoutSuccess(reference: string) {
+    setCheckoutUrl(null);
+    Alert.alert("Payment received", `Reference: ${reference}. Updating your balance…`);
+    await refresh();
+  }
+
+  function handleCheckoutCancel() {
+    setCheckoutUrl(null);
   }
 
   async function requestPayout() {
@@ -138,6 +144,12 @@ export default function WalletScreen() {
       keyboardVerticalOffset={Platform.OS === "ios" ? 88 : 0}
     >
       <SafeAreaView style={styles.screen}>
+        <PaystackCheckout
+          authorizationUrl={checkoutUrl ?? ""}
+          visible={!!checkoutUrl}
+          onSuccess={(reference) => void handleCheckoutSuccess(reference)}
+          onCancel={handleCheckoutCancel}
+        />
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <Text style={styles.title}>Wallet</Text>
 
