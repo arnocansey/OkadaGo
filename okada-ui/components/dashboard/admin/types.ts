@@ -432,6 +432,8 @@ export type EscalationRuleRecord = {
   action: string;
   targetRole: string;
   enabled: boolean;
+  lastRunAt?: string | null;
+  lastActionCount?: number;
 };
 
 export type ScheduledBroadcastRecord = {
@@ -443,5 +445,27 @@ export type ScheduledBroadcastRecord = {
   scheduledAt: string;
   status: "pending" | "sent" | "failed" | "cancelled";
   sentCount?: number;
+  retryCount?: number;
+  lastRunAt?: string | null;
+  lastError?: string | null;
   createdAt: string;
+};
+
+export type OpsJobStatus = {
+  broadcasts: {
+    id?: string;
+    lastStartedAt?: string | null;
+    lastFinishedAt?: string | null;
+    lastError?: string | null;
+    lastStats?: { processed?: number; sent?: number; failed?: number } | null;
+    pendingDue?: number;
+    failed?: number;
+  } | null;
+  escalations: {
+    id?: string;
+    lastStartedAt?: string | null;
+    lastFinishedAt?: string | null;
+    lastError?: string | null;
+    lastStats?: { rules?: number; actions?: number } | null;
+  } | null;
 };

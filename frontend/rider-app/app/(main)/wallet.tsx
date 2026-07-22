@@ -104,7 +104,12 @@ export default function WalletScreen() {
 
       setCheckoutUrl(result.authorizationUrl);
     } catch (e) {
-      Alert.alert("Top-up failed", e instanceof Error ? e.message : "Could not start Paystack checkout.");
+      const detail = e instanceof Error ? e.message : "Could not start Paystack checkout.";
+      Alert.alert(
+        "Paystack top-up failed",
+        `${detail}\n\nCheck your connection and MoMo number, then try again. You need at least GH₵ ${RIDER_MIN_ONLINE_BALANCE} float to go online.`,
+        [{ text: "OK" }],
+      );
     } finally {
       setTopUpLoading(false);
     }

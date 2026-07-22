@@ -28,10 +28,12 @@ export type AggregateEscalationRule = {
 
 export type EscalationRuleAvgAggregateOutputType = {
   thresholdHours: number | null
+  lastActionCount: number | null
 }
 
 export type EscalationRuleSumAggregateOutputType = {
   thresholdHours: number | null
+  lastActionCount: number | null
 }
 
 export type EscalationRuleMinAggregateOutputType = {
@@ -43,6 +45,8 @@ export type EscalationRuleMinAggregateOutputType = {
   action: string | null
   targetRole: string | null
   enabled: boolean | null
+  lastRunAt: Date | null
+  lastActionCount: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -56,6 +60,8 @@ export type EscalationRuleMaxAggregateOutputType = {
   action: string | null
   targetRole: string | null
   enabled: boolean | null
+  lastRunAt: Date | null
+  lastActionCount: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -69,6 +75,8 @@ export type EscalationRuleCountAggregateOutputType = {
   action: number
   targetRole: number
   enabled: number
+  lastRunAt: number
+  lastActionCount: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -77,10 +85,12 @@ export type EscalationRuleCountAggregateOutputType = {
 
 export type EscalationRuleAvgAggregateInputType = {
   thresholdHours?: true
+  lastActionCount?: true
 }
 
 export type EscalationRuleSumAggregateInputType = {
   thresholdHours?: true
+  lastActionCount?: true
 }
 
 export type EscalationRuleMinAggregateInputType = {
@@ -92,6 +102,8 @@ export type EscalationRuleMinAggregateInputType = {
   action?: true
   targetRole?: true
   enabled?: true
+  lastRunAt?: true
+  lastActionCount?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -105,6 +117,8 @@ export type EscalationRuleMaxAggregateInputType = {
   action?: true
   targetRole?: true
   enabled?: true
+  lastRunAt?: true
+  lastActionCount?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -118,6 +132,8 @@ export type EscalationRuleCountAggregateInputType = {
   action?: true
   targetRole?: true
   enabled?: true
+  lastRunAt?: true
+  lastActionCount?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -218,6 +234,8 @@ export type EscalationRuleGroupByOutputType = {
   action: string
   targetRole: string
   enabled: boolean
+  lastRunAt: Date | null
+  lastActionCount: number
   createdAt: Date
   updatedAt: Date
   _count: EscalationRuleCountAggregateOutputType | null
@@ -254,6 +272,8 @@ export type EscalationRuleWhereInput = {
   action?: Prisma.StringFilter<"EscalationRule"> | string
   targetRole?: Prisma.StringFilter<"EscalationRule"> | string
   enabled?: Prisma.BoolFilter<"EscalationRule"> | boolean
+  lastRunAt?: Prisma.DateTimeNullableFilter<"EscalationRule"> | Date | string | null
+  lastActionCount?: Prisma.IntFilter<"EscalationRule"> | number
   createdAt?: Prisma.DateTimeFilter<"EscalationRule"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"EscalationRule"> | Date | string
 }
@@ -267,6 +287,8 @@ export type EscalationRuleOrderByWithRelationInput = {
   action?: Prisma.SortOrder
   targetRole?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
+  lastRunAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastActionCount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -283,6 +305,8 @@ export type EscalationRuleWhereUniqueInput = Prisma.AtLeast<{
   action?: Prisma.StringFilter<"EscalationRule"> | string
   targetRole?: Prisma.StringFilter<"EscalationRule"> | string
   enabled?: Prisma.BoolFilter<"EscalationRule"> | boolean
+  lastRunAt?: Prisma.DateTimeNullableFilter<"EscalationRule"> | Date | string | null
+  lastActionCount?: Prisma.IntFilter<"EscalationRule"> | number
   createdAt?: Prisma.DateTimeFilter<"EscalationRule"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"EscalationRule"> | Date | string
 }, "id">
@@ -296,6 +320,8 @@ export type EscalationRuleOrderByWithAggregationInput = {
   action?: Prisma.SortOrder
   targetRole?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
+  lastRunAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastActionCount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.EscalationRuleCountOrderByAggregateInput
@@ -317,6 +343,8 @@ export type EscalationRuleScalarWhereWithAggregatesInput = {
   action?: Prisma.StringWithAggregatesFilter<"EscalationRule"> | string
   targetRole?: Prisma.StringWithAggregatesFilter<"EscalationRule"> | string
   enabled?: Prisma.BoolWithAggregatesFilter<"EscalationRule"> | boolean
+  lastRunAt?: Prisma.DateTimeNullableWithAggregatesFilter<"EscalationRule"> | Date | string | null
+  lastActionCount?: Prisma.IntWithAggregatesFilter<"EscalationRule"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"EscalationRule"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"EscalationRule"> | Date | string
 }
@@ -330,6 +358,8 @@ export type EscalationRuleCreateInput = {
   action: string
   targetRole: string
   enabled?: boolean
+  lastRunAt?: Date | string | null
+  lastActionCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -343,6 +373,8 @@ export type EscalationRuleUncheckedCreateInput = {
   action: string
   targetRole: string
   enabled?: boolean
+  lastRunAt?: Date | string | null
+  lastActionCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -356,6 +388,8 @@ export type EscalationRuleUpdateInput = {
   action?: Prisma.StringFieldUpdateOperationsInput | string
   targetRole?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastRunAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastActionCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -369,6 +403,8 @@ export type EscalationRuleUncheckedUpdateInput = {
   action?: Prisma.StringFieldUpdateOperationsInput | string
   targetRole?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastRunAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastActionCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -382,6 +418,8 @@ export type EscalationRuleCreateManyInput = {
   action: string
   targetRole: string
   enabled?: boolean
+  lastRunAt?: Date | string | null
+  lastActionCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -395,6 +433,8 @@ export type EscalationRuleUpdateManyMutationInput = {
   action?: Prisma.StringFieldUpdateOperationsInput | string
   targetRole?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastRunAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastActionCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -408,6 +448,8 @@ export type EscalationRuleUncheckedUpdateManyInput = {
   action?: Prisma.StringFieldUpdateOperationsInput | string
   targetRole?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastRunAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastActionCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -421,12 +463,15 @@ export type EscalationRuleCountOrderByAggregateInput = {
   action?: Prisma.SortOrder
   targetRole?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
+  lastRunAt?: Prisma.SortOrder
+  lastActionCount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type EscalationRuleAvgOrderByAggregateInput = {
   thresholdHours?: Prisma.SortOrder
+  lastActionCount?: Prisma.SortOrder
 }
 
 export type EscalationRuleMaxOrderByAggregateInput = {
@@ -438,6 +483,8 @@ export type EscalationRuleMaxOrderByAggregateInput = {
   action?: Prisma.SortOrder
   targetRole?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
+  lastRunAt?: Prisma.SortOrder
+  lastActionCount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -451,12 +498,15 @@ export type EscalationRuleMinOrderByAggregateInput = {
   action?: Prisma.SortOrder
   targetRole?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
+  lastRunAt?: Prisma.SortOrder
+  lastActionCount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type EscalationRuleSumOrderByAggregateInput = {
   thresholdHours?: Prisma.SortOrder
+  lastActionCount?: Prisma.SortOrder
 }
 
 
@@ -470,6 +520,8 @@ export type EscalationRuleSelect<ExtArgs extends runtime.Types.Extensions.Intern
   action?: boolean
   targetRole?: boolean
   enabled?: boolean
+  lastRunAt?: boolean
+  lastActionCount?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["escalationRule"]>
@@ -483,6 +535,8 @@ export type EscalationRuleSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   action?: boolean
   targetRole?: boolean
   enabled?: boolean
+  lastRunAt?: boolean
+  lastActionCount?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["escalationRule"]>
@@ -496,6 +550,8 @@ export type EscalationRuleSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   action?: boolean
   targetRole?: boolean
   enabled?: boolean
+  lastRunAt?: boolean
+  lastActionCount?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["escalationRule"]>
@@ -509,11 +565,13 @@ export type EscalationRuleSelectScalar = {
   action?: boolean
   targetRole?: boolean
   enabled?: boolean
+  lastRunAt?: boolean
+  lastActionCount?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type EscalationRuleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "triggerCondition" | "thresholdHours" | "action" | "targetRole" | "enabled" | "createdAt" | "updatedAt", ExtArgs["result"]["escalationRule"]>
+export type EscalationRuleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "triggerCondition" | "thresholdHours" | "action" | "targetRole" | "enabled" | "lastRunAt" | "lastActionCount" | "createdAt" | "updatedAt", ExtArgs["result"]["escalationRule"]>
 
 export type $EscalationRulePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "EscalationRule"
@@ -527,6 +585,8 @@ export type $EscalationRulePayload<ExtArgs extends runtime.Types.Extensions.Inte
     action: string
     targetRole: string
     enabled: boolean
+    lastRunAt: Date | null
+    lastActionCount: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["escalationRule"]>
@@ -960,6 +1020,8 @@ export interface EscalationRuleFieldRefs {
   readonly action: Prisma.FieldRef<"EscalationRule", 'String'>
   readonly targetRole: Prisma.FieldRef<"EscalationRule", 'String'>
   readonly enabled: Prisma.FieldRef<"EscalationRule", 'Boolean'>
+  readonly lastRunAt: Prisma.FieldRef<"EscalationRule", 'DateTime'>
+  readonly lastActionCount: Prisma.FieldRef<"EscalationRule", 'Int'>
   readonly createdAt: Prisma.FieldRef<"EscalationRule", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"EscalationRule", 'DateTime'>
 }

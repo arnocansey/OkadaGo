@@ -417,7 +417,8 @@ export const ModelName = {
   SavedPlace: 'SavedPlace',
   AuditLog: 'AuditLog',
   EscalationRule: 'EscalationRule',
-  ScheduledBroadcast: 'ScheduledBroadcast'
+  ScheduledBroadcast: 'ScheduledBroadcast',
+  OpsJobHeartbeat: 'OpsJobHeartbeat'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -433,7 +434,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "adminProfile" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "deliveryRequest" | "deliveryStop" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog" | "escalationRule" | "scheduledBroadcast"
+    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "adminProfile" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "deliveryRequest" | "deliveryStop" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog" | "escalationRule" | "scheduledBroadcast" | "opsJobHeartbeat"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2953,6 +2954,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    OpsJobHeartbeat: {
+      payload: Prisma.$OpsJobHeartbeatPayload<ExtArgs>
+      fields: Prisma.OpsJobHeartbeatFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OpsJobHeartbeatFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsJobHeartbeatPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OpsJobHeartbeatFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsJobHeartbeatPayload>
+        }
+        findFirst: {
+          args: Prisma.OpsJobHeartbeatFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsJobHeartbeatPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OpsJobHeartbeatFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsJobHeartbeatPayload>
+        }
+        findMany: {
+          args: Prisma.OpsJobHeartbeatFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsJobHeartbeatPayload>[]
+        }
+        create: {
+          args: Prisma.OpsJobHeartbeatCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsJobHeartbeatPayload>
+        }
+        createMany: {
+          args: Prisma.OpsJobHeartbeatCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OpsJobHeartbeatCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsJobHeartbeatPayload>[]
+        }
+        delete: {
+          args: Prisma.OpsJobHeartbeatDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsJobHeartbeatPayload>
+        }
+        update: {
+          args: Prisma.OpsJobHeartbeatUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsJobHeartbeatPayload>
+        }
+        deleteMany: {
+          args: Prisma.OpsJobHeartbeatDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OpsJobHeartbeatUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OpsJobHeartbeatUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsJobHeartbeatPayload>[]
+        }
+        upsert: {
+          args: Prisma.OpsJobHeartbeatUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsJobHeartbeatPayload>
+        }
+        aggregate: {
+          args: Prisma.OpsJobHeartbeatAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOpsJobHeartbeat>
+        }
+        groupBy: {
+          args: Prisma.OpsJobHeartbeatGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OpsJobHeartbeatGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OpsJobHeartbeatCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OpsJobHeartbeatCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3625,6 +3700,8 @@ export const EscalationRuleScalarFieldEnum = {
   action: 'action',
   targetRole: 'targetRole',
   enabled: 'enabled',
+  lastRunAt: 'lastRunAt',
+  lastActionCount: 'lastActionCount',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -3641,12 +3718,27 @@ export const ScheduledBroadcastScalarFieldEnum = {
   scheduledAt: 'scheduledAt',
   status: 'status',
   sentCount: 'sentCount',
+  retryCount: 'retryCount',
+  lastRunAt: 'lastRunAt',
+  lastError: 'lastError',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   cancelledAt: 'cancelledAt'
 } as const
 
 export type ScheduledBroadcastScalarFieldEnum = (typeof ScheduledBroadcastScalarFieldEnum)[keyof typeof ScheduledBroadcastScalarFieldEnum]
+
+
+export const OpsJobHeartbeatScalarFieldEnum = {
+  id: 'id',
+  lastStartedAt: 'lastStartedAt',
+  lastFinishedAt: 'lastFinishedAt',
+  lastError: 'lastError',
+  lastStats: 'lastStats',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OpsJobHeartbeatScalarFieldEnum = (typeof OpsJobHeartbeatScalarFieldEnum)[keyof typeof OpsJobHeartbeatScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -4371,6 +4463,7 @@ export type GlobalOmitConfig = {
   auditLog?: Prisma.AuditLogOmit
   escalationRule?: Prisma.EscalationRuleOmit
   scheduledBroadcast?: Prisma.ScheduledBroadcastOmit
+  opsJobHeartbeat?: Prisma.OpsJobHeartbeatOmit
 }
 
 /* Types for Logging */

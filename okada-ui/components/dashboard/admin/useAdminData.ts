@@ -23,6 +23,7 @@ import type {
   AuditLogRecord,
   AdminSupportTicketRecord,
   EscalationRuleRecord,
+  OpsJobStatus,
   ScheduledBroadcastRecord
 } from "./types";
 
@@ -43,7 +44,8 @@ export const QK = {
   auditLogs: (token?: string | null) => ["admin-audit-logs", token],
   supportTickets: (token?: string | null) => ["admin-support-tickets", token],
   escalationRules: (token?: string | null) => ["admin-escalation-rules", token],
-  scheduledBroadcasts: (token?: string | null) => ["admin-scheduled-broadcasts", token]
+  scheduledBroadcasts: (token?: string | null) => ["admin-scheduled-broadcasts", token],
+  opsJobStatus: (token?: string | null) => ["admin-ops-jobs-status", token]
 } as const;
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -283,6 +285,9 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
         scheduledAt: string;
         status: string;
         sentCount?: number;
+        retryCount?: number;
+        lastRunAt?: string | null;
+        lastError?: string | null;
         createdAt: string;
       }>>("/admin/scheduled-broadcasts", { token });
       return rows.map((row) => ({
@@ -294,11 +299,22 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
         scheduledAt: row.scheduledAt,
         status: row.status.toLowerCase() as ScheduledBroadcastRecord["status"],
         sentCount: row.sentCount,
+        retryCount: row.retryCount,
+        lastRunAt: row.lastRunAt,
+        lastError: row.lastError,
         createdAt: row.createdAt
       }));
     },
     enabled: isAdmin,
     staleTime: 20000
+  });
+
+  const { data: opsJobStatusData } = useQuery<OpsJobStatus>({
+    queryKey: QK.opsJobStatus(token),
+    queryFn: () => requestJson<OpsJobStatus>("/admin/ops-jobs/status", { token }),
+    enabled: isAdmin,
+    staleTime: 15000,
+    refetchInterval: 30000
   });
 
   // ── raw data ────────────────────────────────────────────────────────────────
@@ -316,6 +332,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
   const supportTickets = useMemo(() => supportTicketsData ?? [], [supportTicketsData]);
   const escalationRules = useMemo(() => escalationRulesData ?? [], [escalationRulesData]);
   const scheduledBroadcasts = useMemo(() => scheduledBroadcastsData ?? [], [scheduledBroadcastsData]);
+  const opsJobStatus = opsJobStatusData ?? null;
   const adminRoleEntries = useMemo(
     () => Object.entries(adminPermissionsData?.roles ?? {}),
     [adminPermissionsData]
@@ -1295,6 +1312,23 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     onError: (error) => addToast((error as Error).message || "Could not cancel broadcast", "error")
   });
 
+  const retryBroadcastMutation = useMutation({
+    mutationFn: async (id: string) =>
+      requestJson(`/admin/scheduled-broadcasts/${id}/retry`, {
+        method: "POST",
+        token,
+        body: JSON.stringify({})
+      }),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: QK.scheduledBroadcasts(token) }),
+        queryClient.invalidateQueries({ queryKey: QK.opsJobStatus(token) })
+      ]);
+      addToast("Broadcast retry started", "success");
+    },
+    onError: (error) => addToast((error as Error).message || "Could not retry broadcast", "error")
+  });
+
   // ── badge data ──────────────────────────────────────────────────────────────
   const badgeData = useMemo(() => ({
     activeTripsCount: activeRides.length,
@@ -1486,7 +1520,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     rides, deliveries, riders, passengers, passengersTotal, ridersTotal,
     walletTransactions, payoutRequests, ratings, incidents,
     adminAccounts, adminRoleEntries, adminModules, zones, auditLogs,
-    supportTickets, escalationRules, scheduledBroadcasts,
+    supportTickets, escalationRules, scheduledBroadcasts, opsJobStatus,
 
     // Derived data
     activeRiders, ridersWithCoords, suspendedRiders, vehicleCount,
@@ -1541,6 +1575,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     createEscalationRuleMutation,
     toggleEscalationRuleMutation,
     scheduleBroadcastMutation,
-    cancelBroadcastMutation
+    cancelBroadcastMutation,
+    retryBroadcastMutation
   };
 }

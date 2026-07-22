@@ -1,4 +1,5 @@
 import { AppError } from "../../common/errors.js";
+import { appConfig } from "../../common/config.js";
 import { prisma } from "../../common/prisma.js";
 import { sendOtpEmail } from "../../common/mailer.js";
 import {
@@ -299,6 +300,46 @@ export class SafetyService {
 
   async createSafetyShareEvent(token: string, input: CreateSafetyShareEventInput) {
     const session = await this.getCurrentUserSession(token);
+    const webBase = appConfig.appWebUrl.replace(/\/$/, "");
+
+    if (input.deliveryId) {
+      const delivery = await prisma.deliveryRequest.findUnique({
+        where: { id: input.deliveryId },
+        select: {
+          id: true,
+          pickupAddress: true,
+          dropoffAddress: true,
+          passenger: { select: { userId: true } },
+          rider: { select: { userId: true } }
+        }
+      });
+      if (!delivery) {
+        throw new AppError("Delivery could not be found.", 404, "DELIVERY_NOT_FOUND");
+      }
+      const canAccess =
+        delivery.passenger?.userId === session.user.id || delivery.rider?.userId === session.user.id;
+      if (!canAccess) {
+        throw new AppError("You cannot share this delivery.", 403, "DELIVERY_ACCESS_FORBIDDEN");
+      }
+
+      const shareUrl = `${webBase}/passenger/delivery?delivery=${delivery.id}`;
+      const message = [
+        "I'm using OkadaGo for a delivery right now.",
+        `${delivery.pickupAddress} → ${delivery.dropoffAddress}`,
+        input.note?.trim() || null,
+        `Live track: ${shareUrl}`
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+      return {
+        id: delivery.id,
+        shareUrl,
+        message,
+        mode: input.mode,
+        channel: input.channel
+      };
+    }
 
     const ride = await prisma.ride.findUnique({
       where: {
@@ -306,6 +347,8 @@ export class SafetyService {
       },
       select: {
         id: true,
+        pickupAddress: true,
+        destinationAddress: true,
         passenger: {
           select: {
             userId: true
@@ -329,7 +372,17 @@ export class SafetyService {
       throw new AppError("You cannot share this ride.", 403, "RIDE_ACCESS_FORBIDDEN");
     }
 
-    return prisma.rideEvent.create({
+    const shareUrl = `${webBase}/passenger/book?ride=${ride.id}`;
+    const message = [
+      "I'm on an OkadaGo trip right now.",
+      `${ride.pickupAddress} → ${ride.destinationAddress}`,
+      input.note?.trim() || null,
+      `Live track: ${shareUrl}`
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    const event = await prisma.rideEvent.create({
       data: {
         rideId: ride.id,
         actorUserId: session.user.id,
@@ -337,10 +390,17 @@ export class SafetyService {
         payload: {
           channel: input.channel,
           contactId: input.contactId,
-          note: input.note ?? null
+          note: input.note ?? null,
+          shareUrl
         }
       }
     });
+
+    return {
+      ...event,
+      shareUrl,
+      message
+    };
   }
 
   async requestSafetyContactVerification(

@@ -64,13 +64,26 @@ export default function DashboardScreen() {
       return;
     }
 
+    const approval = (session?.user.riderApprovalStatus ?? "").toUpperCase();
+    if (approval && approval !== "APPROVED") {
+      Alert.alert(
+        "Verification required",
+        "Upload your documents and wait for approval before going online.",
+        [
+          { text: t("common.cancel"), style: "cancel" },
+          { text: "Upload documents", onPress: () => router.push("/documents") },
+        ],
+      );
+      return;
+    }
+
     const settlementWallet =
       wallets.find((w) => (w.type ?? "").toLowerCase() === "rider_settlement") ?? wallets[0];
     const balance = Number(settlementWallet?.availableBalance ?? 0);
     if (balance < RIDER_MIN_ONLINE_BALANCE) {
       Alert.alert(
         "Insufficient Balance",
-        `Please top up at least GH₵ ${RIDER_MIN_ONLINE_BALANCE} via MoMo to ride.`,
+        `Keep at least GH₵ ${RIDER_MIN_ONLINE_BALANCE} in your wallet, then top up via MoMo/Paystack to go online.`,
         [
           { text: t("common.cancel"), style: "cancel" },
           {
@@ -85,6 +98,17 @@ export default function DashboardScreen() {
     try {
       await toggleOnline();
     } catch (error) {
+      if (error instanceof ApiError && error.code === "RIDER_NOT_APPROVED") {
+        Alert.alert(
+          "Verification required",
+          error.message || "Your rider account is not approved yet.",
+          [
+            { text: t("common.cancel"), style: "cancel" },
+            { text: "Upload documents", onPress: () => router.push("/documents") },
+          ],
+        );
+        return;
+      }
       if (error instanceof ApiError && error.code === "RIDER_INSUFFICIENT_BALANCE") {
         Alert.alert(
           "Insufficient Balance",
@@ -97,8 +121,11 @@ export default function DashboardScreen() {
             },
           ],
         );
+        return;
       }
-      // Other errors (e.g. deficit lock) already surface via context message.
+      if (error instanceof ApiError) {
+        Alert.alert("Could not go online", error.message);
+      }
     }
   }
 

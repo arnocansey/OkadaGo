@@ -60,6 +60,14 @@ const DELIVERY_SUB_LABELS: Record<string, Record<string, string>> = {
   delivered: { searching: "", assigned: "", picked_up: "", in_transit: "", delivered: "Package delivered successfully" },
 };
 
+const FOOD_DELIVERY_SUB_LABELS: Record<string, Record<string, string>> = {
+  searching: { searching: "Finding a courier for your store pickup...", assigned: "", picked_up: "", in_transit: "", delivered: "" },
+  assigned: { searching: "Courier found!", assigned: "Courier is heading to the store", picked_up: "", in_transit: "", delivered: "" },
+  picked_up: { searching: "", assigned: "", picked_up: "Order collected from the store — on the way to you", in_transit: "", delivered: "" },
+  in_transit: { searching: "", assigned: "", picked_up: "", in_transit: "Courier is delivering your pickup", delivered: "" },
+  delivered: { searching: "", assigned: "", picked_up: "", in_transit: "", delivered: "Store pickup delivered" },
+};
+
 export default function TrackScreen() {
   const { id, kind } = useLocalSearchParams<{ id: string; kind?: string }>();
   const { session, rides, deliveries, refresh, loading, restoring } = useApp();
@@ -167,6 +175,10 @@ export default function TrackScreen() {
     Boolean(trip) && isActiveTrip && Boolean(trip?.rider),
   );
 
+  const deliveryTrip = !isRide && trip ? (trip as (typeof deliveries)[0]) : null;
+  const isFoodPickup = Boolean(
+    deliveryTrip && (deliveryTrip.packageType ?? "").toLowerCase() === "food",
+  );
   const steps = isRide ? RIDE_STEPS : DELIVERY_STEPS;
   const currentIndex = stepIndexForStatus(status, isRide ? "ride" : "delivery");
 
@@ -185,7 +197,11 @@ export default function TrackScreen() {
     prevIndexRef.current = currentIndex;
   }, [currentIndex]);
 
-  const subLabels = isRide ? RIDE_SUB_LABELS : DELIVERY_SUB_LABELS;
+  const subLabels = isRide
+    ? RIDE_SUB_LABELS
+    : isFoodPickup
+      ? FOOD_DELIVERY_SUB_LABELS
+      : DELIVERY_SUB_LABELS;
   const currentStatusKey = status.toLowerCase();
 
   const stepDetails: StepDetail[] = useMemo(() => {
@@ -321,28 +337,40 @@ export default function TrackScreen() {
   }
 
   async function shareTrip() {
-    if (!session || !isRide) return;
+    if (!session || !trip) return;
     setSafetyLoading(true);
     try {
       const result = await api<{ shareUrl?: string; message?: string }>("/safety/share-trip", {
         method: "POST",
         token: session.token,
         body: {
-          rideId: trip!.id,
+          rideId: isRide ? trip.id : undefined,
+          deliveryId: isRide ? undefined : trip.id,
           mode: "START",
           channel: "LINK",
-          note: `I'm on an OkadaGo trip from ${pickupAddress} to ${dropoffAddress}`,
+          note: isRide
+            ? `I'm on an OkadaGo trip from ${pickupAddress} to ${dropoffAddress}`
+            : isFoodPickup
+              ? `OkadaGo is picking up my food order from ${pickupAddress}`
+              : `OkadaGo is delivering from ${pickupAddress} to ${dropoffAddress}`,
         },
       });
       const fallback = [
-        "I'm on an OkadaGo trip right now.",
+        isRide
+          ? "I'm on an OkadaGo trip right now."
+          : isFoodPickup
+            ? "OkadaGo is collecting my store pickup right now."
+            : "I'm using OkadaGo for a delivery right now.",
         `${pickupAddress} → ${dropoffAddress}`,
         result.shareUrl ? `Live track: ${result.shareUrl}` : null,
       ]
         .filter(Boolean)
         .join("\n");
       const message = result.message?.trim() || fallback;
-      await Share.share({ message, title: "OkadaGo trip" });
+      if (!message.includes("http") && !result.shareUrl) {
+        throw new Error("Share link was unavailable. Try again in a moment.");
+      }
+      await Share.share({ message, title: isRide ? "OkadaGo trip" : "OkadaGo delivery" });
     } catch (e) {
       Alert.alert("Share failed", e instanceof Error ? e.message : "Could not share trip.");
     } finally {
@@ -353,7 +381,10 @@ export default function TrackScreen() {
   async function callEmergencyContact() {
     const primary = safetyContacts?.find((contact) => contact.isPrimary) ?? safetyContacts?.[0];
     if (!primary) {
-      Alert.alert("No emergency contact", "Add a safety contact in your profile settings on the web app.");
+      Alert.alert(
+        "No emergency contact",
+        "Add a safety contact in Profile → Emergency contacts (app) or Safety settings on the web app.",
+      );
       return;
     }
     await Linking.openURL(`tel:${primary.phoneE164}`);
@@ -472,16 +503,14 @@ export default function TrackScreen() {
                 style={styles.safetyBtn}
                 onPress={reportSos}
               />
-              {isRide ? (
-                <Button
-                  label="Share trip"
-                  variant="outline"
-                  loading={safetyLoading}
-                  icon={<Share2 size={16} color={colors.primary} />}
-                  style={styles.safetyBtn}
-                  onPress={shareTrip}
-                />
-              ) : null}
+              <Button
+                label={isRide ? "Share trip" : "Share delivery"}
+                variant="outline"
+                loading={safetyLoading}
+                icon={<Share2 size={16} color={colors.primary} />}
+                style={styles.safetyBtn}
+                onPress={shareTrip}
+              />
             </View>
             <Button
               label="Call emergency contact"

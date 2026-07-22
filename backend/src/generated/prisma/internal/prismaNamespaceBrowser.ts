@@ -84,7 +84,8 @@ export const ModelName = {
   SavedPlace: 'SavedPlace',
   AuditLog: 'AuditLog',
   EscalationRule: 'EscalationRule',
-  ScheduledBroadcast: 'ScheduledBroadcast'
+  ScheduledBroadcast: 'ScheduledBroadcast',
+  OpsJobHeartbeat: 'OpsJobHeartbeat'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -736,6 +737,8 @@ export const EscalationRuleScalarFieldEnum = {
   action: 'action',
   targetRole: 'targetRole',
   enabled: 'enabled',
+  lastRunAt: 'lastRunAt',
+  lastActionCount: 'lastActionCount',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -752,12 +755,27 @@ export const ScheduledBroadcastScalarFieldEnum = {
   scheduledAt: 'scheduledAt',
   status: 'status',
   sentCount: 'sentCount',
+  retryCount: 'retryCount',
+  lastRunAt: 'lastRunAt',
+  lastError: 'lastError',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   cancelledAt: 'cancelledAt'
 } as const
 
 export type ScheduledBroadcastScalarFieldEnum = (typeof ScheduledBroadcastScalarFieldEnum)[keyof typeof ScheduledBroadcastScalarFieldEnum]
+
+
+export const OpsJobHeartbeatScalarFieldEnum = {
+  id: 'id',
+  lastStartedAt: 'lastStartedAt',
+  lastFinishedAt: 'lastFinishedAt',
+  lastError: 'lastError',
+  lastStats: 'lastStats',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OpsJobHeartbeatScalarFieldEnum = (typeof OpsJobHeartbeatScalarFieldEnum)[keyof typeof OpsJobHeartbeatScalarFieldEnum]
 
 
 export const SortOrder = {

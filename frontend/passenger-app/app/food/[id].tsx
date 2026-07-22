@@ -182,7 +182,8 @@ export default function RestaurantScreen() {
   }
 
   const cartItems = restaurant.menu.filter((m) => (cart[m.id] ?? 0) > 0);
-  const hasSelection = cartItems.length > 0 || orderNotes.trim().length > 0;
+  const notesReady = orderNotes.trim().length >= 4;
+  const hasSelection = notesReady;
   const deliveryFee = restaurant.deliveryFee;
 
   function adjust(itemId: string, delta: number) {
@@ -194,6 +195,7 @@ export default function RestaurantScreen() {
   }
 
   function checkoutCart() {
+    if (!notesReady) return;
     const items =
       cartItems.length > 0
         ? cartItems.map((m) => ({
@@ -269,7 +271,7 @@ export default function RestaurantScreen() {
                   multiline
                 />
                 <Text style={styles.notesHint}>
-                  OkadaGo sends a rider to collect from this place. Pay at the store unless you arrange otherwise.
+                  Required — tell the courier exactly what to collect. Pay food at the store; only the courier fee is charged in-app.
                 </Text>
               </View>
 
@@ -312,12 +314,14 @@ export default function RestaurantScreen() {
           }
         />
 
-        {hasSelection ? (
-          <View style={styles.footer}>
-            <Text style={styles.total}>Delivery from GHS {deliveryFee.toFixed(2)}</Text>
-            <Button label="Go to checkout" onPress={checkoutCart} />
-          </View>
-        ) : null}
+        <View style={styles.footer}>
+          <Text style={styles.total}>
+            {notesReady
+              ? `Courier fee from GHS ${deliveryFee.toFixed(2)}`
+              : "Add pickup instructions to continue"}
+          </Text>
+          <Button label="Go to checkout" onPress={checkoutCart} disabled={!hasSelection} />
+        </View>
       </SafeAreaView>
     </>
   );

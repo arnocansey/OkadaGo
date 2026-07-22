@@ -1,5 +1,6 @@
 import { prisma } from "../../common/prisma.js";
 import { AppError } from "../../common/errors.js";
+import { adminJobsService } from "./admin-jobs.service.js";
 import type {
   CreateEscalationRuleInput,
   CreateScheduledBroadcastInput,
@@ -109,6 +110,38 @@ export class AdminOpsService {
       },
       include: { targetZone: { select: { id: true, name: true } } }
     });
+  }
+
+  async retryScheduledBroadcast(token: string, broadcastId: string) {
+    await this.verifyAdmin(token);
+    const existing = await prisma.scheduledBroadcast.findUnique({ where: { id: broadcastId } });
+    if (!existing) {
+      throw new AppError("Broadcast not found", 404, "BROADCAST_NOT_FOUND");
+    }
+    if (existing.status !== "FAILED") {
+      throw new AppError("Only failed broadcasts can be retried", 400, "BROADCAST_NOT_FAILED");
+    }
+
+    await prisma.scheduledBroadcast.update({
+      where: { id: broadcastId },
+      data: {
+        status: "PENDING",
+        lastError: null,
+        scheduledAt: new Date()
+      }
+    });
+
+    const result = await adminJobsService.deliverBroadcast(broadcastId);
+    const broadcast = await prisma.scheduledBroadcast.findUniqueOrThrow({
+      where: { id: broadcastId },
+      include: { targetZone: { select: { id: true, name: true } } }
+    });
+    return { broadcast, result };
+  }
+
+  async getOpsJobStatus(token: string) {
+    await this.verifyAdmin(token);
+    return adminJobsService.getJobStatus();
   }
 
   private async verifyAdmin(token: string) {

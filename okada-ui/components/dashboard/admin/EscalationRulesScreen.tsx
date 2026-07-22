@@ -14,6 +14,8 @@ export type EscalationRule = {
   action: string;
   targetRole: string;
   enabled: boolean;
+  lastRunAt?: string | null;
+  lastActionCount?: number;
 };
 
 export type EscalationRulesScreenProps = {
@@ -87,7 +89,7 @@ const EscalationRulesScreen: FC<EscalationRulesScreenProps> = ({
           <div className="admin-reference-cardhead">
             <div>
               <h3>New escalation rule</h3>
-              <p>Rules are stored for ops; the auto-runner can be enabled later.</p>
+              <p>Enabled rules run automatically every minute against tickets and SOS incidents.</p>
             </div>
           </div>
           <div className="admin-form-grid">
@@ -148,7 +150,7 @@ const EscalationRulesScreen: FC<EscalationRulesScreenProps> = ({
                     <th>Rule</th>
                     <th>Trigger</th>
                     <th>Threshold</th>
-                    <th>Action</th>
+                    <th>Last run</th>
                     <th>Role</th>
                     <th>Enabled</th>
                   </tr>
@@ -163,7 +165,19 @@ const EscalationRulesScreen: FC<EscalationRulesScreenProps> = ({
                       </td>
                       <td><code className="admin-inline-code">{rule.triggerCondition}</code></td>
                       <td>{rule.thresholdHours}h</td>
-                      <td>{rule.action}</td>
+                      <td>
+                        <small>
+                          {rule.lastRunAt
+                            ? new Date(rule.lastRunAt).toLocaleString()
+                            : "Not yet"}
+                        </small>
+                        {typeof rule.lastActionCount === "number" ? (
+                          <>
+                            <br />
+                            <small>{rule.lastActionCount} actions</small>
+                          </>
+                        ) : null}
+                      </td>
                       <td>{rule.targetRole}</td>
                       <td>
                         <button

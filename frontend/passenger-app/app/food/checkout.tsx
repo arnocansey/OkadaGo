@@ -57,15 +57,19 @@ export default function FoodCheckoutScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+  const storeSubtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
   const deliveryFee = restaurant?.deliveryFee ?? 10;
-  const total = subtotal + deliveryFee;
+  const dueInApp = deliveryFee;
   const notes = typeof orderNotes === "string" ? orderNotes.trim() : "";
   const orderSummary = cart.map((i) => `${i.quantity}x ${i.name}`).join(", ");
   const orderDescription = [orderSummary, notes ? `Notes: ${notes}` : ""].filter(Boolean).join(" · ");
 
   async function submit() {
     if (!restaurant) return;
+    if (notes.length < 4) {
+      setError("Add pickup instructions so the courier knows what to collect.");
+      return;
+    }
     setError("");
     setLoading(true);
     try {
@@ -134,14 +138,22 @@ export default function FoodCheckoutScreen() {
               <Text style={styles.notesLabel}>Pickup instructions</Text>
               <Text style={styles.notesText}>{notes}</Text>
             </View>
-          ) : null}
+          ) : (
+            <Text style={styles.error}>Pickup instructions are required.</Text>
+          )}
+          <View style={styles.row}>
+            <Text style={styles.rowLabel}>Store items</Text>
+            <Text style={styles.rowVal}>
+              {storeSubtotal > 0 ? `~GHS ${storeSubtotal.toFixed(2)} at store` : "Pay at store"}
+            </Text>
+          </View>
           <View style={styles.row}>
             <Text style={styles.rowLabel}>Courier fee</Text>
             <Text style={styles.rowVal}>GHS {deliveryFee.toFixed(2)}</Text>
           </View>
           <View style={[styles.row, styles.totalRow]}>
             <Text style={styles.totalLabel}>Due in app</Text>
-            <Text style={styles.totalVal}>GHS {total.toFixed(2)}</Text>
+            <Text style={styles.totalVal}>GHS {dueInApp.toFixed(2)}</Text>
           </View>
 
           <Input

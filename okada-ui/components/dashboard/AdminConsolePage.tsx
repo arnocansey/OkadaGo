@@ -451,10 +451,14 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             notifications={data.scheduledBroadcasts}
             ridersCount={data.ridersTotal}
             passengersCount={data.passengersTotal}
+            opsJobStatus={data.opsJobStatus}
             onSchedule={(notification) => data.scheduleBroadcastMutation.mutate(notification)}
             onCancel={(id) => data.cancelBroadcastMutation.mutate(id)}
+            onRetry={(id) => data.retryBroadcastMutation.mutate(id)}
             isMutating={
-              data.scheduleBroadcastMutation.isPending || data.cancelBroadcastMutation.isPending
+              data.scheduleBroadcastMutation.isPending ||
+              data.cancelBroadcastMutation.isPending ||
+              data.retryBroadcastMutation.isPending
             }
           />
         );

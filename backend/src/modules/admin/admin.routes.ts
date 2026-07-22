@@ -207,4 +207,15 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
     const params = parseParams(request, scheduledBroadcastParamsSchema);
     return adminOpsService.cancelScheduledBroadcast(token, params.broadcastId);
   });
+
+  server.post("/admin/scheduled-broadcasts/:broadcastId/retry", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, scheduledBroadcastParamsSchema);
+    return adminOpsService.retryScheduledBroadcast(token, params.broadcastId);
+  });
+
+  server.get("/admin/ops-jobs/status", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return adminOpsService.getOpsJobStatus(token);
+  });
 };

@@ -965,16 +965,18 @@ enum BroadcastStatus {
 }
 
 model EscalationRule {
-  id               String   @id @default(cuid())
-  name             String   @db.VarChar(160)
-  description      String   @db.VarChar(500)
-  triggerCondition String   @db.VarChar(160)
-  thresholdHours   Int      @default(4)
-  action           String   @db.VarChar(160)
-  targetRole       String   @db.VarChar(40)
-  enabled          Boolean  @default(true)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id               String    @id @default(cuid())
+  name             String    @db.VarChar(160)
+  description      String    @db.VarChar(500)
+  triggerCondition String    @db.VarChar(160)
+  thresholdHours   Int       @default(4)
+  action           String    @db.VarChar(160)
+  targetRole       String    @db.VarChar(40)
+  enabled          Boolean   @default(true)
+  lastRunAt        DateTime?
+  lastActionCount  Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   @@index([enabled, createdAt])
 }
@@ -988,11 +990,24 @@ model ScheduledBroadcast {
   scheduledAt    DateTime
   status         BroadcastStatus   @default(PENDING)
   sentCount      Int               @default(0)
+  retryCount     Int               @default(0)
+  lastRunAt      DateTime?
+  lastError      String?           @db.VarChar(500)
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
   cancelledAt    DateTime?
   targetZone     ServiceZone?      @relation(fields: [targetZoneId], references: [id])
 
   @@index([status, scheduledAt])
+  @@index([status, lastRunAt])
   @@index([targetZoneId])
+}
+
+model OpsJobHeartbeat {
+  id             String    @id @db.VarChar(40)
+  lastStartedAt  DateTime?
+  lastFinishedAt DateTime?
+  lastError      String?   @db.VarChar(500)
+  lastStats      Json?
+  updatedAt      DateTime  @updatedAt
 }

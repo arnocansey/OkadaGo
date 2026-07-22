@@ -27,6 +27,24 @@ function isOpenStatus(status: string) {
   return ["pending", "open", "under_review", "actioned"].includes(s);
 }
 
+const SOS_SLA_MINUTES = 15;
+
+function ageMinutes(iso: string) {
+  return Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000));
+}
+
+function formatDurationMinutes(mins: number) {
+  if (mins < 60) return `${mins}m`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m ? `${h}h ${m}m` : `${h}h`;
+}
+
+function resolveMinutes(incident: AdminIncidentRecord) {
+  if (!incident.resolvedAt) return null;
+  return Math.max(0, Math.round((Date.parse(incident.resolvedAt) - Date.parse(incident.createdAt)) / 60000));
+}
+
 export function SosIncidentsScreen({
   incidents,
   onIncidentAction,
@@ -37,6 +55,7 @@ export function SosIncidentsScreen({
   const resolvedSos = sosIncidents.filter((i) =>
     ["resolved", "closed"].includes(i.status.toLowerCase())
   );
+  const breachedOpen = openSos.filter((i) => ageMinutes(i.createdAt) >= SOS_SLA_MINUTES).length;
 
   return (
     <div className="exact-admin-screen">
@@ -48,7 +67,7 @@ export function SosIncidentsScreen({
       <AdminKpiRow
         items={[
           { label: "Open SOS", value: openSos.length, hint: "Needs attention", icon: <ShieldAlert size={22} />, tone: "red" },
-          { label: "In queue", value: sosIncidents.filter((i) => ["pending", "open"].includes(i.status.toLowerCase())).length, hint: "Unassigned / pending", icon: <AlertTriangle size={22} />, tone: "yellow" },
+          { label: `SLA > ${SOS_SLA_MINUTES}m`, value: breachedOpen, hint: "Open past target", icon: <AlertTriangle size={22} />, tone: "red" },
           { label: "In progress", value: sosIncidents.filter((i) => ["under_review", "actioned"].includes(i.status.toLowerCase())).length, hint: "Being handled", icon: <Clock size={22} />, tone: "yellow" },
           { label: "Resolved", value: resolvedSos.length, hint: "Closed critical cases", icon: <CheckCircle size={22} />, tone: "green" }
         ]}
@@ -69,6 +88,7 @@ export function SosIncidentsScreen({
               <thead>
                 <tr>
                   <th>When</th>
+                  <th>Age / SLA</th>
                   <th>Reporter</th>
                   <th>Rider</th>
                   <th>Trip</th>
@@ -84,6 +104,13 @@ export function SosIncidentsScreen({
                   .map((incident) => (
                     <tr key={incident.id}>
                       <td><small>{formatDateTime(incident.createdAt)}</small></td>
+                      <td>
+                        <small>{formatDurationMinutes(ageMinutes(incident.createdAt))}</small>
+                        <br />
+                        <em className={`admin-reference-tag ${ageMinutes(incident.createdAt) >= SOS_SLA_MINUTES ? "danger" : "warning"}`}>
+                          {ageMinutes(incident.createdAt) >= SOS_SLA_MINUTES ? "SLA breach" : "Within SLA"}
+                        </em>
+                      </td>
                       <td>
                         <strong>{incident.reporter.fullName}</strong>
                         <br />
@@ -167,7 +194,12 @@ export function SosIncidentsScreen({
                 <li key={incident.id}>
                   <span>
                     <strong>{incident.reporter.fullName}</strong>
-                    <small> · {formatEnumLabel(incident.category)} · {formatDateTime(incident.createdAt)}</small>
+                    <small>
+                      {" "}· {formatEnumLabel(incident.category)} · {formatDateTime(incident.createdAt)}
+                      {incident.resolvedAt
+                        ? ` · resolved in ${formatDurationMinutes(resolveMinutes(incident) ?? 0)}`
+                        : ""}
+                    </small>
                   </span>
                   <em className={`admin-reference-tag ${statusTone(incident.status)}`}>
                     {formatEnumLabel(incident.status)}

@@ -304,6 +304,19 @@ export class RideService {
     }
 
     if (input.onlineStatus) {
+      if (riderProfile.approvalStatus !== RiderApprovalStatus.APPROVED) {
+        await prisma.riderProfile.update({
+          where: { id: riderProfileId },
+          data: { onlineStatus: false }
+        });
+        throw new AppError(
+          "Your rider account is not approved yet. Upload documents and wait for verification before going online.",
+          409,
+          "RIDER_NOT_APPROVED",
+          { approvalStatus: riderProfile.approvalStatus }
+        );
+      }
+
       const settlementWallet = await prisma.wallet.findFirst({
         where: {
           userId: riderProfile.userId,

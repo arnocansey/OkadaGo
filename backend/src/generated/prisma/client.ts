@@ -211,3 +211,8 @@ export type EscalationRule = Prisma.EscalationRuleModel
  * 
  */
 export type ScheduledBroadcast = Prisma.ScheduledBroadcastModel
+/**
+ * Model OpsJobHeartbeat
+ * 
+ */
+export type OpsJobHeartbeat = Prisma.OpsJobHeartbeatModel

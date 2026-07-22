@@ -30,13 +30,18 @@ export const createSafetyIncidentSchema = z.object({
   evidence: z.array(z.string().trim().url()).max(10).optional()
 });
 
-export const createSafetyShareEventSchema = z.object({
-  rideId: z.string().cuid(),
-  mode: z.enum(["START", "STOP"]).default("START"),
-  channel: z.enum(["SMS", "WHATSAPP", "LINK"]).default("LINK"),
-  contactId: z.string().cuid().optional(),
-  note: z.string().trim().min(2).max(240).optional()
-});
+export const createSafetyShareEventSchema = z
+  .object({
+    rideId: z.string().cuid().optional(),
+    deliveryId: z.string().cuid().optional(),
+    mode: z.enum(["START", "STOP"]).default("START"),
+    channel: z.enum(["SMS", "WHATSAPP", "LINK"]).default("LINK"),
+    contactId: z.string().cuid().optional(),
+    note: z.string().trim().min(2).max(240).optional()
+  })
+  .refine((value) => Boolean(value.rideId || value.deliveryId), {
+    message: "rideId or deliveryId is required"
+  });
 
 export const requestSafetyContactVerificationSchema = z.object({
   contactId: z.string().cuid()

@@ -28,10 +28,12 @@ export type AggregateScheduledBroadcast = {
 
 export type ScheduledBroadcastAvgAggregateOutputType = {
   sentCount: number | null
+  retryCount: number | null
 }
 
 export type ScheduledBroadcastSumAggregateOutputType = {
   sentCount: number | null
+  retryCount: number | null
 }
 
 export type ScheduledBroadcastMinAggregateOutputType = {
@@ -43,6 +45,9 @@ export type ScheduledBroadcastMinAggregateOutputType = {
   scheduledAt: Date | null
   status: $Enums.BroadcastStatus | null
   sentCount: number | null
+  retryCount: number | null
+  lastRunAt: Date | null
+  lastError: string | null
   createdAt: Date | null
   updatedAt: Date | null
   cancelledAt: Date | null
@@ -57,6 +62,9 @@ export type ScheduledBroadcastMaxAggregateOutputType = {
   scheduledAt: Date | null
   status: $Enums.BroadcastStatus | null
   sentCount: number | null
+  retryCount: number | null
+  lastRunAt: Date | null
+  lastError: string | null
   createdAt: Date | null
   updatedAt: Date | null
   cancelledAt: Date | null
@@ -71,6 +79,9 @@ export type ScheduledBroadcastCountAggregateOutputType = {
   scheduledAt: number
   status: number
   sentCount: number
+  retryCount: number
+  lastRunAt: number
+  lastError: number
   createdAt: number
   updatedAt: number
   cancelledAt: number
@@ -80,10 +91,12 @@ export type ScheduledBroadcastCountAggregateOutputType = {
 
 export type ScheduledBroadcastAvgAggregateInputType = {
   sentCount?: true
+  retryCount?: true
 }
 
 export type ScheduledBroadcastSumAggregateInputType = {
   sentCount?: true
+  retryCount?: true
 }
 
 export type ScheduledBroadcastMinAggregateInputType = {
@@ -95,6 +108,9 @@ export type ScheduledBroadcastMinAggregateInputType = {
   scheduledAt?: true
   status?: true
   sentCount?: true
+  retryCount?: true
+  lastRunAt?: true
+  lastError?: true
   createdAt?: true
   updatedAt?: true
   cancelledAt?: true
@@ -109,6 +125,9 @@ export type ScheduledBroadcastMaxAggregateInputType = {
   scheduledAt?: true
   status?: true
   sentCount?: true
+  retryCount?: true
+  lastRunAt?: true
+  lastError?: true
   createdAt?: true
   updatedAt?: true
   cancelledAt?: true
@@ -123,6 +142,9 @@ export type ScheduledBroadcastCountAggregateInputType = {
   scheduledAt?: true
   status?: true
   sentCount?: true
+  retryCount?: true
+  lastRunAt?: true
+  lastError?: true
   createdAt?: true
   updatedAt?: true
   cancelledAt?: true
@@ -224,6 +246,9 @@ export type ScheduledBroadcastGroupByOutputType = {
   scheduledAt: Date
   status: $Enums.BroadcastStatus
   sentCount: number
+  retryCount: number
+  lastRunAt: Date | null
+  lastError: string | null
   createdAt: Date
   updatedAt: Date
   cancelledAt: Date | null
@@ -261,6 +286,9 @@ export type ScheduledBroadcastWhereInput = {
   scheduledAt?: Prisma.DateTimeFilter<"ScheduledBroadcast"> | Date | string
   status?: Prisma.EnumBroadcastStatusFilter<"ScheduledBroadcast"> | $Enums.BroadcastStatus
   sentCount?: Prisma.IntFilter<"ScheduledBroadcast"> | number
+  retryCount?: Prisma.IntFilter<"ScheduledBroadcast"> | number
+  lastRunAt?: Prisma.DateTimeNullableFilter<"ScheduledBroadcast"> | Date | string | null
+  lastError?: Prisma.StringNullableFilter<"ScheduledBroadcast"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ScheduledBroadcast"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ScheduledBroadcast"> | Date | string
   cancelledAt?: Prisma.DateTimeNullableFilter<"ScheduledBroadcast"> | Date | string | null
@@ -276,6 +304,9 @@ export type ScheduledBroadcastOrderByWithRelationInput = {
   scheduledAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
   sentCount?: Prisma.SortOrder
+  retryCount?: Prisma.SortOrder
+  lastRunAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastError?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   cancelledAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -294,6 +325,9 @@ export type ScheduledBroadcastWhereUniqueInput = Prisma.AtLeast<{
   scheduledAt?: Prisma.DateTimeFilter<"ScheduledBroadcast"> | Date | string
   status?: Prisma.EnumBroadcastStatusFilter<"ScheduledBroadcast"> | $Enums.BroadcastStatus
   sentCount?: Prisma.IntFilter<"ScheduledBroadcast"> | number
+  retryCount?: Prisma.IntFilter<"ScheduledBroadcast"> | number
+  lastRunAt?: Prisma.DateTimeNullableFilter<"ScheduledBroadcast"> | Date | string | null
+  lastError?: Prisma.StringNullableFilter<"ScheduledBroadcast"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ScheduledBroadcast"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ScheduledBroadcast"> | Date | string
   cancelledAt?: Prisma.DateTimeNullableFilter<"ScheduledBroadcast"> | Date | string | null
@@ -309,6 +343,9 @@ export type ScheduledBroadcastOrderByWithAggregationInput = {
   scheduledAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
   sentCount?: Prisma.SortOrder
+  retryCount?: Prisma.SortOrder
+  lastRunAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastError?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   cancelledAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -331,6 +368,9 @@ export type ScheduledBroadcastScalarWhereWithAggregatesInput = {
   scheduledAt?: Prisma.DateTimeWithAggregatesFilter<"ScheduledBroadcast"> | Date | string
   status?: Prisma.EnumBroadcastStatusWithAggregatesFilter<"ScheduledBroadcast"> | $Enums.BroadcastStatus
   sentCount?: Prisma.IntWithAggregatesFilter<"ScheduledBroadcast"> | number
+  retryCount?: Prisma.IntWithAggregatesFilter<"ScheduledBroadcast"> | number
+  lastRunAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ScheduledBroadcast"> | Date | string | null
+  lastError?: Prisma.StringNullableWithAggregatesFilter<"ScheduledBroadcast"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ScheduledBroadcast"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ScheduledBroadcast"> | Date | string
   cancelledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ScheduledBroadcast"> | Date | string | null
@@ -344,6 +384,9 @@ export type ScheduledBroadcastCreateInput = {
   scheduledAt: Date | string
   status?: $Enums.BroadcastStatus
   sentCount?: number
+  retryCount?: number
+  lastRunAt?: Date | string | null
+  lastError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   cancelledAt?: Date | string | null
@@ -359,6 +402,9 @@ export type ScheduledBroadcastUncheckedCreateInput = {
   scheduledAt: Date | string
   status?: $Enums.BroadcastStatus
   sentCount?: number
+  retryCount?: number
+  lastRunAt?: Date | string | null
+  lastError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   cancelledAt?: Date | string | null
@@ -372,6 +418,9 @@ export type ScheduledBroadcastUpdateInput = {
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumBroadcastStatusFieldUpdateOperationsInput | $Enums.BroadcastStatus
   sentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  retryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lastRunAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -387,6 +436,9 @@ export type ScheduledBroadcastUncheckedUpdateInput = {
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumBroadcastStatusFieldUpdateOperationsInput | $Enums.BroadcastStatus
   sentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  retryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lastRunAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -401,6 +453,9 @@ export type ScheduledBroadcastCreateManyInput = {
   scheduledAt: Date | string
   status?: $Enums.BroadcastStatus
   sentCount?: number
+  retryCount?: number
+  lastRunAt?: Date | string | null
+  lastError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   cancelledAt?: Date | string | null
@@ -414,6 +469,9 @@ export type ScheduledBroadcastUpdateManyMutationInput = {
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumBroadcastStatusFieldUpdateOperationsInput | $Enums.BroadcastStatus
   sentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  retryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lastRunAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -428,6 +486,9 @@ export type ScheduledBroadcastUncheckedUpdateManyInput = {
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumBroadcastStatusFieldUpdateOperationsInput | $Enums.BroadcastStatus
   sentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  retryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lastRunAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -452,6 +513,9 @@ export type ScheduledBroadcastCountOrderByAggregateInput = {
   scheduledAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
   sentCount?: Prisma.SortOrder
+  retryCount?: Prisma.SortOrder
+  lastRunAt?: Prisma.SortOrder
+  lastError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   cancelledAt?: Prisma.SortOrder
@@ -459,6 +523,7 @@ export type ScheduledBroadcastCountOrderByAggregateInput = {
 
 export type ScheduledBroadcastAvgOrderByAggregateInput = {
   sentCount?: Prisma.SortOrder
+  retryCount?: Prisma.SortOrder
 }
 
 export type ScheduledBroadcastMaxOrderByAggregateInput = {
@@ -470,6 +535,9 @@ export type ScheduledBroadcastMaxOrderByAggregateInput = {
   scheduledAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
   sentCount?: Prisma.SortOrder
+  retryCount?: Prisma.SortOrder
+  lastRunAt?: Prisma.SortOrder
+  lastError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   cancelledAt?: Prisma.SortOrder
@@ -484,6 +552,9 @@ export type ScheduledBroadcastMinOrderByAggregateInput = {
   scheduledAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
   sentCount?: Prisma.SortOrder
+  retryCount?: Prisma.SortOrder
+  lastRunAt?: Prisma.SortOrder
+  lastError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   cancelledAt?: Prisma.SortOrder
@@ -491,6 +562,7 @@ export type ScheduledBroadcastMinOrderByAggregateInput = {
 
 export type ScheduledBroadcastSumOrderByAggregateInput = {
   sentCount?: Prisma.SortOrder
+  retryCount?: Prisma.SortOrder
 }
 
 export type ScheduledBroadcastCreateNestedManyWithoutTargetZoneInput = {
@@ -551,6 +623,9 @@ export type ScheduledBroadcastCreateWithoutTargetZoneInput = {
   scheduledAt: Date | string
   status?: $Enums.BroadcastStatus
   sentCount?: number
+  retryCount?: number
+  lastRunAt?: Date | string | null
+  lastError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   cancelledAt?: Date | string | null
@@ -564,6 +639,9 @@ export type ScheduledBroadcastUncheckedCreateWithoutTargetZoneInput = {
   scheduledAt: Date | string
   status?: $Enums.BroadcastStatus
   sentCount?: number
+  retryCount?: number
+  lastRunAt?: Date | string | null
+  lastError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   cancelledAt?: Date | string | null
@@ -607,6 +685,9 @@ export type ScheduledBroadcastScalarWhereInput = {
   scheduledAt?: Prisma.DateTimeFilter<"ScheduledBroadcast"> | Date | string
   status?: Prisma.EnumBroadcastStatusFilter<"ScheduledBroadcast"> | $Enums.BroadcastStatus
   sentCount?: Prisma.IntFilter<"ScheduledBroadcast"> | number
+  retryCount?: Prisma.IntFilter<"ScheduledBroadcast"> | number
+  lastRunAt?: Prisma.DateTimeNullableFilter<"ScheduledBroadcast"> | Date | string | null
+  lastError?: Prisma.StringNullableFilter<"ScheduledBroadcast"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ScheduledBroadcast"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ScheduledBroadcast"> | Date | string
   cancelledAt?: Prisma.DateTimeNullableFilter<"ScheduledBroadcast"> | Date | string | null
@@ -620,6 +701,9 @@ export type ScheduledBroadcastCreateManyTargetZoneInput = {
   scheduledAt: Date | string
   status?: $Enums.BroadcastStatus
   sentCount?: number
+  retryCount?: number
+  lastRunAt?: Date | string | null
+  lastError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   cancelledAt?: Date | string | null
@@ -633,6 +717,9 @@ export type ScheduledBroadcastUpdateWithoutTargetZoneInput = {
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumBroadcastStatusFieldUpdateOperationsInput | $Enums.BroadcastStatus
   sentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  retryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lastRunAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -646,6 +733,9 @@ export type ScheduledBroadcastUncheckedUpdateWithoutTargetZoneInput = {
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumBroadcastStatusFieldUpdateOperationsInput | $Enums.BroadcastStatus
   sentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  retryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lastRunAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -659,6 +749,9 @@ export type ScheduledBroadcastUncheckedUpdateManyWithoutTargetZoneInput = {
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumBroadcastStatusFieldUpdateOperationsInput | $Enums.BroadcastStatus
   sentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  retryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lastRunAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -675,6 +768,9 @@ export type ScheduledBroadcastSelect<ExtArgs extends runtime.Types.Extensions.In
   scheduledAt?: boolean
   status?: boolean
   sentCount?: boolean
+  retryCount?: boolean
+  lastRunAt?: boolean
+  lastError?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   cancelledAt?: boolean
@@ -690,6 +786,9 @@ export type ScheduledBroadcastSelectCreateManyAndReturn<ExtArgs extends runtime.
   scheduledAt?: boolean
   status?: boolean
   sentCount?: boolean
+  retryCount?: boolean
+  lastRunAt?: boolean
+  lastError?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   cancelledAt?: boolean
@@ -705,6 +804,9 @@ export type ScheduledBroadcastSelectUpdateManyAndReturn<ExtArgs extends runtime.
   scheduledAt?: boolean
   status?: boolean
   sentCount?: boolean
+  retryCount?: boolean
+  lastRunAt?: boolean
+  lastError?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   cancelledAt?: boolean
@@ -720,12 +822,15 @@ export type ScheduledBroadcastSelectScalar = {
   scheduledAt?: boolean
   status?: boolean
   sentCount?: boolean
+  retryCount?: boolean
+  lastRunAt?: boolean
+  lastError?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   cancelledAt?: boolean
 }
 
-export type ScheduledBroadcastOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "body" | "targetAudience" | "targetZoneId" | "scheduledAt" | "status" | "sentCount" | "createdAt" | "updatedAt" | "cancelledAt", ExtArgs["result"]["scheduledBroadcast"]>
+export type ScheduledBroadcastOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "body" | "targetAudience" | "targetZoneId" | "scheduledAt" | "status" | "sentCount" | "retryCount" | "lastRunAt" | "lastError" | "createdAt" | "updatedAt" | "cancelledAt", ExtArgs["result"]["scheduledBroadcast"]>
 export type ScheduledBroadcastInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   targetZone?: boolean | Prisma.ScheduledBroadcast$targetZoneArgs<ExtArgs>
 }
@@ -750,6 +855,9 @@ export type $ScheduledBroadcastPayload<ExtArgs extends runtime.Types.Extensions.
     scheduledAt: Date
     status: $Enums.BroadcastStatus
     sentCount: number
+    retryCount: number
+    lastRunAt: Date | null
+    lastError: string | null
     createdAt: Date
     updatedAt: Date
     cancelledAt: Date | null
@@ -1185,6 +1293,9 @@ export interface ScheduledBroadcastFieldRefs {
   readonly scheduledAt: Prisma.FieldRef<"ScheduledBroadcast", 'DateTime'>
   readonly status: Prisma.FieldRef<"ScheduledBroadcast", 'BroadcastStatus'>
   readonly sentCount: Prisma.FieldRef<"ScheduledBroadcast", 'Int'>
+  readonly retryCount: Prisma.FieldRef<"ScheduledBroadcast", 'Int'>
+  readonly lastRunAt: Prisma.FieldRef<"ScheduledBroadcast", 'DateTime'>
+  readonly lastError: Prisma.FieldRef<"ScheduledBroadcast", 'String'>
   readonly createdAt: Prisma.FieldRef<"ScheduledBroadcast", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"ScheduledBroadcast", 'DateTime'>
   readonly cancelledAt: Prisma.FieldRef<"ScheduledBroadcast", 'DateTime'>

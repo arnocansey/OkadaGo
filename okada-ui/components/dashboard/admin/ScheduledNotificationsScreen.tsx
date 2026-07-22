@@ -1,29 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { Bell, Send, Clock, XCircle } from "lucide-react";
+import { Bell, Send, Clock, XCircle, RefreshCw } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
+import type { OpsJobStatus, ScheduledBroadcastRecord } from "./types";
 import { formatDateTime } from "./utils";
 
-export type ScheduledNotification = {
-  id: string;
-  title: string;
-  body: string;
-  targetAudience: "all" | "riders" | "passengers" | "zone";
-  targetZone?: string;
-  scheduledAt: string;
-  status: "pending" | "sent" | "failed" | "cancelled";
-  sentCount?: number;
-  createdAt: string;
-};
+export type ScheduledNotification = ScheduledBroadcastRecord;
 
 export type ScheduledNotificationsScreenProps = {
   notifications: ScheduledNotification[];
   ridersCount: number;
   passengersCount: number;
-  onSchedule: (notification: Omit<ScheduledNotification, "id" | "status" | "sentCount" | "createdAt">) => void;
+  opsJobStatus?: OpsJobStatus | null;
+  onSchedule: (notification: Omit<ScheduledNotification, "id" | "status" | "sentCount" | "createdAt" | "retryCount" | "lastRunAt" | "lastError">) => void;
   onCancel: (id: string) => void;
+  onRetry: (id: string) => void;
   isMutating: boolean;
 };
 
@@ -31,8 +24,10 @@ export function ScheduledNotificationsScreen({
   notifications,
   ridersCount,
   passengersCount,
+  opsJobStatus,
   onSchedule,
   onCancel,
+  onRetry,
   isMutating
 }: ScheduledNotificationsScreenProps) {
   const [title, setTitle] = useState("");
@@ -44,6 +39,7 @@ export function ScheduledNotificationsScreen({
   const pendingCount = notifications.filter((n) => n.status === "pending").length;
   const sentCount = notifications.filter((n) => n.status === "sent").length;
   const failedCount = notifications.filter((n) => n.status === "failed").length;
+  const lastFinished = opsJobStatus?.broadcasts?.lastFinishedAt;
 
   const handleSchedule = () => {
     if (!title.trim() || !body.trim() || !scheduledAt) return;
@@ -91,10 +87,32 @@ export function ScheduledNotificationsScreen({
           <div>
             <span>Failed</span>
             <strong>{failedCount}</strong>
-            <small>Delivery errors</small>
+            <small>
+              {lastFinished
+                ? `Worker last ran ${formatDateTime(lastFinished)}`
+                : "Delivery errors"}
+            </small>
           </div>
         </article>
       </section>
+
+      {opsJobStatus?.broadcasts ? (
+        <article className="admin-reference-card" style={{ marginBottom: 16 }}>
+          <div className="admin-reference-cardhead">
+            <div>
+              <h3>Broadcast worker</h3>
+              <p>
+                Due now: {opsJobStatus.broadcasts.pendingDue ?? 0}
+                {" · "}
+                Failed queue: {opsJobStatus.broadcasts.failed ?? 0}
+                {opsJobStatus.broadcasts.lastError
+                  ? ` · Last error: ${opsJobStatus.broadcasts.lastError}`
+                  : ""}
+              </p>
+            </div>
+          </div>
+        </article>
+      ) : null}
 
       <div className="admin-screen-grid-2">
         <article className="admin-reference-card">
@@ -199,12 +217,26 @@ export function ScheduledNotificationsScreen({
                         <strong>{n.title}</strong>
                         <br />
                         <small style={{ maxWidth: 200, display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.body}</small>
+                        {n.lastError ? (
+                          <>
+                            <br />
+                            <small style={{ color: "var(--danger, #ef5350)" }}>{n.lastError}</small>
+                          </>
+                        ) : null}
                       </td>
                       <td>
                         <small style={{ textTransform: "capitalize" }}>{n.targetAudience}</small>
                         {n.targetZone && <><br /><small>{n.targetZone}</small></>}
                       </td>
-                      <td><small>{formatDateTime(n.scheduledAt)}</small></td>
+                      <td>
+                        <small>{formatDateTime(n.scheduledAt)}</small>
+                        {n.lastRunAt ? (
+                          <>
+                            <br />
+                            <small>Last run {formatDateTime(n.lastRunAt)}</small>
+                          </>
+                        ) : null}
+                      </td>
                       <td>
                         <em className={`admin-reference-tag ${
                           n.status === "sent" ? "success" :
@@ -214,18 +246,35 @@ export function ScheduledNotificationsScreen({
                           {n.status}
                         </em>
                         {n.sentCount != null && <small> · {n.sentCount} recipients</small>}
+                        {typeof n.retryCount === "number" && n.retryCount > 0 ? (
+                          <small> · retries {n.retryCount}</small>
+                        ) : null}
                       </td>
                       <td>
-                        {n.status === "pending" && (
-                          <button
-                            type="button"
-                            className="admin-select-sm"
-                            style={{ fontSize: 11, padding: "4px 8px" }}
-                            onClick={() => onCancel(n.id)}
-                          >
-                            Cancel
-                          </button>
-                        )}
+                        <div className="admin-action-row">
+                          {n.status === "pending" && (
+                            <button
+                              type="button"
+                              className="admin-select-sm"
+                              style={{ fontSize: 11, padding: "4px 8px" }}
+                              onClick={() => onCancel(n.id)}
+                              disabled={isMutating}
+                            >
+                              Cancel
+                            </button>
+                          )}
+                          {n.status === "failed" && (
+                            <button
+                              type="button"
+                              className="admin-select-sm"
+                              style={{ fontSize: 11, padding: "4px 8px", display: "inline-flex", alignItems: "center", gap: 4 }}
+                              onClick={() => onRetry(n.id)}
+                              disabled={isMutating}
+                            >
+                              <RefreshCw size={12} /> Retry
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
