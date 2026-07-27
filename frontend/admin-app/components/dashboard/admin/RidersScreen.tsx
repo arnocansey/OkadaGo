@@ -120,7 +120,7 @@ export function RidersScreen({
         <div style={{ display: "flex", gap: 2, padding: "16px 0" }}>
           {/* Each stage is a horizontal bar segment */}
           {[
-            { label: "Signed Up", count: onboardingPipeline.signedUp, color: "#6b7280" },
+            { label: "Signed Up", count: onboardingPipeline.signedUp, color: "var(--text-muted)" },
             { label: "Vehicle Added", count: onboardingPipeline.hasVehicle, color: "#d97706" },
             { label: "Zone Assigned", count: onboardingPipeline.hasZone, color: "#2563eb" },
             { label: "Verified", count: onboardingPipeline.verified, color: "var(--color-success)" },

@@ -71,11 +71,11 @@ const s = {
     fontSize: 26,
     fontWeight: 700,
     lineHeight: 1.1,
-    color: "#f4f4f5",
+    color: "var(--text-primary)",
   },
   kpiSub: {
     fontSize: 11,
-    color: "#71717a",
+    color: "var(--text-muted)",
     marginTop: 2,
   },
   filterBar: {
@@ -93,7 +93,7 @@ const s = {
     border: "1px solid #3f4147",
     borderRadius: 8,
     padding: "7px 12px",
-    color: "#e4e4e7",
+    color: "var(--text-primary)",
     fontSize: 13,
     outline: "none",
     width: 160,
@@ -134,12 +134,12 @@ const s = {
   cardTitle: {
     fontSize: 15,
     fontWeight: 600,
-    color: "#f4f4f5",
+    color: "var(--text-primary)",
     margin: 0,
   },
   cardSub: {
     fontSize: 12,
-    color: "#71717a",
+    color: "var(--text-muted)",
     margin: 0,
   },
   table: {
@@ -242,7 +242,7 @@ const s = {
   emptyWrap: {
     padding: 36,
     textAlign: "center" as const,
-    color: "#71717a",
+    color: "var(--text-muted)",
     fontSize: 13,
   },
 } as const;
@@ -444,13 +444,13 @@ export function RatingsScreen({
                         <td style={s.td}>
                           <span style={{ color: "#d4d4d8" }}>{rating.rater.fullName}</span>
                           <br />
-                          <span style={{ fontSize: 11, color: "#71717a" }}>{rating.rater.phoneE164}</span>
+                          <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{rating.rater.phoneE164}</span>
                         </td>
                         <td style={s.td}>
                           <span style={{ color: "#d4d4d8" }}>{rating.rated.fullName}</span>
                           <br />
                           {rating.rated.riderProfile && (
-                            <span style={{ fontSize: 11, color: "#71717a" }}>
+                            <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
                               {rating.rated.riderProfile.displayCode}
                             </span>
                           )}

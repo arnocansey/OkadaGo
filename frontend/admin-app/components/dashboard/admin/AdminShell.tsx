@@ -450,7 +450,7 @@ export function AdminShell({
     item.children?.some((child) => child.screen === screen) ?? false;
 
   return (
-    <ImmersivePage className="exact-admin-page">
+    <ImmersivePage className="exact-admin-page" data-theme={theme}>
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
@@ -460,7 +460,7 @@ export function AdminShell({
         />
       )}
 
-      <div className={`exact-admin-shell ${desktopOpen ? "" : "desktop-collapsed"}`} data-theme={theme}>
+      <div className={`exact-admin-shell ${desktopOpen ? "" : "desktop-collapsed"}`}>
         {/* Sidebar */}
         <aside className={`exact-admin-sidebar ${sidebarOpen ? "open" : ""}`}>
           <div className="exact-admin-brand">

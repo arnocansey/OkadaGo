@@ -332,7 +332,7 @@ export function RiderVerificationScreen({
       borderRadius: 10,
       border: "1px solid var(--border-color)",
       background: "var(--bg-primary)",
-      color: "#e2e8f0",
+      color: "var(--text-primary)",
       outline: "none",
       transition: "border-color .15s",
     } as React.CSSProperties,
@@ -342,7 +342,7 @@ export function RiderVerificationScreen({
       borderRadius: 10,
       border: "1px solid var(--border-color)",
       background: "var(--bg-primary)",
-      color: "#e2e8f0",
+      color: "var(--text-primary)",
       outline: "none",
       cursor: "pointer",
     } as React.CSSProperties,
@@ -365,7 +365,7 @@ export function RiderVerificationScreen({
         outline: {
           background: "transparent",
           border: "1px solid var(--border-color)",
-          color: "#e2e8f0",
+          color: "var(--text-primary)",
         },
         danger: { background: "#dc2626", color: "#fff" },
         success: { background: "#16a34a", color: "#fff" },
@@ -390,7 +390,7 @@ export function RiderVerificationScreen({
       fontWeight: 600,
       textTransform: "uppercase" as const,
       letterSpacing: 0.7,
-      color: "#64748b",
+      color: "var(--text-muted)",
       borderBottom: "1px solid var(--border-color)",
       whiteSpace: "nowrap" as const,
     } as React.CSSProperties,
@@ -482,7 +482,7 @@ export function RiderVerificationScreen({
       alignItems: "center",
       justifyContent: "center",
       cursor: "pointer",
-      color: "#94a3b8",
+      color: "var(--text-muted)",
     } as React.CSSProperties,
 
     /* detail sections */
@@ -494,7 +494,7 @@ export function RiderVerificationScreen({
       fontWeight: 700,
       textTransform: "uppercase" as const,
       letterSpacing: 0.8,
-      color: "#64748b",
+      color: "var(--text-muted)",
       marginBottom: 14,
     } as React.CSSProperties,
     infoRow: {
@@ -635,7 +635,7 @@ export function RiderVerificationScreen({
           <div style={S.searchBox}>
             <Search
               size={16}
-              style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#64748b" }}
+              style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }}
             />
             <input
               type="text"
@@ -649,7 +649,7 @@ export function RiderVerificationScreen({
             />
           </div>
           <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 6 }}>
-            <Filter size={15} style={{ color: "#64748b" }} />
+            <Filter size={15} style={{ color: "var(--text-muted)" }} />
             <select
               value={statusFilter}
               onChange={(e) => {
@@ -693,7 +693,7 @@ export function RiderVerificationScreen({
                     style={{
                       padding: 60,
                       textAlign: "center",
-                      color: "#475569",
+                      color: "var(--text-muted)",
                       fontSize: 14,
                     }}
                   >
@@ -739,7 +739,7 @@ export function RiderVerificationScreen({
                             </span>
                           ) : null}
                         </div>
-                        <div style={{ fontSize: 12, color: "#64748b" }}>
+                        <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
                           {rider.user.phoneE164}
                         </div>
                       </td>
@@ -767,7 +767,7 @@ export function RiderVerificationScreen({
                         {hasVehicle ? (
                           <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                             <CheckCircle size={16} color="#22c55e" />
-                            <span style={{ fontSize: 12, color: "#94a3b8" }}>
+                            <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
                               {rider.vehicle?.plateNumber}
                               {rider.vehicle?.vehicleType ? ` · ${rider.vehicle.vehicleType.toLowerCase()}` : ""}
                             </span>
@@ -780,7 +780,7 @@ export function RiderVerificationScreen({
                         {hasZone ? (
                           <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                             <CheckCircle size={16} color="#22c55e" />
-                            <span style={{ fontSize: 12, color: "#94a3b8" }}>
+                            <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
                               {rider.serviceZone?.name}
                             </span>
                           </span>
@@ -794,7 +794,7 @@ export function RiderVerificationScreen({
                           {verificationStatus}
                         </span>
                       </td>
-                      <td style={{ ...S.td, color: "#64748b", fontSize: 12 }}>
+                      <td style={{ ...S.td, color: "var(--text-muted)", fontSize: 12 }}>
                         {rider.createdAt ? formatDateTime(rider.createdAt) : "—"}
                       </td>
                       <td
@@ -834,7 +834,7 @@ export function RiderVerificationScreen({
 
         {/* pagination */}
         <div style={S.pagination}>
-          <span style={{ fontSize: 13, color: "#64748b" }}>
+          <span style={{ fontSize: 13, color: "var(--text-muted)" }}>
             Page {safePage} of {totalPages} · {filteredRows.length} result
             {filteredRows.length !== 1 ? "s" : ""}
           </span>
@@ -906,7 +906,7 @@ export function RiderVerificationScreen({
                   fontSize: 22,
                   fontWeight: 700,
                   margin: "0 0 4px",
-                  color: "#f1f5f9",
+                  color: "var(--text-primary)",
                 }}
               >
                 {selectedRow.rider.user.fullName}
@@ -953,8 +953,8 @@ export function RiderVerificationScreen({
                     <Icon size={15} />
                   </div>
                   <div>
-                    <div style={{ fontSize: 11, color: "#64748b" }}>{label}</div>
-                    <div style={{ fontWeight: 500, color: "#e2e8f0" }}>{value}</div>
+                    <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{label}</div>
+                    <div style={{ fontWeight: 500, color: "var(--text-primary)" }}>{value}</div>
                   </div>
                 </div>
               ))}
@@ -1000,10 +1000,10 @@ export function RiderVerificationScreen({
                     {done ? <CheckCircle size={16} /> : <Icon size={16} />}
                   </div>
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: 13, color: "#e2e8f0" }}>
+                    <div style={{ fontWeight: 600, fontSize: 13, color: "var(--text-primary)" }}>
                       {label}
                     </div>
-                    <div style={{ fontSize: 12, color: "#64748b" }}>{desc}</div>
+                    <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{desc}</div>
                   </div>
                 </div>
               ))}
@@ -1023,10 +1023,10 @@ export function RiderVerificationScreen({
                     <FileText size={18} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, fontSize: 13, color: "#e2e8f0" }}>
+                    <div style={{ fontWeight: 600, fontSize: 13, color: "var(--text-primary)" }}>
                       {doc.name}
                     </div>
-                    <div style={{ fontSize: 12, color: "#64748b" }}>
+                    <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
                       Uploaded {doc.date}
                     </div>
                   </div>

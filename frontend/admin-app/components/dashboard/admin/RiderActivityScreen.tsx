@@ -59,7 +59,7 @@ const D = {
   borderLight: "var(--border-color)",
   textPrimary: "var(--text-primary)",
   textSecondary: "var(--text-secondary)",
-  textMuted: "#6b7280",
+  textMuted: "var(--text-muted)",
   green: "#22c55e",
   greenBg: "#0f3d1a",
   greenBorder: "#166534",

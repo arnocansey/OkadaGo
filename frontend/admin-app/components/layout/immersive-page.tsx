@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, type HTMLAttributes, type ReactNode } from "react";
 
-export function ImmersivePage({
-  children,
-  className
-}: {
-  children: React.ReactNode;
+type ImmersivePageProps = {
+  children: ReactNode;
   className?: string;
-}) {
+} & HTMLAttributes<HTMLElement>;
+
+export function ImmersivePage({ children, className, ...rest }: ImmersivePageProps) {
   useEffect(() => {
     document.body.classList.add("immersive-mode");
 
@@ -18,7 +17,7 @@ export function ImmersivePage({
   }, []);
 
   return (
-    <main className={className} data-immersive="true">
+    <main className={className} data-immersive="true" {...rest}>
       {children}
     </main>
   );

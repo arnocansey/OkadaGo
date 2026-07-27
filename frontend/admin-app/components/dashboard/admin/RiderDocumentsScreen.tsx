@@ -465,14 +465,14 @@ const styles: Record<string, React.CSSProperties> = {
   },
   kpiLabel: {
     fontSize: "12px",
-    color: "#64748b",
+    color: "var(--text-muted)",
     textTransform: "uppercase" as const,
     letterSpacing: "0.5px",
   },
   kpiValue: {
     fontSize: "28px",
     fontWeight: 700,
-    color: "#f1f5f9",
+    color: "var(--text-primary)",
   },
   tabBar: {
     display: "flex",
@@ -488,7 +488,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: "10px 20px",
     fontSize: "13px",
     fontWeight: 500,
-    color: "#94a3b8",
+    color: "var(--text-muted)",
     background: "transparent",
     border: "none",
     borderRadius: "8px",
@@ -524,7 +524,7 @@ const styles: Record<string, React.CSSProperties> = {
     width: "100%",
     padding: "12px 16px 12px 40px",
     fontSize: "14px",
-    color: "#e2e8f0",
+    color: "var(--text-primary)",
     background: "rgba(255,255,255,0.04)",
     border: "1px solid rgba(255,255,255,0.08)",
     borderRadius: "10px",
@@ -539,13 +539,13 @@ const styles: Record<string, React.CSSProperties> = {
   },
   filterLabel: {
     fontSize: "13px",
-    color: "#64748b",
+    color: "var(--text-muted)",
     whiteSpace: "nowrap" as const,
   },
   select: {
     padding: "10px 14px",
     fontSize: "13px",
-    color: "#e2e8f0",
+    color: "var(--text-primary)",
     background: "rgba(255,255,255,0.04)",
     border: "1px solid rgba(255,255,255,0.08)",
     borderRadius: "8px",
@@ -558,7 +558,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   resultText: {
     fontSize: "13px",
-    color: "#64748b",
+    color: "var(--text-muted)",
   },
   tableWrapper: {
     overflowX: "auto" as const,
@@ -577,7 +577,7 @@ const styles: Record<string, React.CSSProperties> = {
     textAlign: "left" as const,
     fontSize: "12px",
     fontWeight: 600,
-    color: "#64748b",
+    color: "var(--text-muted)",
     textTransform: "uppercase" as const,
     letterSpacing: "0.5px",
     background: "rgba(255,255,255,0.03)",
@@ -601,12 +601,12 @@ const styles: Record<string, React.CSSProperties> = {
     gap: "2px",
   },
   riderName: {
-    color: "#f1f5f9",
+    color: "var(--text-primary)",
     fontWeight: 600,
   },
   riderMeta: {
     fontSize: "12px",
-    color: "#64748b",
+    color: "var(--text-muted)",
   },
   docTypeBadge: {
     display: "inline-block",
@@ -621,7 +621,7 @@ const styles: Record<string, React.CSSProperties> = {
   docNumber: {
     fontFamily: "monospace",
     fontSize: "13px",
-    color: "#94a3b8",
+    color: "var(--text-muted)",
     background: "rgba(255,255,255,0.04)",
     padding: "3px 8px",
     borderRadius: "4px",
@@ -635,7 +635,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   dateText: {
     fontSize: "13px",
-    color: "#94a3b8",
+    color: "var(--text-muted)",
   },
   daysLeft: {
     fontSize: "14px",
@@ -666,7 +666,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: "8px 16px",
     fontSize: "13px",
     fontWeight: 500,
-    color: "#e2e8f0",
+    color: "var(--text-primary)",
     background: "rgba(255,255,255,0.04)",
     border: "1px solid rgba(255,255,255,0.08)",
     borderRadius: "8px",
@@ -689,7 +689,7 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: "center",
     fontSize: "13px",
     fontWeight: 500,
-    color: "#94a3b8",
+    color: "var(--text-muted)",
     background: "transparent",
     border: "1px solid transparent",
     borderRadius: "8px",

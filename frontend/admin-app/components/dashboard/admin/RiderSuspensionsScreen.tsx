@@ -225,7 +225,7 @@ export function RiderSuspensionsScreen({
           <div>
             <div style={{ fontSize: 12, color: "#9ca3af", marginBottom: 2 }}>Total Suspended</div>
             <div style={{ fontSize: 26, fontWeight: 700, lineHeight: 1 }}>{suspendedRiders.length}</div>
-            <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>All time suspensions</div>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>All time suspensions</div>
           </div>
         </article>
 
@@ -240,7 +240,7 @@ export function RiderSuspensionsScreen({
           <div>
             <div style={{ fontSize: 12, color: "#9ca3af", marginBottom: 2 }}>Currently Suspended</div>
             <div style={{ fontSize: 26, fontWeight: 700, lineHeight: 1 }}>{activeCount}</div>
-            <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>Active restrictions</div>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Active restrictions</div>
           </div>
         </article>
 
@@ -255,7 +255,7 @@ export function RiderSuspensionsScreen({
           <div>
             <div style={{ fontSize: 12, color: "#9ca3af", marginBottom: 2 }}>Reinstated</div>
             <div style={{ fontSize: 26, fontWeight: 700, lineHeight: 1 }}>{reinstatedCount}</div>
-            <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>Access restored</div>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Access restored</div>
           </div>
         </article>
 
@@ -270,7 +270,7 @@ export function RiderSuspensionsScreen({
           <div>
             <div style={{ fontSize: 12, color: "#9ca3af", marginBottom: 2 }}>Avg Duration</div>
             <div style={{ fontSize: 26, fontWeight: 700, lineHeight: 1 }}>7d 4h</div>
-            <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>Per suspension event</div>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Per suspension event</div>
           </div>
         </article>
       </section>
@@ -337,7 +337,7 @@ export function RiderSuspensionsScreen({
                   border: "1px solid #2a2d35",
                   borderRadius: 8,
                   padding: "8px 10px 8px 32px",
-                  color: "#e5e7eb",
+                  color: "var(--text-primary)",
                   fontSize: 13,
                   width: "100%",
                   outline: "none",
@@ -434,7 +434,7 @@ export function RiderSuspensionsScreen({
                         padding: "10px 12px",
                         fontSize: 11,
                         fontWeight: 600,
-                        color: "#6b7280",
+                        color: "var(--text-muted)",
                         textTransform: "uppercase",
                         letterSpacing: 0.05,
                         borderBottom: "1px solid #2a2d35",
@@ -449,7 +449,7 @@ export function RiderSuspensionsScreen({
               <tbody>
                 {paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={7} style={{ textAlign: "center", color: "#6b7280", padding: 32 }}>
+                    <td colSpan={7} style={{ textAlign: "center", color: "var(--text-muted)", padding: 32 }}>
                       <AlertTriangle size={20} style={{ marginBottom: 6, opacity: 0.5 }} />
                       <div style={{ fontSize: 13 }}>No suspensions found.</div>
                     </td>
@@ -476,9 +476,9 @@ export function RiderSuspensionsScreen({
                           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                             <Avatar name={rider.user.fullName} size={34} />
                             <div>
-                              <div style={{ fontWeight: 600, fontSize: 13, color: "#e5e7eb" }}>{rider.user.fullName}</div>
-                              <div style={{ color: "#6b7280", fontSize: 11 }}>{rider.user.phoneE164}</div>
-                              <div style={{ color: "#6b7280", fontSize: 11 }}>
+                              <div style={{ fontWeight: 600, fontSize: 13, color: "var(--text-primary)" }}>{rider.user.fullName}</div>
+                              <div style={{ color: "var(--text-muted)", fontSize: 11 }}>{rider.user.phoneE164}</div>
+                              <div style={{ color: "var(--text-muted)", fontSize: 11 }}>
                                 <code style={{ fontSize: 10, opacity: 0.7, color: "#9ca3af" }}>{rider.displayCode}</code>
                               </div>
                             </div>
@@ -548,7 +548,7 @@ export function RiderSuspensionsScreen({
           {/* Pagination */}
           {totalPages > 1 && (
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16, paddingTop: 12, borderTop: "1px solid #2a2d35" }}>
-              <span style={{ fontSize: 12, color: "#6b7280" }}>
+              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
                 Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} of {filtered.length}
               </span>
               <div style={{ display: "flex", gap: 6 }}>
@@ -633,7 +633,7 @@ export function RiderSuspensionsScreen({
           >
             {/* Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#f3f4f6" }}>Suspension Details</h3>
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "var(--text-primary)" }}>Suspension Details</h3>
               <button
                 type="button"
                 onClick={() => setSelectedSuspension(null)}
@@ -659,7 +659,7 @@ export function RiderSuspensionsScreen({
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16, paddingBottom: 16, borderBottom: "1px solid #2a2d35" }}>
               <Avatar name={selectedRider.user.fullName} size={40} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 700, fontSize: 14, color: "#f3f4f6" }}>{selectedRider.user.fullName}</div>
+                <div style={{ fontWeight: 700, fontSize: 14, color: "var(--text-primary)" }}>{selectedRider.user.fullName}</div>
                 <div style={{ color: "#9ca3af", fontSize: 12 }}>{selectedRider.user.phoneE164}</div>
               </div>
               <button
@@ -697,11 +697,11 @@ export function RiderSuspensionsScreen({
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                   <span style={{ fontSize: 12, color: "#9ca3af" }}>Reason</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, textAlign: "right", maxWidth: "60%", color: "#e5e7eb" }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, textAlign: "right", maxWidth: "60%", color: "var(--text-primary)" }}>
                     {suspDetails.reason}
                   </span>
                 </div>
-                <div style={{ fontSize: 11, color: "#6b7280", fontStyle: "italic", marginTop: 4, lineHeight: 1.5 }}>
+                <div style={{ fontSize: 11, color: "var(--text-muted)", fontStyle: "italic", marginTop: 4, lineHeight: 1.5 }}>
                   {suspDetails.description}
                 </div>
               </div>
@@ -709,7 +709,7 @@ export function RiderSuspensionsScreen({
               {/* Duration */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 12, color: "#9ca3af" }}>Duration</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: "#e5e7eb" }}>{suspDetails.duration}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{suspDetails.duration}</span>
               </div>
 
               {/* Suspended On */}
@@ -765,7 +765,7 @@ export function RiderSuspensionsScreen({
                   border: "1px solid #2a2d35",
                   borderRadius: 8,
                   padding: "9px 12px",
-                  color: "#e5e7eb",
+                  color: "var(--text-primary)",
                   fontSize: 12,
                   fontWeight: 600,
                   cursor: "pointer",
@@ -790,7 +790,7 @@ export function RiderSuspensionsScreen({
                   border: "1px solid #2a2d35",
                   borderRadius: 8,
                   padding: "9px 12px",
-                  color: "#e5e7eb",
+                  color: "var(--text-primary)",
                   fontSize: 12,
                   fontWeight: 600,
                   cursor: "pointer",
@@ -856,7 +856,7 @@ export function RiderSuspensionsScreen({
 
             {/* Suspension History */}
             <div>
-              <div style={{ fontWeight: 700, fontSize: 13, color: "#f3f4f6", marginBottom: 4, paddingBottom: 10, borderBottom: "1px solid #2a2d35" }}>
+              <div style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)", marginBottom: 4, paddingBottom: 10, borderBottom: "1px solid #2a2d35" }}>
                 Suspension History
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 0, marginTop: 16, position: "relative" }}>
@@ -878,9 +878,9 @@ export function RiderSuspensionsScreen({
                       }}
                     />
                     <div>
-                      <div style={{ fontWeight: 600, fontSize: 13, color: "#e5e7eb" }}>{h.event}</div>
+                      <div style={{ fontWeight: 600, fontSize: 13, color: "var(--text-primary)" }}>{h.event}</div>
                       <div style={{ color: "#9ca3af", fontSize: 12 }}>{h.date}</div>
-                      <div style={{ color: "#6b7280", fontSize: 12 }}>
+                      <div style={{ color: "var(--text-muted)", fontSize: 12 }}>
                         Reason: {h.reason}
                       </div>
                     </div>

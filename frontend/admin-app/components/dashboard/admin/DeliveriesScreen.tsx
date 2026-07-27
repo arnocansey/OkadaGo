@@ -122,7 +122,7 @@ export function DeliveriesScreen({
                         </td>
                         <td>
                           <small>{delivery.packageType}</small><br />
-                          <small style={{ color: "#6b7280" }}>{delivery.packageDescription?.slice(0, 30)}</small>
+                          <small style={{ color: "var(--text-muted)" }}>{delivery.packageDescription?.slice(0, 30)}</small>
                         </td>
                         <td>
                           <small>{delivery.rider?.user.fullName ?? "Unassigned"}</small>

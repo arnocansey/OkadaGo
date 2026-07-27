@@ -3,12 +3,21 @@
   --bg-primary: #f7f4ef;
   --bg-card: #ffffff;
   --bg-sidebar: #ffffff;
+  --bg-base: #f7f4ef;
+  --bg-surface: #ffffff;
+  --bg-surface-2: #f3f4f6;
+  --bg-surface-3: #e5e7eb;
   --border-color: #e8e2d9;
+  --border: #e8e2d9;
+  --border-light: #d1d5db;
   --text-primary: #0b0f19;
   --text-secondary: #6b7280;
+  --text-muted: #6b7280;
   --accent-orange: #ff6b00;
   --accent-yellow: #facc15;
   --accent-yellow-light: rgba(250, 204, 21, 0.18);
+  --accent: #ff6b00;
+  --accent-hover: #e55f00;
   --shadow-main: 14px 17px 40px 4px rgba(15, 23, 42, 0.08);
   --shadow-hover: 14px 17px 40px 4px rgba(15, 23, 42, 0.14);
   --font-family: var(--font-body), sans-serif;
@@ -16,6 +25,9 @@
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
   --color-neutral: #6b7280;
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger: #ef4444;
 }
 
 [data-theme="dark"] {
@@ -23,12 +35,21 @@
   --bg-primary: #0b0f19;
   --bg-card: #151c2c;
   --bg-sidebar: #111827;
-  --border-color: rgba(255, 255, 255, 0.08);
-  --text-primary: #ffffff;
-  --text-secondary: #94a3b8;
+  --bg-base: #0b0f19;
+  --bg-surface: #151c2c;
+  --bg-surface-2: #1a2234;
+  --bg-surface-3: #243044;
+  --border-color: rgba(255, 255, 255, 0.12);
+  --border: rgba(255, 255, 255, 0.12);
+  --border-light: rgba(255, 255, 255, 0.18);
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
   --accent-orange: #ff6b00;
   --accent-yellow: #facc15;
   --accent-yellow-light: rgba(250, 204, 21, 0.2);
+  --accent: #ff6b00;
+  --accent-hover: #ff8533;
   --shadow-main: 14px 17px 40px 4px rgba(0, 0, 0, 0.35);
   --shadow-hover: 14px 17px 40px 4px rgba(0, 0, 0, 0.5);
   --font-family: var(--font-body), sans-serif;
@@ -36,6 +57,10 @@
   --color-warning: #facc15;
   --color-danger: #ef4444;
   --color-neutral: #94a3b8;
+  --success: #22c55e;
+  --warning: #facc15;
+  --danger: #ef4444;
+  color-scheme: dark;
 }
 
 /* Global Reset & Transition rules */
@@ -53,6 +78,7 @@
   display: flex;
   min-height: 100vh;
   background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 /* ── Sidebar ── */
@@ -149,7 +175,7 @@
 }
 
 .exact-admin-sidebar-action {
-  background: white;
+  background: var(--bg-card);
   color: var(--accent-orange);
   text-align: center;
   padding: 8px;
@@ -298,6 +324,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  color: var(--text-primary);
 }
 
 /* Floating Blurred Topbar (Horizon UI style) */
@@ -576,6 +603,7 @@
   padding: 24px;
   box-shadow: var(--shadow-main);
   position: relative;
+  color: var(--text-primary);
 }
 
 .admin-reference-cardhead,
@@ -1384,29 +1412,65 @@ html {
   transition: background-color 0.2s ease, border-color 0.2s ease, width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s;
 }
 
-/* ── Explicit Typography Contrast Overrides for Dark Mode ── */
+/* ── Theme-aware typography (do not force every span — kills status colors) ── */
 .exact-admin-shell h1,
 .exact-admin-shell h2,
 .exact-admin-shell h3,
 .exact-admin-shell h4,
 .exact-admin-shell h5,
-.exact-admin-shell h6,
-.exact-admin-shell strong,
-.exact-admin-shell th {
-  color: var(--text-primary) !important;
+.exact-admin-shell h6 {
+  color: var(--text-primary);
 }
 
-.exact-admin-shell p,
-.exact-admin-shell span,
-.exact-admin-shell small,
-.exact-admin-shell li,
-.exact-admin-shell td {
+.exact-admin-shell label,
+.exact-admin-shell th {
   color: var(--text-secondary);
+}
+
+.exact-admin-shell td,
+.exact-admin-shell p,
+.exact-admin-shell li {
+  color: inherit;
+}
+
+.exact-admin-shell input,
+.exact-admin-shell select,
+.exact-admin-shell textarea {
+  color: var(--text-primary);
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+.exact-admin-shell input::placeholder,
+.exact-admin-shell textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.exact-admin-shell .admin-table th,
+.exact-admin-shell table th {
+  color: var(--text-secondary);
+}
+
+.exact-admin-shell .admin-table td,
+.exact-admin-shell table td {
+  color: var(--text-primary);
 }
 
 .exact-admin-shell code {
   color: var(--accent-orange);
   background-color: var(--bg-primary);
+}
+
+/* Soften leftover hardcoded light-theme muted grays on dark surfaces */
+[data-theme="dark"] .exact-admin-shell [style*="color: #6b7280"],
+[data-theme="dark"] .exact-admin-shell [style*="color:#6b7280"],
+[data-theme="dark"] .exact-admin-shell [style*="color: #64748b"],
+[data-theme="dark"] .exact-admin-shell [style*="color:#64748b"],
+[data-theme="dark"] .exact-admin-shell [style*="color: #475569"],
+[data-theme="dark"] .exact-admin-shell [style*="color:#475569"],
+[data-theme="dark"] .exact-admin-shell [style*="color: #71717a"],
+[data-theme="dark"] .exact-admin-shell [style*="color:#71717a"] {
+  color: var(--text-muted) !important;
 }
 
 /* ── Desktop Sidebar Collapsed State ── */
