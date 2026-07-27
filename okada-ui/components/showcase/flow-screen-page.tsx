@@ -43,17 +43,11 @@ export function FlowScreenPage({
   const roleMatches =
     !session ||
     (area === "passenger" && session.user.role === "passenger") ||
-    (area === "rider" && session.user.role === "rider") ||
-    (area === "admin" && session.user.role === "admin");
-  const requiresAuth = current.protected;
+    (area === "rider" && session.user.role === "rider");
+  const requiresAuth = current.protected && area !== "admin";
   const showAuthWarning = requiresAuth && (status !== "authenticated" || !roleMatches);
   const resolvedSlug = resolveResponsiveFlowSlug(area, screen, isDesktop);
-  const loginHref =
-    area === "admin"
-      ? `${(process.env.NEXT_PUBLIC_ADMIN_APP_URL || "https://admin.okadago.com").replace(/\/$/, "")}/login`
-      : area === "rider"
-        ? "/rider/login"
-        : "/login";
+  const loginHref = area === "rider" ? "/rider/login" : "/login";
 
   if (resolvedSlug.join("/") !== `${area}/${screen}` && !showAuthWarning) {
     return (

@@ -389,6 +389,8 @@ export function AdminShell({
   adminRoleEntries = [],
   children
 }: AdminShellProps) {
+  void screenHighlights;
+  void dashboardToday;
   const [expandedNavSections, setExpandedNavSections] = useState<Record<string, boolean>>({});
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [desktopOpen, setDesktopOpen] = useState(true);
@@ -679,7 +681,6 @@ export function AdminShell({
   }, [badgeData, permittedScreens]);
 
   const currentMeta = screenMeta[screen];
-  const highlights = screenHighlights[screen] ?? [];
 
   const toggleSection = (key: string) => {
     setExpandedNavSections((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -704,7 +705,7 @@ export function AdminShell({
         <aside className={`exact-admin-sidebar ${sidebarOpen ? "open" : ""}`}>
           <div className="exact-admin-brand">
             <strong>Okada<span>Go</span></strong>
-            <small>Web Operations Portal</small>
+            <small>Admin</small>
             <button
               type="button"
               className="exact-admin-sidebar-close"
@@ -811,16 +812,6 @@ export function AdminShell({
 
             <div className="exact-admin-topmeta">
               <strong>{currentMeta.title}</strong>
-              <span>{currentMeta.eyebrow}</span>
-            </div>
-
-            <div className="exact-admin-highlights">
-              {highlights.map((highlight) => (
-                <div key={highlight.label} className="exact-admin-highlight">
-                  <span>{highlight.label}</span>
-                  <strong>{highlight.value}</strong>
-                </div>
-              ))}
             </div>
 
             <div className="exact-admin-top-profile">
@@ -829,15 +820,12 @@ export function AdminShell({
                 className="exact-admin-menu-button"
                 onClick={toggleTheme}
                 title="Toggle Theme Mode"
-                style={{ marginRight: 12, opacity: 0.8 }}
+                style={{ marginRight: 8, opacity: 0.8 }}
               >
                 {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
               </button>
               <div className="exact-avatar">{initials}</div>
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <strong>{userName}</strong>
-                <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>{dashboardToday}</span>
-              </div>
+              <strong className="exact-admin-top-user">{userName}</strong>
             </div>
           </header>
 

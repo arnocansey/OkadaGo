@@ -55,9 +55,9 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
   if (status === "loading") {
     return (
       <AccessState
-        title="Loading admin workspace"
-        body="Checking your admin session before opening live operations."
-        actionLabel="Go to admin login"
+        title="Loading"
+        body="Checking session…"
+        actionLabel="Sign in"
         actionHref="/login"
       />
     );
@@ -66,9 +66,9 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
   if (status !== "authenticated" || !isAdmin) {
     return (
       <AccessState
-        title="Admin sign in required"
-        body="Use an admin account to access the live operations console."
-        actionLabel="Go to admin login"
+        title="Sign in required"
+        body="Use an admin account to continue."
+        actionLabel="Sign in"
         actionHref="/login"
       />
     );

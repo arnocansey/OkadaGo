@@ -14,30 +14,22 @@ export function AdminSidebarPulse({
   zones: number;
 }) {
   return (
-    <section className="exact-admin-sidebar-card">
-      <p className="exact-admin-sidebar-card-eyebrow">OkadaGo Wallet</p>
+    <section className="exact-admin-sidebar-card exact-admin-sidebar-card--compact">
       <h3>{formatMoney(currency, totalRevenue)}</h3>
       <div className="exact-admin-sidebar-metrics">
         <div>
-          <span>Trips in motion</span>
+          <span>Trips</span>
           <strong>{activeTrips}</strong>
         </div>
         <div>
-          <span>Riders online</span>
+          <span>Online</span>
           <strong>{activeRiders}</strong>
         </div>
         <div>
-          <span>Revenue captured</span>
-          <strong>{formatMoney(currency, totalRevenue)}</strong>
-        </div>
-        <div>
-          <span>Service zones</span>
+          <span>Zones</span>
           <strong>{zones}</strong>
         </div>
       </div>
-      <a className="exact-admin-sidebar-action" href="/finance">
-        Review finance
-      </a>
     </section>
   );
 }

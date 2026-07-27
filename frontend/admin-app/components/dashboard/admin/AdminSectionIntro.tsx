@@ -1,18 +1,14 @@
 export function AdminSectionIntro({
-  eyebrow,
-  title,
-  description
+  title
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
-  description: string;
+  description?: string;
 }) {
   return (
-    <section className="exact-admin-section">
+    <section className="exact-admin-section exact-admin-section--compact">
       <div className="exact-admin-heading">
-        <p className="exact-admin-eyebrow">{eyebrow}</p>
         <h1>{title}</h1>
-        <p>{description}</p>
       </div>
     </section>
   );

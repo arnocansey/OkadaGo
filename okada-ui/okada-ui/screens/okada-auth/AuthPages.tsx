@@ -125,15 +125,12 @@ export function AuthPages({
     }
 
     if (audience === "admin") {
-      const adminBase = (process.env.NEXT_PUBLIC_ADMIN_APP_URL || "https://admin.okadago.com").replace(
-        /\/$/,
-        ""
-      );
+      // Admin auth lives only on the separate admin app — not linked from this site.
       return {
-        login: `${adminBase}/login`,
-        signup: `${adminBase}/login`,
-        forgot: `${adminBase}/login`,
-        success: `${adminBase}/`
+        login: "/",
+        signup: "/",
+        forgot: "/",
+        success: "/"
       };
     }
 

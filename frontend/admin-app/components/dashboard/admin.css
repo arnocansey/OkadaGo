@@ -1555,3 +1555,240 @@ html {
     width: 100%;
   }
 }
+
+/* ── Compact density (fit more without page scrolling) ── */
+.exact-admin-page,
+.exact-admin-shell {
+  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.exact-admin-sidebar {
+  width: 220px;
+  padding: 12px 10px;
+  gap: 10px;
+}
+
+.exact-admin-brand {
+  padding: 0 6px 8px;
+}
+
+.exact-admin-brand strong {
+  font-size: 1.25rem;
+}
+
+.exact-admin-brand small {
+  margin-top: 2px;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+}
+
+.exact-admin-sidebar-card,
+.exact-admin-sidebar-card--compact {
+  padding: 10px;
+  border-radius: 12px;
+  gap: 8px;
+}
+
+.exact-admin-sidebar-card h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.exact-admin-sidebar-metrics {
+  gap: 6px;
+}
+
+.exact-admin-sidebar-metrics span {
+  font-size: 0.65rem;
+}
+
+.exact-admin-sidebar-metrics strong {
+  font-size: 0.85rem;
+}
+
+.exact-admin-sidebar-card-eyebrow,
+.exact-admin-sidebar-action {
+  display: none;
+}
+
+.exact-admin-navlabel {
+  margin: 8px 0 4px;
+  font-size: 0.65rem;
+}
+
+.exact-admin-nav a,
+.exact-admin-nav-toggle {
+  padding: 7px 8px;
+  gap: 8px;
+}
+
+.exact-admin-navcopy strong {
+  font-size: 0.8rem;
+}
+
+.exact-admin-subnav a {
+  padding: 5px 8px 5px 28px;
+  font-size: 0.75rem;
+}
+
+.exact-admin-profile {
+  padding: 8px;
+  gap: 8px;
+}
+
+.exact-admin-main {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.exact-admin-topbar {
+  padding: 8px 16px;
+  gap: 12px;
+  min-height: 48px;
+}
+
+.exact-admin-topmeta strong {
+  font-size: 1.05rem;
+  line-height: 1.2;
+}
+
+.exact-admin-topmeta span,
+.exact-admin-highlights {
+  display: none !important;
+}
+
+.exact-admin-top-user {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.exact-admin-scroll {
+  padding: 12px 16px 16px;
+  overflow-y: auto;
+}
+
+.admin-page-header,
+.admin-page-header--compact {
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.admin-page-header-copy {
+  display: none;
+}
+
+.admin-page-header-actions {
+  gap: 8px;
+  margin-left: auto;
+}
+
+.admin-reference-kpis,
+.exact-admin-kpis {
+  gap: 10px;
+  margin-bottom: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.admin-reference-kpi,
+.exact-admin-kpi {
+  padding: 10px 12px;
+  border-radius: 12px;
+  gap: 10px;
+}
+
+.admin-reference-kpi:hover,
+.exact-admin-kpi:hover {
+  transform: none;
+}
+
+.admin-reference-kpi-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.admin-reference-kpi-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.admin-reference-kpi span,
+.exact-admin-kpi span {
+  font-size: 0.7rem;
+}
+
+.admin-reference-kpi strong,
+.exact-admin-kpi strong {
+  font-size: 1.05rem;
+  margin-top: 2px;
+}
+
+.admin-reference-kpi small,
+.exact-admin-kpi small {
+  display: none;
+}
+
+.admin-reference-grid-3,
+.admin-screen-grid-2 {
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.admin-reference-card,
+.exact-admin-card {
+  padding: 12px 14px;
+  border-radius: 12px;
+}
+
+.admin-reference-cardhead,
+.exact-admin-cardhead {
+  margin-bottom: 10px;
+}
+
+.admin-reference-cardhead h3,
+.exact-admin-cardhead h3 {
+  font-size: 0.95rem;
+}
+
+.admin-reference-cardhead p,
+.exact-admin-cardhead p,
+.exact-admin-eyebrow {
+  display: none;
+}
+
+.exact-admin-heading h1 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.admin-tabs {
+  margin-bottom: 10px;
+  gap: 6px;
+}
+
+.admin-tab {
+  padding: 5px 10px;
+  font-size: 0.75rem;
+}
+
+.admin-form-grid {
+  gap: 8px;
+}
+
+table.admin-table th,
+table.admin-table td,
+.admin-reference-table th,
+.admin-reference-table td,
+.exact-admin-table th,
+.exact-admin-table td {
+  padding: 6px 8px;
+  font-size: 0.78rem;
+}
+
+.exact-admin-dashboard .leaflet-container,
+.exact-admin-dashboard [class*="map"] {
+  min-height: 180px !important;
+  height: 220px !important;
+}
+

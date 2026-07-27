@@ -1,15 +1,8 @@
 import type { NextConfig } from "next";
 
-const adminAppUrl = (process.env.NEXT_PUBLIC_ADMIN_APP_URL || "https://admin.okadago.com").replace(
-  /\/$/,
-  ""
-);
-
 const nextConfig: NextConfig = {
   async redirects() {
     return [
-      { source: "/admin", destination: `${adminAppUrl}/`, permanent: false },
-      { source: "/admin/:path*", destination: `${adminAppUrl}/:path*`, permanent: false },
       { source: "/passenger/history", destination: "/passenger/trips", permanent: true },
       { source: "/passenger/settings", destination: "/passenger/profile", permanent: true },
       { source: "/passenger/service", destination: "/passenger", permanent: true },

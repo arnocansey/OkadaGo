@@ -1,11 +1,9 @@
 import Link from "next/link";
-import { adminAppPath } from "@/lib/admin-app";
 
 const navItems = [
   { href: "/", label: "Overview" },
   { href: "/passenger", label: "Passenger" },
-  { href: "/rider", label: "Rider" },
-  { href: adminAppPath("/"), label: "Admin", external: true }
+  { href: "/rider", label: "Rider" }
 ];
 
 export function SiteHeader() {
@@ -21,23 +19,17 @@ export function SiteHeader() {
         </Link>
 
         <nav className="nav-links" aria-label="Primary">
-          {navItems.map((item) =>
-            item.external ? (
-              <a key={item.href} href={item.href}>
-                {item.label}
-              </a>
-            ) : (
-              <Link key={item.href} href={item.href}>
-                {item.label}
-              </Link>
-            )
-          )}
+          {navItems.map((item) => (
+            <Link key={item.href} href={item.href}>
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
         <div className="button-row">
-          <a href={adminAppPath("/")} className="button-ghost">
-            Operations
-          </a>
+          <Link href="/rider" className="button-ghost">
+            Rider
+          </Link>
           <Link href="/passenger" className="button">
             Launch PWA
           </Link>
