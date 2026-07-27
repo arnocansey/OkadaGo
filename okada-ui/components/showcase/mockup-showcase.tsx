@@ -79,7 +79,7 @@ export function MockupShowcase({ slug }: { slug?: string[] }) {
           <p className="workspace-tag">Showcase · not production</p>
           <h1>All Provided Mockups</h1>
           <p>
-            Design reference only — live product UIs live under /passenger, /rider, and /admin. Do not treat these mockups as the console.
+            Design reference only — live product UIs live under /passenger, /rider, and the standalone admin app. Do not treat these mockups as the console.
           </p>
         </div>
         <div className="mockup-count-chip">{Object.keys(groups).length} groups</div>

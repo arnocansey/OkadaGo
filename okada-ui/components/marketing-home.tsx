@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { adminModules, launchCities, passengerModules, riderModules } from "@/lib/contracts";
 import { PlatformHealthCard } from "@/components/dashboard/platform-health-card";
+import { adminAppPath } from "@/lib/admin-app";
 
 export function MarketingHome() {
   return (
@@ -35,9 +36,9 @@ export function MarketingHome() {
               <Link href="/passenger" className="button">
                 Open passenger workspace
               </Link>
-              <Link href="/admin" className="button-secondary">
+              <a href={adminAppPath("/")} className="button-secondary">
                 Review operations console
-              </Link>
+              </a>
             </div>
           </div>
 

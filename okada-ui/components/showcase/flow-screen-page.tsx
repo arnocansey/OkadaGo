@@ -48,7 +48,12 @@ export function FlowScreenPage({
   const requiresAuth = current.protected;
   const showAuthWarning = requiresAuth && (status !== "authenticated" || !roleMatches);
   const resolvedSlug = resolveResponsiveFlowSlug(area, screen, isDesktop);
-  const loginHref = area === "admin" ? "/admin/login" : area === "rider" ? "/rider/login" : "/login";
+  const loginHref =
+    area === "admin"
+      ? `${(process.env.NEXT_PUBLIC_ADMIN_APP_URL || "https://admin.okadago.com").replace(/\/$/, "")}/login`
+      : area === "rider"
+        ? "/rider/login"
+        : "/login";
 
   if (resolvedSlug.join("/") !== `${area}/${screen}` && !showAuthWarning) {
     return (
