@@ -107,6 +107,7 @@ export type PassengerRecord = {
     preferredCurrency: string;
     role: string;
     accountStatus?: string;
+    isPhoneVerified?: boolean;
   };
 };
 
@@ -114,6 +115,7 @@ export type RiderRecord = {
   id: string;
   displayCode: string;
   onlineStatus: boolean;
+  approvalStatus?: "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED" | string;
   city: string | null;
   currentLatitude: string | number | null;
   currentLongitude: string | number | null;
@@ -140,6 +142,24 @@ export type RiderRecord = {
     accountStatus?: string;
   };
   createdAt?: string;
+};
+
+export type AdminUserStats = {
+  passengers: {
+    total: number;
+    pending: number;
+    verified: number;
+  };
+  riders: {
+    total: number;
+    pending: number;
+    verified: number;
+    rejected: number;
+    suspended: number;
+  };
+  totals: {
+    users: number;
+  };
 };
 
 export type ServiceZoneRecord = {

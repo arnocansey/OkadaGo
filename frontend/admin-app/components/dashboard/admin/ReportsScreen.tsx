@@ -11,6 +11,12 @@ export type ReportsScreenProps = {
   riders: RiderRecord[];
   passengers: PassengerRecord[];
   adminCurrency: string;
+  ridersTotal?: number;
+  passengersTotal?: number;
+  riderPendingCount?: number;
+  riderVerifiedCount?: number;
+  passengerPendingCount?: number;
+  passengerVerifiedCount?: number;
 };
 
 type DailyBucket = {
@@ -51,8 +57,17 @@ export function ReportsScreen({
   deliveries,
   riders,
   passengers,
-  adminCurrency
+  adminCurrency,
+  ridersTotal,
+  passengersTotal,
+  riderPendingCount = 0,
+  riderVerifiedCount = 0,
+  passengerPendingCount = 0,
+  passengerVerifiedCount = 0
 }: ReportsScreenProps) {
+  const riderCount = ridersTotal ?? riders.length;
+  const passengerCount = passengersTotal ?? passengers.length;
+
   const dailyBuckets30 = buildBuckets(rides, deliveries, 30);
   const dailyBuckets7 = buildBuckets(rides, deliveries, 7);
 
@@ -110,9 +125,44 @@ export function ReportsScreen({
         <article className="admin-reference-kpi">
           <div className="admin-reference-kpi-icon green"><Users size={22} /></div>
           <div>
+            <span>Registered Users</span>
+            <strong>{riderCount + passengerCount}</strong>
+            <small>{passengerCount} passengers · {riderCount} riders</small>
+          </div>
+        </article>
+      </section>
+
+      <section className="admin-reference-kpis" style={{ marginTop: 12 }}>
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon yellow"><Users size={22} /></div>
+          <div>
+            <span>Passengers</span>
+            <strong>{passengerCount}</strong>
+            <small>{passengerPendingCount} pending · {passengerVerifiedCount} verified</small>
+          </div>
+        </article>
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon green"><Bike size={22} /></div>
+          <div>
+            <span>Riders</span>
+            <strong>{riderCount}</strong>
+            <small>{riderPendingCount} pending · {riderVerifiedCount} verified</small>
+          </div>
+        </article>
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon yellow"><Users size={22} /></div>
+          <div>
             <span>Active Riders</span>
             <strong>{onlineRiders.length}</strong>
-            <small>of {riders.length} total</small>
+            <small>of {riderCount} registered</small>
+          </div>
+        </article>
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon green"><CreditCard size={22} /></div>
+          <div>
+            <span>Verified Accounts</span>
+            <strong>{passengerVerifiedCount + riderVerifiedCount}</strong>
+            <small>{passengerPendingCount + riderPendingCount} still pending</small>
           </div>
         </article>
       </section>
@@ -166,8 +216,12 @@ export function ReportsScreen({
                     ["Completed Rides", "—", "—", completedRides.length],
                     ["Cancelled Rides", "—", "—", cancelledRides.length],
                     ["Completion Rate", "—", "—", `${completionRate}%`],
-                    ["Total Riders", "—", "—", riders.length],
-                    ["Total Passengers", "—", "—", passengers.length]
+                    ["Total Riders", "—", "—", riderCount],
+                    ["Total Passengers", "—", "—", passengerCount],
+                    ["Pending Riders", "—", "—", riderPendingCount],
+                    ["Verified Riders", "—", "—", riderVerifiedCount],
+                    ["Pending Passengers", "—", "—", passengerPendingCount],
+                    ["Verified Passengers", "—", "—", passengerVerifiedCount]
                   ]
                 )
               }
@@ -226,13 +280,37 @@ export function ReportsScreen({
                   <td>Total Riders</td>
                   <td>—</td>
                   <td>—</td>
-                  <td>{riders.length}</td>
+                  <td>{riderCount}</td>
+                </tr>
+                <tr>
+                  <td>Verified Riders</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>{riderVerifiedCount}</td>
+                </tr>
+                <tr>
+                  <td>Pending Riders</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>{riderPendingCount}</td>
                 </tr>
                 <tr>
                   <td>Total Passengers</td>
                   <td>—</td>
                   <td>—</td>
-                  <td>{passengers.length}</td>
+                  <td>{passengerCount}</td>
+                </tr>
+                <tr>
+                  <td>Verified Passengers</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>{passengerVerifiedCount}</td>
+                </tr>
+                <tr>
+                  <td>Pending Passengers</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>{passengerPendingCount}</td>
                 </tr>
               </tbody>
             </table>

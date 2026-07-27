@@ -31,6 +31,11 @@ export type UsersManagementScreenProps = {
   onTypeViewChange: (view: "all" | "riders" | "customers" | "vendors" | "admins") => void;
   passengersCount: number;
   ridersCount: number;
+  passengerPendingCount?: number;
+  passengerVerifiedCount?: number;
+  riderPendingCount?: number;
+  riderVerifiedCount?: number;
+  totalUsersCount?: number;
 };
 
 export function UsersManagementScreen({
@@ -45,13 +50,20 @@ export function UsersManagementScreen({
   userTypeView,
   onTypeViewChange,
   passengersCount,
-  ridersCount
+  ridersCount,
+  passengerPendingCount = 0,
+  passengerVerifiedCount = 0,
+  riderPendingCount = 0,
+  riderVerifiedCount = 0,
+  totalUsersCount
 }: UsersManagementScreenProps) {
+  const totalUsers = totalUsersCount ?? passengersCount + ridersCount;
+
   return (
     <div className="exact-admin-screen">
       <AdminPageHeader
         title="Users Management"
-        subtitle="Review passenger profiles, referral codes, and city distribution from the live backend."
+        subtitle="Registered passenger and rider accounts with pending vs verified counts."
       />
 
       <section className="admin-reference-kpis">
@@ -59,7 +71,7 @@ export function UsersManagementScreen({
           <div className="admin-reference-kpi-icon green"><Users size={22} /></div>
           <div>
             <span>Total Users</span>
-            <strong>{managedUsers.length}</strong>
+            <strong>{totalUsers}</strong>
             <small>{passengersCount} passengers, {ridersCount} riders</small>
           </div>
         </article>
@@ -68,7 +80,7 @@ export function UsersManagementScreen({
           <div>
             <span>Passengers</span>
             <strong>{passengersCount}</strong>
-            <small>Active demand base</small>
+            <small>{passengerPendingCount} pending · {passengerVerifiedCount} verified</small>
           </div>
         </article>
         <article className="admin-reference-kpi">
@@ -76,7 +88,7 @@ export function UsersManagementScreen({
           <div>
             <span>Riders</span>
             <strong>{ridersCount}</strong>
-            <small>Supply pool</small>
+            <small>{riderPendingCount} pending · {riderVerifiedCount} verified</small>
           </div>
         </article>
         <article className="admin-reference-kpi">

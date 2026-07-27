@@ -133,6 +133,72 @@ export class AdminRiderService {
     });
   }
 
+  /** Aggregate registered account counts for passengers and riders (pending vs verified). */
+  async getUserStats(token: string) {
+    await this.verifyAdmin(token);
+
+    const passengerWhere = { user: { role: "PASSENGER" as const, deletedAt: null } };
+    const riderWhere = { user: { deletedAt: null } };
+
+    const [
+      passengersTotal,
+      passengersVerified,
+      passengersPending,
+      riderApprovalGroups
+    ] = await Promise.all([
+      prisma.passengerProfile.count({ where: passengerWhere }),
+      prisma.passengerProfile.count({
+        where: { user: { ...passengerWhere.user, isPhoneVerified: true } }
+      }),
+      prisma.passengerProfile.count({
+        where: { user: { ...passengerWhere.user, isPhoneVerified: false } }
+      }),
+      prisma.riderProfile.groupBy({
+        by: ["approvalStatus"],
+        where: riderWhere,
+        _count: { _all: true }
+      })
+    ]);
+
+    const ridersByStatus = {
+      PENDING: 0,
+      APPROVED: 0,
+      REJECTED: 0,
+      SUSPENDED: 0
+    };
+
+    for (const row of riderApprovalGroups) {
+      const key = row.approvalStatus as keyof typeof ridersByStatus;
+      if (key in ridersByStatus) {
+        ridersByStatus[key] = row._count._all;
+      }
+    }
+
+    const ridersTotal =
+      ridersByStatus.PENDING +
+      ridersByStatus.APPROVED +
+      ridersByStatus.REJECTED +
+      ridersByStatus.SUSPENDED;
+
+    return {
+      passengers: {
+        total: passengersTotal,
+        pending: passengersPending,
+        verified: passengersVerified
+      },
+      riders: {
+        total: ridersTotal,
+        pending: ridersByStatus.PENDING,
+        verified: ridersByStatus.APPROVED,
+        rejected: ridersByStatus.REJECTED,
+        suspended: ridersByStatus.SUSPENDED
+      },
+      totals: {
+        users: passengersTotal + ridersTotal
+      }
+    };
+  }
+
   private async verifyAdmin(token: string) {
     const session = await prisma.userSession.findUnique({
       where: { refreshTokenId: token },

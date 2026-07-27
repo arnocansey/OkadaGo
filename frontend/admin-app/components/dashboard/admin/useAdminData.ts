@@ -24,7 +24,8 @@ import type {
   AdminSupportTicketRecord,
   EscalationRuleRecord,
   OpsJobStatus,
-  ScheduledBroadcastRecord
+  ScheduledBroadcastRecord,
+  AdminUserStats
 } from "./types";
 
 // ─── query key constants ──────────────────────────────────────────────────────
@@ -33,6 +34,7 @@ export const QK = {
   deliveries: (token?: string | null) => ["deliveries", token],
   riders: (token?: string | null) => ["riders", token],
   passengers: (token?: string | null) => ["passengers", token],
+  userStats: (token?: string | null) => ["admin-user-stats", token],
   walletTx: (token?: string | null) => ["admin-wallet-transactions", token],
   payoutRequests: (token?: string | null) => ["admin-payout-requests", token],
   ratings: (token?: string | null) => ["admin-ratings", token],
@@ -156,6 +158,14 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
   });
   const passengersData = passengersResp?.data;
   const passengersTotal = passengersResp?.total ?? passengersData?.length ?? 0;
+
+  const { data: userStats } = useQuery<AdminUserStats>({
+    queryKey: QK.userStats(token),
+    queryFn: () => requestJson("/admin/user-stats", { token }),
+    enabled: isAdmin,
+    refetchInterval: 60000,
+    staleTime: 55000
+  });
 
   const { data: walletTxData, isPending: walletTxPending } = useQuery<WalletTransactionRecord[]>({
     queryKey: QK.walletTx(token),
@@ -757,22 +767,47 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
       const hasVehicle = rider.vehicle != null;
       const hasZone = rider.serviceZone != null;
       const hasContact = Boolean(rider.user.phoneE164);
-      const allReady = hasVehicle && hasZone && hasContact;
+      const approval = (rider.approvalStatus ?? "").toUpperCase();
       const accountStatus = (rider.user.accountStatus ?? "").toLowerCase();
-      const verificationStatus = accountStatus === "active" ? "Approved"
-        : accountStatus === "blocked" || accountStatus === "rejected" ? "Rejected"
-        : allReady ? "Ready" : "Pending";
+      const verificationStatus =
+        approval === "APPROVED" || (!approval && accountStatus === "active")
+          ? "Approved"
+          : approval === "REJECTED" || accountStatus === "banned" || accountStatus === "blocked"
+            ? "Rejected"
+            : approval === "SUSPENDED" || accountStatus === "suspended"
+              ? "Rejected"
+              : hasVehicle && hasZone && hasContact
+                ? "Ready"
+                : "Pending";
       return { rider, verificationStatus, hasVehicle, hasZone, hasContact };
     });
   }, [riders]);
 
-  const riderVerificationStats = useMemo(() => ({
-    pending: riderVerificationRows.filter((r) => r.verificationStatus === "Pending").length,
-    approved: riderVerificationRows.filter((r) => r.verificationStatus === "Approved").length,
-    rejected: riderVerificationRows.filter((r) => r.verificationStatus === "Rejected").length,
-    underReview: riderVerificationRows.filter((r) => r.verificationStatus === "Ready").length,
-    today: riders.filter((r) => r.createdAt?.slice(0, 10) === new Date().toISOString().slice(0, 10)).length
-  }), [riderVerificationRows, riders]);
+  const riderVerificationStats = useMemo(() => {
+    if (userStats) {
+      return {
+        pending: userStats.riders.pending,
+        approved: userStats.riders.verified,
+        rejected: userStats.riders.rejected + userStats.riders.suspended,
+        underReview: Math.max(
+          0,
+          userStats.riders.total -
+            userStats.riders.pending -
+            userStats.riders.verified -
+            userStats.riders.rejected -
+            userStats.riders.suspended
+        ),
+        today: riders.filter((r) => r.createdAt?.slice(0, 10) === new Date().toISOString().slice(0, 10)).length
+      };
+    }
+    return {
+      pending: riderVerificationRows.filter((r) => r.verificationStatus === "Pending").length,
+      approved: riderVerificationRows.filter((r) => r.verificationStatus === "Approved").length,
+      rejected: riderVerificationRows.filter((r) => r.verificationStatus === "Rejected").length,
+      underReview: riderVerificationRows.filter((r) => r.verificationStatus === "Ready").length,
+      today: riders.filter((r) => r.createdAt?.slice(0, 10) === new Date().toISOString().slice(0, 10)).length
+    };
+  }, [userStats, riderVerificationRows, riders]);
 
   // ── document rows ───────────────────────────────────────────────────────────
   const riderDocumentRows = useMemo(() => {
@@ -1005,36 +1040,70 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
   );
 
   // ── dashboard metrics ───────────────────────────────────────────────────────
-  const dashboardMetrics = useMemo(() => [
-    {
-      label: "Active Trips",
-      value: `${activeRides.length}`,
-      trend: `${completedRides.length} completed`,
-      icon: Bike,
-      tone: "yellow"
-    },
-    {
-      label: "Online Riders",
-      value: `${activeRiders.length}`,
-      trend: `${riders.length} total`,
-      icon: Users,
-      tone: "green"
-    },
-    {
-      label: "Delivery Orders",
-      value: `${deliveries.length}`,
-      trend: `${completedDeliveries.length} delivered`,
-      icon: Package,
-      tone: "yellow"
-    },
-    {
-      label: "Platform Revenue",
-      value: `${totalDashboardRevenue.toFixed(0)} ${adminCurrency}`,
-      trend: "commission captured",
-      icon: CreditCard,
-      tone: "green"
-    }
-  ], [activeRides, completedRides, activeRiders, riders, deliveries, completedDeliveries, totalDashboardRevenue, adminCurrency]);
+  const dashboardMetrics = useMemo(() => {
+    const passengerTotal = userStats?.passengers.total ?? passengersTotal;
+    const passengerPending = userStats?.passengers.pending ?? 0;
+    const passengerVerified = userStats?.passengers.verified ?? 0;
+    const riderTotal = userStats?.riders.total ?? ridersTotal;
+    const riderPending = userStats?.riders.pending ?? 0;
+    const riderVerified = userStats?.riders.verified ?? 0;
+
+    return [
+      {
+        label: "Active Trips",
+        value: `${activeRides.length}`,
+        trend: `${completedRides.length} completed`,
+        icon: Bike,
+        tone: "yellow"
+      },
+      {
+        label: "Online Riders",
+        value: `${activeRiders.length}`,
+        trend: `${riderTotal} registered`,
+        icon: Users,
+        tone: "green"
+      },
+      {
+        label: "Passengers",
+        value: `${passengerTotal}`,
+        trend: `${passengerPending} pending · ${passengerVerified} verified`,
+        icon: User,
+        tone: "yellow"
+      },
+      {
+        label: "Riders",
+        value: `${riderTotal}`,
+        trend: `${riderPending} pending · ${riderVerified} verified`,
+        icon: Bike,
+        tone: "green"
+      },
+      {
+        label: "Delivery Orders",
+        value: `${deliveries.length}`,
+        trend: `${completedDeliveries.length} delivered`,
+        icon: Package,
+        tone: "yellow"
+      },
+      {
+        label: "Platform Revenue",
+        value: `${totalDashboardRevenue.toFixed(0)} ${adminCurrency}`,
+        trend: "commission captured",
+        icon: CreditCard,
+        tone: "green"
+      }
+    ];
+  }, [
+    activeRides,
+    completedRides,
+    activeRiders,
+    userStats,
+    passengersTotal,
+    ridersTotal,
+    deliveries,
+    completedDeliveries,
+    totalDashboardRevenue,
+    adminCurrency
+  ]);
 
   // ── live activity feed ──────────────────────────────────────────────────────
   const liveActivityItems = useMemo(() => {
@@ -1186,7 +1255,8 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
       setPromoteForm({ passengerUserId: "", email: "", password: "", title: "", permissions: "" });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: QK.adminAccounts(token) }),
-        queryClient.invalidateQueries({ queryKey: QK.passengers(token) })
+        queryClient.invalidateQueries({ queryKey: QK.passengers(token) }),
+        queryClient.invalidateQueries({ queryKey: QK.userStats(token) })
       ]);
       addToast("Passenger promoted to admin", "success");
     }
@@ -1200,7 +1270,10 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
         body: JSON.stringify({ action, reason })
       }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: QK.riders(token) });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: QK.riders(token) }),
+        queryClient.invalidateQueries({ queryKey: QK.userStats(token) })
+      ]);
       addToast("Rider approval status updated", "success");
     },
     onError: (error) => addToast((error as Error).message || "Could not update rider approval", "error")
@@ -1214,7 +1287,10 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
         body: JSON.stringify({ action, reason, durationDays })
       }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: QK.riders(token) });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: QK.riders(token) }),
+        queryClient.invalidateQueries({ queryKey: QK.userStats(token) })
+      ]);
       addToast("Rider suspension updated", "success");
     },
     onError: (error) => addToast((error as Error).message || "Could not update rider suspension", "error")
@@ -1517,7 +1593,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     promoteForm, handlePromoteFormChange,
 
     // Raw data
-    rides, deliveries, riders, passengers, passengersTotal, ridersTotal,
+    rides, deliveries, riders, passengers, passengersTotal, ridersTotal, userStats,
     walletTransactions, payoutRequests, ratings, incidents,
     adminAccounts, adminRoleEntries, adminModules, zones, auditLogs,
     supportTickets, escalationRules, scheduledBroadcasts, opsJobStatus,

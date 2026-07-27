@@ -143,6 +143,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
           <>
             <RidersScreen
               riders={data.riders}
+              ridersTotal={data.userStats?.riders.total ?? data.ridersTotal}
               activeRiders={data.activeRiders}
               ridersWithCoords={data.ridersWithCoords}
               rideZoneSnapshot={data.rideZoneSnapshot}
@@ -150,11 +151,12 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
               riderZoneSnapshot={data.riderZoneSnapshot}
               vehicleCount={data.vehicleCount}
               onboardingPipeline={{
-                total: data.ridersTotal,
-                signedUp: data.ridersTotal,
+                total: data.userStats?.riders.total ?? data.ridersTotal,
+                signedUp: data.userStats?.riders.total ?? data.ridersTotal,
                 hasVehicle: data.riders.filter(r => r.vehicle != null).length,
                 hasZone: data.riders.filter(r => r.serviceZone != null).length,
-                verified: data.riders.filter(r => r.user.accountStatus === "active").length,
+                verified: data.userStats?.riders.verified ?? data.riders.filter(r => (r.approvalStatus ?? "").toUpperCase() === "APPROVED").length,
+                pending: data.userStats?.riders.pending,
                 active: data.activeRiders.length
               }}
               onBulkApprove={(ids) => ids.forEach((id) => {
@@ -311,8 +313,13 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             onSearchChange={data.setAdminSearchTerm}
             userTypeView={data.userTypeView}
             onTypeViewChange={data.setUserTypeView}
-            passengersCount={data.passengersTotal}
-            ridersCount={data.ridersTotal}
+            passengersCount={data.userStats?.passengers.total ?? data.passengersTotal}
+            ridersCount={data.userStats?.riders.total ?? data.ridersTotal}
+            passengerPendingCount={data.userStats?.passengers.pending}
+            passengerVerifiedCount={data.userStats?.passengers.verified}
+            riderPendingCount={data.userStats?.riders.pending}
+            riderVerifiedCount={data.userStats?.riders.verified}
+            totalUsersCount={data.userStats?.totals.users}
           />
         );
 
@@ -471,6 +478,12 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             riders={data.riders}
             passengers={data.passengers}
             adminCurrency={data.adminCurrency}
+            ridersTotal={data.userStats?.riders.total ?? data.ridersTotal}
+            passengersTotal={data.userStats?.passengers.total ?? data.passengersTotal}
+            riderPendingCount={data.userStats?.riders.pending}
+            riderVerifiedCount={data.userStats?.riders.verified}
+            passengerPendingCount={data.userStats?.passengers.pending}
+            passengerVerifiedCount={data.userStats?.passengers.verified}
           />
         );
 

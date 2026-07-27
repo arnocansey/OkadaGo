@@ -151,6 +151,11 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
     return ratingService.listAdminRatings(token, query);
   });
 
+  server.get("/admin/user-stats", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return adminRiderService.getUserStats(token);
+  });
+
   server.get("/admin/riders", async (request) => {
     const token = extractBearerToken(request.headers.authorization);
     const query = request.query as { status?: string; search?: string; limit?: number };

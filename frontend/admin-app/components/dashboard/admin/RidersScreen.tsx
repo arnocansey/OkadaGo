@@ -10,6 +10,7 @@ import { parseNumber } from "./utils";
 
 export type RidersScreenProps = {
   riders: RiderRecord[];
+  ridersTotal: number;
   activeRiders: RiderRecord[];
   ridersWithCoords: RiderRecord[];
   rideZoneSnapshot: [string, number][];
@@ -23,6 +24,7 @@ export type RidersScreenProps = {
     hasZone: number;
     verified: number;
     active: number;
+    pending?: number;
   };
   onBulkApprove?: (ids: string[]) => void;
   onBulkSuspend?: (ids: string[]) => void;
@@ -30,9 +32,10 @@ export type RidersScreenProps = {
 
 export function RidersScreen({
   riders,
+  ridersTotal,
   activeRiders,
   ridersWithCoords,
-  rideZoneSnapshot,
+  rideZoneSnapshot: _rideZoneSnapshot,
   riderCitySnapshot,
   riderZoneSnapshot,
   vehicleCount,
@@ -72,6 +75,9 @@ export function RidersScreen({
     variant: "driver" as const
   }));
 
+  const pendingCount = onboardingPipeline.pending ?? Math.max(0, onboardingPipeline.signedUp - onboardingPipeline.verified);
+  const verifiedCount = onboardingPipeline.verified;
+
   return (
     <div className="exact-admin-screen">
       <AdminPageHeader
@@ -83,8 +89,24 @@ export function RidersScreen({
           <div className="admin-reference-kpi-icon green"><MapPin size={22} /></div>
           <div>
             <span>Total Riders</span>
-            <strong>{riders.length}</strong>
+            <strong>{ridersTotal}</strong>
             <small>{vehicleCount} with vehicle</small>
+          </div>
+        </article>
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon yellow"><MapPin size={22} /></div>
+          <div>
+            <span>Pending</span>
+            <strong>{pendingCount}</strong>
+            <small>Awaiting verification</small>
+          </div>
+        </article>
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon green"><MapPin size={22} /></div>
+          <div>
+            <span>Verified</span>
+            <strong>{verifiedCount}</strong>
+            <small>Approved to ride</small>
           </div>
         </article>
         <article className="admin-reference-kpi">
@@ -93,22 +115,6 @@ export function RidersScreen({
             <span>Online Now</span>
             <strong>{activeRiders.length}</strong>
             <small>Currently dispatching</small>
-          </div>
-        </article>
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon green"><MapPin size={22} /></div>
-          <div>
-            <span>GPS Mapped</span>
-            <strong>{ridersWithCoords.length}</strong>
-            <small>With live coordinates</small>
-          </div>
-        </article>
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon yellow"><MapPin size={22} /></div>
-          <div>
-            <span>Zone Coverage</span>
-            <strong>{riderZoneSnapshot.length}</strong>
-            <small>Service zones</small>
           </div>
         </article>
       </section>
