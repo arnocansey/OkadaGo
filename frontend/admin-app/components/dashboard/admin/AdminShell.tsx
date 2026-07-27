@@ -68,9 +68,9 @@ export type AdminShellProps = {
 };
 
 const navGroups = [
-  { label: "Main", key: "main" as const },
-  { label: "Finance", key: "finance" as const },
-  { label: "System", key: "system" as const }
+  { label: "", key: "main" as const },
+  { label: "", key: "finance" as const },
+  { label: "", key: "system" as const }
 ];
 
 const screenPermissions: Partial<Record<AdminConsoleScreen, string>> = {
@@ -107,276 +107,36 @@ const screenPermissions: Partial<Record<AdminConsoleScreen, string>> = {
 };
 
 const screenMeta: Record<AdminConsoleScreen, AdminScreenMeta> = {
-  dashboard: {
-    eyebrow: "Admin dashboard",
-    title: "Overview",
-    description: "Real-time metrics sourced from live backend rides, riders, passengers, and service zones.",
-    searchLabel: "Search rides, riders, or passengers...",
-    quickActionLabel: "Open dispatch board",
-    quickActionHref: "/requests",
-    quickActionNote: "Jump straight into operational ride flow."
-  },
-  rides: {
-    eyebrow: "Dispatch operations",
-    title: "Request Dashboard",
-    description: "Track live, completed, and cancelled ride requests from the persisted dispatch feed.",
-    searchLabel: "Search ride codes, riders, or passengers...",
-    quickActionLabel: "See rider supply",
-    quickActionHref: "/riders",
-    quickActionNote: "Compare ride demand against online rider availability."
-  },
-  deliveries: {
-    eyebrow: "Delivery operations",
-    title: "Deliveries",
-    description: "Monitor all package delivery requests, statuses, routes, and courier assignments.",
-    searchLabel: "Search deliveries, recipients, or addresses...",
-    quickActionLabel: "View all requests",
-    quickActionHref: "/requests",
-    quickActionNote: "Cross-reference delivery feed with ride request dashboard."
-  },
-  riders: {
-    eyebrow: "Supply management",
-    title: "Riders",
-    description: "Monitor rider availability, city coverage, and live coordinate activity.",
-    searchLabel: "Search riders or service zones...",
-    quickActionLabel: "Review payouts",
-    quickActionHref: "/finance",
-    quickActionNote: "Move from supply health into rider wallet and payout operations."
-  },
-  riderVerification: {
-    eyebrow: "Riders management",
-    title: "Rider Verification",
-    description: "Review rider approval readiness using live profile, vehicle, zone, and account data.",
-    searchLabel: "Search rider verification queue...",
-    quickActionLabel: "Open rider documents",
-    quickActionHref: "/riders/documents",
-    quickActionNote: "Verification status is derived from live rider records."
-  },
-  riderDocuments: {
-    eyebrow: "Riders management",
-    title: "Rider Documents",
-    description: "Track rider document readiness and missing operational requirements from live records.",
-    searchLabel: "Search rider documents...",
-    quickActionLabel: "Open verification",
-    quickActionHref: "/riders/verification",
-    quickActionNote: "Document uploads and expiry dates tracked from live rider records."
-  },
-  riderPerformance: {
-    eyebrow: "Riders management",
-    title: "Rider Performance",
-    description: "Compare rider trip volume, completion load, earnings, and rating signals from live operations.",
-    searchLabel: "Search rider performance...",
-    quickActionLabel: "Open earnings",
-    quickActionHref: "/riders/earnings",
-    quickActionNote: "Performance is grouped from assigned ride records and rating submissions."
-  },
-  riderEarnings: {
-    eyebrow: "Riders management",
-    title: "Rider Earnings",
-    description: "Review rider earnings estimated from completed trips and platform commission.",
-    searchLabel: "Search rider earnings...",
-    quickActionLabel: "Open payouts",
-    quickActionHref: "/riders/payouts",
-    quickActionNote: "Earnings are calculated from live completed ride fares minus platform commission."
-  },
-  riderWallet: {
-    eyebrow: "Riders management",
-    title: "Rider Wallet",
-    description: "Inspect rider wallet movement from admin-visible wallet transactions.",
-    searchLabel: "Search rider wallet records...",
-    quickActionLabel: "Open payouts",
-    quickActionHref: "/riders/payouts",
-    quickActionNote: "Wallet rows come from the admin payments ledger filtered to rider wallets."
-  },
-  riderPayouts: {
-    eyebrow: "Riders management",
-    title: "Rider Payouts",
-    description: "Track rider payout requests, review states, and paid settlement history.",
-    searchLabel: "Search rider payouts...",
-    quickActionLabel: "Open finance",
-    quickActionHref: "/finance",
-    quickActionNote: "Payout actions remain controlled from the finance page workflow."
-  },
-  riderComplaints: {
-    eyebrow: "Riders management",
-    title: "Complaints & Support",
-    description: "Review rider-linked incidents and complaint reports from support operations.",
-    searchLabel: "Search rider complaints...",
-    quickActionLabel: "Open reports",
-    quickActionHref: "/reports-analytics",
-    quickActionNote: "Complaints are pulled from support incidents that are linked to a rider."
-  },
-  riderActivity: {
-    eyebrow: "Riders management",
-    title: "Activity Tracking",
-    description: "Track online state, location availability, zone coverage, and active trip load.",
-    searchLabel: "Search rider activity...",
-    quickActionLabel: "Open rider map",
-    quickActionHref: "/riders",
-    quickActionNote: "Activity tracking uses live availability and coordinate fields from rider profiles."
-  },
-  riderSuspensions: {
-    eyebrow: "Riders management",
-    title: "Suspensions",
-    description: "Review riders whose account status indicates blocked, suspended, or rejected access.",
-    searchLabel: "Search rider suspensions...",
-    quickActionLabel: "Open verification",
-    quickActionHref: "/riders/verification",
-    quickActionNote: "Suspension controls need a dedicated backend action before this page can mutate status."
-  },
-  passengers: {
-    eyebrow: "Demand management",
-    title: "Users Management",
-    description: "Review passenger profiles, referral codes, and city distribution from the live backend.",
-    searchLabel: "Search passengers or referral codes...",
-    quickActionLabel: "Open promotions",
-    quickActionHref: "/promotions",
-    quickActionNote: "Check what incentives are influencing passenger activity."
-  },
-  payments: {
-    eyebrow: "Finance operations",
-    title: "Finance",
-    description: "Review revenue flow from completed rides and active trip value moving through the platform.",
-    searchLabel: "Search payment and fare records...",
-    quickActionLabel: "Open reports",
-    quickActionHref: "/reports-analytics",
-    quickActionNote: "Cross-check payment records against verified rider rating submissions."
-  },
-  ratings: {
-    eyebrow: "Quality operations",
-    title: "Reports & Analytics",
-    description: "Verify passenger rating submissions with rider, ride, and date-level filters.",
-    searchLabel: "Search rider, ride, or rating records...",
-    quickActionLabel: "View payments",
-    quickActionHref: "/finance",
-    quickActionNote: "Compare rating quality signals with payout and settlement flow."
-  },
-  promotions: {
-    eyebrow: "Growth controls",
-    title: "Promotions",
-    description: "Track promo-assisted trips and referral-driven discounts from live ride records.",
-    searchLabel: "Search promo-adjusted rides or zones...",
-    quickActionLabel: "View finance",
-    quickActionHref: "/finance",
-    quickActionNote: "See how incentives are affecting platform cashflow."
-  },
-  zones: {
-    eyebrow: "Platform configuration",
-    title: "Zone Management",
-    description: "View and manage all service zones, pricing parameters, coverage cities, and active status.",
-    searchLabel: "Search zones or cities...",
-    quickActionLabel: "Open settings",
-    quickActionHref: "/settings",
-    quickActionNote: "Zone changes affect ride pricing platform-wide."
-  },
-  supportTickets: {
-    eyebrow: "Support operations",
-    title: "Support Tickets",
-    description: "Review and update support tickets submitted from the passenger and rider apps.",
-    searchLabel: "Search tickets, reporters, or ride IDs...",
-    quickActionLabel: "View rider complaints",
-    quickActionHref: "/riders/complaints",
-    quickActionNote: "Cross-check app support tickets with rider-linked incident reports."
-  },
-  sosIncidents: {
-    eyebrow: "Safety operations",
-    title: "SOS & Emergencies",
-    description: "Critical SOS and emergency incidents from riders and passengers.",
-    searchLabel: "Search SOS incidents...",
-    quickActionLabel: "Open support",
-    quickActionHref: "/support-tickets",
-    quickActionNote: "Escalate non-critical cases to the support queue."
-  },
-  escalationRules: {
-    eyebrow: "Support operations",
-    title: "Escalation Rules",
-    description: "Configure automated escalation rules for unresolved support tickets and incidents.",
-    searchLabel: "Search escalation rules...",
-    quickActionLabel: "View support tickets",
-    quickActionHref: "/support-tickets",
-    quickActionNote: "Escalation rules automatically escalate unresolved tickets based on thresholds."
-  },
-  notifications: {
-    eyebrow: "Communication",
-    title: "Notifications",
-    description: "Broadcast push notifications and operational alerts to riders, passengers, or all users.",
-    searchLabel: "Search notification history...",
-    quickActionLabel: "View promotions",
-    quickActionHref: "/promotions",
-    quickActionNote: "Pair targeted notifications with active promotion campaigns."
-  },
-  reports: {
-    eyebrow: "Business intelligence",
-    title: "Reports",
-    description: "Aggregate platform performance data across rides, revenue, riders, and passengers over time.",
-    searchLabel: "Search reports...",
-    quickActionLabel: "View finance",
-    quickActionHref: "/finance",
-    quickActionNote: "Reports compile data from live operations into digestible summaries."
-  },
-  auditLogs: {
-    eyebrow: "Compliance & audit",
-    title: "Audit Logs",
-    description: "Review admin actions, data mutations, and operational events with actor attribution.",
-    searchLabel: "Search audit events or actors...",
-    quickActionLabel: "Manage admins",
-    quickActionHref: "/admins",
-    quickActionNote: "Audit logs track all privileged admin operations."
-  },
-  settings: {
-    eyebrow: "Platform controls",
-    title: "Settings",
-    description: "Review service-zone pricing, admin permissions, and platform modules from live backend config.",
-    searchLabel: "Search zones, modules, or permissions...",
-    quickActionLabel: "Manage admin roles",
-    quickActionHref: "/admins",
-    quickActionNote: "Update the people who can operate platform controls."
-  },
-  paymentMethods: {
-    eyebrow: "Platform controls",
-    title: "Payment Methods",
-    description: "Manage how your company receives payments and makes payouts.",
-    searchLabel: "Search payment methods...",
-    quickActionLabel: "View finance",
-    quickActionHref: "/finance",
-    quickActionNote: "Review payment methods against finance records."
-  },
-  integrations: {
-    eyebrow: "Platform controls",
-    title: "Integrations",
-    description: "Connect OkadaGo with third-party services and tools to automate and grow your business.",
-    searchLabel: "Search integrations...",
-    quickActionLabel: "View settings",
-    quickActionHref: "/settings",
-    quickActionNote: "Manage connected services and API keys."
-  },
-  taxesCompliance: {
-    eyebrow: "Platform controls",
-    title: "Taxes & Compliance",
-    description: "Manage your tax information, filings, and compliance requirements.",
-    searchLabel: "Search tax records...",
-    quickActionLabel: "View finance",
-    quickActionHref: "/finance",
-    quickActionNote: "Cross-check tax obligations with finance records."
-  },
-  settingsNotifications: {
-    eyebrow: "Platform controls",
-    title: "Notifications",
-    description: "Stay updated with important alerts, activities and system notifications.",
-    searchLabel: "Search notifications...",
-    quickActionLabel: "View promotions",
-    quickActionHref: "/promotions",
-    quickActionNote: "Pair notifications with active campaigns."
-  },
-  admins: {
-    eyebrow: "Access control",
-    title: "Admins",
-    description: "Create and review admin accounts through an authenticated admin-only workflow.",
-    searchLabel: "Search admin accounts...",
-    quickActionLabel: "Open settings",
-    quickActionHref: "/settings",
-    quickActionNote: "Go from account permissions into platform-level configuration."
-  }
+  dashboard: { eyebrow: "", title: "Home", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/requests", quickActionNote: "" },
+  rides: { eyebrow: "", title: "Requests", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders", quickActionNote: "" },
+  deliveries: { eyebrow: "", title: "Deliveries", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/requests", quickActionNote: "" },
+  riders: { eyebrow: "", title: "Riders", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
+  riderVerification: { eyebrow: "", title: "Verify", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/documents", quickActionNote: "" },
+  riderDocuments: { eyebrow: "", title: "Docs", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/verification", quickActionNote: "" },
+  riderPerformance: { eyebrow: "", title: "Stats", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/earnings", quickActionNote: "" },
+  riderEarnings: { eyebrow: "", title: "Earn", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/payouts", quickActionNote: "" },
+  riderWallet: { eyebrow: "", title: "Wallet", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/payouts", quickActionNote: "" },
+  riderPayouts: { eyebrow: "", title: "Payouts", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
+  riderComplaints: { eyebrow: "", title: "Cases", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/reports-analytics", quickActionNote: "" },
+  riderActivity: { eyebrow: "", title: "Live", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders", quickActionNote: "" },
+  riderSuspensions: { eyebrow: "", title: "Banned", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/verification", quickActionNote: "" },
+  passengers: { eyebrow: "", title: "Users", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
+  payments: { eyebrow: "", title: "Finance", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/reports-analytics", quickActionNote: "" },
+  ratings: { eyebrow: "", title: "Ratings", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
+  promotions: { eyebrow: "", title: "Promos", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
+  zones: { eyebrow: "", title: "Zones", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
+  supportTickets: { eyebrow: "", title: "Support", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/complaints", quickActionNote: "" },
+  sosIncidents: { eyebrow: "", title: "SOS", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/support-tickets", quickActionNote: "" },
+  escalationRules: { eyebrow: "", title: "Escalate", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/support-tickets", quickActionNote: "" },
+  notifications: { eyebrow: "", title: "Alerts", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
+  reports: { eyebrow: "", title: "Reports", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
+  auditLogs: { eyebrow: "", title: "Audit", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/admins", quickActionNote: "" },
+  settings: { eyebrow: "", title: "Settings", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/admins", quickActionNote: "" },
+  paymentMethods: { eyebrow: "", title: "Payments", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
+  integrations: { eyebrow: "", title: "APIs", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
+  taxesCompliance: { eyebrow: "", title: "Tax", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
+  settingsNotifications: { eyebrow: "", title: "Alerts", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
+  admins: { eyebrow: "", title: "Staff", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" }
 };
 
 export function AdminShell({
@@ -441,21 +201,21 @@ export function AdminShell({
   const navItems: AdminNavItem[] = useMemo(() => {
     const allItems: AdminNavItem[] = [
       {
-        label: "Dashboard",
+        label: "Home",
         href: "/",
         icon: LayoutDashboard,
         screen: "dashboard",
         group: "main",
-        hint: "Overview and live pulse",
+        hint: "",
         badge: `${badgeData.activeTripsCount}`
       },
       {
-        label: "Request Dashboard",
+        label: "Requests",
         href: "/requests",
         icon: Bike,
         screen: "rides",
         group: "main",
-        hint: "Ride requests and history",
+        hint: "",
         badge: `${badgeData.completedTripsCount}`
       },
       {
@@ -464,44 +224,44 @@ export function AdminShell({
         icon: Package,
         screen: "deliveries",
         group: "main",
-        hint: "Package delivery orders",
+        hint: "",
         badge: `${badgeData.deliveriesCount}`
       },
       {
-        label: "Riders Management",
+        label: "Riders",
         href: "/riders",
         icon: User,
         screen: "riders",
         group: "main",
-        hint: "Supply and availability",
+        hint: "",
         badge: `${badgeData.activeRidersCount}`,
         children: [
           {
-            label: "All Riders",
+            label: "All",
             href: "/riders",
             screen: "riders",
             badge: `${badgeData.ridersCount}`
           },
           {
-            label: "Rider Verification",
+            label: "Verify",
             href: "/riders/verification",
             screen: "riderVerification",
             badge: `${badgeData.riderVerificationPending + badgeData.riderVerificationUnderReview}`
           },
           {
-            label: "Documents",
+            label: "Docs",
             href: "/riders/documents",
             screen: "riderDocuments",
             badge: `${badgeData.riderDocumentMissing}`
           },
           {
-            label: "Performance",
+            label: "Stats",
             href: "/riders/performance",
             screen: "riderPerformance",
             badge: `${badgeData.completedTripsCount}`
           },
           {
-            label: "Earnings",
+            label: "Earn",
             href: "/riders/earnings",
             screen: "riderEarnings",
             badge: `${badgeData.topRiderPerformanceEarningsCount}`
@@ -519,19 +279,19 @@ export function AdminShell({
             badge: `${badgeData.riderPayoutRequestedCount}`
           },
           {
-            label: "Complaints & Support",
+            label: "Cases",
             href: "/riders/complaints",
             screen: "riderComplaints",
             badge: `${badgeData.riderIncidentsCount}`
           },
           {
-            label: "Activity Tracking",
+            label: "Live",
             href: "/riders/activity-tracking",
             screen: "riderActivity",
             badge: `${badgeData.ridersWithCoordsCount}`
           },
           {
-            label: "Suspensions",
+            label: "Banned",
             href: "/riders/suspensions",
             screen: "riderSuspensions",
             badge: `${badgeData.suspendedRidersCount}`
@@ -539,12 +299,12 @@ export function AdminShell({
         ]
       },
       {
-        label: "Users Management",
+        label: "Users",
         href: "/users",
         icon: Users,
         screen: "passengers",
         group: "main",
-        hint: "Demand and retention",
+        hint: "",
         badge: `${badgeData.passengersCount}`
       },
       {
@@ -553,16 +313,16 @@ export function AdminShell({
         icon: CreditCard,
         screen: "payments",
         group: "finance",
-        hint: "Wallets, payouts, ledger",
+        hint: "",
         badge: `${badgeData.pendingPayoutRequestsCount}`
       },
       {
-        label: "Reports & Analytics",
+        label: "Ratings",
         href: "/reports-analytics",
         icon: FileText,
         screen: "ratings",
         group: "finance",
-        hint: "Ratings and insights",
+        hint: "",
         badge: `${badgeData.ratingsCount}`
       },
       {
@@ -571,70 +331,70 @@ export function AdminShell({
         icon: TrendingUp,
         screen: "reports",
         group: "finance",
-        hint: "Business intelligence",
-        badge: "New"
+        hint: "",
+        badge: ""
       },
       {
-        label: "Promotions",
+        label: "Promos",
         href: "/promotions",
         icon: Tag,
         screen: "promotions",
         group: "finance",
-        hint: "Discounts and referrals",
+        hint: "",
         badge: `${badgeData.promoAdjustedTripsCount}`
       },
       {
-        label: "Support Tickets",
+        label: "Support",
         href: "/support-tickets",
         icon: Headphones,
         screen: "supportTickets",
         group: "system",
-        hint: "Passenger and rider cases",
+        hint: "",
         badge: `${badgeData.openSupportTicketsCount}`
       },
       {
-        label: "SOS & Emergencies",
+        label: "SOS",
         href: "/sos",
         icon: ShieldAlert,
         screen: "sosIncidents",
         group: "main",
-        hint: "Critical SOS queue",
+        hint: "",
         badge: `${badgeData.openSosCount}`
       },
       {
-        label: "Escalation Rules",
+        label: "Escalate",
         href: "/escalation-rules",
         icon: Headphones,
         screen: "escalationRules",
         group: "system",
-        hint: "Automated incident escalation"
+        hint: ""
       },
       {
-        label: "Notifications",
+        label: "Alerts",
         href: "/notifications",
         icon: Bell,
         screen: "notifications",
         group: "system",
-        hint: "Push alerts and broadcasts",
-        badge: "New"
+        hint: "",
+        badge: ""
       },
       {
-        label: "Zone Management",
+        label: "Zones",
         href: "/zones",
         icon: Globe,
         screen: "zones",
         group: "system",
-        hint: "Service zones and pricing",
+        hint: "",
         badge: `${badgeData.zonesActiveCount}`
       },
       {
-        label: "Audit Logs",
+        label: "Audit",
         href: "/audit-logs",
         icon: ClipboardList,
         screen: "auditLogs",
         group: "system",
-        hint: "Admin action history",
-        badge: "New"
+        hint: "",
+        badge: ""
       },
       {
         label: "Settings",
@@ -642,23 +402,23 @@ export function AdminShell({
         icon: MapPin,
         screen: "settings",
         group: "system",
-        hint: "Zones, pricing, modules",
+        hint: "",
         badge: `${badgeData.zonesActiveCount}`,
         children: [
           { label: "General", href: "/settings", screen: "settings" },
-          { label: "Payment Methods", href: "/payment-methods", screen: "paymentMethods" },
-          { label: "Taxes & Compliance", href: "/taxes-compliance", screen: "taxesCompliance" },
-          { label: "Integrations", href: "/integrations", screen: "integrations" },
-          { label: "Notifications", href: "/settings-notifications", screen: "settingsNotifications" }
+          { label: "Payments", href: "/payment-methods", screen: "paymentMethods" },
+          { label: "Tax", href: "/taxes-compliance", screen: "taxesCompliance" },
+          { label: "APIs", href: "/integrations", screen: "integrations" },
+          { label: "Alerts", href: "/settings-notifications", screen: "settingsNotifications" }
         ]
       },
       {
-        label: "Admins",
+        label: "Staff",
         href: "/admins",
         icon: ShieldAlert,
         screen: "admins",
         group: "system",
-        hint: "Roles and account control",
+        hint: "",
         badge: `${badgeData.adminAccountsCount}`
       }
     ];
@@ -705,7 +465,6 @@ export function AdminShell({
         <aside className={`exact-admin-sidebar ${sidebarOpen ? "open" : ""}`}>
           <div className="exact-admin-brand">
             <strong>Okada<span>Go</span></strong>
-            <small>Admin</small>
             <button
               type="button"
               className="exact-admin-sidebar-close"
@@ -721,7 +480,7 @@ export function AdminShell({
               const groupItems = navItems.filter((item) => item.group === group.key);
               return (
                 <div key={group.key} className="exact-admin-navgroup">
-                  <p className="exact-admin-navlabel">{group.label}</p>
+                  {group.label ? <p className="exact-admin-navlabel">{group.label}</p> : null}
                   {groupItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = item.screen === screen || isChildActive(item);
@@ -740,7 +499,7 @@ export function AdminShell({
                             <div className="exact-admin-navcopy">
                               <strong>{item.label}</strong>
                             </div>
-                            {item.badge && item.badge !== "0" && (
+                            {item.badge && item.badge !== "0" && item.badge !== "New" && item.badge !== "" && (
                               <em>{item.badge}</em>
                             )}
                             <ChevronDown
@@ -758,7 +517,7 @@ export function AdminShell({
                             <div className="exact-admin-navcopy">
                               <strong>{item.label}</strong>
                             </div>
-                            {item.badge && item.badge !== "0" && (
+                            {item.badge && item.badge !== "0" && item.badge !== "New" && item.badge !== "" && (
                               <em>{item.badge}</em>
                             )}
                           </a>
@@ -773,7 +532,7 @@ export function AdminShell({
                                 onClick={closeSidebar}
                               >
                                 <span>{child.label}</span>
-                                {child.badge && child.badge !== "0" && (
+                                {child.badge && child.badge !== "0" && child.badge !== "New" && child.badge !== "" && (
                                   <em>{child.badge}</em>
                                 )}
                               </a>
@@ -788,11 +547,11 @@ export function AdminShell({
             })}
           </nav>
 
-          <div className="exact-admin-profile" onClick={onSignOut} title="Click to Sign Out">
+          <div className="exact-admin-profile" onClick={onSignOut} title="Sign out">
             <div className="exact-avatar">{initials}</div>
             <div>
-              <strong>{userName}</strong>
-              <span>Sign Out</span>
+              <strong>{userName.split(" ")[0] || userName}</strong>
+              <span>Out</span>
             </div>
           </div>
         </aside>

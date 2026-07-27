@@ -1614,28 +1614,54 @@ html {
 }
 
 .exact-admin-navlabel {
-  margin: 8px 0 4px;
-  font-size: 0.65rem;
+  display: none;
+}
+
+.exact-admin-navgroup + .exact-admin-navgroup {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
 }
 
 .exact-admin-nav a,
 .exact-admin-nav-toggle {
-  padding: 7px 8px;
+  padding: 6px 8px;
   gap: 8px;
 }
 
 .exact-admin-navcopy strong {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .exact-admin-subnav a {
-  padding: 5px 8px 5px 28px;
-  font-size: 0.75rem;
+  padding: 4px 8px 4px 28px;
+  font-size: 0.72rem;
 }
 
-.exact-admin-profile {
-  padding: 8px;
-  gap: 8px;
+.exact-admin-nav a em,
+.exact-admin-nav-toggle em,
+.exact-admin-subnav a em {
+  font-size: 0.65rem;
+  min-width: 18px;
+  padding: 1px 5px;
+}
+
+.exact-admin-brand small {
+  display: none;
+}
+
+.exact-admin-profile strong {
+  font-size: 0.75rem;
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.exact-admin-profile span {
+  font-size: 0.65rem;
 }
 
 .exact-admin-main {
