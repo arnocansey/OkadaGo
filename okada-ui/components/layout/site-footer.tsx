@@ -1,10 +1,12 @@
+import { BrandMark } from "@/components/brand/BrandMark";
+
 export function SiteFooter() {
   return (
     <footer className="footer">
       <div className="container footer-grid">
         <div>
           <div className="brand">
-            <div className="brand-mark">OG</div>
+            <BrandMark variant="icon" height={40} />
             <div className="brand-copy">
               <strong>OkadaGo</strong>
               <span>Built for Ghana first and ready for multi-city scale.</span>

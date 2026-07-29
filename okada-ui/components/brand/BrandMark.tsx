@@ -4,22 +4,37 @@ import Image from "next/image";
 
 type BrandMarkProps = {
   variant?: "icon" | "wordmark";
-  /** Prefer dark assets on light surfaces, light assets on dark surfaces */
+  /** Prefer dark-surface lockups when true */
   onDark?: boolean;
+  /** App-colored dark lockup when onDark */
+  product?: "shared" | "passenger" | "rider";
   height?: number;
   className?: string;
   priority?: boolean;
 };
 
+function lockupSrc(onDark: boolean, product: BrandMarkProps["product"]) {
+  if (!onDark) return "/branding/okadago-lockup-light.png";
+  if (product === "rider") return "/branding/okadago-lockup-dark-rider.png";
+  return "/branding/okadago-lockup-dark-passenger.png";
+}
+
+function iconSrc(onDark: boolean, product: BrandMarkProps["product"]) {
+  if (!onDark) return "/branding/okadago-icon-dark.png";
+  if (product === "rider") return "/branding/okadago-icon-yellow.png";
+  return "/branding/okadago-lockup-dark-passenger.png";
+}
+
 export function BrandMark({
   variant = "wordmark",
   onDark = false,
+  product = "shared",
   height = 28,
   className,
   priority = false
 }: BrandMarkProps) {
   if (variant === "icon") {
-    const src = onDark ? "/branding/okadago-icon-yellow.png" : "/branding/okadago-icon-dark.png";
+    const src = iconSrc(onDark, product);
     return (
       <Image
         src={src}
@@ -33,8 +48,9 @@ export function BrandMark({
     );
   }
 
-  const src = onDark ? "/branding/okadago-wordmark-light.png" : "/branding/okadago-wordmark-dark.png";
-  const width = Math.round(height * 4.2);
+  const src = lockupSrc(onDark, product);
+  // Stacked lockup is roughly square.
+  const width = Math.round(height * 1.15);
   return (
     <Image
       src={src}

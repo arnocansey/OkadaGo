@@ -11,7 +11,7 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#facc15",
     icons: [
       {
-        src: "/branding/okadago-icon-yellow.png",
+        src: "/branding/okadago-icon-dark.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "any"

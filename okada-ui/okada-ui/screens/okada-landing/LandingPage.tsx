@@ -74,7 +74,7 @@ export function LandingPage() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center" onClick={closeMobileMenu}>
-            <BrandMark variant="wordmark" height={28} priority />
+            <BrandMark variant="wordmark" height={52} priority />
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
             {NAV_LINKS.map((link) => (
@@ -171,7 +171,7 @@ export function LandingPage() {
               className="text-white"
             >
               <motion.div variants={fadeInUp} className="mb-8">
-                <BrandMark variant="wordmark" onDark height={40} priority />
+                <BrandMark variant="wordmark" onDark height={72} priority />
               </motion.div>
               <motion.h1
                 variants={fadeInUp}

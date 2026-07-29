@@ -302,7 +302,7 @@ export function AuthPages({
         </div>
 
         <Link href="/" className="relative z-10 flex items-center w-fit">
-          <BrandMark variant="wordmark" onDark height={32} priority />
+          <BrandMark variant="wordmark" onDark product={audience === "rider" ? "rider" : "passenger"} height={32} priority />
         </Link>
 
         <motion.div 

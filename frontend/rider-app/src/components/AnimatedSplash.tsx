@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 import Svg, { Circle, Path } from "react-native-svg";
+import { BrandLogo } from "@/components/BrandLogo";
 import { useTheme } from "@/context/ThemeContext";
 import { radius, spacing } from "@/theme/tokens";
 
@@ -145,9 +146,7 @@ export function AnimatedSplash({ onFinish }: Props) {
           { opacity: brand, transform: [{ translateY: brandTranslateY }] },
         ]}
       >
-        <Text style={[styles.wordmark, { color: colors.text }]}>
-          Okada<Text style={{ color: colors.primary }}>Go</Text>
-        </Text>
+        <BrandLogo variant="wordmark" size={56} />
         <View style={[styles.tagPill, { backgroundColor: colors.primaryLight }]}>
           <Text style={[styles.tagline, { color: colors.primary }]}>Your ride, on demand</Text>
         </View>

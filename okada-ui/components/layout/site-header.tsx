@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/brand/BrandMark";
 
 const navItems = [
   { href: "/", label: "Overview" },
@@ -11,7 +12,7 @@ export function SiteHeader() {
     <header className="site-header">
       <div className="container site-header-inner">
         <Link href="/" className="brand">
-          <div className="brand-mark">OG</div>
+          <BrandMark variant="icon" height={40} />
           <div className="brand-copy">
             <strong>OkadaGo</strong>
             <span>Ride-hailing platform foundation</span>

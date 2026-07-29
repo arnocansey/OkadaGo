@@ -23,7 +23,7 @@ export function RiderSidebar() {
   return (
     <aside className="rdr-sidebar" aria-label="Rider navigation">
       <div className="rdr-sidebar-brand">
-        <BrandMark variant="icon" height={36} />
+        <BrandMark variant="icon" height={36} product="rider" />
         <div>
           <strong>OkadaGo</strong>
           <span>Rider</span>

@@ -24,7 +24,7 @@ export function PassengerSidebar() {
   return (
     <aside className="pax-sidebar" aria-label="Passenger navigation">
       <div className="pax-sidebar-brand">
-        <BrandMark variant="icon" height={36} />
+        <BrandMark variant="icon" height={36} product="passenger" />
         <div>
           <strong>OkadaGo</strong>
           <span>Passenger</span>

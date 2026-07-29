@@ -28,6 +28,7 @@ import {
   X
 } from "lucide-react";
 import { ImmersivePage } from "@/components/layout/immersive-page";
+import { BrandMark } from "@/components/brand/BrandMark";
 import type { AdminConsoleScreen, AdminNavItem, AdminScreenMeta, AdminHighlight } from "./types";
 
 export type AdminShellBadgeData = {
@@ -464,7 +465,7 @@ export function AdminShell({
         {/* Sidebar */}
         <aside className={`exact-admin-sidebar ${sidebarOpen ? "open" : ""}`}>
           <div className="exact-admin-brand">
-            <strong>Okada<span>Go</span></strong>
+            <BrandMark variant="wordmark" height={36} product="shared" />
             <button
               type="button"
               className="exact-admin-sidebar-close"

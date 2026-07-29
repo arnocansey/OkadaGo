@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   applicationName: "OkadaGo Admin",
   metadataBase: new URL(process.env.NEXT_PUBLIC_ADMIN_APP_URL || "https://admin.okadago.com"),
   icons: {
-    icon: [{ url: "/branding/okadago-icon-yellow.png", type: "image/png" }]
+    icon: [{ url: "/branding/okadago-icon-dark.png", type: "image/png" }]
   }
 };
 
