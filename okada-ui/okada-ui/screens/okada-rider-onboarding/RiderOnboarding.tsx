@@ -125,8 +125,8 @@ export function RiderOnboarding({
                       <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                         <option>Accra, Ghana</option>
                         <option>Kumasi, Ghana</option>
-                        <option>Lagos, Nigeria</option>
-                        <option>Abuja, Nigeria</option>
+                        <option>Tamale, Ghana</option>
+                        <option>Takoradi, Ghana</option>
                       </select>
                     </div>
                   </div>

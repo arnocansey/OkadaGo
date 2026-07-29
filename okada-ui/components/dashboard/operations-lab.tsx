@@ -335,7 +335,6 @@ export function OperationsLab() {
                   }
                 >
                   <option value="GH">Ghana</option>
-                  <option value="NG">Nigeria</option>
                 </select>
                 <select
                   className="select"
@@ -345,7 +344,6 @@ export function OperationsLab() {
                   }
                 >
                   <option value="GHS">GHS</option>
-                  <option value="NGN">NGN</option>
                 </select>
                 <button className="button" type="button" onClick={() => createZone.mutate()}>
                   {createZone.isPending ? "Creating..." : "Create zone"}
@@ -390,7 +388,6 @@ export function OperationsLab() {
                   }
                 >
                   <option value="GHS">GHS</option>
-                  <option value="NGN">NGN</option>
                 </select>
                 <button className="button" type="button" onClick={() => createPassenger.mutate()}>
                   {createPassenger.isPending ? "Creating..." : "Create passenger"}
@@ -440,7 +437,6 @@ export function OperationsLab() {
                   }
                 >
                   <option value="GHS">GHS</option>
-                  <option value="NGN">NGN</option>
                 </select>
                 <select
                   className="select"
@@ -494,7 +490,6 @@ export function OperationsLab() {
                     }
                   >
                   <option value="GHS">GHS</option>
-                  <option value="NGN">NGN</option>
                   </select>
                 </div>
                 <div className="field-group">

@@ -3,7 +3,7 @@
 ## 1. Product overview
 
 ### Vision
-OkadaGo is a motorcycle ride-hailing platform for high-density African cities where speed, trust, affordability, and operational resilience matter more than generic global ride-share assumptions. The product is designed for Ghana and Nigeria first, with the ability to expand into additional cities, currencies, payment rails, and service lines.
+OkadaGo is a motorcycle ride-hailing platform for high-density African cities where speed, trust, affordability, and operational resilience matter more than generic global ride-share assumptions. The product is designed for Ghana first (Accra, Kumasi, and other cities), with the ability to expand into additional markets, currencies, payment rails, and service lines.
 
 ### Core outcomes
 - Give passengers a fast and reliable way to move through traffic-heavy cities.

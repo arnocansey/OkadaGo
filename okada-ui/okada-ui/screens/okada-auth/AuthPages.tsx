@@ -423,7 +423,7 @@ export function AuthPages({
                         <Input
                           id="phone"
                           type="tel"
-                          placeholder="801 234 5678"
+                          placeholder="024 123 4567"
                           className="min-w-0 rounded-l-none"
                           value={phoneLocal}
                           onChange={(event) => setPhoneLocal(event.target.value)}
@@ -526,7 +526,7 @@ export function AuthPages({
                       <Label htmlFor="firstName">First Name</Label>
                       <Input
                         id="firstName"
-                        placeholder="Chidi"
+                        placeholder="Kwame"
                         value={firstName}
                         onChange={(event) => setFirstName(event.target.value)}
                         required
@@ -536,7 +536,7 @@ export function AuthPages({
                       <Label htmlFor="lastName">Last Name</Label>
                       <Input
                         id="lastName"
-                        placeholder="Obi"
+                        placeholder="Mensah"
                         value={lastName}
                         onChange={(event) => setLastName(event.target.value)}
                         required
@@ -573,7 +573,7 @@ export function AuthPages({
                       <Input
                         id="signup-phone"
                         type="tel"
-                        placeholder="801 234 5678"
+                        placeholder="024 123 4567"
                         className="min-w-0 rounded-l-none"
                         value={phoneLocal}
                         onChange={(event) => setPhoneLocal(event.target.value)}
@@ -718,7 +718,7 @@ export function AuthPages({
                         <Input
                           id="forgot-phone"
                           type="tel"
-                          placeholder="801 234 5678"
+                          placeholder="024 123 4567"
                           className="min-w-0 rounded-l-none"
                           value={phoneLocal}
                           onChange={(event) => setPhoneLocal(event.target.value)}

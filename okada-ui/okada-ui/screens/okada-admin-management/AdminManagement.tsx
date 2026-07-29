@@ -24,29 +24,29 @@ const SidebarItem = ({ icon: Icon, label, active = false }: any) => (
 // Mock Data
 const ridersData = [
   { id: 'RD-101', name: 'Kwame Asante', phone: '+233 24 123 4567', city: 'Accra', status: 'Active', rating: 4.9, trips: 1420, joined: '12 Jan 2023' },
-  { id: 'RD-102', name: 'Emeka Okafor', phone: '+234 80 123 4567', city: 'Lagos', status: 'Pending', rating: 0, trips: 0, joined: '02 Nov 2023' },
+  { id: 'RD-102', name: 'Kojo Appiah', phone: '+233 20 123 4567', city: 'Accra', status: 'Pending', rating: 0, trips: 0, joined: '02 Nov 2023' },
   { id: 'RD-103', name: 'Abena Mensah', phone: '+233 20 987 6543', city: 'Kumasi', status: 'Active', rating: 4.8, trips: 890, joined: '15 Mar 2023' },
-  { id: 'RD-104', name: 'Tunde Bakare', phone: '+234 81 234 5678', city: 'Lagos', status: 'Suspended', rating: 3.2, trips: 145, joined: '05 Jun 2023' },
+  { id: 'RD-104', name: 'Yaw Mensah', phone: '+233 27 234 5678', city: 'Tema', status: 'Suspended', rating: 3.2, trips: 145, joined: '05 Jun 2023' },
   { id: 'RD-105', name: 'Kofi Annan', phone: '+233 54 321 0987', city: 'Accra', status: 'Active', rating: 5.0, trips: 2100, joined: '10 Feb 2022' },
-  { id: 'RD-106', name: 'Chinedu Eze', phone: '+234 70 876 5432', city: 'Abuja', status: 'Active', rating: 4.7, trips: 670, joined: '22 Aug 2023' },
+  { id: 'RD-106', name: 'Kojo Amoah', phone: '+233 55 876 5432', city: 'Kumasi', status: 'Active', rating: 4.7, trips: 670, joined: '22 Aug 2023' },
   { id: 'RD-107', name: 'Yaw Yeboah', phone: '+233 27 555 4444', city: 'Accra', status: 'Pending', rating: 0, trips: 0, joined: '04 Nov 2023' },
-  { id: 'RD-108', name: 'Ngozi Okonjo', phone: '+234 90 111 2222', city: 'Lagos', status: 'Active', rating: 4.9, trips: 1120, joined: '18 Apr 2023' },
+  { id: 'RD-108', name: 'Abena Owusu', phone: '+233 26 111 2222', city: 'Accra', status: 'Active', rating: 4.9, trips: 1120, joined: '18 Apr 2023' },
 ];
 
 const tripsData = [
   { id: 'TR-8901', passenger: 'David O.', rider: 'Kwame Asante', pickup: 'Osu Oxford St', dest: 'Kotoka Airport', fare: '₵45.00', status: 'Completed', date: 'Today, 14:30' },
   { id: 'TR-8902', passenger: 'Sarah K.', rider: 'Kofi Annan', pickup: 'East Legon', dest: 'Accra Mall', fare: '₵25.00', status: 'In Progress', date: 'Today, 15:10' },
-  { id: 'TR-8903', passenger: 'Michael T.', rider: 'Unassigned', pickup: 'Ikeja City Mall', dest: 'Victoria Island', fare: '₦3,500', status: 'Pending', date: 'Today, 15:15' },
-  { id: 'TR-8904', passenger: 'Grace B.', rider: 'Ngozi Okonjo', pickup: 'Lekki Phase 1', dest: 'Ikoyi', fare: '₦2,800', status: 'Completed', date: 'Today, 13:45' },
+  { id: 'TR-8903', passenger: 'Michael T.', rider: 'Unassigned', pickup: 'Accra Mall', dest: 'Airport Residential', fare: '₵35.00', status: 'Pending', date: 'Today, 15:15' },
+  { id: 'TR-8904', passenger: 'Grace B.', rider: 'Abena Owusu', pickup: 'Cantonments', dest: 'Labone', fare: '₵28.00', status: 'Completed', date: 'Today, 13:45' },
   { id: 'TR-8905', passenger: 'Daniel F.', rider: 'Abena Mensah', pickup: 'KNUST Campus', dest: 'Adum', fare: '₵30.00', status: 'Cancelled', date: 'Today, 12:20' },
-  { id: 'TR-8906', passenger: 'Joy E.', rider: 'Chinedu Eze', pickup: 'Wuse 2', dest: 'Garki', fare: '₦1,500', status: 'Completed', date: 'Today, 11:10' },
+  { id: 'TR-8906', passenger: 'Joy E.', rider: 'Kojo Amoah', pickup: 'Kejetia', dest: 'Adum', fare: '₵15.00', status: 'Completed', date: 'Today, 11:10' },
   { id: 'TR-8907', passenger: 'Samuel A.', rider: 'Kwame Asante', pickup: 'Labadi Beach', dest: 'Osu', fare: '₵35.00', status: 'Completed', date: 'Today, 09:30' },
-  { id: 'TR-8908', passenger: 'Esther M.', rider: 'Ngozi Okonjo', pickup: 'Surulere', dest: 'Yaba', fare: '₦1,800', status: 'Completed', date: 'Today, 08:45' },
+  { id: 'TR-8908', passenger: 'Esther M.', rider: 'Abena Owusu', pickup: 'Madina', dest: 'East Legon', fare: '₵18.00', status: 'Completed', date: 'Today, 08:45' },
 ];
 
 const transactionsData = [
   { id: 'TX-5501', rider: 'Kwame Asante', type: 'Payout', amount: '₵450.00', status: 'Completed', date: '04 Nov 2023' },
-  { id: 'TX-5502', rider: 'Emeka Okafor', type: 'Platform Fee', amount: '₦15,000', status: 'Completed', date: '04 Nov 2023' },
+  { id: 'TX-5502', rider: 'Kojo Appiah', type: 'Platform Fee', amount: '₵150.00', status: 'Completed', date: '04 Nov 2023' },
   { id: 'TX-5503', rider: 'Abena Mensah', type: 'Payout', amount: '₵320.00', status: 'Processing', date: '04 Nov 2023' },
   { id: 'TX-5504', rider: 'Kofi Annan', type: 'Payout', amount: '₵850.00', status: 'Completed', date: '03 Nov 2023' },
 ];

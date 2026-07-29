@@ -59,7 +59,7 @@ export function LandingPage() {
     showLoader("Searching for nearby riders...");
     setTimeout(() => {
       hideLoader();
-      showToast("Rider Assigned: Oluwaseun B. (4.9★) is 2 mins away!", "success");
+      showToast("Rider Assigned: Kofi Boateng (4.9★) is 2 mins away!", "success");
       setTimeout(() => {
         router.push("/signup");
       }, 1500);
@@ -380,15 +380,15 @@ export function LandingPage() {
               <div className="aspect-[4/5] bg-primary-foreground/5 rounded-3xl border border-white/10 p-8 flex flex-col justify-between">
                 <div className="w-full bg-white text-foreground rounded-2xl p-4 shadow-2xl transform -rotate-2">
                   <div className="flex justify-between items-center mb-4">
-                    <div className="font-bold">Ride to Victoria Island</div>
-                    <div className="text-[#8a6c00] font-bold">₦1,200</div>
+                    <div className="font-bold">Ride to Airport Residential</div>
+                    <div className="text-[#8a6c00] font-bold">₵45</div>
                   </div>
                   <div className="flex items-center gap-3 bg-muted p-3 rounded-xl">
                     <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
                       <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bisi" alt="rider" className="w-8 h-8 rounded-full" />
                     </div>
                     <div>
-                      <div className="font-medium text-sm">Oluwaseun B.</div>
+                      <div className="font-medium text-sm">Kofi Boateng</div>
                       <div className="flex items-center text-xs text-muted-foreground">
                         <Star className="w-3 h-3 text-secondary fill-secondary mr-1" /> 4.9 • KJA-294QB
                       </div>
@@ -431,8 +431,8 @@ export function LandingPage() {
           >
             {[
               {
-                name: "Chiamaka Eze",
-                role: "Marketing Executive, Lagos",
+                name: "Ama Serwaa",
+                role: "Marketing Executive, Accra",
                 text: "I used to spend 2 hours in traffic every morning. With OkadaGo, I get to the office in 25 minutes. It's clean, safe, and I actually have time for breakfast now."
               },
               {
@@ -442,7 +442,7 @@ export function LandingPage() {
               },
               {
                 name: "Aisha Mohammed",
-                role: "Small Business Owner, Abuja",
+                role: "Small Business Owner, Kumasi",
                 text: "Safety was my biggest concern with bikes. The tracking feature gives my husband peace of mind. I've never felt this safe on a motorcycle before."
               }
             ].map((t, i) => (

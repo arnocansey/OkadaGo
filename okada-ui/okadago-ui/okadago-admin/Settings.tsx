@@ -214,8 +214,8 @@ export default function Settings() {
             onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
           >
             <option>(GMT+00:00) Accra, Ghana</option>
-            <option>(GMT+01:00) Lagos, Nigeria</option>
-            <option>(GMT+03:00) Nairobi, Kenya</option>
+            <option>(GMT+00:00) London</option>
+            <option>(GMT+01:00) West Africa Time</option>
           </select>
         </div>
 

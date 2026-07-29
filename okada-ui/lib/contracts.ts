@@ -32,8 +32,8 @@ export interface QueueSnapshot {
 
 export interface OperatingCity {
   name: string;
-  country: "Ghana" | "Nigeria";
-  currency: "GHS" | "NGN";
+  country: "Ghana";
+  currency: "GHS";
   focus: string;
 }
 
@@ -51,16 +51,16 @@ export const launchCities: OperatingCity[] = [
     focus: "Dense market access and university mobility"
   },
   {
-    name: "Lagos",
-    country: "Nigeria",
-    currency: "NGN",
-    focus: "High-volume urban commute and last-mile traffic bypass"
+    name: "Tamale",
+    country: "Ghana",
+    currency: "GHS",
+    focus: "Regional hub trips and market-day mobility"
   },
   {
-    name: "Abuja",
-    country: "Nigeria",
-    currency: "NGN",
-    focus: "Government district, airport axis, and suburban links"
+    name: "Takoradi",
+    country: "Ghana",
+    currency: "GHS",
+    focus: "Harbour corridor, industrial zones, and residential links"
   }
 ];
 
