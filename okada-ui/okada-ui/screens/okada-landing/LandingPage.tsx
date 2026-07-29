@@ -87,8 +87,13 @@ export function LandingPage() {
               </a>
             ))}
           </nav>
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="hidden md:block text-sm font-medium">Log in</Link>
+          <div className="flex items-center gap-3 md:gap-4">
+            <Link href="/login" className="hidden md:block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Login as passenger
+            </Link>
+            <Link href="/rider/login" className="hidden md:block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Login as rider
+            </Link>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="hidden sm:block">
               <Link href="/signup" className="inline-flex items-center justify-center bg-primary text-[#0a0b0d] hover:bg-primary/90 rounded-full px-6 min-h-10 font-medium transition-colors">
                 Ride Now
@@ -135,7 +140,14 @@ export function LandingPage() {
                     onClick={closeMobileMenu}
                     className="rounded-lg px-3 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors"
                   >
-                    Log in
+                    Login as passenger
+                  </Link>
+                  <Link
+                    href="/rider/login"
+                    onClick={closeMobileMenu}
+                    className="rounded-lg px-3 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                  >
+                    Login as rider
                   </Link>
                   <Link
                     href="/signup"
@@ -477,9 +489,14 @@ export function LandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Link href="/signup" className="inline-flex items-center justify-center bg-primary text-[#0a0b0d] hover:bg-primary/90 rounded-full h-14 px-8 text-lg font-bold transition-colors">
-                    Book on Web
+                  <Link href="/login" className="inline-flex items-center justify-center bg-primary text-[#0a0b0d] hover:bg-primary/90 rounded-full h-14 px-8 text-lg font-bold transition-colors">
+                    Login as passenger
                     <ChevronRight className="w-5 h-5 ml-2" />
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link href="/rider/login" className="inline-flex items-center justify-center rounded-full h-14 px-8 text-lg font-bold border border-white/35 text-white hover:bg-white/10 transition-colors">
+                    Login as rider
                   </Link>
                 </motion.div>
               </div>
@@ -515,10 +532,10 @@ export function LandingPage() {
             <div>
               <h4 className="font-bold mb-4">Products</h4>
               <ul className="space-y-2 text-sm text-white/60">
-                <li><a href="#" className="hover:text-white transition-colors">Ride</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Drive</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Deliveries</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Business</a></li>
+                <li><Link href="/login" className="hover:text-white transition-colors">Login as passenger</Link></li>
+                <li><Link href="/rider/login" className="hover:text-white transition-colors">Login as rider</Link></li>
+                <li><Link href="/signup" className="hover:text-white transition-colors">Book a ride</Link></li>
+                <li><Link href="/rider/signup" className="hover:text-white transition-colors">Drive with OkadaGo</Link></li>
               </ul>
             </div>
             <div>

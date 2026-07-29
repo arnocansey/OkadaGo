@@ -147,14 +147,18 @@ export function AuthPages({
       return {
         brandBody:
           "Join verified riders earning every day across Accra and Kumasi. Fast payouts, insured trips, and a dashboard built for the hustle.",
-        loginTitle: "Welcome back, rider",
-        loginDescription: "Enter your phone number to continue to your rider dashboard.",
+        loginTitle: "Login as rider",
+        loginDescription: "Enter your rider phone number to open your driver dashboard.",
         signupTitle: "Create rider account",
         signupDescription: "Set up your rider profile to start receiving trips.",
-        forgotDescription: "Enter your phone number to request a rider password reset.",
+        forgotDescription: "Enter your rider phone number to request a password reset.",
         loginAltText: "Need a rider account? ",
         loginAltCta: "Create one",
-        signupCta: "Create Rider Account"
+        signupCta: "Create Rider Account",
+        loginCta: "Login as rider",
+        switchText: "Looking to book a ride? ",
+        switchCta: "Login as passenger",
+        switchHref: "/login"
       };
     }
 
@@ -169,21 +173,29 @@ export function AuthPages({
         forgotDescription: "Password reset is currently handled by the platform owner.",
         loginAltText: "Need admin access? ",
         loginAltCta: "Contact the platform owner",
-        signupCta: "Create Account"
+        signupCta: "Create Account",
+        loginCta: "Admin log in",
+        switchText: "",
+        switchCta: "",
+        switchHref: "/"
       };
     }
 
     return {
       brandBody:
-        "Join over 50,000 riders in Accra and Kumasi who trust OkadaGo for their daily commute. Fast, insured, and professional.",
-      loginTitle: "Welcome back",
-      loginDescription: "Enter your phone number to continue.",
-      signupTitle: "Create account",
-      signupDescription: "Start your journey with OkadaGo today.",
+        "Join passengers across Accra and Kumasi who trust OkadaGo for daily trips. Fast, insured, and professional.",
+      loginTitle: "Login as passenger",
+      loginDescription: "Enter your phone number to continue booking rides.",
+      signupTitle: "Create passenger account",
+      signupDescription: "Start booking OkadaGo trips today.",
       forgotDescription: "Enter your phone number to request a password reset.",
-      loginAltText: "New to OkadaGo? ",
+      loginAltText: "New passenger? ",
       loginAltCta: "Create an account",
-      signupCta: "Create Account"
+      signupCta: "Create Passenger Account",
+      loginCta: "Login as passenger",
+      switchText: "Drive with OkadaGo? ",
+      switchCta: "Login as rider",
+      switchHref: "/rider/login"
     };
   }, [audience]);
 
@@ -455,20 +467,34 @@ export function AuthPages({
 
                   <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
                     <Button type="submit" className="h-12 w-full bg-primary text-base text-[#0a0b0d] hover:bg-primary/90" disabled={loading}>
-                      {loading ? "Please wait..." : "Log in"}
+                      {loading ? "Please wait..." : copy.loginCta}
                     </Button>
                   </motion.div>
                 </form>
 
-                <div className="mt-8 text-center text-sm">
-                  <span className="text-slate-600">{copy.loginAltText}</span>
-                  <Link
-                    href={routeLinks.signup}
-                    className="font-bold hover:underline"
-                    style={{ color: "#8a6c00" }}
-                  >
-                    {copy.loginAltCta}
-                  </Link>
+                <div className="mt-8 space-y-3 text-center text-sm">
+                  <div>
+                    <span className="text-slate-600">{copy.loginAltText}</span>
+                    <Link
+                      href={routeLinks.signup}
+                      className="font-bold hover:underline"
+                      style={{ color: "#8a6c00" }}
+                    >
+                      {copy.loginAltCta}
+                    </Link>
+                  </div>
+                  {copy.switchCta ? (
+                    <div>
+                      <span className="text-slate-600">{copy.switchText}</span>
+                      <Link
+                        href={copy.switchHref}
+                        className="font-bold hover:underline"
+                        style={{ color: "#8a6c00" }}
+                      >
+                        {copy.switchCta}
+                      </Link>
+                    </div>
+                  ) : null}
                 </div>
               </motion.div>
             )}
@@ -623,6 +649,19 @@ export function AuthPages({
                     </a>.
                   </p>
                 </form>
+
+                {copy.switchCta ? (
+                  <div className="mt-6 text-center text-sm">
+                    <span className="text-slate-600">{copy.switchText}</span>
+                    <Link
+                      href={copy.switchHref}
+                      className="font-bold hover:underline"
+                      style={{ color: "#8a6c00" }}
+                    >
+                      {copy.switchCta}
+                    </Link>
+                  </div>
+                ) : null}
               </motion.div>
             )}
 
