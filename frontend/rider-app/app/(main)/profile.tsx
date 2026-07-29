@@ -212,7 +212,7 @@ export default function ProfileScreen() {
         ) : null}
 
         <Card style={styles.menu}>
-          <Pressable style={styles.menuRow} onPress={() => router.push("/notifications")}>
+          <Pressable style={styles.menuRow} onPress={() => router.push("/notifications" as never)}>
             <Bell size={20} color={colors.text} />
             <Text style={styles.menuLabel}>{t("profile.notifications")}</Text>
             <ChevronRight size={18} color={colors.textMuted} />
