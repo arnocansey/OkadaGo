@@ -1008,13 +1008,39 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
   }), [rides, completedRides]);
 
   const visibleRequestCards = useMemo(() => {
-    if (requestStatusView === "all") return rides.slice(0, 30);
-    if (requestStatusView === "pending") return rides.filter((r) => ["searching", "pending"].includes(r.status.toLowerCase()));
-    if (requestStatusView === "accepted") return rides.filter((r) => ["assigned", "arriving", "arrived"].includes(r.status.toLowerCase()));
-    if (requestStatusView === "on-trip") return rides.filter((r) => ["started", "in_progress"].includes(r.status.toLowerCase()));
+    const rank = (status: string) => {
+      const value = status.toLowerCase();
+      if (["searching", "pending"].includes(value)) return 0;
+      if (["assigned", "arriving", "arrived"].includes(value)) return 1;
+      if (["started", "in_progress"].includes(value)) return 2;
+      if (value === "completed") return 3;
+      if (value === "cancelled") return 4;
+      return 5;
+    };
+
+    const sorted = [...rides].sort((a, b) => {
+      const rankDiff = rank(a.status) - rank(b.status);
+      if (rankDiff !== 0) return rankDiff;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+    if (requestStatusView === "all") return sorted.slice(0, 40);
+    if (requestStatusView === "pending") {
+      return sorted.filter((r) => ["searching", "pending"].includes(r.status.toLowerCase()));
+    }
+    if (requestStatusView === "accepted") {
+      return sorted.filter((r) => ["assigned", "arriving", "arrived"].includes(r.status.toLowerCase()));
+    }
+    if (requestStatusView === "on-trip") {
+      return sorted.filter((r) => ["started", "in_progress"].includes(r.status.toLowerCase()));
+    }
     if (requestStatusView === "completed") return completedRides;
-    if (requestStatusView === "cancelled") return rides.filter((r) => r.status.toLowerCase() === "cancelled");
-    return rides.slice(0, 30);
+    if (requestStatusView === "cancelled") {
+      return rides
+        .filter((r) => r.status.toLowerCase() === "cancelled")
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+    return sorted.slice(0, 40);
   }, [rides, completedRides, requestStatusView]);
 
   const visibleDeliveryRequestCards = useMemo(() => {
