@@ -27,6 +27,7 @@
     "documents": "Nkrataa",
     "emergencyContacts": "Ahopa So Nkitahodi",
     "supportTickets": "Mmoa Tiketi",
+    "notifications": "Amanneɛbɔ",
     "verifyPhone": "Hwɛ Wo Fon Nɔma Mu",
     "settings": "Nhyehyɛe",
     "signOut": "Fi Adi",
@@ -36,6 +37,14 @@
     "verificationTitle": "Wie nsusuwsoɔ",
     "verificationHint": "Fa wo nkrataa so na yɛn tumi agye wo atom na wo ntumi nkɔ so.",
     "uploadDocuments": "Fa nkrataa so"
+  },
+  "notifications": {
+    "title": "Amanneɛbɔ",
+    "unreadCount": "{{count}} a wonnkenkan",
+    "allCaughtUp": "Woanya so nyinaa",
+    "markAllRead": "Kenkan nyinaa",
+    "emptyTitle": "Amanneɛbɔ nni hɔ",
+    "emptyBody": "Akwantuo abisa ne tebea nsakraeɛ bɛda ha."
   },
   "settings": {
     "title": "Nhyehyɛe",

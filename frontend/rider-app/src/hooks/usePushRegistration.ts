@@ -1,6 +1,7 @@
-import Constants from "expo-constants";
 import { useEffect } from "react";
-import { registerPushToken } from "@/lib/push";
+import { configureNotificationHandler, registerPushToken } from "@/lib/push";
+
+configureNotificationHandler();
 
 export function usePushRegistration(authToken?: string | null) {
   useEffect(() => {

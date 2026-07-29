@@ -30,6 +30,7 @@
     "emergencyContacts": "Emergency contacts",
     "savedPlaces": "Saved places",
     "supportTickets": "Support tickets",
+    "notifications": "Notifications",
     "verifyPhone": "Verify phone number",
     "friendCodeTitle": "Have a friend's code?",
     "friendCodeHint": "Enter a referral code to unlock rewards.",
@@ -43,6 +44,14 @@
     "signOut": "Sign out",
     "changePhoto": "Change photo",
     "choosePhotoOption": "Choose an option"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "unreadCount": "{{count}} unread",
+    "allCaughtUp": "You're all caught up",
+    "markAllRead": "Mark all read",
+    "emptyTitle": "No notifications yet",
+    "emptyBody": "Trip updates and important alerts will show up here."
   },
   "language": {
     "title": "Language",

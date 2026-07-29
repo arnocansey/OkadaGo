@@ -30,6 +30,7 @@
     "emergencyContacts": "Ahopa So Nkitahodi",
     "savedPlaces": "Beaeɛ A Woasie",
     "supportTickets": "Mmoa Tiketi",
+    "notifications": "Amanneɛbɔ",
     "verifyPhone": "Hwɛ Wo Fon Nɔma Mu",
     "friendCodeTitle": "Wowɔ Wo Yɔnko Kod?",
     "friendCodeHint": "Hyɛ frɛ kod na woanya akatua.",
@@ -43,6 +44,14 @@
     "signOut": "Fi Adi",
     "changePhoto": "Sesa Mfonini",
     "choosePhotoOption": "Paw Ɔkwan Biara"
+  },
+  "notifications": {
+    "title": "Amanneɛbɔ",
+    "unreadCount": "{{count}} a wonnkenkan",
+    "allCaughtUp": "Woanya so nyinaa",
+    "markAllRead": "Kenkan nyinaa",
+    "emptyTitle": "Amanneɛbɔ nni hɔ",
+    "emptyBody": "Akwantuo nsakraeɛ ne amanneɛbɔ atitire bɛda ha."
   },
   "language": {
     "title": "Kasa",

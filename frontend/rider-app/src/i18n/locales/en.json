@@ -27,6 +27,7 @@
     "documents": "Documents",
     "emergencyContacts": "Emergency contacts",
     "supportTickets": "Support tickets",
+    "notifications": "Notifications",
     "verifyPhone": "Verify phone number",
     "settings": "Settings",
     "signOut": "Sign out",
@@ -36,6 +37,14 @@
     "verificationTitle": "Finish verification",
     "verificationHint": "Upload your documents so we can approve you to go online.",
     "uploadDocuments": "Upload documents"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "unreadCount": "{{count}} unread",
+    "allCaughtUp": "You're all caught up",
+    "markAllRead": "Mark all read",
+    "emptyTitle": "No notifications yet",
+    "emptyBody": "Trip requests and status updates will show up here."
   },
   "settings": {
     "title": "Settings",

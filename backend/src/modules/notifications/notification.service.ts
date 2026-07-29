@@ -55,14 +55,21 @@ export class NotificationService {
   async listNotifications(token: string, query: ListNotificationsQuery) {
     const session = await this.getActiveSession(token);
 
-    return prisma.notification.findMany({
+    const notifications = await prisma.notification.findMany({
       where: {
         userId: session.userId,
+        channel: { in: ["PUSH", "IN_APP"] },
+        NOT: { title: "TRUSTED_CONTACT_OTP" },
         ...(query.unreadOnly ? { readAt: null } : {}),
       },
       orderBy: { createdAt: "desc" },
       take: query.limit,
     });
+
+    return notifications.map((notification) => ({
+      ...notification,
+      data: sanitizeNotificationData(notification.data),
+    }));
   }
 
   async markNotificationRead(token: string, notificationId: string) {
@@ -78,7 +85,10 @@ export class NotificationService {
 
     return prisma.notification.update({
       where: { id: notificationId },
-      data: { readAt: new Date() },
+      data: {
+        readAt: new Date(),
+        status: "READ",
+      },
     });
   }
 
@@ -89,10 +99,23 @@ export class NotificationService {
       where: {
         userId: session.userId,
         readAt: null,
+        channel: { in: ["PUSH", "IN_APP"] },
       },
-      data: { readAt: new Date() },
+      data: {
+        readAt: new Date(),
+        status: "READ",
+      },
     });
 
     return { ok: true };
   }
+}
+
+function sanitizeNotificationData(data: unknown) {
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    return data;
+  }
+
+  const { code, otp, ...rest } = data as Record<string, unknown>;
+  return rest;
 }

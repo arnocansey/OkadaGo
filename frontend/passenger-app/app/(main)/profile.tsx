@@ -264,6 +264,7 @@ export default function ProfileScreen() {
           <Text style={styles.sectionTitle}>{t("profile.safetyAccount")}</Text>
           {(
             [
+              { label: t("profile.notifications"), href: "/notifications" },
               { label: t("profile.editProfile"), href: "/edit-profile" },
               { label: t("profile.emergencyContacts"), href: "/emergency-contacts" },
               { label: t("profile.savedPlaces"), href: "/saved-places" },

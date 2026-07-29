@@ -3,6 +3,7 @@ import { api } from "@/lib/api";
 import { clearSavedSession, loadSavedSession, saveSession } from "@/lib/session-storage";
 import { riderWs } from "@/lib/websocket";
 import { usePushRegistration } from "@/hooks/usePushRegistration";
+import { useNotificationDeepLinks } from "@/hooks/useNotificationDeepLinks";
 import type { Delivery, PayoutRequest, Ride, ServiceZone, Session, Wallet, WalletTransaction } from "@/types";
 
 type AppState = {
@@ -114,6 +115,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [session?.token, refresh]);
 
   usePushRegistration(session?.token);
+  useNotificationDeepLinks(Boolean(session?.token));
 
   const refreshSession = useCallback(async () => {
     if (!session?.token) return;

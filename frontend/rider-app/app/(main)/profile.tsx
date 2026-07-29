@@ -2,7 +2,7 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ChevronRight, FileText, Headphones, Pencil, PhoneCall, ShieldAlert, Settings, Star, Camera } from "lucide-react-native";
+import { ChevronRight, FileText, Headphones, Pencil, PhoneCall, ShieldAlert, Settings, Star, Camera, Bell } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useTranslation } from "react-i18next";
 import { Avatar } from "@/components/ui/Avatar";
@@ -212,6 +212,11 @@ export default function ProfileScreen() {
         ) : null}
 
         <Card style={styles.menu}>
+          <Pressable style={styles.menuRow} onPress={() => router.push("/notifications")}>
+            <Bell size={20} color={colors.text} />
+            <Text style={styles.menuLabel}>{t("profile.notifications")}</Text>
+            <ChevronRight size={18} color={colors.textMuted} />
+          </Pressable>
           <Pressable style={styles.menuRow} onPress={() => router.push("/edit-profile")}>
             <Pencil size={20} color={colors.text} />
             <Text style={styles.menuLabel}>{t("profile.editProfile")}</Text>

@@ -3,8 +3,7 @@ import Constants from "expo-constants";
 import { Platform } from "react-native";
 import { api } from "@/lib/api";
 
-const DEVICE_ID_KEY = "okadago.rider.deviceId";
-const PUSH_ENABLED_KEY = "okadago.rider.pushEnabled";
+const DEVICE_ID_KEY = "okadago.passenger.deviceId";
 
 export type NotificationData = {
   type?: string;
@@ -25,18 +24,9 @@ function getExpoProjectId() {
 async function getStableDeviceId() {
   const existing = await AsyncStorage.getItem(DEVICE_ID_KEY);
   if (existing) return existing;
-  const next = `rider-${Platform.OS}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  const next = `passenger-${Platform.OS}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
   await AsyncStorage.setItem(DEVICE_ID_KEY, next);
   return next;
-}
-
-export async function getPushEnabled() {
-  const value = await AsyncStorage.getItem(PUSH_ENABLED_KEY);
-  return value !== "false";
-}
-
-export async function setPushEnabled(enabled: boolean) {
-  await AsyncStorage.setItem(PUSH_ENABLED_KEY, enabled ? "true" : "false");
 }
 
 export function configureNotificationHandler() {
@@ -63,9 +53,6 @@ export function configureNotificationHandler() {
 }
 
 export async function registerPushToken(authToken: string) {
-  const enabled = await getPushEnabled();
-  if (!enabled) return { ok: false as const, reason: "disabled" as const };
-
   const deviceId = await getStableDeviceId();
   let pushToken: string | null = null;
 
@@ -108,17 +95,13 @@ export async function registerPushToken(authToken: string) {
   return { ok: true as const };
 }
 
-export function riderPathForNotificationData(data?: NotificationData | null) {
+export function passengerPathForNotificationData(data?: NotificationData | null) {
   if (!data) return "/notifications";
   if (typeof data.rideId === "string" && data.rideId) {
-    if (data.type === "ride_assigned") return `/request/${data.rideId}`;
-    return `/trip/${data.rideId}`;
+    return `/ride/track/${data.rideId}`;
   }
   if (typeof data.deliveryId === "string" && data.deliveryId) {
-    if (data.type === "delivery_status" && data.status === "SEARCHING") {
-      return `/request/${data.deliveryId}`;
-    }
-    return `/trip/${data.deliveryId}`;
+    return "/(main)/trips";
   }
   return "/notifications";
 }
