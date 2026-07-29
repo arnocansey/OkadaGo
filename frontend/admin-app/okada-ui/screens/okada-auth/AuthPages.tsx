@@ -92,7 +92,7 @@ export function AuthPages({
   audience?: AuthAudience;
 }) {
   const router = useRouter();
-  const { getDevice, setSession } = useAuth();
+  const { getDevice, setSession, session, status } = useAuth();
   const { showToast, showLoader, hideLoader } = useToastAndLoader();
   const [authState, setAuthState] = useState<AuthState>(initialAuthState);
   const [loading, setLoading] = useState(false);
@@ -140,6 +140,40 @@ export function AuthPages({
       success: "/passenger"
     };
   }, [audience]);
+
+  function resolvePostAuthTarget() {
+    if (typeof window === "undefined") {
+      return routeLinks.success;
+    }
+
+    const redirect = new URLSearchParams(window.location.search).get("redirect");
+    if (redirect && redirect.startsWith("/") && !redirect.startsWith("//")) {
+      return redirect;
+    }
+
+    return routeLinks.success;
+  }
+
+  function navigateAfterAuth(target: string) {
+    // Admin routes are gated by a cookie in proxy.ts. Soft client navigations can race
+    // that gate, so use a full navigation so the cookie is present on the next request.
+    if (audience === "admin") {
+      window.location.assign(target);
+      return;
+    }
+
+    router.push(target);
+  }
+
+  useEffect(() => {
+    if (audience !== "admin") {
+      return;
+    }
+
+    if (status === "authenticated" && session?.user?.role === "admin") {
+      window.location.replace(resolvePostAuthTarget());
+    }
+  }, [audience, status, session, routeLinks.success]);
 
   const copy = useMemo(() => {
     if (audience === "rider") {
@@ -217,7 +251,7 @@ export function AuthPages({
 
       setSession(session);
       showToast("Welcome back!", "success");
-      router.push(routeLinks.success);
+      navigateAfterAuth(resolvePostAuthTarget());
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Unable to sign in right now.";
       setErrorMessage(msg);
@@ -266,7 +300,7 @@ export function AuthPages({
 
       setSession(session);
       showToast("Welcome to OkadaGo!", "success");
-      router.push(routeLinks.success);
+      navigateAfterAuth(resolvePostAuthTarget());
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Unable to create your account right now.";
       setErrorMessage(msg);

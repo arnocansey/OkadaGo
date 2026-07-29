@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode
 } from "react";
@@ -59,6 +60,27 @@ function setAdminSessionCookie(token: string | null) {
   }
 }
 
+function readStoredSession(): SessionPayload | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const raw = window.localStorage.getItem(authStorageKey);
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as SessionPayload;
+    if (!parsed?.token || !parsed?.user?.role) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
 function getStoredDeviceId() {
   if (typeof window === "undefined") {
     return "server";
@@ -75,10 +97,21 @@ function getStoredDeviceId() {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSessionState] = useState<SessionPayload | null>(null);
-  const [status, setStatus] = useState<"loading" | "authenticated" | "anonymous">("loading");
+  const [session, setSessionState] = useState<SessionPayload | null>(() => {
+    const stored = readStoredSession();
+    if (stored) {
+      setAdminSessionCookie(stored.token);
+    }
+    return stored;
+  });
+  const [status, setStatus] = useState<"loading" | "authenticated" | "anonymous">(() =>
+    readStoredSession() ? "authenticated" : "loading"
+  );
+  const refreshGeneration = useRef(0);
 
   const persistSession = (nextSession: SessionPayload | null) => {
+    // Invalidate any in-flight /auth/session check so it cannot wipe a fresh login.
+    refreshGeneration.current += 1;
     setSessionState(nextSession);
 
     if (typeof window === "undefined") {
@@ -108,9 +141,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    const generation = ++refreshGeneration.current;
     const raw = window.localStorage.getItem(authStorageKey);
     if (!raw) {
-      setStatus("anonymous");
+      if (generation === refreshGeneration.current) {
+        setStatus("anonymous");
+      }
       return;
     }
 
@@ -119,13 +155,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const refreshed = await requestJson<SessionPayload>("/auth/session", {
         token: parsed.token
       });
+      if (generation !== refreshGeneration.current) {
+        return;
+      }
       persistSession(refreshed);
     } catch {
+      if (generation !== refreshGeneration.current) {
+        return;
+      }
       persistSession(null);
     }
   };
 
   useEffect(() => {
+    const stored = readStoredSession();
+    if (stored) {
+      setAdminSessionCookie(stored.token);
+    }
     void refreshSession();
   }, []);
 
@@ -143,6 +189,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     persistSession(null);
+    if (typeof window !== "undefined") {
+      window.location.assign("/login");
+    }
   };
 
   const value = useMemo<AuthContextValue>(
