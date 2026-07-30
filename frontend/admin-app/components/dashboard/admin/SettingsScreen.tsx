@@ -665,7 +665,7 @@ export function SettingsScreen({
 
       {/* Main Content */}
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 20 }}>
-        <article className="admin-reference-card" style={{ ...cardStyle, minHeight: 400 }}>
+        <article className="admin-reference-card" style={cardStyle}>
           {sectionContent[activeSection]()}
         </article>
         <div className="admin-screen-toolbar" style={{ gap: isMobile ? 8 : 12 }}>

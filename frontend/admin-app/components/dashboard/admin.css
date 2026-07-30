@@ -650,7 +650,14 @@
 }
 
 /* ── Cards & Grid ── */
-.admin-reference-grid-3,
+.admin-reference-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+  align-items: start;
+}
+
 .admin-screen-grid-2 {
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
@@ -660,6 +667,7 @@
 }
 
 @media (max-width: 1100px) {
+  .admin-reference-grid-3,
   .admin-screen-grid-2 {
     grid-template-columns: 1fr;
   }
@@ -1405,8 +1413,8 @@
 .empty-state {
   background: var(--bg-primary);
   border: 2px dashed var(--border-color);
-  border-radius: 16px;
-  padding: 30px;
+  border-radius: 12px;
+  padding: 18px 16px;
   text-align: center;
 }
 
@@ -1434,10 +1442,20 @@
 
 /* Layout Grid Collapses */
 @media (max-width: 1200px) {
-  .admin-reference-grid-3,
+  .admin-reference-grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
   .admin-screen-grid-2 {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 900px) {
+  .admin-reference-grid-3 {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1890,7 +1908,26 @@ html {
 }
 
 .admin-page-header-copy {
-  display: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.admin-page-header-copy h1 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.admin-page-header-copy p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
 }
 
 .admin-page-header-actions {
@@ -1898,6 +1935,7 @@ html {
   margin-left: auto;
 }
 
+.admin-kpi-grid,
 .admin-reference-kpis,
 .exact-admin-kpis {
   gap: 10px;
@@ -2072,23 +2110,24 @@ table.admin-table td,
 .admin-reference-kpis {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .admin-panel,
 .admin-reference-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-card);
+  border-radius: 12px;
   box-shadow: var(--shadow-main);
 }
 
 .admin-overview-split {
   display: grid;
   grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr);
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 12px;
+  align-items: start;
 }
 
 .admin-overview-map {
@@ -2096,17 +2135,17 @@ table.admin-table td,
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-height: 480px;
-  height: 500px;
+  min-height: clamp(280px, 42vh, 460px);
+  height: clamp(280px, 42vh, 460px);
 }
 
 .admin-overview-map-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
-  padding: 14px 16px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--border-color);
   background: var(--bg-card);
   flex-shrink: 0;
@@ -2183,7 +2222,7 @@ table.admin-table td,
 
 .admin-overview-map .admin-reference-map {
   flex: 1 1 auto;
-  min-height: 320px;
+  min-height: 0;
   border-radius: 0;
   position: relative;
   display: flex;
@@ -2215,8 +2254,8 @@ table.admin-table td,
 
 @media (max-width: 720px) {
   .admin-overview-map {
-    height: 420px;
-    min-height: 420px;
+    height: min(360px, 55vh);
+    min-height: 280px;
   }
 
   .admin-overview-map-head {
@@ -2224,11 +2263,23 @@ table.admin-table td,
   }
 }
 
-.admin-overview-split > .admin-reference-card:not(.admin-overview-map) {
-  min-height: 500px;
-  max-height: 500px;
+/* Equal-height queue only beside the Overview fleet map — not every split on the app */
+.admin-overview-split--fleet > .admin-overview-queue {
+  min-height: clamp(280px, 42vh, 460px);
+  max-height: clamp(280px, 42vh, 460px);
   display: flex;
   flex-direction: column;
+}
+
+.admin-overview-queue-empty {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+
+.admin-overview-queue-empty .empty-state {
+  width: 100%;
 }
 
 .admin-active-requests {
@@ -2302,7 +2353,7 @@ table.admin-table td,
 
 .exact-admin-screen,
 .exact-admin-dashboard {
-  padding: 8px 4px 24px;
+  padding: 0 0 8px;
 }
 
 .admin-screen-toolbar {
@@ -2310,7 +2361,13 @@ table.admin-table td,
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  margin-bottom: 14px;
+  margin-bottom: 0;
+}
+
+.admin-access-page.exact-admin-page {
+  height: auto;
+  min-height: 100vh;
+  overflow: auto;
 }
 
 .admin-filter-search {

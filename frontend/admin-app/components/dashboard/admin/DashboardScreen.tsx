@@ -174,7 +174,7 @@ export function DashboardScreen({
         })}
       </section>
 
-      <section className="admin-overview-split">
+      <section className="admin-overview-split admin-overview-split--fleet">
         <article className="admin-reference-card admin-overview-map">
           <div className="admin-overview-map-head">
             <div className="admin-overview-map-title">
@@ -211,7 +211,7 @@ export function DashboardScreen({
           </div>
         </article>
 
-        <article className="admin-reference-card">
+        <article className="admin-reference-card admin-overview-queue">
           <div className="admin-reference-cardhead">
             <div>
               <h3>Active Requests</h3>
@@ -220,7 +220,9 @@ export function DashboardScreen({
             <a href="/requests">View all</a>
           </div>
           {activeRequests.length === 0 ? (
-            <EmptyCard title="No active requests." body="New passenger requests will show up here live." />
+            <div className="admin-overview-queue-empty">
+              <EmptyCard title="No active requests." body="New passenger requests will show up here live." />
+            </div>
           ) : (
             <div className="admin-active-requests">
               {activeRequests.map((item) => (

@@ -6,13 +6,19 @@ type Props = {
   actions?: ReactNode;
 };
 
-/** Title/subtitle live in the shell topbar — this only renders action controls. */
-export function AdminPageHeader({ actions }: Props) {
-  if (!actions) return null;
+/** Compact page header — title in content, actions on the right. */
+export function AdminPageHeader({ title, subtitle, actions }: Props) {
+  if (!title && !subtitle && !actions) return null;
 
   return (
     <div className="admin-page-header admin-page-header--compact">
-      <div className="admin-page-header-actions">{actions}</div>
+      {(title || subtitle) && (
+        <div className="admin-page-header-copy">
+          {title ? <h1>{title}</h1> : null}
+          {subtitle ? <p>{subtitle}</p> : null}
+        </div>
+      )}
+      {actions ? <div className="admin-page-header-actions">{actions}</div> : null}
     </div>
   );
 }
