@@ -3157,6 +3157,8 @@ export const RiderProfileScalarFieldEnum = {
   bio: 'bio',
   approvedAt: 'approvedAt',
   suspendedAt: 'suspendedAt',
+  suspensionReason: 'suspensionReason',
+  suspensionEndsAt: 'suspensionEndsAt',
   lastOnlineAt: 'lastOnlineAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',

@@ -67,6 +67,8 @@ export type RiderProfileMinAggregateOutputType = {
   bio: string | null
   approvedAt: Date | null
   suspendedAt: Date | null
+  suspensionReason: string | null
+  suspensionEndsAt: Date | null
   lastOnlineAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -94,6 +96,8 @@ export type RiderProfileMaxAggregateOutputType = {
   bio: string | null
   approvedAt: Date | null
   suspendedAt: Date | null
+  suspensionReason: string | null
+  suspensionEndsAt: Date | null
   lastOnlineAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -121,6 +125,8 @@ export type RiderProfileCountAggregateOutputType = {
   bio: number
   approvedAt: number
   suspendedAt: number
+  suspensionReason: number
+  suspensionEndsAt: number
   lastOnlineAt: number
   createdAt: number
   updatedAt: number
@@ -170,6 +176,8 @@ export type RiderProfileMinAggregateInputType = {
   bio?: true
   approvedAt?: true
   suspendedAt?: true
+  suspensionReason?: true
+  suspensionEndsAt?: true
   lastOnlineAt?: true
   createdAt?: true
   updatedAt?: true
@@ -197,6 +205,8 @@ export type RiderProfileMaxAggregateInputType = {
   bio?: true
   approvedAt?: true
   suspendedAt?: true
+  suspensionReason?: true
+  suspensionEndsAt?: true
   lastOnlineAt?: true
   createdAt?: true
   updatedAt?: true
@@ -224,6 +234,8 @@ export type RiderProfileCountAggregateInputType = {
   bio?: true
   approvedAt?: true
   suspendedAt?: true
+  suspensionReason?: true
+  suspensionEndsAt?: true
   lastOnlineAt?: true
   createdAt?: true
   updatedAt?: true
@@ -338,6 +350,8 @@ export type RiderProfileGroupByOutputType = {
   bio: string | null
   approvedAt: Date | null
   suspendedAt: Date | null
+  suspensionReason: string | null
+  suspensionEndsAt: Date | null
   lastOnlineAt: Date | null
   createdAt: Date
   updatedAt: Date
@@ -388,6 +402,8 @@ export type RiderProfileWhereInput = {
   bio?: Prisma.StringNullableFilter<"RiderProfile"> | string | null
   approvedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   suspendedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
+  suspensionReason?: Prisma.StringNullableFilter<"RiderProfile"> | string | null
+  suspensionEndsAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   lastOnlineAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
@@ -423,6 +439,8 @@ export type RiderProfileOrderByWithRelationInput = {
   bio?: Prisma.SortOrderInput | Prisma.SortOrder
   approvedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   suspendedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  suspensionReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  suspensionEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastOnlineAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -461,6 +479,8 @@ export type RiderProfileWhereUniqueInput = Prisma.AtLeast<{
   bio?: Prisma.StringNullableFilter<"RiderProfile"> | string | null
   approvedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   suspendedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
+  suspensionReason?: Prisma.StringNullableFilter<"RiderProfile"> | string | null
+  suspensionEndsAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   lastOnlineAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
@@ -496,6 +516,8 @@ export type RiderProfileOrderByWithAggregationInput = {
   bio?: Prisma.SortOrderInput | Prisma.SortOrder
   approvedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   suspendedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  suspensionReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  suspensionEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastOnlineAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -531,6 +553,8 @@ export type RiderProfileScalarWhereWithAggregatesInput = {
   bio?: Prisma.StringNullableWithAggregatesFilter<"RiderProfile"> | string | null
   approvedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"RiderProfile"> | Date | string | null
   suspendedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"RiderProfile"> | Date | string | null
+  suspensionReason?: Prisma.StringNullableWithAggregatesFilter<"RiderProfile"> | string | null
+  suspensionEndsAt?: Prisma.DateTimeNullableWithAggregatesFilter<"RiderProfile"> | Date | string | null
   lastOnlineAt?: Prisma.DateTimeNullableWithAggregatesFilter<"RiderProfile"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"RiderProfile"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"RiderProfile"> | Date | string
@@ -556,6 +580,8 @@ export type RiderProfileCreateInput = {
   bio?: string | null
   approvedAt?: Date | string | null
   suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -591,6 +617,8 @@ export type RiderProfileUncheckedCreateInput = {
   bio?: string | null
   approvedAt?: Date | string | null
   suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -622,6 +650,8 @@ export type RiderProfileUpdateInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -657,6 +687,8 @@ export type RiderProfileUncheckedUpdateInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -690,6 +722,8 @@ export type RiderProfileCreateManyInput = {
   bio?: string | null
   approvedAt?: Date | string | null
   suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -715,6 +749,8 @@ export type RiderProfileUpdateManyMutationInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -742,6 +778,8 @@ export type RiderProfileUncheckedUpdateManyInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -774,6 +812,8 @@ export type RiderProfileCountOrderByAggregateInput = {
   bio?: Prisma.SortOrder
   approvedAt?: Prisma.SortOrder
   suspendedAt?: Prisma.SortOrder
+  suspensionReason?: Prisma.SortOrder
+  suspensionEndsAt?: Prisma.SortOrder
   lastOnlineAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -811,6 +851,8 @@ export type RiderProfileMaxOrderByAggregateInput = {
   bio?: Prisma.SortOrder
   approvedAt?: Prisma.SortOrder
   suspendedAt?: Prisma.SortOrder
+  suspensionReason?: Prisma.SortOrder
+  suspensionEndsAt?: Prisma.SortOrder
   lastOnlineAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -838,6 +880,8 @@ export type RiderProfileMinOrderByAggregateInput = {
   bio?: Prisma.SortOrder
   approvedAt?: Prisma.SortOrder
   suspendedAt?: Prisma.SortOrder
+  suspensionReason?: Prisma.SortOrder
+  suspensionEndsAt?: Prisma.SortOrder
   lastOnlineAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -1068,6 +1112,8 @@ export type RiderProfileCreateWithoutUserInput = {
   bio?: string | null
   approvedAt?: Date | string | null
   suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1101,6 +1147,8 @@ export type RiderProfileUncheckedCreateWithoutUserInput = {
   bio?: string | null
   approvedAt?: Date | string | null
   suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1148,6 +1196,8 @@ export type RiderProfileUpdateWithoutUserInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1181,6 +1231,8 @@ export type RiderProfileUncheckedUpdateWithoutUserInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1212,6 +1264,8 @@ export type RiderProfileCreateWithoutVehicleInput = {
   bio?: string | null
   approvedAt?: Date | string | null
   suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1246,6 +1300,8 @@ export type RiderProfileUncheckedCreateWithoutVehicleInput = {
   bio?: string | null
   approvedAt?: Date | string | null
   suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1292,6 +1348,8 @@ export type RiderProfileUpdateWithoutVehicleInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1326,6 +1384,8 @@ export type RiderProfileUncheckedUpdateWithoutVehicleInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1356,6 +1416,8 @@ export type RiderProfileCreateWithoutDocumentsInput = {
   bio?: string | null
   approvedAt?: Date | string | null
   suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1390,6 +1452,8 @@ export type RiderProfileUncheckedCreateWithoutDocumentsInput = {
   bio?: string | null
   approvedAt?: Date | string | null
   suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1436,6 +1500,8 @@ export type RiderProfileUpdateWithoutDocumentsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1470,6 +1536,8 @@ export type RiderProfileUncheckedUpdateWithoutDocumentsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1500,6 +1568,8 @@ export type RiderProfileCreateWithoutServiceZoneInput = {
   bio?: string | null
   approvedAt?: Date | string | null
   suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1533,6 +1603,8 @@ export type RiderProfileUncheckedCreateWithoutServiceZoneInput = {
   bio?: string | null
   approvedAt?: Date | string | null
   suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1595,6 +1667,8 @@ export type RiderProfileScalarWhereInput = {
   bio?: Prisma.StringNullableFilter<"RiderProfile"> | string | null
   approvedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   suspendedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
+  suspensionReason?: Prisma.StringNullableFilter<"RiderProfile"> | string | null
+  suspensionEndsAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   lastOnlineAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
@@ -1620,6 +1694,8 @@ export type RiderProfileCreateWithoutRidesInput = {
   bio?: string | null
   approvedAt?: Date | string | null
   suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1654,6 +1730,8 @@ export type RiderProfileUncheckedCreateWithoutRidesInput = {
   bio?: string | null
   approvedAt?: Date | string | null
   suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1700,6 +1778,8 @@ export type RiderProfileUpdateWithoutRidesInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1734,6 +1814,8 @@ export type RiderProfileUncheckedUpdateWithoutRidesInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1764,6 +1846,8 @@ export type RiderProfileCreateWithoutDeliveriesInput = {
   bio?: string | null
   approvedAt?: Date | string | null
   suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1798,6 +1882,8 @@ export type RiderProfileUncheckedCreateWithoutDeliveriesInput = {
   bio?: string | null
   approvedAt?: Date | string | null
   suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1844,6 +1930,8 @@ export type RiderProfileUpdateWithoutDeliveriesInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1878,6 +1966,8 @@ export type RiderProfileUncheckedUpdateWithoutDeliveriesInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1908,6 +1998,8 @@ export type RiderProfileCreateWithoutPayoutRequestsInput = {
   bio?: string | null
   approvedAt?: Date | string | null
   suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1942,6 +2034,8 @@ export type RiderProfileUncheckedCreateWithoutPayoutRequestsInput = {
   bio?: string | null
   approvedAt?: Date | string | null
   suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1988,6 +2082,8 @@ export type RiderProfileUpdateWithoutPayoutRequestsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2022,6 +2118,8 @@ export type RiderProfileUncheckedUpdateWithoutPayoutRequestsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2052,6 +2150,8 @@ export type RiderProfileCreateWithoutIncidentsInput = {
   bio?: string | null
   approvedAt?: Date | string | null
   suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2086,6 +2186,8 @@ export type RiderProfileUncheckedCreateWithoutIncidentsInput = {
   bio?: string | null
   approvedAt?: Date | string | null
   suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2132,6 +2234,8 @@ export type RiderProfileUpdateWithoutIncidentsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2166,6 +2270,8 @@ export type RiderProfileUncheckedUpdateWithoutIncidentsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2197,6 +2303,8 @@ export type RiderProfileCreateManyServiceZoneInput = {
   bio?: string | null
   approvedAt?: Date | string | null
   suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2222,6 +2330,8 @@ export type RiderProfileUpdateWithoutServiceZoneInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2255,6 +2365,8 @@ export type RiderProfileUncheckedUpdateWithoutServiceZoneInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2287,6 +2399,8 @@ export type RiderProfileUncheckedUpdateManyWithoutServiceZoneInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2381,6 +2495,8 @@ export type RiderProfileSelect<ExtArgs extends runtime.Types.Extensions.Internal
   bio?: boolean
   approvedAt?: boolean
   suspendedAt?: boolean
+  suspensionReason?: boolean
+  suspensionEndsAt?: boolean
   lastOnlineAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -2417,6 +2533,8 @@ export type RiderProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   bio?: boolean
   approvedAt?: boolean
   suspendedAt?: boolean
+  suspensionReason?: boolean
+  suspensionEndsAt?: boolean
   lastOnlineAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -2446,6 +2564,8 @@ export type RiderProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   bio?: boolean
   approvedAt?: boolean
   suspendedAt?: boolean
+  suspensionReason?: boolean
+  suspensionEndsAt?: boolean
   lastOnlineAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -2475,13 +2595,15 @@ export type RiderProfileSelectScalar = {
   bio?: boolean
   approvedAt?: boolean
   suspendedAt?: boolean
+  suspensionReason?: boolean
+  suspensionEndsAt?: boolean
   lastOnlineAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
 }
 
-export type RiderProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "displayCode" | "approvalStatus" | "city" | "serviceZoneId" | "onlineStatus" | "jobPreference" | "currentLatitude" | "currentLongitude" | "lastLocationMocked" | "lastLocationMockedAt" | "ratingAverage" | "acceptanceRate" | "cancellationRate" | "completedTrips" | "commissionPercent" | "bio" | "approvedAt" | "suspendedAt" | "lastOnlineAt" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["riderProfile"]>
+export type RiderProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "displayCode" | "approvalStatus" | "city" | "serviceZoneId" | "onlineStatus" | "jobPreference" | "currentLatitude" | "currentLongitude" | "lastLocationMocked" | "lastLocationMockedAt" | "ratingAverage" | "acceptanceRate" | "cancellationRate" | "completedTrips" | "commissionPercent" | "bio" | "approvedAt" | "suspendedAt" | "suspensionReason" | "suspensionEndsAt" | "lastOnlineAt" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["riderProfile"]>
 export type RiderProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   serviceZone?: boolean | Prisma.RiderProfile$serviceZoneArgs<ExtArgs>
@@ -2539,6 +2661,14 @@ export type $RiderProfilePayload<ExtArgs extends runtime.Types.Extensions.Intern
     bio: string | null
     approvedAt: Date | null
     suspendedAt: Date | null
+    /**
+     * Free-text reason captured when ops suspends or extends a rider.
+     */
+    suspensionReason: string | null
+    /**
+     * Optional end of timed suspension; null means indefinite until reinstate.
+     */
+    suspensionEndsAt: Date | null
     lastOnlineAt: Date | null
     createdAt: Date
     updatedAt: Date
@@ -2994,6 +3124,8 @@ export interface RiderProfileFieldRefs {
   readonly bio: Prisma.FieldRef<"RiderProfile", 'String'>
   readonly approvedAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
   readonly suspendedAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
+  readonly suspensionReason: Prisma.FieldRef<"RiderProfile", 'String'>
+  readonly suspensionEndsAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
   readonly lastOnlineAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>

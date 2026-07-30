@@ -25,7 +25,8 @@ import type {
   EscalationRuleRecord,
   OpsJobStatus,
   ScheduledBroadcastRecord,
-  AdminUserStats
+  AdminUserStats,
+  RiderDocumentRecord
 } from "./types";
 
 // ─── query key constants ──────────────────────────────────────────────────────
@@ -47,7 +48,8 @@ export const QK = {
   supportTickets: (token?: string | null) => ["admin-support-tickets", token],
   escalationRules: (token?: string | null) => ["admin-escalation-rules", token],
   scheduledBroadcasts: (token?: string | null) => ["admin-scheduled-broadcasts", token],
-  opsJobStatus: (token?: string | null) => ["admin-ops-jobs-status", token]
+  opsJobStatus: (token?: string | null) => ["admin-ops-jobs-status", token],
+  riderDocuments: (token?: string | null) => ["admin-rider-documents", token]
 } as const;
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -327,6 +329,13 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     refetchInterval: 30000
   });
 
+  const { data: riderDocumentsData, isPending: riderDocumentsPending } = useQuery<RiderDocumentRecord[]>({
+    queryKey: QK.riderDocuments(token),
+    queryFn: () => requestJson<RiderDocumentRecord[]>("/admin/documents?limit=300", { token }),
+    enabled: isAdmin,
+    staleTime: 20000
+  });
+
   // ── raw data ────────────────────────────────────────────────────────────────
   const rides = useMemo(() => ridesData ?? [], [ridesData]);
   const deliveries = useMemo(() => deliveriesData ?? [], [deliveriesData]);
@@ -361,9 +370,18 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     [riders]
   );
   const suspendedRiders = useMemo(
-    () => riders.filter((r) =>
-      ["blocked", "suspended", "rejected"].includes((r.user.accountStatus ?? "").toLowerCase())
-    ),
+    () =>
+      riders.filter((r) => {
+        const account = (r.user.accountStatus ?? "").toLowerCase();
+        const approval = (r.approvalStatus ?? "").toUpperCase();
+        return (
+          account === "suspended" ||
+          account === "banned" ||
+          account === "blocked" ||
+          approval === "SUSPENDED" ||
+          Boolean(r.suspendedAt)
+        );
+      }),
     [riders]
   );
   const vehicleCount = useMemo(() => riders.filter((r) => r.vehicle != null).length, [riders]);
@@ -813,46 +831,70 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     };
   }, [userStats, riderVerificationRows, riders]);
 
-  // ── document rows ───────────────────────────────────────────────────────────
-  const riderDocumentRows = useMemo(() => {
-    return riders.flatMap((rider) => {
-      const rows = [];
-      if (rider.vehicle) {
-        rows.push({
-          id: `${rider.id}-vehicle`,
-          riderName: rider.user.fullName,
-          displayCode: rider.displayCode,
-          phone: rider.user.phoneE164,
-          documentType: "Vehicle Registration",
-          documentNumber: rider.vehicle.plateNumber,
-          status: rider.vehicle.status,
-          expiryDate: "—",
-          daysLeft: "—"
-        });
-      } else {
-        rows.push({
-          id: `${rider.id}-no-vehicle`,
-          riderName: rider.user.fullName,
-          displayCode: rider.displayCode,
-          phone: rider.user.phoneE164,
-          documentType: "Vehicle Registration",
-          documentNumber: "Missing",
-          status: "missing",
-          expiryDate: "—",
-          daysLeft: "—"
-        });
-      }
-      return rows;
-    });
-  }, [riders]);
+  // ── document rows (real RiderDocument records) ──────────────────────────────
+  const documentTypeLabel = (type: string) => {
+    const map: Record<string, string> = {
+      NATIONAL_ID: "National ID",
+      RIDER_LICENSE: "License",
+      VEHICLE_REGISTRATION: "Registration",
+      INSURANCE: "Insurance",
+      PROFILE_PHOTO: "Profile Photo",
+      OTHER: "Other"
+    };
+    return map[type] ?? type;
+  };
 
-  const riderDocumentStats = useMemo(() => ({
-    total: riders.length,
-    compliant: riders.filter((r) => r.vehicle != null && r.serviceZone != null).length,
-    expiringSoon: 0,
-    expired: 0,
-    missing: riders.filter((r) => !r.vehicle || !r.serviceZone).length
-  }), [riders]);
+  const documentUiStatus = (doc: RiderDocumentRecord) => {
+    const status = (doc.status ?? "").toUpperCase();
+    if (status === "APPROVED") {
+      if (doc.expiresAt) {
+        const days = Math.ceil((new Date(doc.expiresAt).getTime() - Date.now()) / 86400000);
+        if (days < 0) return "Expired";
+        if (days <= 30) return "Expiring Soon";
+      }
+      return "Compliant";
+    }
+    if (status === "EXPIRED") return "Expired";
+    if (status === "REJECTED") return "Missing";
+    return "Pending";
+  };
+
+  const riderDocumentRows = useMemo(() => {
+    const docs = riderDocumentsData ?? [];
+    return docs.map((doc) => {
+      const daysLeft =
+        doc.expiresAt && !Number.isNaN(new Date(doc.expiresAt).getTime())
+          ? String(Math.ceil((new Date(doc.expiresAt).getTime() - Date.now()) / 86400000))
+          : "—";
+      return {
+        id: doc.id,
+        riderId: doc.riderId,
+        riderName: doc.rider?.user.fullName ?? "Unknown rider",
+        displayCode: doc.rider?.displayCode ?? "—",
+        phone: doc.rider?.user.phoneE164 ?? "—",
+        documentType: documentTypeLabel(doc.type),
+        documentNumber: doc.notes?.trim() || doc.type,
+        status: documentUiStatus(doc),
+        rawStatus: doc.status,
+        fileUrl: doc.fileUrl,
+        expiryDate: doc.expiresAt
+          ? new Date(doc.expiresAt).toLocaleDateString("en-GB", { timeZone: "Africa/Accra" })
+          : "—",
+        daysLeft
+      };
+    });
+  }, [riderDocumentsData]);
+
+  const riderDocumentStats = useMemo(() => {
+    const rows = riderDocumentRows;
+    return {
+      total: rows.length,
+      compliant: rows.filter((r) => r.status === "Compliant").length,
+      expiringSoon: rows.filter((r) => r.status === "Expiring Soon").length,
+      expired: rows.filter((r) => r.status === "Expired").length,
+      missing: rows.filter((r) => r.status === "Missing" || r.status === "Pending").length
+    };
+  }, [riderDocumentRows]);
 
   // ── users management ────────────────────────────────────────────────────────
   const managedUsers = useMemo(() => {
@@ -1058,10 +1100,14 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     const hours = Array.from({ length: 24 }, (_, i) => i);
     const buckets = hours.map((h) => ({
       label: `${h.toString().padStart(2, "0")}:00`,
-      count: rides.filter((r) => new Date(r.createdAt).getHours() === h).length
+      count: rides.filter((r) => {
+        // Africa/Accra is GMT year-round (no DST)
+        return new Date(r.createdAt).getUTCHours() === h;
+      }).length
     }));
     const nonZero = buckets.filter((b) => b.count > 0);
-    return nonZero.length > 0 ? nonZero : buckets.slice(6, 22);
+    // Prefer hours with volume; otherwise show the Accra daytime window
+    return (nonZero.length > 0 ? nonZero : buckets.slice(6, 22)).slice(0, 16);
   }, [rides]);
 
   const requestPeakMax = useMemo(
@@ -1319,11 +1365,34 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: QK.riders(token) }),
-        queryClient.invalidateQueries({ queryKey: QK.userStats(token) })
+        queryClient.invalidateQueries({ queryKey: QK.userStats(token) }),
+        queryClient.invalidateQueries({ queryKey: QK.auditLogs(token) })
       ]);
       addToast("Rider suspension updated", "success");
     },
     onError: (error) => addToast((error as Error).message || "Could not update rider suspension", "error")
+  });
+
+  const documentReviewMutation = useMutation({
+    mutationFn: async ({
+      documentId,
+      status,
+      notes
+    }: {
+      documentId: string;
+      status: "APPROVED" | "REJECTED" | "EXPIRED";
+      notes?: string;
+    }) =>
+      requestJson(`/admin/documents/${documentId}/review`, {
+        method: "PATCH",
+        token,
+        body: JSON.stringify({ status, notes })
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: QK.riderDocuments(token) });
+      addToast("Document review saved", "success");
+    },
+    onError: (error) => addToast((error as Error).message || "Could not review document", "error")
   });
 
   const zoneUpdateMutation = useMutation({
@@ -1494,8 +1563,8 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
       { label: "Approved", value: `${riderVerificationStats.approved}` }
     ],
     riderDocuments: [
-      { label: "Total", value: `${riders.length}` },
-      { label: "Missing", value: `${riderDocumentStats.missing}` }
+      { label: "Total", value: `${riderDocumentStats.total}` },
+      { label: "Pending / missing", value: `${riderDocumentStats.missing}` }
     ],
     riderPerformance: [
       { label: "Completed trips", value: `${completedRides.length}` },
@@ -1601,7 +1670,15 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     supportTickets, openSosCount, incidents, scheduledBroadcasts, escalationRules
   ]);
 
-  const dataLoading = ridesPending || deliveriesPending || ridersPending || walletTxPending || payoutPending || ratingsPending || incidentsPending;
+  const dataLoading =
+    ridesPending ||
+    deliveriesPending ||
+    ridersPending ||
+    walletTxPending ||
+    payoutPending ||
+    ratingsPending ||
+    incidentsPending ||
+    riderDocumentsPending;
 
   return {
     // UI state
@@ -1677,6 +1754,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     promotePassengerMutation,
     riderApprovalMutation,
     riderSuspensionMutation,
+    documentReviewMutation,
     zoneUpdateMutation,
     createEscalationRuleMutation,
     toggleEscalationRuleMutation,

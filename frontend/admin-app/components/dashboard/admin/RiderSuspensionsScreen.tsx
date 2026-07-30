@@ -2,65 +2,122 @@ import { useState, useMemo } from "react";
 import {
   Shield,
   Clock,
-  CheckCircle,
+  AlertTriangle,
   Search,
   MoreVertical,
   X,
   Mail,
   ClipboardList,
-  AlertTriangle,
 } from "lucide-react";
 import { useAdminToast } from "./AdminToast";
 import { SkeletonKPI, SkeletonTable } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
+import type { AuditLogRecord } from "./types";
+
+export type SuspendedRiderRow = {
+  id: string;
+  displayCode: string;
+  onlineStatus: boolean;
+  approvalStatus?: string;
+  suspendedAt?: string | null;
+  suspensionReason?: string | null;
+  suspensionEndsAt?: string | null;
+  user: { fullName: string; email?: string | null; phoneE164: string; accountStatus?: string };
+  vehicle?: { plateNumber: string } | null;
+  serviceZone?: { name: string } | null;
+  createdAt?: string;
+};
 
 export type RiderSuspensionsScreenProps = {
-  suspendedRiders: {
-    id: string;
-    displayCode: string;
-    onlineStatus: boolean;
-    user: { fullName: string; email?: string | null; phoneE164: string; accountStatus?: string };
-    vehicle?: { plateNumber: string } | null;
-    serviceZone?: { name: string } | null;
-    createdAt?: string;
-  }[];
+  suspendedRiders: SuspendedRiderRow[];
   totalRiders: number;
-  onSuspensionAction?: (riderProfileId: string, action: "suspend" | "reinstate" | "extend" | "warn", reason?: string) => void;
+  auditLogs?: AuditLogRecord[];
+  onSuspensionAction?: (
+    riderProfileId: string,
+    action: "suspend" | "reinstate" | "extend" | "warn",
+    reason?: string,
+    durationDays?: number
+  ) => void;
   isMutating?: boolean;
   dataLoading?: boolean;
 };
 
-const TABS = ["All Suspensions", "Active", "Expired", "Reinstated"] as const;
+const TABS = ["All Suspensions", "Active", "Expired"] as const;
 type TabKey = (typeof TABS)[number];
 const PAGE_SIZE = 8;
 
-function getSuspensionData(accountStatus?: string) {
-  if (accountStatus === "SUSPENDED") {
-    return {
-      reason: "Policy violation",
-      description: "Rider violated platform policies. Pending review and appeal.",
-      duration: "30 days",
-      status: "Active",
-      suspendedOn: "May 31, 2024",
-      endsOn: "Jun 30, 2024",
-    };
+function formatDate(value?: string | null) {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "Africa/Accra",
+  });
+}
+
+function formatDateTime(value?: string | null) {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Africa/Accra",
+  });
+}
+
+function durationLabel(suspendedAt?: string | null, endsAt?: string | null) {
+  if (!endsAt) return "Indefinite";
+  if (!suspendedAt) return "Timed";
+  const start = new Date(suspendedAt).getTime();
+  const end = new Date(endsAt).getTime();
+  if (Number.isNaN(start) || Number.isNaN(end) || end <= start) return "Timed";
+  const days = Math.max(1, Math.round((end - start) / 86400000));
+  return `${days} day${days === 1 ? "" : "s"}`;
+}
+
+function isCurrentlySuspended(rider: SuspendedRiderRow) {
+  const account = (rider.user.accountStatus ?? "").toUpperCase();
+  const approval = (rider.approvalStatus ?? "").toUpperCase();
+  return account === "SUSPENDED" || approval === "SUSPENDED" || Boolean(rider.suspendedAt);
+}
+
+function suspensionLifecycle(rider: SuspendedRiderRow): "Active" | "Expired" {
+  if (!isCurrentlySuspended(rider)) return "Expired";
+  if (rider.suspensionEndsAt) {
+    const ends = new Date(rider.suspensionEndsAt).getTime();
+    if (!Number.isNaN(ends) && ends <= Date.now()) return "Expired";
   }
+  return "Active";
+}
+
+function getSuspensionView(rider: SuspendedRiderRow) {
+  const status = suspensionLifecycle(rider);
+  const reason = rider.suspensionReason?.trim() || "No reason recorded";
   return {
-    reason: "Multiple complaints",
-    description: "Three or more passenger complaints received within 30 days.",
-    duration: "7 days",
-    status: "Reinstated",
-    suspendedOn: "May 15, 2024",
-    endsOn: "May 22, 2024",
+    reason,
+    description:
+      status === "Active"
+        ? "Rider access is restricted until reinstated or the timed suspension ends."
+        : "Timed suspension end date has passed — reinstate or extend from ops actions.",
+    duration: durationLabel(rider.suspendedAt, rider.suspensionEndsAt),
+    status,
+    suspendedOn: formatDate(rider.suspendedAt),
+    endsOn: rider.suspensionEndsAt ? formatDate(rider.suspensionEndsAt) : "Until reinstated",
   };
 }
 
 function getStatusStyle(status: string) {
   if (status === "Active") return { background: "rgba(245,158,11,0.15)", color: "#f59e0b" };
-  if (status === "Expired") return { background: "rgba(107,114,128,0.15)", color: "var(--text-secondary)" };
-  return { background: "rgba(16,185,129,0.15)", color: "#10b981" };
+  return { background: "rgba(107,114,128,0.15)", color: "var(--text-secondary)" };
 }
 
 function Avatar({ name, size = 36 }: { name: string; size?: number }) {
@@ -89,6 +146,7 @@ function Avatar({ name, size = 36 }: { name: string; size?: number }) {
 export function RiderSuspensionsScreen({
   suspendedRiders,
   totalRiders,
+  auditLogs = [],
   onSuspensionAction,
   isMutating = false,
   dataLoading = false,
@@ -100,32 +158,77 @@ export function RiderSuspensionsScreen({
   const [durationFilter, setDurationFilter] = useState("All Durations");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSuspension, setSelectedSuspension] = useState<string | null>(null);
+  const [extendDays, setExtendDays] = useState(7);
 
   const { isMobile, isTablet } = useBreakpoint();
   const { addToast } = useAdminToast();
 
+  const reasonOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of suspendedRiders) {
+      const reason = r.suspensionReason?.trim();
+      if (reason) set.add(reason);
+    }
+    return ["All Reasons", ...Array.from(set).sort()];
+  }, [suspendedRiders]);
+
   const tabFiltered = useMemo(() => {
     if (activeTab === "Active")
-      return suspendedRiders.filter((r) => r.user.accountStatus === "SUSPENDED");
+      return suspendedRiders.filter((r) => suspensionLifecycle(r) === "Active");
     if (activeTab === "Expired")
-      return suspendedRiders.filter(
-        (r) => r.user.accountStatus !== "SUSPENDED" && r.user.accountStatus !== "REINSTATED"
-      );
-    if (activeTab === "Reinstated")
-      return suspendedRiders.filter((r) => r.user.accountStatus === "REINSTATED");
+      return suspendedRiders.filter((r) => suspensionLifecycle(r) === "Expired");
     return suspendedRiders;
   }, [activeTab, suspendedRiders]);
 
   const filtered = useMemo(() => {
-    if (!searchQuery.trim()) return tabFiltered;
-    const q = searchQuery.toLowerCase();
-    return tabFiltered.filter(
-      (r) =>
-        r.user.fullName.toLowerCase().includes(q) ||
-        r.user.phoneE164.includes(q) ||
-        r.displayCode.toLowerCase().includes(q)
-    );
-  }, [tabFiltered, searchQuery]);
+    const q = searchQuery.trim().toLowerCase();
+    return tabFiltered.filter((r) => {
+      const view = getSuspensionView(r);
+      if (q) {
+        const hay = `${r.user.fullName} ${r.user.phoneE164} ${r.displayCode}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      if (reasonFilter !== "All Reasons" && view.reason !== reasonFilter) return false;
+      if (statusFilter !== "All Status" && view.status !== statusFilter) return false;
+      if (durationFilter !== "All Durations" && view.duration !== durationFilter) return false;
+      return true;
+    });
+  }, [tabFiltered, searchQuery, reasonFilter, statusFilter, durationFilter]);
+
+  const selectedRider = useMemo(
+    () => suspendedRiders.find((r) => r.id === selectedSuspension) ?? null,
+    [suspendedRiders, selectedSuspension]
+  );
+
+  const suspensionHistory = useMemo(() => {
+    if (!selectedRider) return [];
+    const fromAudit = auditLogs
+      .filter(
+        (log) =>
+          log.entityId === selectedRider.id &&
+          /RIDER_(SUSPEND|REINSTATE|SUSPENSION_EXTEND|WARN)/i.test(log.action)
+      )
+      .slice(0, 8)
+      .map((log) => ({
+        event: log.action.replace(/_/g, " "),
+        date: formatDateTime(log.createdAt),
+        reason:
+          typeof log.details?.reason === "string"
+            ? log.details.reason
+            : selectedRider.suspensionReason || "—",
+      }));
+
+    if (fromAudit.length > 0) return fromAudit;
+
+    if (!selectedRider.suspendedAt) return [];
+    return [
+      {
+        event: "Suspended",
+        date: formatDateTime(selectedRider.suspendedAt),
+        reason: selectedRider.suspensionReason || "No reason recorded",
+      },
+    ];
+  }, [selectedRider, auditLogs]);
 
   if (dataLoading) {
     return (
@@ -136,15 +239,8 @@ export function RiderSuspensionsScreen({
     );
   }
 
-  const selectedRider = suspendedRiders.find((r) => r.id === selectedSuspension);
-
-  const activeCount = suspendedRiders.filter(
-    (r) => r.user.accountStatus === "SUSPENDED"
-  ).length;
-  const reinstatedCount = suspendedRiders.filter(
-    (r) => r.user.accountStatus === "REINSTATED"
-  ).length;
-
+  const activeCount = suspendedRiders.filter((r) => suspensionLifecycle(r) === "Active").length;
+  const expiredCount = suspendedRiders.filter((r) => suspensionLifecycle(r) === "Expired").length;
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
@@ -159,42 +255,39 @@ export function RiderSuspensionsScreen({
     setCurrentPage(1);
   };
 
-  const suspDetails = selectedRider ? getSuspensionData(selectedRider.user.accountStatus) : null;
-
-  const suspensionHistory = [
-    { event: "Suspended", date: "May 31, 2024 · 09:30 AM", reason: "Safety violation" },
-    { event: "Warning Sent", date: "May 25, 2024 · 02:15 PM", reason: "Speeding" },
-  ];
+  const suspDetails = selectedRider ? getSuspensionView(selectedRider) : null;
 
   const handleSendWarning = () => {
-    const rider = filtered.find((r) => r.id === selectedSuspension);
-    if (onSuspensionAction && rider) {
-      onSuspensionAction(rider.id, "warn");
-    } else {
-      addToast("Warning Sent", "success");
+    if (!selectedRider || !onSuspensionAction) {
+      addToast("Warning action unavailable", "error");
+      return;
     }
+    onSuspensionAction(selectedRider.id, "warn", selectedRider.suspensionReason || undefined);
   };
 
   const handleAddNote = () => {
-    addToast("Note Added", "success");
+    addToast("Ops notes are not stored yet — use suspension reason on extend/warn instead", "info");
   };
 
   const handleReinstate = () => {
-    const rider = filtered.find((r) => r.id === selectedSuspension);
-    if (onSuspensionAction && rider) {
-      onSuspensionAction(rider.id, "reinstate");
-    } else {
-      addToast("Rider Reinstated", "success");
+    if (!selectedRider || !onSuspensionAction) {
+      addToast("Reinstate action unavailable", "error");
+      return;
     }
+    onSuspensionAction(selectedRider.id, "reinstate");
   };
 
   const handleExtend = () => {
-    const rider = filtered.find((r) => r.id === selectedSuspension);
-    if (onSuspensionAction && rider) {
-      onSuspensionAction(rider.id, "extend");
-    } else {
-      addToast("Suspension Extended", "warning");
+    if (!selectedRider || !onSuspensionAction) {
+      addToast("Extend action unavailable", "error");
+      return;
     }
+    onSuspensionAction(
+      selectedRider.id,
+      "extend",
+      selectedRider.suspensionReason || "Suspension extended",
+      extendDays
+    );
   };
 
   const fleetShare =
@@ -224,16 +317,15 @@ export function RiderSuspensionsScreen({
             tone: "yellow",
           },
           {
-            label: "Reinstated",
-            value: reinstatedCount,
-            hint: "Access restored",
-            icon: <CheckCircle size={22} />,
-            tone: "green",
+            label: "Timed Expired",
+            value: expiredCount,
+            hint: "End date passed",
+            icon: <AlertTriangle size={22} />,
+            tone: "neutral",
           },
         ]}
       />
 
-      {/* ── Split Layout ── */}
       <div
         style={{
           display: "grid",
@@ -242,7 +334,6 @@ export function RiderSuspensionsScreen({
           alignItems: "start",
         }}
       >
-        {/* ── LEFT: List Panel ── */}
         <article className="admin-reference-card" style={{ minWidth: 0, padding: 20 }}>
           <div className="admin-tabs" style={{ marginBottom: 16 }}>
             {TABS.map((tab) => (
@@ -270,36 +361,43 @@ export function RiderSuspensionsScreen({
             <select
               className="admin-select-sm"
               value={reasonFilter}
-              onChange={(e) => setReasonFilter(e.target.value)}
+              onChange={(e) => {
+                setReasonFilter(e.target.value);
+                setCurrentPage(1);
+              }}
             >
-              <option>All Reasons</option>
-              <option>Policy violation</option>
-              <option>Multiple complaints</option>
-              <option>Safety violation</option>
+              {reasonOptions.map((option) => (
+                <option key={option}>{option}</option>
+              ))}
             </select>
             <select
               className="admin-select-sm"
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setCurrentPage(1);
+              }}
             >
               <option>All Status</option>
               <option>Active</option>
               <option>Expired</option>
-              <option>Reinstated</option>
             </select>
             <select
               className="admin-select-sm"
               value={durationFilter}
-              onChange={(e) => setDurationFilter(e.target.value)}
+              onChange={(e) => {
+                setDurationFilter(e.target.value);
+                setCurrentPage(1);
+              }}
             >
               <option>All Durations</option>
+              <option>Indefinite</option>
               <option>7 days</option>
               <option>14 days</option>
               <option>30 days</option>
             </select>
           </div>
 
-          {/* Table */}
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead>
@@ -334,7 +432,7 @@ export function RiderSuspensionsScreen({
                   </tr>
                 ) : (
                   paginated.map((rider) => {
-                    const susp = getSuspensionData(rider.user.accountStatus);
+                    const susp = getSuspensionView(rider);
                     const isSelected = selectedSuspension === rider.id;
                     return (
                       <tr
@@ -346,57 +444,79 @@ export function RiderSuspensionsScreen({
                           borderLeft: isSelected ? "3px solid #f59e0b" : "3px solid transparent",
                           transition: "background 0.15s",
                         }}
-                        onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}
-                        onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected) e.currentTarget.style.background = "rgba(255,255,255,0.02)";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected) e.currentTarget.style.background = "transparent";
+                        }}
                       >
-                        {/* Rider */}
                         <td style={{ padding: "10px 12px", borderBottom: "1px solid #1f2130" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                             <Avatar name={rider.user.fullName} size={34} />
                             <div>
-                              <div style={{ fontWeight: 600, fontSize: 13, color: "var(--text-primary)" }}>{rider.user.fullName}</div>
+                              <div style={{ fontWeight: 600, fontSize: 13, color: "var(--text-primary)" }}>
+                                {rider.user.fullName}
+                              </div>
                               <div style={{ color: "var(--text-muted)", fontSize: 11 }}>{rider.user.phoneE164}</div>
                               <div style={{ color: "var(--text-muted)", fontSize: 11 }}>
-                                <code style={{ fontSize: 10, opacity: 0.7, color: "var(--text-secondary)" }}>{rider.displayCode}</code>
+                                <code style={{ fontSize: 10, opacity: 0.7, color: "var(--text-secondary)" }}>
+                                  {rider.displayCode}
+                                </code>
                               </div>
                             </div>
                           </div>
                         </td>
-
-                        {/* Reason */}
                         <td style={{ padding: "10px 12px", borderBottom: "1px solid #1f2130" }}>
                           <span style={{ fontSize: 13, color: "#d1d5db" }}>{susp.reason}</span>
                         </td>
-
-                        {/* Duration */}
                         <td style={{ padding: "10px 12px", borderBottom: "1px solid #1f2130" }}>
-                          <span style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b", borderRadius: 20, padding: "3px 10px", fontSize: 12, fontWeight: 600, whiteSpace: "nowrap" }}>
+                          <span
+                            style={{
+                              background: "rgba(245,158,11,0.15)",
+                              color: "#f59e0b",
+                              borderRadius: 20,
+                              padding: "3px 10px",
+                              fontSize: 12,
+                              fontWeight: 600,
+                              whiteSpace: "nowrap",
+                            }}
+                          >
                             {susp.duration}
                           </span>
                         </td>
-
-                        {/* Status */}
                         <td style={{ padding: "10px 12px", borderBottom: "1px solid #1f2130" }}>
-                          <span style={{ ...getStatusStyle(susp.status), borderRadius: 20, padding: "3px 10px", fontSize: 12, fontWeight: 600 }}>
+                          <span
+                            style={{
+                              ...getStatusStyle(susp.status),
+                              borderRadius: 20,
+                              padding: "3px 10px",
+                              fontSize: 12,
+                              fontWeight: 600,
+                            }}
+                          >
                             {susp.status}
                           </span>
                         </td>
-
-                        {/* Suspended On */}
                         <td style={{ padding: "10px 12px", borderBottom: "1px solid #1f2130" }}>
                           <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{susp.suspendedOn}</span>
                         </td>
-
-                        {/* Ends On */}
                         <td style={{ padding: "10px 12px", borderBottom: "1px solid #1f2130" }}>
                           <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{susp.endsOn}</span>
                         </td>
-
-                        {/* Actions */}
-                        <td style={{ padding: "10px 12px", borderBottom: "1px solid #1f2130", textAlign: "center" }}>
+                        <td
+                          style={{
+                            padding: "10px 12px",
+                            borderBottom: "1px solid #1f2130",
+                            textAlign: "center",
+                          }}
+                        >
                           <button
                             type="button"
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedSuspension(rider.id);
+                            }}
                             style={{
                               background: "transparent",
                               border: "none",
@@ -407,10 +527,7 @@ export function RiderSuspensionsScreen({
                               display: "inline-flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              transition: "color 0.15s, background 0.15s",
                             }}
-                            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text-primary)"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-secondary)"; e.currentTarget.style.background = "transparent"; }}
                           >
                             <MoreVertical size={16} />
                           </button>
@@ -423,70 +540,37 @@ export function RiderSuspensionsScreen({
             </table>
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16, paddingTop: 12, borderTop: "1px solid var(--border-color)" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginTop: 16,
+                paddingTop: 12,
+                borderTop: "1px solid var(--border-color)",
+              }}
+            >
               <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} of {filtered.length}
+                Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} of{" "}
+                {filtered.length}
               </span>
               <div style={{ display: "flex", gap: 6 }}>
                 <button
                   type="button"
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  style={{
-                    background: currentPage === 1 ? "var(--border-color)" : "var(--bg-surface-2)",
-                    color: currentPage === 1 ? "#6b7280" : "var(--text-primary)",
-                    border: "1px solid var(--border-color)",
-                    borderRadius: 6,
-                    padding: "5px 10px",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    cursor: currentPage === 1 ? "default" : "pointer",
-                    opacity: currentPage === 1 ? 0.5 : 1,
-                    transition: "all 0.15s",
-                  }}
+                  className="admin-btn-secondary"
+                  style={{ opacity: currentPage === 1 ? 0.5 : 1 }}
                 >
                   ‹ Prev
                 </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setCurrentPage(p)}
-                    style={{
-                      background: p === currentPage ? "#f59e0b" : "var(--bg-surface-2)",
-                      color: p === currentPage ? "#000" : "var(--text-primary)",
-                      border: `1px solid ${p === currentPage ? "#f59e0b" : "var(--border-color)"}`,
-                      borderRadius: 6,
-                      padding: "5px 10px",
-                      fontSize: 12,
-                      fontWeight: p === currentPage ? 700 : 500,
-                      cursor: "pointer",
-                      transition: "all 0.15s",
-                    }}
-                    onMouseEnter={(e) => { if (p !== currentPage) { e.currentTarget.style.borderColor = "#f59e0b"; e.currentTarget.style.color = "#f59e0b"; } }}
-                    onMouseLeave={(e) => { if (p !== currentPage) { e.currentTarget.style.borderColor = "var(--border-color)"; e.currentTarget.style.color = "var(--text-primary)"; } }}
-                  >
-                    {p}
-                  </button>
-                ))}
                 <button
                   type="button"
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  style={{
-                    background: currentPage === totalPages ? "var(--border-color)" : "var(--bg-surface-2)",
-                    color: currentPage === totalPages ? "#6b7280" : "var(--text-primary)",
-                    border: "1px solid var(--border-color)",
-                    borderRadius: 6,
-                    padding: "5px 10px",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    cursor: currentPage === totalPages ? "default" : "pointer",
-                    opacity: currentPage === totalPages ? 0.5 : 1,
-                    transition: "all 0.15s",
-                  }}
+                  className="admin-btn-secondary"
+                  style={{ opacity: currentPage === totalPages ? 0.5 : 1 }}
                 >
                   Next ›
                 </button>
@@ -495,7 +579,6 @@ export function RiderSuspensionsScreen({
           )}
         </article>
 
-        {/* ── RIGHT: Detail Panel ── */}
         {selectedRider && suspDetails && (
           <article
             className="admin-reference-card"
@@ -507,9 +590,10 @@ export function RiderSuspensionsScreen({
               overflowY: "auto",
             }}
           >
-            {/* Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "var(--text-primary)" }}>Suspension Details</h3>
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "var(--text-primary)" }}>
+                Suspension Details
+              </h3>
               <button
                 type="button"
                 onClick={() => setSelectedSuspension(null)}
@@ -522,58 +606,69 @@ export function RiderSuspensionsScreen({
                   alignItems: "center",
                   padding: 4,
                   borderRadius: 6,
-                  transition: "color 0.15s, background 0.15s",
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text-primary)"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-secondary)"; e.currentTarget.style.background = "transparent"; }}
               >
                 <X size={18} />
               </button>
             </div>
 
-            {/* Rider Info */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16, paddingBottom: 16, borderBottom: "1px solid var(--border-color)" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                marginBottom: 16,
+                paddingBottom: 16,
+                borderBottom: "1px solid var(--border-color)",
+              }}
+            >
               <Avatar name={selectedRider.user.fullName} size={40} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 700, fontSize: 14, color: "var(--text-primary)" }}>{selectedRider.user.fullName}</div>
+                <div style={{ fontWeight: 700, fontSize: 14, color: "var(--text-primary)" }}>
+                  {selectedRider.user.fullName}
+                </div>
                 <div style={{ color: "var(--text-secondary)", fontSize: 12 }}>{selectedRider.user.phoneE164}</div>
+                <div style={{ color: "var(--text-muted)", fontSize: 11 }}>{selectedRider.displayCode}</div>
               </div>
-              <button
-                type="button"
-                style={{
-                  background: "#f59e0b",
-                  color: "#000",
-                  border: "none",
-                  borderRadius: 8,
-                  padding: "6px 12px",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                  transition: "background 0.15s",
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "#d97706"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "#f59e0b"; }}
-              >
-                View Rider Profile
-              </button>
             </div>
 
-            {/* Detail Rows */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20, paddingBottom: 20, borderBottom: "1px solid var(--border-color)" }}>
-              {/* Status */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+                marginBottom: 20,
+                paddingBottom: 20,
+                borderBottom: "1px solid var(--border-color)",
+              }}
+            >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Status</span>
-                <span style={{ ...getStatusStyle(suspDetails.status), borderRadius: 20, padding: "3px 10px", fontSize: 12, fontWeight: 600 }}>
+                <span
+                  style={{
+                    ...getStatusStyle(suspDetails.status),
+                    borderRadius: 20,
+                    padding: "3px 10px",
+                    fontSize: 12,
+                    fontWeight: 600,
+                  }}
+                >
                   {suspDetails.status}
                 </span>
               </div>
 
-              {/* Reason */}
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                   <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Reason</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, textAlign: "right", maxWidth: "60%", color: "var(--text-primary)" }}>
+                  <span
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      textAlign: "right",
+                      maxWidth: "60%",
+                      color: "var(--text-primary)",
+                    }}
+                  >
                     {suspDetails.reason}
                   </span>
                 </div>
@@ -582,77 +677,33 @@ export function RiderSuspensionsScreen({
                 </div>
               </div>
 
-              {/* Duration */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Duration</span>
                 <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{suspDetails.duration}</span>
               </div>
-
-              {/* Suspended On */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Suspended On</span>
                 <span style={{ fontSize: 13, color: "#d1d5db" }}>{suspDetails.suspendedOn}</span>
               </div>
-
-              {/* Ends On */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Ends On</span>
                 <span style={{ fontSize: 13, color: "#d1d5db" }}>{suspDetails.endsOn}</span>
               </div>
-
-              {/* Suspended By */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Suspended By</span>
-                <span style={{ fontSize: 13, color: "#d1d5db" }}>Admin (Super Admin)</span>
-              </div>
-
-              {/* Evidence */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Evidence</span>
-                <button
-                  type="button"
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    cursor: "pointer",
-                    color: "#f59e0b",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    padding: 0,
-                    textDecoration: "underline",
-                    transition: "color 0.15s",
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.color = "#fbbf24"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = "#f59e0b"; }}
-                >
-                  View Evidence (2)
-                </button>
+                <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Zone / Plate</span>
+                <span style={{ fontSize: 13, color: "#d1d5db" }}>
+                  {selectedRider.serviceZone?.name ?? "—"} · {selectedRider.vehicle?.plateNumber ?? "No plate"}
+                </span>
               </div>
             </div>
 
-            {/* Rider Actions */}
             <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
               <button
                 type="button"
                 onClick={handleSendWarning}
-                style={{
-                  flex: 1,
-                  background: "transparent",
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 8,
-                  padding: "9px 12px",
-                  color: "var(--text-primary)",
-                  fontSize: 12,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 6,
-                  transition: "all 0.15s",
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#f59e0b"; e.currentTarget.style.color = "#f59e0b"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border-color)"; e.currentTarget.style.color = "var(--text-primary)"; }}
+                disabled={isMutating}
+                className="admin-btn-secondary"
+                style={{ flex: 1, justifyContent: "center", gap: 6, opacity: isMutating ? 0.6 : 1 }}
               >
                 <Mail size={14} />
                 Send Warning
@@ -660,34 +711,32 @@ export function RiderSuspensionsScreen({
               <button
                 type="button"
                 onClick={handleAddNote}
-                style={{
-                  flex: 1,
-                  background: "transparent",
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 8,
-                  padding: "9px 12px",
-                  color: "var(--text-primary)",
-                  fontSize: 12,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 6,
-                  transition: "all 0.15s",
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#f59e0b"; e.currentTarget.style.color = "#f59e0b"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border-color)"; e.currentTarget.style.color = "var(--text-primary)"; }}
+                className="admin-btn-secondary"
+                style={{ flex: 1, justifyContent: "center", gap: 6 }}
               >
                 <ClipboardList size={14} />
                 Add Note
               </button>
             </div>
 
-            {/* Reinstate Rider */}
+            <label style={{ display: "block", fontSize: 12, color: "var(--text-secondary)", marginBottom: 8 }}>
+              Extend by (days)
+              <select
+                className="admin-select-sm"
+                value={extendDays}
+                onChange={(e) => setExtendDays(Number(e.target.value))}
+                style={{ display: "block", width: "100%", marginTop: 6 }}
+              >
+                <option value={7}>7</option>
+                <option value={14}>14</option>
+                <option value={30}>30</option>
+              </select>
+            </label>
+
             <button
               type="button"
               onClick={handleReinstate}
+              disabled={isMutating}
               style={{
                 width: "100%",
                 background: "rgba(16,185,129,0.15)",
@@ -697,20 +746,18 @@ export function RiderSuspensionsScreen({
                 padding: "10px 16px",
                 fontSize: 13,
                 fontWeight: 700,
-                cursor: "pointer",
+                cursor: isMutating ? "default" : "pointer",
                 marginBottom: 8,
-                transition: "all 0.15s",
+                opacity: isMutating ? 0.6 : 1,
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(16,185,129,0.25)"; e.currentTarget.style.borderColor = "rgba(16,185,129,0.5)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(16,185,129,0.15)"; e.currentTarget.style.borderColor = "rgba(16,185,129,0.3)"; }}
             >
               Reinstate Rider
             </button>
 
-            {/* Extend Suspension */}
             <button
               type="button"
               onClick={handleExtend}
+              disabled={isMutating}
               style={{
                 width: "100%",
                 background: "transparent",
@@ -720,48 +767,74 @@ export function RiderSuspensionsScreen({
                 padding: "10px 16px",
                 fontSize: 13,
                 fontWeight: 700,
-                cursor: "pointer",
+                cursor: isMutating ? "default" : "pointer",
                 marginBottom: 24,
-                transition: "all 0.15s",
+                opacity: isMutating ? 0.6 : 1,
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.1)"; e.currentTarget.style.borderColor = "rgba(239,68,68,0.6)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(239,68,68,0.4)"; }}
             >
               Extend Suspension
             </button>
 
-            {/* Suspension History */}
             <div>
-              <div style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)", marginBottom: 4, paddingBottom: 10, borderBottom: "1px solid var(--border-color)" }}>
+              <div
+                style={{
+                  fontWeight: 700,
+                  fontSize: 13,
+                  color: "var(--text-primary)",
+                  marginBottom: 4,
+                  paddingBottom: 10,
+                  borderBottom: "1px solid var(--border-color)",
+                }}
+              >
                 Suspension History
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 0, marginTop: 16, position: "relative" }}>
-                {/* Timeline line */}
-                <div style={{ position: "absolute", left: 4, top: 8, bottom: 8, width: 2, background: "var(--border-color)" }} />
-                {suspensionHistory.map((h, i) => (
-                  <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start", position: "relative", paddingBottom: i < suspensionHistory.length - 1 ? 20 : 0 }}>
+              {suspensionHistory.length === 0 ? (
+                <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 16 }}>
+                  No audit events recorded for this rider yet.
+                </p>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 0, marginTop: 16, position: "relative" }}>
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: 4,
+                      top: 8,
+                      bottom: 8,
+                      width: 2,
+                      background: "var(--border-color)",
+                    }}
+                  />
+                  {suspensionHistory.map((h, i) => (
                     <div
+                      key={`${h.event}-${h.date}-${i}`}
                       style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: "50%",
-                        background: i === 0 ? "var(--accent-yellow)" : "var(--text-muted)",
-                        border: i === 0 ? "2px solid color-mix(in srgb, var(--accent-yellow) 30%, transparent)" : "2px solid transparent",
-                        flexShrink: 0,
-                        marginTop: 4,
-                        zIndex: 1,
+                        display: "flex",
+                        gap: 12,
+                        alignItems: "flex-start",
+                        position: "relative",
+                        paddingBottom: i < suspensionHistory.length - 1 ? 20 : 0,
                       }}
-                    />
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: 13, color: "var(--text-primary)" }}>{h.event}</div>
-                      <div style={{ color: "var(--text-secondary)", fontSize: 12 }}>{h.date}</div>
-                      <div style={{ color: "var(--text-muted)", fontSize: 12 }}>
-                        Reason: {h.reason}
+                    >
+                      <div
+                        style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: "50%",
+                          background: i === 0 ? "var(--accent-yellow)" : "var(--text-muted)",
+                          flexShrink: 0,
+                          marginTop: 4,
+                          zIndex: 1,
+                        }}
+                      />
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 13, color: "var(--text-primary)" }}>{h.event}</div>
+                        <div style={{ color: "var(--text-secondary)", fontSize: 12 }}>{h.date}</div>
+                        <div style={{ color: "var(--text-muted)", fontSize: 12 }}>Reason: {h.reason}</div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </article>
         )}

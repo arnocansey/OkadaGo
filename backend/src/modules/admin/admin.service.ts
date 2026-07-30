@@ -49,12 +49,20 @@ export class AdminRiderService {
       throw new AppError("Rider not found", 404, "RIDER_NOT_FOUND");
     }
 
+    const endsAtFromDuration = (days?: number, from = new Date()) => {
+      if (!days || days <= 0) return null;
+      return new Date(from.getTime() + days * 24 * 60 * 60 * 1000);
+    };
+
     if (input.action === "suspend") {
+      const suspendedAt = new Date();
       const updated = await prisma.riderProfile.update({
         where: { id: riderProfileId },
         data: {
           approvalStatus: "SUSPENDED",
-          suspendedAt: new Date(),
+          suspendedAt,
+          suspensionReason: input.reason?.trim() || rider.suspensionReason || "Policy violation",
+          suspensionEndsAt: endsAtFromDuration(input.durationDays, suspendedAt),
           onlineStatus: false
         },
         include: { user: true, vehicle: true, serviceZone: true }
@@ -65,6 +73,20 @@ export class AdminRiderService {
         data: { accountStatus: "SUSPENDED" }
       });
 
+      await prisma.auditLog.create({
+        data: {
+          actorRole: "ADMIN",
+          action: "RIDER_SUSPEND",
+          entityType: "RiderProfile",
+          entityId: riderProfileId,
+          changes: {
+            reason: updated.suspensionReason,
+            durationDays: input.durationDays ?? null,
+            suspensionEndsAt: updated.suspensionEndsAt
+          }
+        }
+      });
+
       return updated;
     }
 
@@ -73,7 +95,9 @@ export class AdminRiderService {
         where: { id: riderProfileId },
         data: {
           approvalStatus: "APPROVED",
-          suspendedAt: null
+          suspendedAt: null,
+          suspensionReason: null,
+          suspensionEndsAt: null
         },
         include: { user: true, vehicle: true, serviceZone: true }
       });
@@ -83,23 +107,87 @@ export class AdminRiderService {
         data: { accountStatus: "ACTIVE" }
       });
 
+      await prisma.auditLog.create({
+        data: {
+          actorRole: "ADMIN",
+          action: "RIDER_REINSTATE",
+          entityType: "RiderProfile",
+          entityId: riderProfileId,
+          changes: { previousReason: rider.suspensionReason }
+        }
+      });
+
       return updated;
     }
 
     if (input.action === "extend") {
+      const base =
+        rider.suspensionEndsAt && rider.suspensionEndsAt.getTime() > Date.now()
+          ? rider.suspensionEndsAt
+          : new Date();
+      const days = input.durationDays ?? 7;
       const updated = await prisma.riderProfile.update({
         where: { id: riderProfileId },
         data: {
-          suspendedAt: new Date()
+          approvalStatus: "SUSPENDED",
+          suspendedAt: rider.suspendedAt ?? new Date(),
+          suspensionReason: input.reason?.trim() || rider.suspensionReason || "Suspension extended",
+          suspensionEndsAt: endsAtFromDuration(days, base),
+          onlineStatus: false
         },
         include: { user: true, vehicle: true, serviceZone: true }
+      });
+
+      await prisma.user.update({
+        where: { id: rider.userId },
+        data: { accountStatus: "SUSPENDED" }
+      });
+
+      await prisma.auditLog.create({
+        data: {
+          actorRole: "ADMIN",
+          action: "RIDER_SUSPENSION_EXTEND",
+          entityType: "RiderProfile",
+          entityId: riderProfileId,
+          changes: {
+            durationDays: days,
+            suspensionEndsAt: updated.suspensionEndsAt,
+            reason: updated.suspensionReason
+          }
+        }
       });
 
       return updated;
     }
 
     if (input.action === "warn") {
-      return { message: "Warning sent to rider", riderId: riderProfileId };
+      const title = "Account warning from OkadaGo ops";
+      const body =
+        input.reason?.trim() ||
+        "Please review OkadaGo rider safety and conduct policies. Further issues may lead to suspension.";
+
+      await prisma.notification.create({
+        data: {
+          userId: rider.userId,
+          channel: "PUSH",
+          status: "QUEUED",
+          title,
+          body,
+          data: { type: "RIDER_WARNING", riderProfileId }
+        }
+      });
+
+      await prisma.auditLog.create({
+        data: {
+          actorRole: "ADMIN",
+          action: "RIDER_WARN",
+          entityType: "RiderProfile",
+          entityId: riderProfileId,
+          changes: { reason: body }
+        }
+      });
+
+      return { message: "Warning queued for rider", riderId: riderProfileId };
     }
 
     throw new AppError("Invalid action", 400, "INVALID_ACTION");

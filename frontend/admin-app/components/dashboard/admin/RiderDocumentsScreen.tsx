@@ -18,13 +18,14 @@ const DOCUMENT_TABS = [
 
 const ITEMS_PER_PAGE = 8;
 
-const STATUS_OPTIONS = ["All", "Compliant", "Expiring Soon", "Expired", "Missing"] as const;
+const STATUS_OPTIONS = ["All", "Compliant", "Expiring Soon", "Expired", "Missing", "Pending"] as const;
 
 const statusColor: Record<string, string> = {
   Compliant: "#22c55e",
   "Expiring Soon": "#f59e0b",
   Expired: "#ef4444",
   Missing: "#f87171",
+  Pending: "#94a3b8",
 };
 
 export type RiderDocumentsScreenProps = {
@@ -38,6 +39,7 @@ export type RiderDocumentsScreenProps = {
     status: string;
     expiryDate: string;
     daysLeft: string;
+    fileUrl?: string;
   }[];
   riderDocumentStats: {
     total: number;
@@ -46,12 +48,16 @@ export type RiderDocumentsScreenProps = {
     expired: number;
     missing: number;
   };
+  onDocumentReview?: (documentId: string, status: "APPROVED" | "REJECTED" | "EXPIRED", notes?: string) => void;
+  isMutating?: boolean;
   dataLoading?: boolean;
 };
 
 export function RiderDocumentsScreen({
   riderDocumentRows,
   riderDocumentStats,
+  onDocumentReview,
+  isMutating = false,
   dataLoading = false,
 }: RiderDocumentsScreenProps) {
   const { addToast } = useAdminToast();
@@ -141,7 +147,6 @@ export function RiderDocumentsScreen({
             onClick={() => {
               setActiveTab(tab);
               setCurrentPage(1);
-              addToast(`Filtered to ${tab} documents`);
             }}
           >
             {tab}
@@ -168,7 +173,6 @@ export function RiderDocumentsScreen({
           onChange={(e) => {
             setStatusFilter(e.target.value);
             setCurrentPage(1);
-            addToast(`Status filter: ${e.target.value}`);
           }}
         >
           {STATUS_OPTIONS.map((s) => (
@@ -266,43 +270,42 @@ export function RiderDocumentsScreen({
                       <div style={styles.actionGroup}>
                         <button
                           style={styles.actionBtn}
-                          onClick={() =>
-                            addToast(`Viewing document for ${row.riderName}`)
-                          }
-                          onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.background =
-                              "color-mix(in srgb, var(--accent-orange) 20%, transparent)";
-                            (e.currentTarget as HTMLButtonElement).style.color =
-                              "var(--accent-orange)";
-                          }}
-                          onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.background =
-                              "var(--accent-yellow-light)";
-                            (e.currentTarget as HTMLButtonElement).style.color =
-                              "var(--accent-orange)";
+                          disabled={!row.fileUrl}
+                          onClick={() => {
+                            if (!row.fileUrl) {
+                              addToast("No file URL on this document", "error");
+                              return;
+                            }
+                            window.open(row.fileUrl, "_blank", "noopener,noreferrer");
                           }}
                         >
                           View
                         </button>
                         <button
                           style={styles.actionBtn}
-                          onClick={() =>
-                            addToast(`Sending reminder to ${row.riderName}`)
-                          }
-                          onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.background =
-                              "rgba(245,158,11,0.2)";
-                            (e.currentTarget as HTMLButtonElement).style.color =
-                              "#fbbf24";
-                          }}
-                          onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.background =
-                              "rgba(245,158,11,0.1)";
-                            (e.currentTarget as HTMLButtonElement).style.color =
-                              "#f59e0b";
+                          disabled={isMutating || row.status === "Compliant"}
+                          onClick={() => {
+                            if (!onDocumentReview) {
+                              addToast("Document review is unavailable", "error");
+                              return;
+                            }
+                            onDocumentReview(row.id, "APPROVED");
                           }}
                         >
-                          Remind
+                          Approve
+                        </button>
+                        <button
+                          style={{ ...styles.actionBtn, opacity: 0.85 }}
+                          disabled={isMutating}
+                          onClick={() => {
+                            if (!onDocumentReview) {
+                              addToast("Document review is unavailable", "error");
+                              return;
+                            }
+                            onDocumentReview(row.id, "REJECTED", "Rejected by ops");
+                          }}
+                        >
+                          Reject
                         </button>
                       </div>
                     </td>
@@ -322,7 +325,6 @@ export function RiderDocumentsScreen({
               disabled={safePage === 1}
               onClick={() => {
                 setCurrentPage((p) => Math.max(1, p - 1));
-                addToast("Previous page");
               }}
             >
               {"\u2190"} Prev
@@ -334,7 +336,6 @@ export function RiderDocumentsScreen({
                     key={page}
                     onClick={() => {
                       setCurrentPage(page);
-                      addToast(`Page ${page}`);
                     }}
                     style={{
                       ...styles.pageNum,
@@ -354,7 +355,6 @@ export function RiderDocumentsScreen({
               disabled={safePage === totalPages}
               onClick={() => {
                 setCurrentPage((p) => Math.min(totalPages, p + 1));
-                addToast("Next page");
               }}
             >
               Next {"\u2192"}

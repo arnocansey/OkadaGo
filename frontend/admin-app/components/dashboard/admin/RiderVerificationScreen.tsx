@@ -150,16 +150,32 @@ export function RiderVerificationScreen({
     }
   };
   const handleApproveAll = () => {
-    addToast("Bulk approval triggered for all eligible riders", "success");
+    if (!onRiderApproval) {
+      addToast("Bulk approval is unavailable", "error");
+      return;
+    }
+    const eligible = riderVerificationRows.filter(
+      (row) =>
+        row.verificationStatus === "Pending" ||
+        row.verificationStatus === "Ready"
+    );
+    if (eligible.length === 0) {
+      addToast("No pending or ready riders to approve", "info");
+      return;
+    }
+    for (const row of eligible) {
+      onRiderApproval(row.rider.id, "approve");
+    }
+    addToast(`Queued approval for ${eligible.length} rider${eligible.length === 1 ? "" : "s"}`, "info");
   };
-  const handleRequestInfo = (riderName: string) => {
-    addToast(`Information requested from ${riderName}`, "info");
+  const handleRequestInfo = () => {
+    addToast("Request-info messaging is not connected yet", "info");
   };
-  const handleScheduleInterview = (riderName: string) => {
-    addToast(`Interview scheduled for ${riderName}`, "success");
+  const handleScheduleInterview = () => {
+    addToast("Interview scheduling is not connected yet", "info");
   };
   const handleExportReport = () => {
-    addToast("Export report generated — download starting…", "success");
+    addToast("CSV export is not available in this console yet", "info");
   };
 
   /* ════════════════════════════════════════════════════════════════ */
@@ -968,13 +984,13 @@ export function RiderVerificationScreen({
               </button>
               <button
                 style={S.btn("info")}
-                onClick={() => handleRequestInfo(selectedRow.rider.user.fullName)}
+                onClick={handleRequestInfo}
               >
                 <MessageSquare size={15} /> Request Info
               </button>
               <button
                 style={S.btn("primary")}
-                onClick={() => handleScheduleInterview(selectedRow.rider.user.fullName)}
+                onClick={handleScheduleInterview}
               >
                 <Calendar size={15} /> Schedule Interview
               </button>

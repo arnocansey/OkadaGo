@@ -187,19 +187,30 @@ export function SettingsScreen({
     setFormValues((prev) => ({ ...prev, [key]: value }));
 
   const handleSave = () => {
-    addToast("Settings saved successfully", "success");
+    addToast("Platform settings save API is not connected yet — changes on this screen are local preview only", "info");
   };
 
   const handleReset = () => {
-    addToast("Settings reset to defaults", "info");
+    addToast("Reset is preview-only until settings persistence exists", "info");
   };
 
   const handleConnect = (service: string) => {
-    addToast(`${service} connection initiated`, "info");
+    addToast(`${service} connection is not wired in this console yet`, "info");
   };
 
   const handleExportLogs = () => {
-    addToast("Audit logs exported", "success");
+    if (auditLogs.length === 0) {
+      addToast("No audit logs to export", "info");
+      return;
+    }
+    const blob = new Blob([JSON.stringify(auditLogs, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `okadago-audit-logs-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    addToast("Downloaded current audit log snapshot", "success");
   };
 
   const activityLogs = useMemo(
@@ -345,10 +356,10 @@ export function SettingsScreen({
       <h3 style={{ color: DARK.text, fontSize: 16, fontWeight: 700, margin: 0 }}>Account & Security</h3>
 
       <div style={{ display: "flex", gap: isMobile ? 8 : 12, flexWrap: "wrap" }}>
-        <button style={{ ...btnBase, background: DARK.accent, color: "#fff" }} onClick={() => addToast("Profile editor opened", "info")}>
+        <button style={{ ...btnBase, background: DARK.accent, color: "#fff" }} onClick={() => addToast("Inline profile editor is not connected yet", "info")}>
           <Pencil size={15} /> Edit Profile
         </button>
-        <button style={{ ...btnBase, background: DARK.surfaceAlt, color: DARK.text, border: `1px solid ${DARK.border}` }} onClick={() => addToast("Password reset email sent", "success")}>
+        <button style={{ ...btnBase, background: DARK.surfaceAlt, color: DARK.text, border: `1px solid ${DARK.border}` }} onClick={() => addToast("Password change email is not connected yet", "info")}>
           <Lock size={15} /> Change Password
         </button>
       </div>
@@ -724,7 +735,7 @@ export function SettingsScreen({
           <button
             type="button"
             style={{ ...btnBase, background: DARK.red, color: "#fff", width: "100%", justifyContent: "center", padding: "9px 0" }}
-            onClick={() => addToast("Factory reset requires confirmation", "warning")}
+            onClick={() => addToast("Factory reset is disabled — no destructive wipe API in this console", "warning")}
           >
             <Trash2 size={14} /> Factory Reset
           </button>

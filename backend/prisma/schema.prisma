@@ -331,9 +331,13 @@ model RiderProfile {
   completedTrips    Int                 @default(0)
   commissionPercent Decimal             @default(12) @db.Decimal(5, 2)
   bio               String?             @db.VarChar(500)
-  approvedAt        DateTime?
-  suspendedAt       DateTime?
-  lastOnlineAt      DateTime?
+  approvedAt         DateTime?
+  suspendedAt        DateTime?
+  /// Free-text reason captured when ops suspends or extends a rider.
+  suspensionReason   String?             @db.VarChar(500)
+  /// Optional end of timed suspension; null means indefinite until reinstate.
+  suspensionEndsAt   DateTime?
+  lastOnlineAt       DateTime?
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
   deletedAt         DateTime?

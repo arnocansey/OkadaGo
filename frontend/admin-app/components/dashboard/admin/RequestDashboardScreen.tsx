@@ -421,7 +421,7 @@ export function RequestDashboardScreen({
             <div className="admin-reference-cardhead">
               <div>
                 <h3>Peak Hours</h3>
-                <p>Request volume by time of day (GMT).</p>
+                <p>Request volume by hour (Africa/Accra).</p>
               </div>
               <Clock size={16} />
             </div>

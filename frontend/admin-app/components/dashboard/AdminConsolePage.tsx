@@ -198,6 +198,10 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
           <RiderDocumentsScreen
             riderDocumentRows={data.riderDocumentRows}
             riderDocumentStats={data.riderDocumentStats}
+            onDocumentReview={(documentId, status, notes) =>
+              data.documentReviewMutation.mutate({ documentId, status, notes })
+            }
+            isMutating={data.documentReviewMutation.isPending}
             dataLoading={data.dataLoading}
           />
         );
@@ -294,7 +298,10 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
           <RiderSuspensionsScreen
             suspendedRiders={data.suspendedRiders}
             totalRiders={data.ridersTotal}
-            onSuspensionAction={(id, action, reason) => data.riderSuspensionMutation.mutate({ riderProfileId: id, action, reason })}
+            auditLogs={data.auditLogs}
+            onSuspensionAction={(id, action, reason, durationDays) =>
+              data.riderSuspensionMutation.mutate({ riderProfileId: id, action, reason, durationDays })
+            }
             isMutating={data.riderSuspensionMutation.isPending}
             dataLoading={data.dataLoading}
           />

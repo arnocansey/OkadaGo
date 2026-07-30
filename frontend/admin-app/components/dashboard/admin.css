@@ -781,6 +781,59 @@
   color: var(--text-secondary);
 }
 
+/* Horizontal peak-hour rows (Requests sidebar) */
+.admin-reference-bars.horizontal {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  height: auto;
+  max-height: 360px;
+  overflow: auto;
+  padding: 0;
+  gap: 8px;
+}
+
+.admin-reference-hbar-row {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.admin-reference-hbar-row > span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.admin-reference-hbar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--bg-primary);
+  overflow: hidden;
+  min-width: 0;
+}
+
+.admin-reference-hbar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent-orange), var(--accent-yellow));
+  min-width: 4px;
+}
+
+.admin-reference-hbar-row > em {
+  font-style: normal;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 /* Revenue donut chart simulation */
 .admin-reference-revenue-body {
   display: flex;

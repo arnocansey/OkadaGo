@@ -144,10 +144,10 @@ export function RiderWalletScreen({
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {[
-              { label: "Cash Out", icon: <Banknote size={16} />, className: "admin-btn-primary", msg: "Cash out flow initiated" },
-              { label: "Add Money", icon: <Coins size={16} />, className: "admin-btn-secondary", msg: "Add money flow opened" },
-              { label: "Transaction History", icon: <History size={16} />, className: "admin-btn-secondary", msg: "Transaction history exported" },
-              { label: "Earnings Summary", icon: <BarChart3 size={16} />, className: "admin-btn-secondary", msg: "Earnings summary generated" }
+              { label: "Cash Out", icon: <Banknote size={16} />, className: "admin-btn-primary", msg: "Admin cash-out is not available — use Rider Payouts for requests" },
+              { label: "Add Money", icon: <Coins size={16} />, className: "admin-btn-secondary", msg: "Manual top-up is not connected in this console" },
+              { label: "Transaction History", icon: <History size={16} />, className: "admin-btn-secondary", msg: "Scroll the ledger below for live wallet transactions" },
+              { label: "Earnings Summary", icon: <BarChart3 size={16} />, className: "admin-btn-secondary", msg: "See Rider Earnings for GHS summaries" }
             ].map((action) => (
               <button
                 key={action.label}
@@ -249,7 +249,7 @@ export function RiderWalletScreen({
               type="button"
               className="admin-btn-primary"
               style={{ width: "100%", justifyContent: "center" }}
-              onClick={() => addToast("Viewing all bonuses", "info")}
+              onClick={() => addToast("Bonus ledger is not a separate API — use wallet transactions", "info")}
             >
               <Eye size={14} />
               View All Bonuses
@@ -258,7 +258,7 @@ export function RiderWalletScreen({
               type="button"
               className="admin-btn-secondary"
               style={{ width: "100%", justifyContent: "center" }}
-              onClick={() => addToast("Viewing all transactions", "info")}
+              onClick={() => addToast("Full history is already listed in the ledger below", "info")}
             >
               <History size={14} />
               View All Transactions

@@ -121,6 +121,9 @@ export type RiderRecord = {
   currentLongitude: string | number | null;
   lastLocationMocked?: boolean;
   lastLocationMockedAt?: string | null;
+  suspendedAt?: string | null;
+  suspensionReason?: string | null;
+  suspensionEndsAt?: string | null;
   serviceZone: {
     id: string;
     name: string;
@@ -142,6 +145,26 @@ export type RiderRecord = {
     accountStatus?: string;
   };
   createdAt?: string;
+};
+
+export type RiderDocumentRecord = {
+  id: string;
+  riderId: string;
+  type: string;
+  status: string;
+  fileUrl: string;
+  notes?: string | null;
+  expiresAt?: string | null;
+  reviewedAt?: string | null;
+  createdAt: string;
+  rider?: {
+    id: string;
+    displayCode: string;
+    user: {
+      fullName: string;
+      phoneE164: string;
+    };
+  };
 };
 
 export type AdminUserStats = {

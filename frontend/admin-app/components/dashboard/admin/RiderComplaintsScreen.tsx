@@ -563,18 +563,18 @@ export function RiderComplaintsScreen({
                   disabled={isMutating}
                   onClick={() => {
                     onIncidentAction(detailComplaint.id, "UNDER_REVIEW");
-                    toast.addToast("Complaint marked as Under Review", "info");
                   }}
                 >
                   <MessageSquare size={14} />
-                  Reply
+                  Mark Under Review
                 </button>
                 <button
                   type="button"
                   className="admin-btn-secondary"
-                  disabled={isMutating}
+                  disabled
+                  title="Ops notes are not stored on complaints yet"
                   onClick={() => {
-                    toast.addToast("Note added to complaint", "success");
+                    toast.addToast("Complaint notes are not stored yet", "info");
                   }}
                 >
                   <StickyNote size={14} />
@@ -585,9 +585,10 @@ export function RiderComplaintsScreen({
                 <button
                   type="button"
                   className="admin-btn-secondary"
-                  disabled={isMutating}
+                  disabled
+                  title="Agent assignment is not connected yet"
                   onClick={() => {
-                    toast.addToast("Complaint assigned to agent", "info");
+                    toast.addToast("Complaint assignment is not connected yet", "info");
                   }}
                 >
                   <UserCheck size={14} />
@@ -599,7 +600,6 @@ export function RiderComplaintsScreen({
                   disabled={isMutating}
                   onClick={() => {
                     onIncidentAction(detailComplaint.id, "RESOLVED");
-                    toast.addToast("Complaint marked as Resolved", "success");
                   }}
                 >
                   <CheckCircle size={14} />
@@ -612,7 +612,6 @@ export function RiderComplaintsScreen({
                 disabled={isMutating}
                 onClick={() => {
                   onIncidentAction(detailComplaint.id, "CLOSED");
-                  toast.addToast("Complaint Closed", "success");
                 }}
                 style={{ width: "100%", justifyContent: "center" }}
               >

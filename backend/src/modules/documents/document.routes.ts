@@ -42,6 +42,13 @@ export const documentRoutes: FastifyPluginAsync = async (server) => {
     return documentService.listRiderDocumentsAdmin(token, params.riderProfileId);
   });
 
+  server.get("/admin/documents", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const limitRaw = (request.query as { limit?: string }).limit;
+    const limit = limitRaw ? Number(limitRaw) : 200;
+    return documentService.listAllDocumentsAdmin(token, Number.isFinite(limit) ? limit : 200);
+  });
+
   server.patch("/admin/documents/:documentId/review", async (request) => {
     const token = extractBearerToken(request.headers.authorization);
     const params = parseParams(request, documentIdParamsSchema);
