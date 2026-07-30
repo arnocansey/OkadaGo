@@ -1,8 +1,21 @@
-export function parseNumber(value: string | number | null | undefined): number {
-  if (typeof value === "number") return value;
-  if (typeof value === "string" && value.trim() !== "") return Number(value);
+export function parseNumber(value: string | number | null | undefined | { toString?: () => string }): number {
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  if (typeof value === "string" && value.trim() !== "") {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : 0;
+  }
+  // Prisma Decimal / Decimal.js often arrives as an object with toString()
+  if (value && typeof value === "object" && typeof value.toString === "function") {
+    const n = Number(value.toString());
+    return Number.isFinite(n) ? n : 0;
+  }
   return 0;
 }
+
+/** Accra CBD — default fleet / ops map center */
+export const ACCRA_MAP_CENTER: [number, number] = [5.6037, -0.187];
+export const ACCRA_MAP_ZOOM_CITY = 12;
+export const ACCRA_MAP_ZOOM_METRO = 11;
 
 export function formatDateTime(value: string): string {
   const date = new Date(value);

@@ -7,7 +7,7 @@ import { SkeletonKPI, SkeletonCard, SkeletonTable } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import type { RiderFinancialRow } from "./types";
-import { parseNumber } from "./utils";
+import { parseNumber, ACCRA_MAP_CENTER, ACCRA_MAP_ZOOM_CITY, ACCRA_MAP_ZOOM_METRO } from "./utils";
 import { useAdminToast } from "./AdminToast";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
 import {
@@ -295,11 +295,13 @@ export function RiderActivityScreen({
                 </div>
                 <div style={{ height: 420, position: "relative" }}>
                   <OperationsMap
-                    center={mapMarkers[0]?.position ?? [5.6037, -0.187]}
-                    zoom={mapMarkers.length > 0 ? 11 : 6}
+                    basemap="auto"
+                    emptyPlacement="bottom"
+                    center={mapMarkers[0]?.position ?? ACCRA_MAP_CENTER}
+                    zoom={mapMarkers.length > 0 ? ACCRA_MAP_ZOOM_METRO : ACCRA_MAP_ZOOM_CITY}
                     markers={mapMarkers}
-                    emptyTitle="No riders with live coordinates."
-                    emptyDescription="Riders appear on the map when they enable GPS and go online."
+                    emptyTitle="Waiting for Accra GPS pings"
+                    emptyDescription="Riders appear when the rider app is online with location enabled."
                   />
                 </div>
               </div>

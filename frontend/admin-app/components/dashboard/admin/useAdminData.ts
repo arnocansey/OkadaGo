@@ -352,8 +352,12 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
   // ── derived rider data ──────────────────────────────────────────────────────
   const activeRiders = useMemo(() => riders.filter((r) => r.onlineStatus), [riders]);
   const ridersWithCoords = useMemo(
-    () => riders.filter((r) => r.currentLatitude != null && r.currentLongitude != null &&
-      parseNumber(r.currentLatitude) !== 0 && parseNumber(r.currentLongitude) !== 0),
+    () =>
+      riders.filter((r) => {
+        const lat = parseNumber(r.currentLatitude);
+        const lng = parseNumber(r.currentLongitude);
+        return Number.isFinite(lat) && Number.isFinite(lng) && !(lat === 0 && lng === 0);
+      }),
     [riders]
   );
   const suspendedRiders = useMemo(

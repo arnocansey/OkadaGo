@@ -6,7 +6,7 @@ import { EmptyCard } from "./EmptyCard";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { RiderRecord } from "./types";
 import { statusTone } from "./utils";
-import { parseNumber } from "./utils";
+import { parseNumber, ACCRA_MAP_CENTER, ACCRA_MAP_ZOOM_CITY, ACCRA_MAP_ZOOM_METRO } from "./utils";
 
 export type RidersScreenProps = {
   riders: RiderRecord[];
@@ -153,11 +153,13 @@ export function RidersScreen({
             </div>
             <div className="admin-reference-map">
               <OperationsMap
-                center={mapMarkers[0]?.position ?? [5.6037, -0.187]}
-                zoom={mapMarkers.length > 0 ? 11 : 6}
+                basemap="auto"
+                emptyPlacement="bottom"
+                center={mapMarkers[0]?.position ?? ACCRA_MAP_CENTER}
+                zoom={mapMarkers.length > 0 ? ACCRA_MAP_ZOOM_METRO : ACCRA_MAP_ZOOM_CITY}
                 markers={mapMarkers}
-                emptyTitle="No riders with coordinates."
-                emptyDescription="Riders will appear when they share their live location."
+                emptyTitle="Waiting for Accra GPS pings"
+                emptyDescription="Riders appear when they share live location from the rider app."
               />
             </div>
           </article>

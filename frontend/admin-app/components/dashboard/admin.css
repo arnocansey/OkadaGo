@@ -2045,22 +2045,145 @@ table.admin-table td,
 }
 
 .admin-overview-map {
-  min-height: 360px;
+  padding: 0 !important;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 480px;
+  height: 500px;
+}
+
+.admin-overview-map-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-card);
+  flex-shrink: 0;
+}
+
+.admin-overview-map-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent-orange);
+}
+
+.admin-overview-map-title h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.admin-overview-map-title p {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.admin-overview-map-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-map-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.admin-map-pill.muted {
+  color: var(--text-secondary);
+}
+
+.admin-map-pill i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  background: var(--text-muted);
+}
+
+.admin-map-pill i.online {
+  background: var(--color-success);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-success) 25%, transparent);
+}
+
+.admin-map-pill i.gps {
+  background: var(--accent-orange);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-orange) 25%, transparent);
+}
+
+.admin-overview-map-link {
+  text-decoration: none;
+  padding: 6px 12px;
+  font-size: 0.75rem;
+}
+
+.admin-overview-map .admin-reference-map {
+  flex: 1;
+  min-height: 0;
+  border-radius: 0;
+  position: relative;
 }
 
 .admin-overview-map .admin-reference-map,
+.admin-overview-map .map-shell,
 .admin-overview-map .leaflet-container {
-  min-height: 320px !important;
-  height: 340px !important;
-  border-radius: 12px;
+  min-height: 0 !important;
+  height: 100% !important;
+  border-radius: 0;
   overflow: hidden;
+}
+
+.admin-overview-map .map-shell {
+  border: none;
+  border-radius: 0;
+  min-height: 0;
+}
+
+.admin-overview-map .map-empty-note--bottom .map-empty-note-card {
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .admin-overview-map {
+    height: 420px;
+    min-height: 420px;
+  }
+
+  .admin-overview-map-head {
+    align-items: flex-start;
+  }
+}
+
+.admin-overview-split > .admin-reference-card:not(.admin-overview-map) {
+  min-height: 500px;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
 }
 
 .admin-active-requests {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: 420px;
+  flex: 1;
+  min-height: 0;
   overflow: auto;
 }
 

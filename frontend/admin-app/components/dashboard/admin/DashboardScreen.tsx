@@ -1,10 +1,11 @@
-import { Download, Bike } from "lucide-react";
+import { Download, Bike, MapPin } from "lucide-react";
+import Link from "next/link";
 import { OperationsMap } from "@/components/maps/operations-map";
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { RideRecord } from "./types";
-import { parseNumber, formatDateTime, statusTone } from "./utils";
+import { parseNumber, formatDateTime, statusTone, ACCRA_MAP_CENTER, ACCRA_MAP_ZOOM_CITY, ACCRA_MAP_ZOOM_METRO } from "./utils";
 
 type MapMarker = {
   id: string;
@@ -175,22 +176,37 @@ export function DashboardScreen({
 
       <section className="admin-overview-split">
         <article className="admin-reference-card admin-overview-map">
-          <div className="admin-reference-cardhead">
-            <div>
-              <h3>Live Fleet Map</h3>
-              <p>
-                Online: {activeRiders.length} · Vehicles: {vehicleCount}
-              </p>
+          <div className="admin-overview-map-head">
+            <div className="admin-overview-map-title">
+              <MapPin size={18} aria-hidden />
+              <div>
+                <h3>Live Fleet Map</h3>
+                <p>Accra dispatch coverage</p>
+              </div>
             </div>
-            <a href="/riders/activity-tracking">Open live view</a>
+            <div className="admin-overview-map-meta">
+              <span className="admin-map-pill">
+                <i className="online" /> Online {activeRiders.length}
+              </span>
+              <span className="admin-map-pill">
+                <i className="gps" /> GPS {mapMarkers.length}
+              </span>
+              <span className="admin-map-pill muted">Vehicles {vehicleCount}</span>
+              <Link href="/riders/activity-tracking" className="admin-btn-secondary admin-overview-map-link">
+                Open live view
+              </Link>
+            </div>
           </div>
           <div className="admin-reference-map">
             <OperationsMap
-              center={mapMarkers[0]?.position ?? [5.6037, -0.187]}
-              zoom={mapMarkers.length > 0 ? 11 : 6}
+              className="admin-fleet-map"
+              basemap="auto"
+              emptyPlacement="bottom"
+              center={mapMarkers[0]?.position ?? ACCRA_MAP_CENTER}
+              zoom={mapMarkers.length > 0 ? ACCRA_MAP_ZOOM_METRO : ACCRA_MAP_ZOOM_CITY}
               markers={mapMarkers}
-              emptyTitle="No live rider coordinates yet."
-              emptyDescription="Online riders with coordinates will appear on this map automatically."
+              emptyTitle="Waiting for Accra GPS pings"
+              emptyDescription="Turn a rider online with location on — markers appear here automatically."
             />
           </div>
         </article>

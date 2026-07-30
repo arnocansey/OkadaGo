@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { LeafletMapMarker, LeafletMapCurrentPosition } from "./leaflet-map";
+import type { LeafletBasemap, LeafletMapMarker, LeafletMapCurrentPosition } from "./leaflet-map";
 import { MapErrorBoundary } from "./map-error-boundary";
 
 const DynamicLeafletMap = dynamic(
@@ -12,7 +12,7 @@ const DynamicLeafletMap = dynamic(
       <div className="map-loading-note" aria-live="polite">
         <div className="map-empty-note-card">
           <strong>Loading live map</strong>
-          <p>Preparing the map surface for trip, rider, and zone overlays.</p>
+          <p>Preparing Accra fleet overlays…</p>
         </div>
       </div>
     )
@@ -29,6 +29,10 @@ interface OperationsMapProps {
   route?: Array<[number, number]>;
   currentPosition?: LeafletMapCurrentPosition | null;
   showFitAll?: boolean;
+  basemap?: LeafletBasemap;
+  /** Compact chip at bottom — better for admin overview cards */
+  emptyPlacement?: "top-left" | "bottom";
+  className?: string;
 }
 
 function toTuple(center: [number, number]): [number, number] {
@@ -44,10 +48,24 @@ export function OperationsMap({
   markers = [],
   route = [],
   currentPosition = null,
-  showFitAll = false
+  showFitAll = false,
+  basemap = "auto",
+  emptyPlacement = "top-left",
+  className
 }: OperationsMapProps) {
   const hasOverlayContent = markers.length > 0 || route.length > 1 || Boolean(currentPosition);
   const safeCenter = toTuple(center);
+  const emptyClass =
+    emptyPlacement === "bottom" ? "map-empty-note map-empty-note--bottom" : "map-empty-note";
+
+  const emptyNode = !hasOverlayContent ? (
+    <div className={emptyClass} aria-live="polite">
+      <div className="map-empty-note-card">
+        <strong>{emptyTitle}</strong>
+        <p>{emptyDescription}</p>
+      </div>
+    </div>
+  ) : null;
 
   if (bare) {
     return (
@@ -60,22 +78,16 @@ export function OperationsMap({
             route={route}
             currentPosition={currentPosition}
             showFitAll={showFitAll}
+            basemap={basemap}
           />
         </MapErrorBoundary>
-        {!hasOverlayContent ? (
-          <div className="map-empty-note" aria-live="polite">
-            <div className="map-empty-note-card">
-              <strong>{emptyTitle}</strong>
-              <p>{emptyDescription}</p>
-            </div>
-          </div>
-        ) : null}
+        {emptyNode}
       </>
     );
   }
 
   return (
-    <div className="map-shell">
+    <div className={["map-shell", className].filter(Boolean).join(" ")}>
       <MapErrorBoundary>
         <DynamicLeafletMap
           center={safeCenter}
@@ -84,16 +96,11 @@ export function OperationsMap({
           route={route}
           currentPosition={currentPosition}
           showFitAll={showFitAll}
+          basemap={basemap}
+          style={{ width: "100%", height: "100%", minHeight: "100%" }}
         />
       </MapErrorBoundary>
-      {!hasOverlayContent ? (
-        <div className="map-empty-note" aria-live="polite">
-          <div className="map-empty-note-card">
-            <strong>{emptyTitle}</strong>
-            <p>{emptyDescription}</p>
-          </div>
-        </div>
-      ) : null}
+      {emptyNode}
     </div>
   );
 }

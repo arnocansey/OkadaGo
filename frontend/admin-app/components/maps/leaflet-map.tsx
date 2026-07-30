@@ -34,6 +34,8 @@ export interface LeafletMapCurrentPosition {
   label?: string;
 }
 
+export type LeafletBasemap = "auto" | "light" | "dark" | "streets";
+
 export interface LeafletMapProps {
   center: [number, number];
   zoom?: number;
@@ -45,6 +47,8 @@ export interface LeafletMapProps {
   showFitAll?: boolean;
   className?: string;
   style?: React.CSSProperties;
+  /** Prefer dark/light Carto basemap for admin ops. `streets` keeps OSM/Google. */
+  basemap?: LeafletBasemap;
 }
 
 const ICONS: Record<string, L.DivIcon> = {
@@ -62,9 +66,9 @@ const ICONS: Record<string, L.DivIcon> = {
   }),
   driver: L.divIcon({
     className: "leaflet-custom-icon",
-    html: '<div class="leaflet-marker driver pulsing"></div>',
-    iconSize: [24, 24],
-    iconAnchor: [12, 12]
+    html: '<div class="leaflet-marker driver"></div>',
+    iconSize: [18, 18],
+    iconAnchor: [9, 9]
   }),
   passenger: L.divIcon({
     className: "leaflet-custom-icon",
@@ -144,6 +148,28 @@ function InitialSize() {
   return null;
 }
 
+function useResolvedBasemap(basemap: LeafletBasemap = "auto"): "light" | "dark" | "streets" {
+  const [resolved, setResolved] = useState<"light" | "dark" | "streets">(
+    basemap === "auto" ? "light" : basemap
+  );
+
+  useEffect(() => {
+    if (basemap !== "auto") {
+      setResolved(basemap);
+      return;
+    }
+    const themed = document.querySelector<HTMLElement>("[data-theme]");
+    const theme = themed?.getAttribute("data-theme");
+    if (theme === "dark" || theme === "light") {
+      setResolved(theme);
+      return;
+    }
+    setResolved(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  }, [basemap]);
+
+  return resolved;
+}
+
 export function LeafletMap({
   center,
   zoom = 12,
@@ -154,11 +180,13 @@ export function LeafletMap({
   onRecenter,
   showFitAll = false,
   className = "leaflet-map-surface",
-  style = { width: "100%", height: "100%", minHeight: 440 }
+  style = { width: "100%", height: "100%", minHeight: 440 },
+  basemap = "streets"
 }: LeafletMapProps) {
   const isMobile = useIsMobile();
   const [tilesReady, setTilesReady] = useState(false);
   const [tileError, setTileError] = useState<string | null>(null);
+  const resolvedBasemap = useResolvedBasemap(basemap);
 
   const onTileLoad = useCallback(() => {
     setTilesReady(true);
@@ -168,7 +196,23 @@ export function LeafletMap({
     setTileError("Map tiles could not be loaded right now.");
   }, []);
 
-  const mapKey = `osm:${center[0].toFixed(5)}:${center[1].toFixed(5)}:${zoom}`;
+  const tileUrl =
+    resolvedBasemap === "dark"
+      ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+      : resolvedBasemap === "light"
+        ? "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+        : useGoogleTiles
+          ? `https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${googleMapsKey}`
+          : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+
+  const tileAttribution =
+    resolvedBasemap === "dark" || resolvedBasemap === "light"
+      ? '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> &copy; <a href="https://carto.com/" target="_blank" rel="noreferrer">CARTO</a>'
+      : useGoogleTiles
+        ? '&copy; <a href="https://developers.google.com/maps/documentation/javascript/" target="_blank" rel="noreferrer">Google Maps</a>'
+        : '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors';
+
+  const mapKey = `map:${resolvedBasemap}:${center[0].toFixed(5)}:${center[1].toFixed(5)}:${zoom}`;
 
   const driverPositions = markers
     .filter((m) => m.variant === "driver")
@@ -212,17 +256,11 @@ export function LeafletMap({
         {viewportSync && <ViewportSync center={center} zoom={zoom} />}
         {showFitAll && <FitAllButton positions={driverPositions} />}
         <TileLayer
-          attribution={
-            useGoogleTiles
-              ? '&copy; <a href="https://developers.google.com/maps/documentation/javascript/" target="_blank" rel="noreferrer">Google Maps</a>'
-              : '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors'
+          attribution={tileAttribution}
+          url={tileUrl}
+          subdomains={
+            resolvedBasemap === "streets" && useGoogleTiles ? ["0", "1", "2", "3"] : ["a", "b", "c"]
           }
-          url={
-            useGoogleTiles
-              ? `https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${googleMapsKey}`
-              : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          }
-          subdomains={useGoogleTiles ? ["0", "1", "2", "3"] : ["a", "b", "c"]}
           eventHandlers={{
             tileerror: onTileError,
             tileload: onTileLoad
