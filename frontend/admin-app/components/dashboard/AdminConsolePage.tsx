@@ -55,10 +55,11 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
   if (status === "loading") {
     return (
       <AccessState
-        title="Loading"
-        body="Checking session…"
+        title="Opening console"
+        body="Verifying your OkadaGo admin session."
         actionLabel="Sign in"
         actionHref="/login"
+        loading
       />
     );
   }
@@ -67,7 +68,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
     return (
       <AccessState
         title="Sign in required"
-        body="Use an admin account to continue."
+        body="Use an OkadaGo admin account to manage Accra fleet, riders, and support."
         actionLabel="Sign in"
         actionHref="/login"
       />

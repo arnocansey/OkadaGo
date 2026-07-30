@@ -2677,3 +2677,148 @@ table.admin-table td,
   flex-shrink: 0;
 }
 
+/* ── Admin access gate (signed-out / loading) ── */
+.admin-access-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 10%, rgba(255, 107, 0, 0.22), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 90% 85%, rgba(250, 204, 21, 0.1), transparent 50%),
+    linear-gradient(160deg, #0b0f19 0%, #111827 42%, #0b0f19 100%);
+  color: #f8fafc;
+}
+
+.admin-access-gate {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px 20px;
+  overflow: hidden;
+}
+
+.admin-access-gate-glow {
+  position: absolute;
+  inset: auto;
+  width: min(520px, 80vw);
+  height: min(520px, 80vw);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 107, 0, 0.18), transparent 68%);
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+.admin-access-gate-panel {
+  position: relative;
+  z-index: 1;
+  width: min(420px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 36px 32px 28px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, rgba(21, 28, 44, 0.96) 0%, rgba(17, 24, 39, 0.98) 100%);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.45);
+}
+
+.admin-access-gate-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.admin-access-gate-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 107, 0, 0.14);
+  color: #ff6b00;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-access-gate-copy h1 {
+  margin: 0 0 10px;
+  font-family: var(--font-display), var(--font-body), sans-serif;
+  font-size: clamp(1.65rem, 3vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: #f8fafc;
+}
+
+.admin-access-gate-copy p {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.55;
+  color: #94a3b8;
+}
+
+.admin-access-gate-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: 12px;
+  background: #ff6b00;
+  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.admin-access-gate-cta:hover {
+  background: #e55f00;
+  transform: translateY(-1px);
+}
+
+.admin-access-gate-loading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #cbd5e1;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.admin-access-gate-spinner {
+  animation: admin-access-spin 0.9s linear infinite;
+  color: #ff6b00;
+}
+
+@keyframes admin-access-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.admin-access-gate-foot {
+  margin: 0;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.78rem;
+  color: #64748b;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 480px) {
+  .admin-access-gate-panel {
+    padding: 28px 22px 22px;
+    gap: 22px;
+  }
+}
+
