@@ -219,7 +219,7 @@ export function SettingsScreen({
 
   if (dataLoading) {
     return (
-      <div style={{ padding: "24px 28px", minHeight: "100vh", display: "flex", flexDirection: "column", gap: 20 }}>
+      <div className="exact-admin-screen">
         <SkeletonForm fields={8} />
       </div>
     );
@@ -227,7 +227,8 @@ export function SettingsScreen({
 
   const renderGeneral = () => (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      <h3 style={{ color: DARK.text, fontSize: 16, fontWeight: 700, margin: 0 }}>Platform Settings</h3>
+      <h3 style={{ color: DARK.text, fontSize: 16, fontWeight: 700, margin: 0 }}>Ghana Platform Settings</h3>
+      <p style={{ color: DARK.textMuted, fontSize: 12, margin: 0 }}>OkadaGo Accra ops defaults — timezone Africa/Accra, GHS currency.</p>
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16 }}>
         <label style={labelStyle}>
           Platform Name
@@ -301,7 +302,8 @@ export function SettingsScreen({
 
   const renderCompany = () => (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      <h3 style={{ color: DARK.text, fontSize: 16, fontWeight: 700, margin: 0 }}>Company Information</h3>
+      <h3 style={{ color: DARK.text, fontSize: 16, fontWeight: 700, margin: 0 }}>Company Information — Ghana Ops</h3>
+      <p style={{ color: DARK.textMuted, fontSize: 12, margin: 0 }}>OkadaGo legal and contact profile for Accra operations.</p>
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16 }}>
         <label style={labelStyle}>
           Company Name
@@ -548,7 +550,7 @@ export function SettingsScreen({
                 Connect
               </button>
             )}
-            <button style={{ ...btnBase, background: DARK.surfaceAlt, color: DARK.textMuted, padding: "6px 10px" }} title="Open dashboard">
+            <button style={{ ...btnBase, background: DARK.surfaceAlt, color: DARK.textMuted, padding: "6px 10px" }} title="Platform Settings">
               <ExternalLink size={14} />
             </button>
           </div>
@@ -615,10 +617,10 @@ export function SettingsScreen({
   };
 
   return (
-    <div className="exact-admin-screen" style={{ display: "flex", flexDirection: "column", gap: 16, minHeight: "100%", color: DARK.text, fontFamily: "inherit" }}>
+    <div className="exact-admin-screen" style={{ display: "flex", flexDirection: "column", gap: 16, color: DARK.text, fontFamily: "inherit" }}>
       <AdminPageHeader
         title="Settings"
-        subtitle="Platform preferences, security, and integrations overview."
+        subtitle="Company, security, payments, and Ghana ops preferences."
       />
       <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? 16 : 20, minHeight: "100%" }}>
       {/* Left Sidebar */}
@@ -652,17 +654,21 @@ export function SettingsScreen({
 
       {/* Main Content */}
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 20 }}>
-        <div style={{ ...cardStyle, minHeight: 400 }}>
+        <article className="admin-reference-card" style={{ ...cardStyle, minHeight: 400 }}>
           {sectionContent[activeSection]()}
-        </div>
-        <div style={{ display: "flex", gap: isMobile ? 8 : 12, flexWrap: "wrap" }}>
+        </article>
+        <div className="admin-screen-toolbar" style={{ gap: isMobile ? 8 : 12 }}>
           <button
+            type="button"
+            className="admin-btn-primary"
             style={{ ...btnBase, background: DARK.yellow, color: "#0b0f19", padding: "11px 24px" }}
             onClick={handleSave}
           >
             <Save size={16} /> Save Changes
           </button>
           <button
+            type="button"
+            className="admin-btn-secondary"
             style={{ ...btnBase, background: DARK.surfaceAlt, color: DARK.textMuted, border: `1px solid ${DARK.border}`, padding: "11px 24px" }}
             onClick={handleReset}
           >
@@ -674,7 +680,7 @@ export function SettingsScreen({
       {/* Right Sidebar */}
       <div style={{ width: isMobile ? "100%" : 260, flexShrink: 0, display: isMobile ? "none" : "flex", flexDirection: "column", gap: 16 }}>
         {/* Platform Info */}
-        <div style={{ ...cardStyle }}>
+        <article className="admin-reference-card" style={{ ...cardStyle }}>
           <h4 style={{ color: DARK.text, fontSize: 13, fontWeight: 700, margin: "0 0 14px" }}>Platform Info</h4>
           {[
             { label: "Currency", value: adminCurrency },
@@ -686,10 +692,10 @@ export function SettingsScreen({
               <span style={{ color: DARK.text, fontSize: 12, fontWeight: 600 }}>{value}</span>
             </div>
           ))}
-        </div>
+        </article>
 
         {/* Live modules */}
-        <div style={{ ...cardStyle }}>
+        <article className="admin-reference-card" style={{ ...cardStyle }}>
           <h4 style={{ color: DARK.text, fontSize: 13, fontWeight: 700, margin: "0 0 12px" }}>
             <Key size={14} style={{ marginRight: 6, verticalAlign: -2 }} />
             Enabled modules
@@ -702,17 +708,21 @@ export function SettingsScreen({
               </div>
             ))}
           </div>
-        </div>
+        </article>
 
         {/* Danger Zone */}
-        <div style={{
-          ...cardStyle, background: DARK.dangerZone, borderColor: DARK.dangerBorder,
-        }}>
+        <article
+          className="admin-reference-card"
+          style={{
+            ...cardStyle, background: DARK.dangerZone, borderColor: DARK.dangerBorder,
+          }}
+        >
           <h4 style={{ color: DARK.red, fontSize: 13, fontWeight: 700, margin: "0 0 12px" }}>
             <AlertTriangle size={14} style={{ marginRight: 6, verticalAlign: -2 }} />
             Danger Zone
           </h4>
           <button
+            type="button"
             style={{ ...btnBase, background: DARK.red, color: "#fff", width: "100%", justifyContent: "center", padding: "9px 0" }}
             onClick={() => addToast("Factory reset requires confirmation", "warning")}
           >
@@ -721,7 +731,7 @@ export function SettingsScreen({
           <p style={{ color: DARK.textMuted, fontSize: 11, margin: "8px 0 0", lineHeight: 1.4 }}>
             This action is irreversible and will delete all platform data.
           </p>
-        </div>
+        </article>
       </div>
       </div>
     </div>

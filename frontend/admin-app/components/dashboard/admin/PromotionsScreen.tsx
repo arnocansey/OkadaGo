@@ -1,4 +1,4 @@
-import { Tag, TrendingDown, Map } from "lucide-react";
+import { Tag, TrendingDown, Map, Percent, PiggyBank } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
@@ -23,21 +23,32 @@ export function PromotionsScreen({
   adminCurrency
 }: PromotionsScreenProps) {
   const totalDiscount = promoSpend + referralSpend;
+  const discountedRideCount = promoAdjustedTrips.length;
+  const avgDiscountPerRide =
+    discountedRideCount > 0 ? totalDiscount / discountedRideCount : 0;
 
   return (
     <div className="exact-admin-screen">
       <AdminPageHeader
         title="Promotions"
-        subtitle="Track promo-assisted trips and referral-driven discounts from live ride records."
+        subtitle="Active Accra campaigns, promo codes, and referral discounts in GHS."
       />
 
-      <section className="admin-reference-kpis">
+      <section className="admin-kpi-grid">
         <article className="admin-reference-kpi">
           <div className="admin-reference-kpi-icon yellow"><Tag size={22} /></div>
           <div>
-            <span>Promo Rides</span>
-            <strong>{promoAdjustedTrips.length}</strong>
-            <small>With discounts applied</small>
+            <span>Active Campaigns</span>
+            <strong>{discountedRideCount}</strong>
+            <small>Promo-adjusted rides</small>
+          </div>
+        </article>
+        <article className="admin-reference-kpi">
+          <div className="admin-reference-kpi-icon yellow"><Percent size={22} /></div>
+          <div>
+            <span>Avg Discount / Ride</span>
+            <strong>{formatMoney(adminCurrency, avgDiscountPerRide)}</strong>
+            <small>Across discounted trips</small>
           </div>
         </article>
         <article className="admin-reference-kpi">
@@ -57,25 +68,28 @@ export function PromotionsScreen({
           </div>
         </article>
         <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon red"><TrendingDown size={22} /></div>
+          <div className="admin-reference-kpi-icon green"><PiggyBank size={22} /></div>
           <div>
-            <span>Total Discount Cost</span>
+            <span>Total Est. Savings</span>
             <strong>{formatMoney(adminCurrency, totalDiscount)}</strong>
-            <small>Promo + referral</small>
+            <small>Promo + referral to riders</small>
           </div>
         </article>
       </section>
 
-      <div className="admin-screen-grid-2">
+      <div className="admin-overview-split">
         <article className="admin-reference-card">
           <div className="admin-reference-cardhead">
             <div>
-              <h3>Top Discounted Rides</h3>
-              <p>Rides with the highest discount applied.</p>
+              <h3>Live Campaigns / Discounted Trips</h3>
+              <p>Highest-discount Accra rides with promo or referral applied.</p>
             </div>
           </div>
           {topDiscountedRides.length === 0 ? (
-            <EmptyCard title="No promo-adjusted rides." body="Rides with promo codes or referral discounts will appear here." />
+            <EmptyCard
+              title="No promo-adjusted rides."
+              body="Rides with promo codes or referral discounts will appear here."
+            />
           ) : (
             <div className="admin-table-wrapper">
               <table className="admin-table">
@@ -121,8 +135,9 @@ export function PromotionsScreen({
             <div className="admin-reference-cardhead">
               <div>
                 <h3>Promo by Zone</h3>
-                <Map size={16} />
+                <p>Discounted trip volume across Accra zones.</p>
               </div>
+              <Map size={16} />
             </div>
             {promotionZoneSnapshot.length === 0 ? (
               <EmptyCard title="No zone data." body="" />
@@ -140,16 +155,29 @@ export function PromotionsScreen({
 
           <article className="admin-reference-card">
             <div className="admin-reference-cardhead">
-              <div><h3>Promo Code Management</h3></div>
+              <div>
+                <h3>Spend Summary</h3>
+                <p>Promo vs referral cost in Ghana cedis.</p>
+              </div>
             </div>
-            <div style={{ padding: "12px 0" }}>
-              <p style={{ fontSize: 14, marginBottom: 12 }}>
-                Create and manage promotion codes for your platform.
-              </p>
-              <a href="#promo-codes" className="button" style={{ textDecoration: "none" }}>
-                Manage Promo Codes
-              </a>
-            </div>
+            <ul className="admin-summary-list">
+              <li>
+                <span>Promo codes</span>
+                <strong>{formatMoney(adminCurrency, promoSpend)}</strong>
+              </li>
+              <li>
+                <span>Referral discounts</span>
+                <strong>{formatMoney(adminCurrency, referralSpend)}</strong>
+              </li>
+              <li>
+                <span>Total est. savings</span>
+                <strong>{formatMoney(adminCurrency, totalDiscount)}</strong>
+              </li>
+            </ul>
+            <p className="admin-ops-note">
+              Promo codes are managed in ops tooling. Coordinate Accra campaign launches with the
+              growth team before pushing new GHS discount codes live.
+            </p>
           </article>
         </aside>
       </div>

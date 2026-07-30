@@ -1,6 +1,7 @@
 import { ShieldAlert, UserPlus, CheckCircle } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
+import { AdminKpiRow } from "./ui/AdminKpiRow";
 import type { AdminAccountRecord, PassengerRecord } from "./types";
 import { formatDateTime, statusTone } from "./utils";
 
@@ -52,55 +53,51 @@ export function AdminsScreen({
   return (
     <div className="exact-admin-screen">
       <AdminPageHeader
-        title="Admins"
-        subtitle="Create and review admin accounts through an authenticated admin-only workflow."
+        title="Staff"
+        subtitle="Create and manage OkadaGo Accra operator accounts."
       />
 
-      <section className="admin-reference-kpis">
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon yellow"><ShieldAlert size={22} /></div>
-          <div>
-            <span>Admin Accounts</span>
-            <strong>{adminAccounts.length}</strong>
-            <small>Active operators</small>
-          </div>
-        </article>
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon green"><UserPlus size={22} /></div>
-          <div>
-            <span>Eligible Passengers</span>
-            <strong>{eligiblePassengers.length}</strong>
-            <small>Can be promoted</small>
-          </div>
-        </article>
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon yellow"><ShieldAlert size={22} /></div>
-          <div>
-            <span>Permission Roles</span>
-            <strong>{adminRoleEntries.length}</strong>
-            <small>Defined templates</small>
-          </div>
-        </article>
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon green"><CheckCircle size={22} /></div>
-          <div>
-            <span>Active Admins</span>
-            <strong>
-              {adminAccounts.filter((a) => a.user.accountStatus?.toLowerCase() === "active").length}
-            </strong>
-            <small>Currently active</small>
-          </div>
-        </article>
-      </section>
+      <AdminKpiRow
+        items={[
+          {
+            label: "Admin Accounts",
+            value: adminAccounts.length,
+            hint: "Active operators",
+            icon: <ShieldAlert size={22} />,
+            tone: "yellow",
+          },
+          {
+            label: "Eligible Passengers",
+            value: eligiblePassengers.length,
+            hint: "Can be promoted",
+            icon: <UserPlus size={22} />,
+            tone: "green",
+          },
+          {
+            label: "Permission Roles",
+            value: adminRoleEntries.length,
+            hint: "Defined templates",
+            icon: <ShieldAlert size={22} />,
+            tone: "yellow",
+          },
+          {
+            label: "Active Admins",
+            value: adminAccounts.filter((a) => a.user.accountStatus?.toLowerCase() === "active").length,
+            hint: "Currently active",
+            icon: <CheckCircle size={22} />,
+            tone: "green",
+          },
+        ]}
+      />
 
-      <div className="admin-screen-grid-2">
+      <div className="admin-overview-split">
         {/* Current Admins */}
         <div>
           <article className="admin-reference-card" style={{ marginBottom: 16 }}>
             <div className="admin-reference-cardhead">
               <div>
                 <h3>Admin Accounts</h3>
-                <p>All current administrators on the platform.</p>
+                <p>All current Accra administrators on the platform.</p>
               </div>
             </div>
             {adminAccounts.length === 0 ? (

@@ -11,13 +11,12 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  BarChart3,
   ThumbsUp,
 } from "lucide-react";
-import { useBreakpoint } from "../../../hooks/use-breakpoint";
 import { useAdminToast } from "./AdminToast";
 import { SkeletonKPI, SkeletonCard } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
+import { AdminKpiRow } from "./ui/AdminKpiRow";
 import type { AdminIncidentRecord } from "./types";
 import { formatDateTime, statusTone, formatEnumLabel } from "./utils";
 
@@ -36,14 +35,6 @@ export type RiderComplaintsScreenProps = {
 
 const TABS = ["All", "Open", "In Progress", "Resolved", "Closed"] as const;
 const PAGE_SIZE = 6;
-
-const card: React.CSSProperties = {
-  background: "var(--card-bg, #1e2028)",
-  borderRadius: 16,
-  border: "1px solid var(--border-color, #2a2d35)",
-  padding: 0,
-  overflow: "hidden",
-};
 
 const tagStyle = (variant: "danger" | "warning" | "success" | "neutral"): React.CSSProperties => ({
   display: "inline-flex",
@@ -84,7 +75,6 @@ export function RiderComplaintsScreen({
   isMutating,
   dataLoading = false,
 }: RiderComplaintsScreenProps) {
-  const { isMobile, isTablet } = useBreakpoint();
   const toast = useAdminToast();
   const [activeTab, setActiveTab] = useState("All");
   const [selectedComplaint, setSelectedComplaint] = useState<number | null>(null);
@@ -127,7 +117,7 @@ export function RiderComplaintsScreen({
 
   if (dataLoading) {
     return (
-      <div style={{ padding: "24px 28px", minHeight: "100vh", display: "flex", flexDirection: "column", gap: 20 }}>
+      <div className="exact-admin-screen">
         <SkeletonKPI count={4} />
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} lines={3} />)}
@@ -137,7 +127,6 @@ export function RiderComplaintsScreen({
   }
 
   const totalResolved = riderComplaintResolved.length;
-  const avgResponseTime = riderIncidents.length > 0 ? "2.4h" : "—";
   const satisfactionRate =
     totalResolved + riderIncidents.length > 0
       ? Math.round((totalResolved / Math.max(1, totalResolved + riderComplaintOpen.length)) * 100)
@@ -167,164 +156,31 @@ export function RiderComplaintsScreen({
   return (
     <div className="exact-admin-screen">
       <AdminPageHeader
-        title="Complaints & Support"
-        subtitle="Review rider-linked incidents and complaint reports from support operations."
+        title="Cases & Disputes"
+        subtitle="Rider-linked cases and disputes for Accra operations."
       />
 
-      {/* ── KPI Cards ── */}
-      <section
-        style={{
-          display: "grid",
-          gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(auto-fit, minmax(180px, 1fr))",
-          gap: 14,
-          marginBottom: 24,
-        }}
-      >
-        {[
-          {
-            label: "Open Complaints",
-            value: riderComplaintOpen.length,
-            sub: "Require first response",
-            icon: <AlertTriangle size={20} />,
-            color: "#ef4444",
-            bg: "rgba(239,68,68,0.12)",
-          },
-          {
-            label: "In Progress",
-            value: riderComplaintInProgress.length,
-            sub: "Being actioned",
-            icon: <Clock size={20} />,
-            color: "#f59e0b",
-            bg: "rgba(245,158,11,0.12)",
-          },
-          {
-            label: "Resolved",
-            value: totalResolved,
-            sub: "Closed complaints",
-            icon: <CheckCircle size={20} />,
-            color: "#10b981",
-            bg: "rgba(16,185,129,0.12)",
-          },
-          {
-            label: "Total Incidents",
-            value: riderIncidents.length,
-            sub: "All rider-linked",
-            icon: <BarChart3 size={20} />,
-            color: "var(--accent-yellow)",
-            bg: "var(--accent-yellow-light)",
-          },
-          {
-            label: "Avg Response Time",
-            value: avgResponseTime,
-            sub: "Across all complaints",
-            icon: <Clock size={20} />,
-            color: "#3b82f6",
-            bg: "rgba(59,130,246,0.12)",
-          },
-          {
-            label: "Satisfaction",
-            value: `${satisfactionRate}%`,
-            sub: "Positive resolution rate",
-            icon: <ThumbsUp size={20} />,
-            color: "#06b6d4",
-            bg: "rgba(6,182,212,0.12)",
-          },
-        ].map((kpi) => (
-          <article
-            key={kpi.label}
-            style={{
-              ...card,
-              padding: 18,
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-            }}
-          >
-            <div
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 10,
-                background: kpi.bg,
-                color: kpi.color,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              {kpi.icon}
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 12, color: "var(--text-secondary, #9ca3af)", marginBottom: 2 }}>
-                {kpi.label}
-              </div>
-              <div style={{ fontSize: 22, fontWeight: 700, lineHeight: 1 }}>{kpi.value}</div>
-              <div style={{ fontSize: 11, color: "var(--text-secondary, #9ca3af)", marginTop: 2 }}>
-                {kpi.sub}
-              </div>
-            </div>
-          </article>
-        ))}
-      </section>
+      <AdminKpiRow
+        items={[
+          { label: "Open", value: riderComplaintOpen.length, hint: "Require first response", icon: <AlertTriangle size={22} />, tone: "red" },
+          { label: "In Progress", value: riderComplaintInProgress.length, hint: "Being actioned", icon: <Clock size={22} />, tone: "yellow" },
+          { label: "Resolved", value: totalResolved, hint: "Closed complaints", icon: <CheckCircle size={22} />, tone: "green" },
+          { label: "Satisfaction", value: `${satisfactionRate}%`, hint: "Positive resolution rate", icon: <ThumbsUp size={22} />, tone: "yellow" },
+        ]}
+      />
 
-      {/* ── Split Layout ── */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: isMobile
-            ? "1fr"
-            : detailComplaint
-            ? isTablet
-              ? "1fr 320px"
-              : "1fr 380px"
-            : "1fr",
-          gap: 20,
-          alignItems: "start",
-        }}
-      >
-        {/* ── LEFT: List Panel ── */}
-        <article style={card}>
-          {/* Tabs */}
-          <div
-            style={{
-              display: "flex",
-              gap: 0,
-              borderBottom: "1px solid var(--border-color, #2a2d35)",
-              overflowX: "auto",
-            }}
-          >
+      <div className="admin-overview-split">
+        <article className="admin-reference-card">
+          <div className="admin-tabs" style={{ overflowX: "auto" }}>
             {TABS.map((tab) => (
               <button
                 key={tab}
                 type="button"
+                className={`admin-tab${activeTab === tab ? " active" : ""}`}
                 onClick={() => handleTabChange(tab)}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: "12px 18px",
-                  fontSize: 13,
-                  fontWeight: activeTab === tab ? 700 : 500,
-                  color: activeTab === tab ? "#f59e0b" : "var(--text-secondary, #9ca3af)",
-                  borderBottom: activeTab === tab ? "2px solid #f59e0b" : "2px solid transparent",
-                  marginBottom: -1,
-                  whiteSpace: "nowrap",
-                  transition: "color 0.15s",
-                }}
               >
                 {tab}
-                <span
-                  style={{
-                    marginLeft: 6,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    background: activeTab === tab ? "rgba(245,158,11,0.2)" : "rgba(107,114,128,0.15)",
-                    color: activeTab === tab ? "#f59e0b" : "var(--text-secondary, #9ca3af)",
-                    borderRadius: 10,
-                    padding: "1px 7px",
-                  }}
-                >
+                <span style={{ marginLeft: 6, fontSize: 11, fontWeight: 700 }}>
                   {tab === "All"
                     ? riderIncidents.length
                     : tab === "Open"
@@ -339,60 +195,22 @@ export function RiderComplaintsScreen({
             ))}
           </div>
 
-          {/* Search + Status Filter */}
-          <div
-            style={{
-              display: "flex",
-              gap: 10,
-              flexWrap: "wrap",
-              alignItems: "center",
-              padding: "14px 18px",
-              borderBottom: "1px solid var(--border-color, #2a2d35)",
-            }}
-          >
-            <div style={{ position: "relative", flex: "1 1 200px", minWidth: 160 }}>
-              <Search
-                size={14}
-                style={{
-                  position: "absolute",
-                  left: 10,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  color: "var(--text-secondary, #9ca3af)",
-                  pointerEvents: "none",
-                }}
-              />
+          <div className="admin-screen-toolbar">
+            <label className="admin-filter-search">
+              <Search size={14} aria-hidden />
               <input
-                type="text"
+                type="search"
                 placeholder="Search complaints..."
                 value={searchQuery}
                 onChange={handleSearchChange}
-                style={{
-                  background: "var(--input-bg, #0f1117)",
-                  border: "1px solid var(--border-color, #2a2d35)",
-                  borderRadius: 8,
-                  padding: "8px 10px 8px 32px",
-                  color: "#fff",
-                  fontSize: 13,
-                  width: "100%",
-                  outline: "none",
-                }}
               />
-            </div>
+            </label>
             <select
+              className="admin-select-sm"
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);
                 setCurrentPage(1);
-              }}
-              style={{
-                background: "var(--input-bg, #0f1117)",
-                border: "1px solid var(--border-color, #2a2d35)",
-                borderRadius: 8,
-                padding: "8px 10px",
-                color: "var(--text-secondary, #9ca3af)",
-                fontSize: 13,
-                cursor: "pointer",
               }}
             >
               <option>All</option>
@@ -582,16 +400,7 @@ export function RiderComplaintsScreen({
 
         {/* ── RIGHT: Detail Panel ── */}
         {detailComplaint && (
-          <div
-            style={{
-              background: "var(--card-bg, #1e2028)",
-              borderRadius: 16,
-              border: "1px solid var(--border-color, #2a2d35)",
-              padding: 24,
-              position: "sticky",
-              top: 0,
-            }}
-          >
+          <article className="admin-reference-card" style={{ position: "sticky", top: 0 }}>
             {/* Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
               <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Complaint Details</h3>
@@ -746,23 +555,15 @@ export function RiderComplaintsScreen({
               </span>
             </div>
 
-            {/* Action Buttons */}
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <div style={{ display: "flex", gap: 8 }}>
                 <button
                   type="button"
+                  className="admin-btn-secondary"
                   disabled={isMutating}
                   onClick={() => {
                     onIncidentAction(detailComplaint.id, "UNDER_REVIEW");
                     toast.addToast("Complaint marked as Under Review", "info");
-                  }}
-                  style={{
-                    ...btnBase,
-                    flex: 1,
-                    background: "rgba(59,130,246,0.15)",
-                    color: "#3b82f6",
-                    opacity: isMutating ? 0.5 : 1,
-                    cursor: isMutating ? "not-allowed" : "pointer",
                   }}
                 >
                   <MessageSquare size={14} />
@@ -770,17 +571,10 @@ export function RiderComplaintsScreen({
                 </button>
                 <button
                   type="button"
+                  className="admin-btn-secondary"
                   disabled={isMutating}
                   onClick={() => {
                     toast.addToast("Note added to complaint", "success");
-                  }}
-                  style={{
-                    ...btnBase,
-                    flex: 1,
-                    background: "var(--accent-yellow-light)",
-                    color: "var(--accent-yellow)",
-                    opacity: isMutating ? 0.5 : 1,
-                    cursor: isMutating ? "not-allowed" : "pointer",
                   }}
                 >
                   <StickyNote size={14} />
@@ -790,17 +584,10 @@ export function RiderComplaintsScreen({
               <div style={{ display: "flex", gap: 8 }}>
                 <button
                   type="button"
+                  className="admin-btn-secondary"
                   disabled={isMutating}
                   onClick={() => {
                     toast.addToast("Complaint assigned to agent", "info");
-                  }}
-                  style={{
-                    ...btnBase,
-                    flex: 1,
-                    background: "rgba(245,158,11,0.15)",
-                    color: "#f59e0b",
-                    opacity: isMutating ? 0.5 : 1,
-                    cursor: isMutating ? "not-allowed" : "pointer",
                   }}
                 >
                   <UserCheck size={14} />
@@ -808,18 +595,11 @@ export function RiderComplaintsScreen({
                 </button>
                 <button
                   type="button"
+                  className="admin-btn-primary"
                   disabled={isMutating}
                   onClick={() => {
                     onIncidentAction(detailComplaint.id, "RESOLVED");
                     toast.addToast("Complaint marked as Resolved", "success");
-                  }}
-                  style={{
-                    ...btnBase,
-                    flex: 1,
-                    background: "rgba(16,185,129,0.15)",
-                    color: "#10b981",
-                    opacity: isMutating ? 0.5 : 1,
-                    cursor: isMutating ? "not-allowed" : "pointer",
                   }}
                 >
                   <CheckCircle size={14} />
@@ -828,25 +608,18 @@ export function RiderComplaintsScreen({
               </div>
               <button
                 type="button"
+                className="admin-btn-secondary"
                 disabled={isMutating}
                 onClick={() => {
                   onIncidentAction(detailComplaint.id, "CLOSED");
                   toast.addToast("Complaint Closed", "success");
                 }}
-                style={{
-                  ...btnBase,
-                  width: "100%",
-                  justifyContent: "center",
-                  background: "rgba(107,114,128,0.15)",
-                  color: "#9ca3af",
-                  opacity: isMutating ? 0.5 : 1,
-                  cursor: isMutating ? "not-allowed" : "pointer",
-                }}
+                style={{ width: "100%", justifyContent: "center" }}
               >
                 Close Complaint
               </button>
             </div>
-          </div>
+          </article>
         )}
       </div>
     </div>

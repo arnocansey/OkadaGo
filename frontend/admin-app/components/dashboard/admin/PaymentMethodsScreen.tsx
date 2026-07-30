@@ -38,7 +38,7 @@ const PLATFORM_METHODS = [
 
 export function PaymentMethodsScreen({ dataLoading = false }: PaymentMethodsScreenProps) {
   if (dataLoading) {
-    return <div className="exact-admin-screen"><EmptyCard title="Loading payment methods…" body="" /></div>;
+    return <div className="exact-admin-screen"><EmptyCard title="Payment Rails" body="" /></div>;
   }
 
   const configuredCount = PLATFORM_METHODS.filter((m) => m.configured).length;
@@ -47,7 +47,7 @@ export function PaymentMethodsScreen({ dataLoading = false }: PaymentMethodsScre
     <div className="exact-admin-screen">
       <AdminPageHeader
         title="Payment Methods"
-        subtitle="Platform-level payment rails for OkadaGo. These are not personal payout ledgers."
+        subtitle="Paystack, MoMo, and cash rails for Ghana passengers in Accra."
       />
 
       <AdminKpiRow

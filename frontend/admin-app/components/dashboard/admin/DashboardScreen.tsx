@@ -1,9 +1,9 @@
-import { Bike, CreditCard, Package, Users } from "lucide-react";
+import { Download, Bike } from "lucide-react";
 import { OperationsMap } from "@/components/maps/operations-map";
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
-import type { RideRecord, DeliveryRecord, RiderRecord, PassengerRecord } from "./types";
+import type { RideRecord } from "./types";
 import { parseNumber, formatDateTime, statusTone } from "./utils";
 
 type MapMarker = {
@@ -87,47 +87,81 @@ export function DashboardScreen({
   dashboardDateRange,
   onDateRangeChange
 }: DashboardScreenProps) {
+  const activeRequests = [
+    ...recentRideRequests.slice(0, 4).map((ride) => ({
+      id: ride.id,
+      kind: "Ride" as const,
+      title: `${ride.pickupAddress} → ${ride.destinationAddress}`,
+      passenger: ride.passenger.user.fullName,
+      status: ride.status,
+      createdAt: ride.createdAt,
+      amount: formatMoney(ride.currency || adminCurrency, parseNumber(ride.finalFare ?? ride.estimatedFare))
+    })),
+    ...deliveries.slice(0, 2).map((delivery) => ({
+      id: delivery.id,
+      kind: "Delivery" as const,
+      title: `${delivery.pickupAddress} → ${delivery.dropoffAddress}`,
+      passenger: delivery.passenger.user.fullName,
+      status: delivery.status,
+      createdAt: delivery.createdAt,
+      amount:
+        delivery.finalFee != null
+          ? formatMoney(delivery.currency || adminCurrency, parseNumber(delivery.finalFee))
+          : formatMoney(delivery.currency || adminCurrency, parseNumber(delivery.estimatedFee))
+    }))
+  ].slice(0, 6);
+
   return (
     <div className="exact-admin-dashboard">
       <AdminPageHeader
-        title="Operations dashboard"
-        subtitle="Live rides, deliveries, riders, and revenue across service zones."
+        title="Overview"
+        subtitle="Live metrics and fleet status across Accra operations."
         actions={
-          <section className="admin-date-range-filter" style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <label style={{ fontSize: 13, fontWeight: 500 }}>From</label>
-            <input
-              type="date"
-              className="admin-input-sm"
-              value={dashboardDateRange.from}
-              onChange={(e) => onDateRangeChange({ ...dashboardDateRange, from: e.target.value })}
-            />
-            <label style={{ fontSize: 13, fontWeight: 500 }}>To</label>
-            <input
-              type="date"
-              className="admin-input-sm"
-              value={dashboardDateRange.to}
-              onChange={(e) => onDateRangeChange({ ...dashboardDateRange, to: e.target.value })}
-            />
+          <div className="admin-screen-toolbar">
+            <label className="admin-btn-ghost">
+              From
+              <input
+                type="date"
+                className="admin-input-sm"
+                value={dashboardDateRange.from}
+                onChange={(e) => onDateRangeChange({ ...dashboardDateRange, from: e.target.value })}
+                style={{ marginLeft: 8 }}
+              />
+            </label>
+            <label className="admin-btn-ghost">
+              To
+              <input
+                type="date"
+                className="admin-input-sm"
+                value={dashboardDateRange.to}
+                onChange={(e) => onDateRangeChange({ ...dashboardDateRange, to: e.target.value })}
+                style={{ marginLeft: 8 }}
+              />
+            </label>
             {(dashboardDateRange.from || dashboardDateRange.to) && (
               <button
-                className="admin-btn-sm"
+                type="button"
+                className="admin-btn-ghost"
                 onClick={() => onDateRangeChange({ from: "", to: "" })}
-                style={{ fontSize: 12, padding: "4px 10px" }}
               >
                 Reset
               </button>
             )}
-          </section>
+            <a className="admin-btn-primary" href="/reports">
+              <Download size={14} />
+              Export Report
+            </a>
+          </div>
         }
       />
 
-      <section className="admin-reference-kpis" aria-label="Admin dashboard metrics">
-        {dashboardMetrics.map((metric) => {
+      <section className="admin-kpi-grid" aria-label="Admin dashboard metrics">
+        {dashboardMetrics.slice(0, 4).map((metric) => {
           const Icon = metric.icon;
           return (
             <article key={metric.label} className="admin-reference-kpi">
               <div className={`admin-reference-kpi-icon ${metric.tone}`}>
-                <Icon size={22} />
+                <Icon size={20} />
               </div>
               <div>
                 <span>{metric.label}</span>
@@ -139,11 +173,64 @@ export function DashboardScreen({
         })}
       </section>
 
+      <section className="admin-overview-split">
+        <article className="admin-reference-card admin-overview-map">
+          <div className="admin-reference-cardhead">
+            <div>
+              <h3>Live Fleet Map</h3>
+              <p>
+                Online: {activeRiders.length} · Vehicles: {vehicleCount}
+              </p>
+            </div>
+            <a href="/riders/activity-tracking">Open live view</a>
+          </div>
+          <div className="admin-reference-map">
+            <OperationsMap
+              center={mapMarkers[0]?.position ?? [5.6037, -0.187]}
+              zoom={mapMarkers.length > 0 ? 11 : 6}
+              markers={mapMarkers}
+              emptyTitle="No live rider coordinates yet."
+              emptyDescription="Online riders with coordinates will appear on this map automatically."
+            />
+          </div>
+        </article>
+
+        <article className="admin-reference-card">
+          <div className="admin-reference-cardhead">
+            <div>
+              <h3>Active Requests</h3>
+              <p>Newest rides and deliveries in the queue.</p>
+            </div>
+            <a href="/requests">View all</a>
+          </div>
+          {activeRequests.length === 0 ? (
+            <EmptyCard title="No active requests." body="New passenger requests will show up here live." />
+          ) : (
+            <div className="admin-active-requests">
+              {activeRequests.map((item) => (
+                <div key={`${item.kind}-${item.id}`} className="admin-active-request-item">
+                  <div className="admin-active-request-meta">
+                    <strong>{item.kind}</strong>
+                    <em className={`admin-reference-tag ${statusTone(item.status)}`}>{item.status}</em>
+                  </div>
+                  <small>{item.title}</small>
+                  <div className="admin-active-request-meta">
+                    <small>{item.passenger}</small>
+                    <small>{item.amount}</small>
+                  </div>
+                  <small>{formatDateTime(item.createdAt)}</small>
+                </div>
+              ))}
+            </div>
+          )}
+        </article>
+      </section>
+
       <section className="admin-reference-grid-3">
         <article className="admin-reference-card admin-reference-overview">
           <div className="admin-reference-cardhead">
             <div>
-              <h3>Overview</h3>
+              <h3>Weekly Volume</h3>
               <p>Last 7 days from live ride records.</p>
             </div>
             <span>This week</span>
@@ -192,8 +279,8 @@ export function DashboardScreen({
               style={{
                 background:
                   totalDashboardRevenue === 0
-                    ? "#eef1f5"
-                    : `conic-gradient(#111827 0 ${rideRevenuePercent}%, #ffc107 ${rideRevenuePercent}% 100%)`
+                    ? "var(--bg-surface-2)"
+                    : `conic-gradient(var(--text-primary) 0 ${rideRevenuePercent}%, var(--accent-yellow) ${rideRevenuePercent}% 100%)`
               }}
             >
               <div>
@@ -218,89 +305,10 @@ export function DashboardScreen({
           </div>
         </article>
 
-        <article className="admin-reference-card admin-reference-map-card">
-          <div className="admin-reference-cardhead">
-            <div>
-              <h3>Live Map</h3>
-              <p>{activeRiders.length} riders online.</p>
-            </div>
-            <a href="/riders">View full map</a>
-          </div>
-          <div className="admin-reference-map">
-            <OperationsMap
-              center={mapMarkers[0]?.position ?? [5.6037, -0.187]}
-              zoom={mapMarkers.length > 0 ? 11 : 6}
-              markers={mapMarkers}
-              emptyTitle="No live rider coordinates yet."
-              emptyDescription="Online riders with coordinates will appear on this map automatically."
-            />
-          </div>
-        </article>
-      </section>
-
-      <section className="admin-reference-lists">
-        <article className="admin-reference-card admin-reference-list-card">
-          <div className="admin-reference-cardhead">
-            <div>
-              <h3>Recent Ride Requests</h3>
-              <p>Newest ride records from the backend.</p>
-            </div>
-            <a href="/requests">View all</a>
-          </div>
-          {recentRideRequests.length === 0 ? (
-            <EmptyCard title="No ride requests yet." body="Ride data will appear here once requests are submitted." />
-          ) : (
-            <ul className="admin-reference-list">
-              {recentRideRequests.map((ride) => (
-                <li key={ride.id} className="admin-reference-list-row">
-                  <span className={`admin-reference-status-dot ${statusTone(ride.status)}`} />
-                  <div>
-                    <strong>{ride.passenger.user.fullName}</strong>
-                    <small>{ride.pickupAddress} → {ride.destinationAddress}</small>
-                  </div>
-                  <em className={`admin-reference-tag ${statusTone(ride.status)}`}>{ride.status}</em>
-                  <span className="admin-reference-meta">{formatDateTime(ride.createdAt)}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </article>
-
-        <article className="admin-reference-card admin-reference-list-card">
-          <div className="admin-reference-cardhead">
-            <div>
-              <h3>Recent Deliveries</h3>
-              <p>{deliveries.length} delivery orders total.</p>
-            </div>
-            <a href="/deliveries">View all</a>
-          </div>
-          {deliveries.length === 0 ? (
-            <EmptyCard title="No deliveries yet." body="Delivery records will appear here." />
-          ) : (
-            <ul className="admin-reference-list">
-              {deliveries.slice(0, 4).map((delivery) => (
-                <li key={delivery.id} className="admin-reference-list-row">
-                  <span className={`admin-reference-status-dot ${statusTone(delivery.status)}`} />
-                  <div>
-                    <strong>{delivery.passenger.user.fullName}</strong>
-                    <small>{delivery.pickupAddress} → {delivery.dropoffAddress}</small>
-                  </div>
-                  <em className={`admin-reference-tag ${statusTone(delivery.status)}`}>{delivery.status}</em>
-                  <span className="admin-reference-meta">
-                    {delivery.finalFee != null
-                      ? formatMoney(delivery.currency, parseNumber(delivery.finalFee))
-                      : formatMoney(delivery.currency, parseNumber(delivery.estimatedFee))}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </article>
-
         <article className="admin-reference-card admin-reference-activity-card">
           <div className="admin-reference-cardhead">
             <div>
-              <h3>Live Activity Feed</h3>
+              <h3>Live Activity</h3>
               <p>Recent operational events.</p>
             </div>
           </div>
@@ -308,7 +316,7 @@ export function DashboardScreen({
             <EmptyCard title="No recent activity." body="Platform events will appear here as they happen." />
           ) : (
             <ul className="admin-reference-activity">
-              {liveActivityItems.map((item) => {
+              {liveActivityItems.slice(0, 6).map((item) => {
                 const Icon = item.icon;
                 return (
                   <li key={item.id} className="admin-reference-activity-row">
@@ -325,25 +333,6 @@ export function DashboardScreen({
               })}
             </ul>
           )}
-        </article>
-      </section>
-
-      <section className="admin-reference-stats-row">
-        <article className="admin-reference-stat">
-          <span>Vehicles Registered</span>
-          <strong>{vehicleCount}</strong>
-        </article>
-        <article className="admin-reference-stat">
-          <span>Active Riders</span>
-          <strong>{activeRiders.length}</strong>
-        </article>
-        <article className="admin-reference-stat">
-          <span>Delivery Orders</span>
-          <strong>{deliveries.length}</strong>
-        </article>
-        <article className="admin-reference-stat">
-          <span>Combined Revenue</span>
-          <strong>{formatMoney(adminCurrency, totalDashboardRevenue)}</strong>
         </article>
       </section>
     </div>

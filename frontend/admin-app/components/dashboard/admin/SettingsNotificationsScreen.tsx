@@ -22,7 +22,7 @@ export function SettingsNotificationsScreen({
   recentIncidents = []
 }: SettingsNotificationsScreenProps) {
   if (dataLoading) {
-    return <div className="exact-admin-screen"><EmptyCard title="Loading notification overview…" body="" /></div>;
+    return <div className="exact-admin-screen"><EmptyCard title="Notification Overview" body="" /></div>;
   }
 
   const pending = broadcasts.filter((b) => b.status === "pending").length;
@@ -31,7 +31,7 @@ export function SettingsNotificationsScreen({
     <div className="exact-admin-screen">
       <AdminPageHeader
         title="Notification settings"
-        subtitle="Overview of scheduled broadcasts and recent safety alerts. Manage campaigns from Notifications."
+        subtitle="Broadcast and SOS signal overview for Accra and Ghana ops teams."
         actions={
           <Link href="/notifications" className="admin-btn-primary">
             Open notifications
@@ -47,7 +47,7 @@ export function SettingsNotificationsScreen({
         ]}
       />
 
-      <div className="admin-screen-grid-2">
+      <div className="admin-overview-split">
         <article className="admin-reference-card">
           <div className="admin-reference-cardhead">
             <div>

@@ -3,6 +3,7 @@ import { useAdminToast } from "./AdminToast";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
 import { SkeletonKPI, SkeletonTable, SkeletonCard } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
+import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { formatMoney } from "@/lib/currency";
 import { parseNumber, formatDateTime, statusTone } from "./utils";
 import type { PayoutRequestRecord } from "./types";
@@ -112,7 +113,7 @@ export function RiderPayoutsScreen({
 
   if (dataLoading) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? 16 : 20, padding: isMobile ? "16px 12px" : "24px 28px", background: "var(--bg-primary)", minHeight: "100vh" }}>
+      <div className="exact-admin-screen">
         <SkeletonKPI count={5} />
         <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr", gap: 16 }}>
           <SkeletonTable rows={5} cols={6} />
@@ -125,14 +126,6 @@ export function RiderPayoutsScreen({
   const processingCount = riderPayoutRequests.filter(
     (p) => p.status.toLowerCase() === "processing" || p.status.toLowerCase() === "approved"
   ).length;
-
-  const kpis = [
-    { label: "Total Payout Value", value: formatMoney(adminCurrency, totalRiderPayoutValue), icon: DollarSign, color: "var(--brand-orange)", sub: "All requests combined" },
-    { label: "Requested", value: requestedRiderPayouts.length, icon: Clock, color: "var(--brand-yellow)", sub: "Awaiting review" },
-    { label: "Processing", value: processingCount, icon: Cog, color: "var(--info, #3b82f6)", sub: "In progress" },
-    { label: "Paid", value: paidRiderPayouts.length, icon: CheckCircle, color: "var(--success)", sub: "Successfully settled" },
-    { label: "Failed", value: failedRiderPayouts.length, icon: XCircle, color: "var(--danger)", sub: "Requires follow-up" },
-  ];
 
   const sortedPayouts = riderPayoutRequests
     .slice()
@@ -270,72 +263,28 @@ export function RiderPayoutsScreen({
   const tabs: TabOption[] = ["All Payouts", "Pending", "Processing", "Completed", "Failed"];
 
   return (
-    <div className="exact-admin-screen" style={{ padding: isMobile ? "16px 12px" : undefined }}>
+    <div className="exact-admin-screen">
       <AdminPageHeader
         title="Rider Payouts"
-        subtitle="Manage rider payout requests, approvals, and processing"
+        subtitle="Approve and settle Accra MoMo and bank payout requests in Ghana cedis."
         actions={
-          <button type="button" className="admin-btn-sm" onClick={handleExportCsv}>
+          <button type="button" className="admin-btn-primary" onClick={handleExportCsv}>
             <Download size={14} /> Export CSV
           </button>
         }
       />
 
-      {/* KPI Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : isTablet ? "repeat(3, 1fr)" : "repeat(5, 1fr)", gap: 14 }}>
-        {kpis.map((kpi) => {
-          const Icon = kpi.icon;
-          return (
-            <div
-              key={kpi.label}
-              style={{
-                background: "var(--bg-card)",
-                border: "1px solid var(--border)",
-                borderRadius: 12,
-                padding: "18px 16px",
-                display: "flex",
-                flexDirection: "column",
-                gap: 10,
-                transition: "all 0.25s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = kpi.color;
-                e.currentTarget.style.boxShadow = `0 0 20px color-mix(in srgb, ${kpi.color} 15%, transparent)`;
-                e.currentTarget.style.transform = "translateY(-2px)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "var(--border)";
-                e.currentTarget.style.boxShadow = "none";
-                e.currentTarget.style.transform = "translateY(0)";
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                  {kpi.label}
-                </span>
-                <div style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 8,
-                  background: `color-mix(in srgb, ${kpi.color} 12%, transparent)`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}>
-                  <Icon size={16} color={kpi.color} />
-                </div>
-              </div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.5px" }}>
-                {typeof kpi.value === "number" ? kpi.value.toLocaleString() : kpi.value}
-              </div>
-              <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{kpi.sub}</div>
-            </div>
-          );
-        })}
-      </div>
+      <AdminKpiRow
+        items={[
+          { label: "Ready for Payout", value: formatMoney(adminCurrency, totalRiderPayoutValue), hint: "All requests in GHS", icon: <DollarSign size={22} />, tone: "yellow" },
+          { label: "Requested", value: requestedRiderPayouts.length, hint: "Awaiting review", icon: <Clock size={22} />, tone: "yellow" },
+          { label: "Processing", value: processingCount, hint: "In progress", icon: <Cog size={22} />, tone: "neutral" },
+          { label: "Paid", value: paidRiderPayouts.length, hint: "Successfully settled", icon: <CheckCircle size={22} />, tone: "green" },
+          { label: "Failed", value: failedRiderPayouts.length, hint: "Requires follow-up", icon: <XCircle size={22} />, tone: "red" },
+        ]}
+      />
 
-      {/* Tabs */}
-      <div style={{ display: "flex", gap: 4, background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 10, padding: 4, width: "fit-content" }}>
+      <div className="admin-tabs">
         {tabs.map((tab) => {
           const tabCounts: Record<TabOption, number> = {
             "All Payouts": riderPayoutRequests.length,
@@ -348,33 +297,11 @@ export function RiderPayoutsScreen({
             <button
               key={tab}
               type="button"
+              className={`admin-tab${activeTab === tab ? " active" : ""}`}
               onClick={() => { setActiveTab(tab); setCurrentPage(1); setSelectedRow(null); }}
-              style={{
-                padding: "7px 18px",
-                fontSize: 13,
-                fontWeight: 600,
-                color: activeTab === tab ? "#fff" : "var(--text-secondary)",
-                background: activeTab === tab ? "var(--brand-orange)" : "transparent",
-                border: "none",
-                borderRadius: 7,
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-              }}
             >
               {tab}
-              <span style={{
-                fontSize: 10,
-                fontWeight: 700,
-                padding: "1px 6px",
-                borderRadius: 10,
-                background: activeTab === tab ? "rgba(255,255,255,0.2)" : "var(--bg-primary)",
-                color: activeTab === tab ? "#fff" : "var(--text-muted)",
-              }}>
-                {tabCounts[tab]}
-              </span>
+              <span style={{ marginLeft: 6, opacity: 0.75 }}>{tabCounts[tab]}</span>
             </button>
           );
         })}
@@ -440,8 +367,15 @@ export function RiderPayoutsScreen({
 
       {/* Main Content: Table + Sidebar */}
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : selectedDetail ? "1fr 380px" : isTablet ? "1fr" : "2fr 1fr", gap: 16, alignItems: "start" }}>
-        {/* Table Card */}
         <div style={cardStyle}>
+          <div style={{ marginBottom: 12 }}>
+            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
+              Recent Payout Batches
+            </h3>
+            <p style={{ margin: "3px 0 0", fontSize: 12, color: "var(--text-muted)" }}>
+              MoMo and bank settlement queue in Ghana cedis.
+            </p>
+          </div>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead>
@@ -860,13 +794,14 @@ export function RiderPayoutsScreen({
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {/* Payout Methods Donut */}
             <div style={cardStyle}>
               <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 7, marginBottom: 4 }}>
                 <CreditCard size={16} color="var(--brand-orange)" />
-                Payout Methods
+                Method Breakdown
               </h3>
-              <p style={{ margin: "3px 0 14px", fontSize: 12, color: "var(--text-muted)" }}>Distribution by payment channel</p>
+              <p style={{ margin: "3px 0 14px", fontSize: 12, color: "var(--text-muted)" }}>
+                Ready-for-payout distribution by MoMo / bank channel (GHS)
+              </p>
               {riderPayoutMethodSnapshot.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "24px 0", color: "var(--text-muted)", fontSize: 13 }}>No method data available.</div>
               ) : (

@@ -48,7 +48,7 @@ export function IntegrationsScreen({ dataLoading = false }: IntegrationsScreenPr
     <div className="exact-admin-screen">
       <AdminPageHeader
         title="Integrations"
-        subtitle="Honest status of platform integrations based on runtime configuration."
+        subtitle="Maps, Paystack, and API connection status for Ghana deployments."
       />
 
       <AdminKpiRow

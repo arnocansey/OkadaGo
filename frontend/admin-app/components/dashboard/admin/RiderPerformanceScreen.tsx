@@ -21,6 +21,7 @@ import {
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
+import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { useAdminToast } from "./AdminToast";
 import { SkeletonKPI, SkeletonChart, SkeletonDonut, SkeletonTable } from "./AdminSkeleton";
 import type { RiderFinancialRow } from "./types";
@@ -58,17 +59,17 @@ const D = {
   text: "var(--text-primary, #f0f0f5)",
   textSec: "var(--text-secondary, #9ca3af)",
   textMuted: "var(--text-muted, #6b7280)",
-  accent: "var(--accent, #10b981)",
-  accentDim: "rgba(16,185,129,0.12)",
-  accentHover: "var(--accent-hover, #34d399)",
+  accent: "var(--accent-orange)",
+  accentDim: "color-mix(in srgb, var(--accent-orange) 12%, transparent)",
+  accentHover: "var(--accent-orange)",
   warn: "var(--warning, #f59e0b)",
   warnDim: "rgba(245,158,11,0.12)",
   danger: "var(--danger, #ef4444)",
   dangerDim: "rgba(239,68,68,0.12)",
   info: "var(--accent-orange)",
   infoDim: "var(--accent-yellow-light)",
-  blue: "#3b82f6",
-  blueDim: "rgba(59,130,246,0.12)",
+  blue: "var(--accent-orange)",
+  blueDim: "color-mix(in srgb, var(--accent-orange) 12%, transparent)",
   purple: "var(--accent-yellow)",
   purpleDim: "var(--accent-yellow-light)",
   radius: 14,
@@ -78,33 +79,6 @@ const D = {
   shadowLg: "0 8px 32px rgba(0,0,0,0.5)",
   transition: "all 0.2s cubic-bezier(0.4,0,0.2,1)",
 };
-
-const kpiCardStyle = (accentColor: string, bgDim: string): React.CSSProperties => ({
-  background: D.surface,
-  border: `1px solid ${D.border}`,
-  borderRadius: D.radius,
-  padding: "20px 22px",
-  display: "flex",
-  alignItems: "center",
-  gap: 16,
-  boxShadow: D.shadow,
-  transition: D.transition,
-  cursor: "default",
-  position: "relative",
-  overflow: "hidden",
-});
-
-const kpiIconStyle = (color: string, bg: string): React.CSSProperties => ({
-  width: 48,
-  height: 48,
-  borderRadius: 12,
-  background: bg,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  color,
-  flexShrink: 0,
-});
 
 const cardStyle: React.CSSProperties = {
   background: D.surface,
@@ -248,7 +222,7 @@ export function RiderPerformanceScreen({
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
   const { addToast } = useAdminToast();
-  const { isMobile, isTablet } = useBreakpoint();
+  const { isMobile } = useBreakpoint();
 
   const totalEarnings = topRiderPerformanceRows.reduce(
     (sum, row) => sum + row.earnings,
@@ -387,7 +361,7 @@ export function RiderPerformanceScreen({
 
   if (dataLoading) {
     return (
-      <div style={{ padding: "24px 28px", minHeight: "100vh", display: "flex", flexDirection: "column", gap: 20 }}>
+      <div className="exact-admin-screen">
         <SkeletonKPI count={4} />
         <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 20 }}>
           <SkeletonChart />
@@ -466,88 +440,49 @@ export function RiderPerformanceScreen({
   };
 
   return (
-    <div className="exact-admin-screen" style={{ background: D.bg, minHeight: "100vh", color: D.text, fontFamily: "var(--font-family)" }}>
+    <div className="exact-admin-screen">
       <AdminPageHeader
         title="Rider Performance"
-        subtitle="Compare rider trip volume, completion load, earnings, and rating signals from live operations."
+        subtitle="Accra rider trip volume, earnings, and rating performance from live operations."
       />
 
       <style>{`
         .rp-kpi:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.4); }
-        .rp-btn:hover { background: var(--bg-surface-3, #22232b) !important; border-color: var(--accent, #10b981) !important; color: var(--accent, #10b981) !important; }
-        .rp-btn-primary:hover { background: var(--accent-hover, #34d399) !important; color: #000 !important; }
+        .rp-btn:hover { background: var(--bg-surface-3, #22232b) !important; border-color: var(--accent-orange) !important; color: var(--accent-orange) !important; }
+        .rp-btn-primary:hover { background: var(--accent-orange) !important; color: #000 !important; }
         .rp-th:hover { background: var(--bg-surface-3, #22232b) !important; }
-        .rp-input:focus { border-color: var(--accent, #10b981) !important; box-shadow: 0 0 0 2px rgba(16,185,129,0.15); }
+        .rp-input:focus { border-color: var(--accent-orange) !important; box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-orange) 15%, transparent); }
         .rp-tr:hover td { background: var(--bg-surface-2, #1a1b22) !important; }
         .rp-heat:hover { transform: scale(1.08); z-index: 10; }
         .rp-donut-segment { transition: opacity 0.2s; }
         .rp-donut-segment:hover { opacity: 0.8; }
         .rp-bar:hover { opacity: 0.85; }
-        .rp-page-btn:hover { background: var(--bg-surface-3, #22232b) !important; color: var(--accent, #10b981) !important; border-color: var(--accent, #10b981) !important; }
-        .rp-page-btn-active { background: var(--accent, #10b981) !important; color: #000 !important; border-color: var(--accent, #10b981) !important; }
+        .rp-page-btn:hover { background: var(--bg-surface-3, #22232b) !important; color: var(--accent-orange) !important; border-color: var(--accent-orange) !important; }
+        .rp-page-btn-active { background: var(--accent-orange) !important; color: #000 !important; border-color: var(--accent-orange) !important; }
         .rp-chart-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
       `}</style>
 
-      {/* KPI Cards */}
-      <section style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : isTablet ? "repeat(auto-fit, minmax(180px, 1fr))" : "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginBottom: 24 }}>
-        <div className="rp-kpi" style={kpiCardStyle(D.accent, D.accentDim)}>
-          <div style={kpiIconStyle(D.accent, D.accentDim)}><Bike size={24} /></div>
-          <div>
-            <div style={{ fontSize: 12, color: D.textMuted, fontWeight: 500, marginBottom: 2 }}>Completed Trips</div>
-            <div style={{ fontSize: 28, fontWeight: 700, color: D.text, lineHeight: 1.1 }}>{completedTrips.toLocaleString()}</div>
-            <div style={{ fontSize: 11, color: D.textMuted, marginTop: 2 }}>{activeTrips} in progress</div>
-          </div>
-        </div>
+      <AdminKpiRow
+        items={[
+          { label: "Completed Trips", value: completedTrips.toLocaleString(), hint: `${activeTrips} in progress`, icon: <Bike size={22} />, tone: "green" },
+          { label: "Active Trips", value: activeTrips.toLocaleString(), hint: "Currently in progress", icon: <Activity size={22} />, tone: "yellow" },
+          { label: "Avg. Rating", value: averageRating.toFixed(1), hint: `${ratedRiders.length} rated riders`, icon: <Star size={22} />, tone: "yellow" },
+          { label: "Total Earnings", value: formatMoney(adminCurrency, totalEarnings), hint: "Net after commission", icon: <DollarSign size={22} />, tone: "yellow" },
+          { label: "Earning Riders", value: earningRiders, hint: "With positive earnings", icon: <Users size={22} />, tone: "neutral" },
+        ]}
+      />
 
-        <div className="rp-kpi" style={kpiCardStyle(D.blue, D.blueDim)}>
-          <div style={kpiIconStyle(D.blue, D.blueDim)}><Activity size={24} /></div>
+      <article className="admin-reference-card" style={{ marginBottom: 24 }}>
+        <div className="admin-reference-cardhead">
           <div>
-            <div style={{ fontSize: 12, color: D.textMuted, fontWeight: 500, marginBottom: 2 }}>Active Trips</div>
-            <div style={{ fontSize: 28, fontWeight: 700, color: D.text, lineHeight: 1.1 }}>{activeTrips.toLocaleString()}</div>
-            <div style={{ fontSize: 11, color: D.textMuted, marginTop: 2 }}>Currently in progress</div>
-          </div>
-        </div>
-
-        <div className="rp-kpi" style={kpiCardStyle(D.warn, D.warnDim)}>
-          <div style={kpiIconStyle(D.warn, D.warnDim)}><Star size={24} /></div>
-          <div>
-            <div style={{ fontSize: 12, color: D.textMuted, fontWeight: 500, marginBottom: 2 }}>Avg. Rating</div>
-            <div style={{ fontSize: 28, fontWeight: 700, color: D.text, lineHeight: 1.1 }}>{averageRating.toFixed(1)}</div>
-            <div style={{ fontSize: 11, color: D.textMuted, marginTop: 2 }}>{ratedRiders.length} rated riders</div>
-          </div>
-        </div>
-
-        <div className="rp-kpi" style={kpiCardStyle(D.info, D.infoDim)}>
-          <div style={kpiIconStyle(D.info, D.infoDim)}><Users size={24} /></div>
-          <div>
-            <div style={{ fontSize: 12, color: D.textMuted, fontWeight: 500, marginBottom: 2 }}>Earning Riders</div>
-            <div style={{ fontSize: 28, fontWeight: 700, color: D.text, lineHeight: 1.1 }}>{earningRiders}</div>
-            <div style={{ fontSize: 11, color: D.textMuted, marginTop: 2 }}>With positive earnings</div>
-          </div>
-        </div>
-
-        <div className="rp-kpi" style={kpiCardStyle(D.accent, D.accentDim)}>
-          <div style={kpiIconStyle(D.accent, D.accentDim)}><DollarSign size={24} /></div>
-          <div>
-            <div style={{ fontSize: 12, color: D.textMuted, fontWeight: 500, marginBottom: 2 }}>Total Earnings</div>
-            <div style={{ fontSize: 28, fontWeight: 700, color: D.text, lineHeight: 1.1 }}>{formatMoney(adminCurrency, totalEarnings)}</div>
-            <div style={{ fontSize: 11, color: D.textMuted, marginTop: 2 }}>Net after commission</div>
-          </div>
-        </div>
-      </section>
-
-      {/* Performance Overview Line Chart */}
-      <div style={{ ...cardStyle, marginBottom: 24 }}>
-        <div style={cardHeadStyle}>
-          <div>
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: D.text }}>Performance Overview</h3>
-            <p style={{ margin: "4px 0 0", fontSize: 12, color: D.textMuted }}>12-month trend across key metrics</p>
+            <h3>Performance Overview</h3>
+            <p>12-month trend across key metrics</p>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <button className="rp-btn" style={btnBase} onClick={handleRefresh}>
+            <button type="button" className="admin-btn-secondary" onClick={handleRefresh}>
               <BarChart3 size={14} /> Refresh
             </button>
-            <button className="rp-btn rp-btn-primary" style={{ ...btnBase, background: D.accent, border: `1px solid ${D.accent}`, color: "#000" }} onClick={handleExport}>
+            <button type="button" className="admin-btn-primary" onClick={handleExport}>
               <Download size={14} /> Export
             </button>
           </div>
@@ -616,16 +551,15 @@ export function RiderPerformanceScreen({
             })}
           </svg>
         </div>
-      </div>
+      </article>
 
       {/* Location Heat Map + Charts Row */}
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 20, marginBottom: 24 }}>
-        {/* Heat Map */}
-        <div style={cardStyle}>
-          <div style={cardHeadStyle}>
+        <article className="admin-reference-card">
+          <div className="admin-reference-cardhead">
             <div>
-              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: D.text }}>Performance by Location</h3>
-              <p style={{ margin: "4px 0 0", fontSize: 12, color: D.textMuted }}>Rider activity heat zones</p>
+              <h3>Performance by Location</h3>
+              <p>Rider activity heat zones in Accra</p>
             </div>
             <MapPin size={18} color={D.textMuted} />
           </div>
@@ -693,16 +627,15 @@ export function RiderPerformanceScreen({
               ))}
             </div>
           </div>
-        </div>
+        </article>
 
         {/* Charts Column */}
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          {/* Bar Chart */}
-          <div style={cardStyle}>
-            <div style={cardHeadStyle}>
+          <article className="admin-reference-card">
+            <div className="admin-reference-cardhead">
               <div>
-                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: D.text }}>Trips Trend</h3>
-                <p style={{ margin: "4px 0 0", fontSize: 12, color: D.textMuted }}>Monthly completed trips</p>
+                <h3>Trips Trend</h3>
+                <p>Monthly completed trips</p>
               </div>
             </div>
             <div style={{ padding: "16px 24px 20px" }}>
@@ -740,14 +673,13 @@ export function RiderPerformanceScreen({
                 })}
               </svg>
             </div>
-          </div>
+          </article>
 
-          {/* Donut Chart */}
-          <div style={cardStyle}>
-            <div style={cardHeadStyle}>
+          <article className="admin-reference-card">
+            <div className="admin-reference-cardhead">
               <div>
-                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: D.text }}>Ratings Distribution</h3>
-                <p style={{ margin: "4px 0 0", fontSize: 12, color: D.textMuted }}>Breakdown of rider ratings</p>
+                <h3>Ratings Distribution</h3>
+                <p>Breakdown of rider ratings</p>
               </div>
             </div>
             <div style={{ padding: "16px 24px 20px", display: "flex", alignItems: "center", gap: 32 }}>
@@ -791,32 +723,29 @@ export function RiderPerformanceScreen({
                 })}
               </div>
             </div>
-          </div>
+          </article>
         </div>
       </div>
 
-      {/* Top Riders Leaderboard */}
-      <div style={cardStyle}>
-        <div style={cardHeadStyle}>
+      <article className="admin-reference-card">
+        <div className="admin-reference-cardhead">
           <div>
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: D.text }}>Top Riders Leaderboard</h3>
-            <p style={{ margin: "4px 0 0", fontSize: 12, color: D.textMuted }}>
-              {filtered.length} riders &middot; Ranked by performance &middot; Top 30
+            <h3>Top Riders Leaderboard</h3>
+            <p>
+              {filtered.length} riders · Ranked by performance · Top 30
             </p>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ position: "relative", width: 280 }}>
-              <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: D.textMuted }} />
+            <label className="admin-filter-search">
+              <Search size={14} aria-hidden />
               <input
-                className="rp-input"
-                type="text"
+                type="search"
                 placeholder="Search riders..."
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                style={inputStyle}
               />
-            </div>
-            <button className="rp-btn" style={btnBase} onClick={() => addToast("Filters panel coming soon", "info")}>
+            </label>
+            <button type="button" className="admin-btn-secondary" onClick={() => addToast("Filters panel coming soon", "info")}>
               <Filter size={14} /> Filters
             </button>
           </div>
@@ -1009,7 +938,7 @@ export function RiderPerformanceScreen({
             </div>
           </>
         )}
-      </div>
+      </article>
 
       {/* Insight Banner */}
       <div style={{

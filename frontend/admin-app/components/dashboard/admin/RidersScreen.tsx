@@ -82,9 +82,9 @@ export function RidersScreen({
     <div className="exact-admin-screen">
       <AdminPageHeader
         title="Riders"
-        subtitle="Fleet map, onboarding pipeline, and rider distribution by zone."
+        subtitle="Fleet map, onboarding pipeline, and rider distribution by Accra zones."
       />
-      <section className="admin-reference-kpis">
+      <section className="admin-kpi-grid">
         <article className="admin-reference-kpi">
           <div className="admin-reference-kpi-icon green"><MapPin size={22} /></div>
           <div>
@@ -128,7 +128,7 @@ export function RidersScreen({
           {[
             { label: "Signed Up", count: onboardingPipeline.signedUp, color: "var(--text-muted)" },
             { label: "Vehicle Added", count: onboardingPipeline.hasVehicle, color: "#d97706" },
-            { label: "Zone Assigned", count: onboardingPipeline.hasZone, color: "#2563eb" },
+            { label: "Zone Assigned", count: onboardingPipeline.hasZone, color: "var(--accent-orange)" },
             { label: "Verified", count: onboardingPipeline.verified, color: "var(--color-success)" },
             { label: "Active", count: onboardingPipeline.active, color: "#16a34a" }
           ].map((stage, i) => {
@@ -145,7 +145,7 @@ export function RidersScreen({
         </div>
       </article>
 
-      <div className="admin-screen-grid-2">
+      <div className="admin-overview-split">
         <div>
           <article className="admin-reference-card" style={{ marginBottom: 16 }}>
             <div className="admin-reference-cardhead">

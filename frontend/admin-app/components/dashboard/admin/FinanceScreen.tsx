@@ -86,7 +86,7 @@ export function FinanceScreen({
   const { isMobile } = useBreakpoint();
   if (dataLoading) {
     return (
-      <div style={{ padding: "24px 28px", minHeight: "100vh", display: "flex", flexDirection: "column", gap: 20 }}>
+      <div className="exact-admin-screen" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
         <SkeletonKPI count={4} />
         <SkeletonTable rows={5} cols={7} />
       </div>
@@ -96,11 +96,38 @@ export function FinanceScreen({
     <div className="exact-admin-screen">
       <AdminPageHeader
         title="Finance"
-        subtitle="Wallet volume, commission, and payout outflow for the selected window."
+        subtitle="GHS wallet volume, commission, and rider payout outflow."
+        actions={
+          <div className="admin-screen-toolbar">
+            <button
+              type="button"
+              className="admin-btn-primary"
+              onClick={() =>
+                downloadCsv(
+                  "wallet-transactions.csv",
+                  ["User", "Role", "Type", "Direction", "Amount", "Status", "Reference", "Date"],
+                  walletTransactions.map((tx) => [
+                    tx.wallet.user.fullName,
+                    tx.wallet.user.role,
+                    tx.type,
+                    tx.direction,
+                    tx.amount,
+                    tx.status,
+                    tx.reference ?? "",
+                    tx.createdAt
+                  ])
+                )
+              }
+            >
+              <Download size={14} />
+              Export Report
+            </button>
+          </div>
+        }
       />
       <style>{`
         @media (max-width: 767px) {
-          .admin-reference-kpis { grid-template-columns: 1fr 1fr !important; }
+          .admin-kpi-grid { grid-template-columns: 1fr 1fr !important; }
           .admin-reference-grid-3 { grid-template-columns: 1fr !important; }
           .admin-table-wrapper { overflow-x: auto; }
           .admin-reference-card { padding: 12px !important; }
@@ -109,7 +136,7 @@ export function FinanceScreen({
           .admin-reference-grid-3 { grid-template-columns: 1fr 1fr !important; }
         }
       `}</style>
-      <section className="admin-reference-kpis">
+      <section className="admin-kpi-grid">
         <article className="admin-reference-kpi">
           <div className="admin-reference-kpi-icon green"><CreditCard size={22} /></div>
           <div>
@@ -180,35 +207,36 @@ export function FinanceScreen({
             </tbody>
           </table>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 16, padding: "12px 16px", background: "rgba(255,255,255,0.04)", borderRadius: 10 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div className="admin-finance-summary">
+          <div className="admin-finance-summary-row">
             <span>Revenue coming in</span>
             <strong>{formatMoney(adminCurrency, totalRevenue)}</strong>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div className="admin-finance-summary-row">
             <span>Commission captured</span>
             <strong>{formatMoney(adminCurrency, totalCommission)}</strong>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div className="admin-finance-summary-row">
             <span>Rider earnings paid out</span>
             <strong>{formatMoney(adminCurrency, riderEarningsTotal)}</strong>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div className="admin-finance-summary-row">
             <span>Payout outflow</span>
             <strong>{formatMoney(adminCurrency, payoutOutflow)}</strong>
           </div>
-          <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.1)", margin: "4px 0" }} />
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontWeight: 700, fontSize: 16 }}>
+          <div className={`admin-finance-summary-row is-total`}>
             <span>Platform net profit</span>
-            <strong style={{ color: platformNetProfit >= 0 ? "#4ade80" : "#f87171" }}>{formatMoney(adminCurrency, platformNetProfit)}</strong>
+            <strong style={{ color: platformNetProfit >= 0 ? "var(--color-success)" : "var(--color-danger)" }}>
+              {formatMoney(adminCurrency, platformNetProfit)}
+            </strong>
           </div>
         </div>
       </article>
 
-      <section className="admin-reference-grid-3">
+      <section className="admin-overview-split">
         <article className="admin-reference-card">
           <div className="admin-reference-cardhead">
-            <div><h3>Revenue Trend</h3><p>Last 10 days</p></div>
+            <div><h3>Revenue vs Payout Trends</h3><p>Last 10 days of Accra wallet activity</p></div>
           </div>
           <div className="admin-reference-legend">
             <span><i className="black" /> Revenue</span>
@@ -235,26 +263,7 @@ export function FinanceScreen({
 
         <article className="admin-reference-card">
           <div className="admin-reference-cardhead">
-            <div><h3>Payout Trend</h3><p>Last 10 days</p></div>
-          </div>
-          <div className="admin-reference-bars">
-            {payoutDailyBuckets.map((bucket) => (
-              <div key={bucket.key} className="admin-reference-bar-day">
-                <div className="admin-reference-bar-track">
-                  <i
-                    className="rides"
-                    style={{ height: bucket.payouts === 0 ? 0 : `${Math.max(8, (bucket.payouts / payoutDailyMax) * 100)}%` }}
-                  />
-                </div>
-                <span>{bucket.label}</span>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="admin-reference-card">
-          <div className="admin-reference-cardhead">
-            <div><h3>Payment Methods</h3><p>By transaction volume</p></div>
+            <div><h3>Payment Gateways</h3><p>MoMo, card, and cash volume</p></div>
           </div>
           {paymentMethodSnapshot.length === 0 ? (
             <EmptyCard title="No method data." body="" />
@@ -272,6 +281,64 @@ export function FinanceScreen({
                 </li>
               ))}
             </ul>
+          )}
+        </article>
+      </section>
+
+      <section className="admin-reference-grid-3">
+        <article className="admin-reference-card">
+          <div className="admin-reference-cardhead">
+            <div><h3>Payout Trend</h3><p>Last 10 days</p></div>
+          </div>
+          <div className="admin-reference-bars">
+            {payoutDailyBuckets.map((bucket) => (
+              <div key={bucket.key} className="admin-reference-bar-day">
+                <div className="admin-reference-bar-track">
+                  <i
+                    className="rides"
+                    style={{ height: bucket.payouts === 0 ? 0 : `${Math.max(8, (bucket.payouts / payoutDailyMax) * 100)}%` }}
+                  />
+                </div>
+                <span>{bucket.label}</span>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="admin-reference-card" style={{ gridColumn: "span 2" }}>
+          <div className="admin-reference-cardhead">
+            <div>
+              <h3>Recent Transactions</h3>
+              <p>{recentFinanceTransactions.length} latest wallet movements</p>
+            </div>
+          </div>
+          {recentFinanceTransactions.length === 0 ? (
+            <EmptyCard title="No recent transactions." body="" />
+          ) : (
+            <div className="admin-table-wrapper">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentFinanceTransactions.slice(0, 8).map((tx) => (
+                    <tr key={tx.id}>
+                      <td><strong>{tx.wallet.user.fullName}</strong></td>
+                      <td><small>{formatEnumLabel(tx.type)}</small></td>
+                      <td><strong>{formatMoney(tx.currency, Math.abs(parseNumber(tx.amount)))}</strong></td>
+                      <td><em className={`admin-reference-tag ${statusTone(tx.status)}`}>{tx.status}</em></td>
+                      <td><small>{formatDateTime(tx.createdAt)}</small></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </article>
       </section>

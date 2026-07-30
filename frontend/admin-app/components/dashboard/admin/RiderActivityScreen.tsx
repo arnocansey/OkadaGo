@@ -5,6 +5,7 @@ import { OperationsMap } from "@/components/maps/operations-map";
 import { EmptyCard } from "./EmptyCard";
 import { SkeletonKPI, SkeletonCard, SkeletonTable } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
+import { AdminKpiRow } from "./ui/AdminKpiRow";
 import type { RiderFinancialRow } from "./types";
 import { parseNumber } from "./utils";
 import { useAdminToast } from "./AdminToast";
@@ -63,18 +64,18 @@ const D = {
   green: "#22c55e",
   greenBg: "#0f3d1a",
   greenBorder: "#166534",
-  yellow: "#eab308",
-  yellowBg: "#3d2e0f",
-  yellowBorder: "#854d0e",
-  blue: "#3b82f6",
-  blueBg: "#1e3a5f",
-  blueBorder: "#1e40af",
+  yellow: "var(--accent-yellow)",
+  yellowBg: "var(--accent-yellow-light)",
+  yellowBorder: "var(--accent-yellow)",
+  blue: "var(--accent-orange)",
+  blueBg: "color-mix(in srgb, var(--accent-orange) 18%, transparent)",
+  blueBorder: "var(--accent-orange)",
   red: "#ef4444",
   redBg: "#3d0f0f",
-  cyan: "#06b6d4",
-  cyanBg: "#0c3547",
-  orange: "#f97316",
-  orangeBg: "#3d250f",
+  cyan: "var(--accent-orange)",
+  cyanBg: "color-mix(in srgb, var(--accent-orange) 18%, transparent)",
+  orange: "var(--accent-orange)",
+  orangeBg: "color-mix(in srgb, var(--accent-orange) 18%, transparent)",
 };
 
 const cardBase: React.CSSProperties = {
@@ -162,7 +163,7 @@ export function RiderActivityScreen({
 
   if (dataLoading) {
     return (
-      <div style={{ padding: "24px 28px", minHeight: "100vh", display: "flex", flexDirection: "column", gap: 20 }}>
+      <div className="exact-admin-screen">
         <SkeletonKPI count={4} />
         <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr", gap: 16 }}>
           <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 14, height: 300 }} />
@@ -183,145 +184,32 @@ export function RiderActivityScreen({
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / ITEMS_PER_PAGE));
   const paginatedRows = filteredRows.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
-  const kpis = [
-    {
-      label: "Online Riders",
-      value: activeRidersCount,
-      sub: "Currently dispatching",
-      icon: <Wifi size={20} />,
-      color: D.green,
-      bg: D.greenBg,
-      border: D.greenBorder,
-    },
-    {
-      label: "GPS Located",
-      value: ridersWithCoordsCount,
-      sub: "With live coordinates",
-      icon: <MapPin size={20} />,
-      color: D.yellow,
-      bg: D.yellowBg,
-      border: D.yellowBorder,
-    },
-    {
-      label: "Active Trips",
-      value: activeTripsCount,
-      sub: "In motion now",
-      icon: <Navigation size={20} />,
-      color: D.blue,
-      bg: D.blueBg,
-      border: D.blueBorder,
-    },
-    {
-      label: "Total Riders",
-      value: activityRows.length,
-      sub: "All registered",
-      icon: <Users size={20} />,
-      color: D.cyan,
-      bg: D.cyanBg,
-      border: D.cyan,
-    },
-    {
-      label: "Total Activity",
-      value: activityRows.reduce((s, r) => s + r.rideCount, 0),
-      sub: "Lifetime trips",
-      icon: <Activity size={20} />,
-      color: D.orange,
-      bg: D.orangeBg,
-      border: D.orange,
-    },
-  ];
-
   return (
-    <div className="exact-admin-screen" style={{ background: D.bg, minHeight: "100vh", padding: isMobile ? "0 12px" : 24, color: D.textPrimary, fontFamily: "var(--font-family)" }}>
-      <div style={{ maxWidth: isMobile ? "100%" : 1400, margin: "0 auto" }}>
+    <div className="exact-admin-screen">
         <AdminPageHeader
-          title="Activity Tracking"
-          subtitle="Track online state, location availability, zone coverage, and active trip load."
+          title="Live Monitoring"
+          subtitle="Real-time GPS and online rider status across Accra service zones."
         />
 
-        {/* KPI Cards */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : isTablet ? "repeat(auto-fit, minmax(160px, 1fr))" : "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: 12,
-            marginBottom: 24,
-          }}
-        >
-          {kpis.map((kpi) => (
-            <div
-              key={kpi.label}
-              style={{
-                ...cardBase,
-                padding: "16px 18px",
-                display: "flex",
-                alignItems: "center",
-                gap: 14,
-                cursor: "default",
-                transition: "border-color 0.15s ease",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.borderColor = kpi.border)}
-              onMouseLeave={(e) => (e.currentTarget.style.borderColor = D.border)}
-            >
-              <div
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 10,
-                  background: kpi.bg,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: kpi.color,
-                  flexShrink: 0,
-                }}
-              >
-                {kpi.icon}
-              </div>
-              <div>
-                <div style={{ fontSize: 11, color: D.textMuted, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                  {kpi.label}
-                </div>
-                <div style={{ fontSize: 24, fontWeight: 700, lineHeight: 1.2 }}>{kpi.value}</div>
-                <div style={{ fontSize: 11, color: D.textMuted }}>{kpi.sub}</div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <AdminKpiRow
+          items={[
+            { label: "Online Riders", value: activeRidersCount, hint: "Currently dispatching", icon: <Wifi size={22} />, tone: "green" },
+            { label: "GPS Located", value: ridersWithCoordsCount, hint: "With live coordinates", icon: <MapPin size={22} />, tone: "yellow" },
+            { label: "Active Trips", value: activeTripsCount, hint: "In motion now", icon: <Navigation size={22} />, tone: "yellow" },
+            { label: "Total Riders", value: activityRows.length, hint: "All registered", icon: <Users size={22} />, tone: "neutral" },
+            { label: "Total Activity", value: activityRows.reduce((s, r) => s + r.rideCount, 0), hint: "Lifetime trips", icon: <Activity size={22} />, tone: "yellow" },
+          ]}
+        />
 
-        {/* Tab Bar */}
-        <div
-          style={{
-            display: "flex",
-            gap: 2,
-            background: D.surface,
-            border: `1px solid ${D.border}`,
-            borderRadius: 10,
-            padding: 4,
-            marginBottom: 20,
-          }}
-        >
+        <div className="admin-tabs" style={{ marginBottom: 20, overflowX: "auto" }}>
           {tabs.map((tab) => (
             <button
               key={tab}
+              type="button"
+              className={`admin-tab${activeTab === tab ? " active" : ""}`}
               onClick={() => {
                 setActiveTab(tab);
                 addToast(`Switched to ${tab}`, "info");
-              }}
-              style={{
-                ...btnBase,
-                background: activeTab === tab ? D.surfaceHover : "transparent",
-                border: "none",
-                color: activeTab === tab ? D.textPrimary : D.textMuted,
-                fontWeight: activeTab === tab ? 600 : 400,
-                padding: "8px 16px",
-                borderRadius: 8,
-              }}
-              onMouseEnter={(e) => {
-                if (activeTab !== tab) e.currentTarget.style.color = D.textSecondary;
-              }}
-              onMouseLeave={(e) => {
-                if (activeTab !== tab) e.currentTarget.style.color = D.textMuted;
               }}
             >
               {tab === "Live Map" && <MapPin size={14} />}
@@ -823,7 +711,7 @@ export function RiderActivityScreen({
                                 border: `1px solid ${D.blueBorder}`,
                                 color: D.blue,
                               }}
-                              onMouseEnter={(e) => (e.currentTarget.style.background = "#1e40af")}
+                              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--accent-hover)")}
                               onMouseLeave={(e) => (e.currentTarget.style.background = D.blueBg)}
                             >
                               <Eye size={12} /> View
@@ -1028,7 +916,6 @@ export function RiderActivityScreen({
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 }

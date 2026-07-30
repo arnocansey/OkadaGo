@@ -14,7 +14,7 @@ type Props = {
 
 export function AdminKpiRow({ items }: Props) {
   return (
-    <section className="admin-reference-kpis">
+    <section className="admin-kpi-grid">
       {items.map((item) => (
         <article key={item.label} className="admin-reference-kpi">
           {item.icon ? (

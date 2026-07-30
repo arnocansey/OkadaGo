@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Star, Filter, Download } from "lucide-react";
+import { Star, Filter, Download, AlertTriangle } from "lucide-react";
 import { downloadCsv } from "@/lib/export-csv";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
 import { useAdminToast } from "./AdminToast";
 import { EmptyCard } from "./EmptyCard";
 import { SkeletonKPI, SkeletonTable, SkeletonDonut } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
+import { AdminKpiRow } from "./ui/AdminKpiRow";
 import type { AdminRatingRecord, AdminIncidentRecord } from "./types";
 import { formatDateTime } from "./utils";
 
@@ -27,226 +28,6 @@ export type RatingsScreenProps = {
 
 const PAGE_SIZE = 8;
 
-const s = {
-  root: {
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: 20,
-    padding: 24,
-    background: "var(--bg-primary)",
-    minHeight: "100%",
-    color: "var(--text-primary)",
-    fontFamily: "var(--font-family)",
-  },
-  kpiRow: {
-    display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
-    gap: 14,
-  },
-  kpi: {
-    background: "#181a1e",
-    border: "1px solid #27292d",
-    borderRadius: 12,
-    padding: "16px 18px",
-    display: "flex",
-    alignItems: "center",
-    gap: 14,
-  },
-  kpiIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 10,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  kpiLabel: {
-    fontSize: 12,
-    color: "#a1a1aa",
-    letterSpacing: 0.3,
-    textTransform: "uppercase" as const,
-  },
-  kpiValue: {
-    fontSize: 26,
-    fontWeight: 700,
-    lineHeight: 1.1,
-    color: "var(--text-primary)",
-  },
-  kpiSub: {
-    fontSize: 11,
-    color: "var(--text-muted)",
-    marginTop: 2,
-  },
-  filterBar: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    background: "#181a1e",
-    border: "1px solid #27292d",
-    borderRadius: 10,
-    padding: "10px 14px",
-    flexWrap: "wrap" as const,
-  },
-  input: {
-    background: "#27292d",
-    border: "1px solid #3f4147",
-    borderRadius: 8,
-    padding: "7px 12px",
-    color: "var(--text-primary)",
-    fontSize: 13,
-    outline: "none",
-    width: 160,
-  },
-  exportBtn: {
-    marginLeft: "auto",
-    display: "flex",
-    alignItems: "center",
-    gap: 6,
-    background: "#2563eb",
-    border: "none",
-    borderRadius: 8,
-    padding: "8px 16px",
-    color: "#fff",
-    fontSize: 13,
-    fontWeight: 600,
-    cursor: "pointer",
-  },
-  grid2: {
-    display: "grid",
-    gridTemplateColumns: "1fr 340px",
-    gap: 18,
-    alignItems: "start",
-  },
-  card: {
-    background: "#181a1e",
-    border: "1px solid #27292d",
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-  cardHead: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "14px 18px",
-    borderBottom: "1px solid #27292d",
-  },
-  cardTitle: {
-    fontSize: 15,
-    fontWeight: 600,
-    color: "var(--text-primary)",
-    margin: 0,
-  },
-  cardSub: {
-    fontSize: 12,
-    color: "var(--text-muted)",
-    margin: 0,
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse" as const,
-    fontSize: 13,
-  },
-  th: {
-    textAlign: "left" as const,
-    padding: "10px 14px",
-    background: "#1e2024",
-    color: "#a1a1aa",
-    fontWeight: 600,
-    fontSize: 11,
-    textTransform: "uppercase" as const,
-    letterSpacing: 0.4,
-    borderBottom: "1px solid #27292d",
-  },
-  td: {
-    padding: "10px 14px",
-    borderBottom: "1px solid #1f2125",
-    color: "#d4d4d8",
-    verticalAlign: "top" as const,
-  },
-  pagination: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    padding: "12px 18px",
-    borderTop: "1px solid #27292d",
-  },
-  pageBtn: {
-    background: "transparent",
-    border: "1px solid #3f4147",
-    borderRadius: 6,
-    padding: "5px 11px",
-    color: "#d4d4d8",
-    fontSize: 12,
-    cursor: "pointer",
-  },
-  pageBtnActive: {
-    background: "#2563eb",
-    border: "1px solid #2563eb",
-    color: "#fff",
-  },
-  sidebar: {
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: 16,
-  },
-  distList: {
-    listStyle: "none",
-    margin: 0,
-    padding: "12px 18px",
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: 10,
-  },
-  distItem: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    fontSize: 13,
-    color: "#d4d4d8",
-  },
-  distBar: {
-    height: 8,
-    borderRadius: 4,
-    minWidth: 4,
-  },
-  distBarWrap: {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-  },
-  summaryList: {
-    listStyle: "none",
-    margin: 0,
-    padding: "12px 18px",
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: 10,
-  },
-  summaryItem: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    fontSize: 13,
-    color: "#d4d4d8",
-  },
-  severityBadge: {
-    display: "inline-block",
-    padding: "2px 8px",
-    borderRadius: 6,
-    fontSize: 11,
-    fontWeight: 600,
-    letterSpacing: 0.3,
-  },
-  emptyWrap: {
-    padding: 36,
-    textAlign: "center" as const,
-    color: "var(--text-muted)",
-    fontSize: 13,
-  },
-} as const;
-
 export function RatingsScreen({
   ratings,
   incidents,
@@ -262,14 +43,14 @@ export function RatingsScreen({
   onToDateChange,
   dataLoading = false,
 }: RatingsScreenProps) {
-  const { isMobile, isTablet } = useBreakpoint();
+  const { isMobile } = useBreakpoint();
   const [currentPage, setCurrentPage] = useState(1);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const toast = useAdminToast();
 
   if (dataLoading) {
     return (
-      <div className="exact-admin-screen" style={{ padding: "24px 28px", minHeight: "100vh", display: "flex", flexDirection: "column", gap: 20 }}>
+      <div className="exact-admin-screen">
         <SkeletonKPI count={4} />
         <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 340px", gap: 18 }}>
           <SkeletonTable rows={5} cols={5} />
@@ -306,119 +87,110 @@ export function RatingsScreen({
   }
 
   return (
-    <div className="exact-admin-screen" style={{ ...s.root, padding: isMobile ? "16px 12px" : s.root.padding }}>
+    <div className="exact-admin-screen">
       <AdminPageHeader
-        title="Reports & Analytics"
-        subtitle="Verify passenger rating submissions with rider, ride, and date-level filters."
+        title="Ratings"
+        subtitle="Passenger scores and reviews on completed Accra rides."
         actions={
-          <button type="button" style={s.exportBtn} onClick={handleExport}>
-            <Download size={14} /> Export CSV
-          </button>
+          <div className="admin-screen-toolbar">
+            <button type="button" className="admin-btn-primary" onClick={handleExport}>
+              <Download size={14} /> Export CSV
+            </button>
+          </div>
         }
       />
 
-      {/* KPI Cards */}
-      <div style={{ ...s.kpiRow, gridTemplateColumns: isMobile || isTablet ? "repeat(2, 1fr)" : "repeat(4, 1fr)" }}>
-        <div style={s.kpi}>
-          <div style={{ ...s.kpiIcon, background: "#1e293b" }}>
-            <Star size={20} color="#facc15" />
-          </div>
-          <div>
-            <div style={s.kpiLabel}>Total Ratings</div>
-            <div style={s.kpiValue}>{ratings.length}</div>
-            <div style={s.kpiSub}>{withReview.length} with review text</div>
-          </div>
-        </div>
-        <div style={s.kpi}>
-          <div style={{ ...s.kpiIcon, background: "#0f2e1a" }}>
-            <Star size={20} color="#22c55e" />
-          </div>
-          <div>
-            <div style={s.kpiLabel}>Average Score</div>
-            <div style={s.kpiValue}>{riderRatingAverage.toFixed(1)} ★</div>
-            <div style={s.kpiSub}>Platform-wide</div>
-          </div>
-        </div>
-        <div style={s.kpi}>
-          <div style={{ ...s.kpiIcon, background: "#2e1f0f" }}>
-            <Star size={20} color="#f59e0b" />
-          </div>
-          <div>
-            <div style={s.kpiLabel}>Incidents</div>
-            <div style={s.kpiValue}>{incidents.length}</div>
-            <div style={s.kpiSub}>All severity levels</div>
-          </div>
-        </div>
-        <div style={s.kpi}>
-          <div style={{ ...s.kpiIcon, background: "#0f2e1a" }}>
-            <Star size={20} color="#22c55e" />
-          </div>
-          <div>
-            <div style={s.kpiLabel}>5-Star Ratings</div>
-            <div style={s.kpiValue}>{fiveStarCount}</div>
-            <div style={s.kpiSub}>Top scores</div>
-          </div>
-        </div>
-      </div>
+      <AdminKpiRow
+        items={[
+          {
+            label: "Total Ratings",
+            value: ratings.length,
+            hint: `${withReview.length} with review text`,
+            icon: <Star size={22} />,
+            tone: "yellow",
+          },
+          {
+            label: "Average Score",
+            value: `${riderRatingAverage.toFixed(1)} ★`,
+            hint: "Platform-wide",
+            icon: <Star size={22} />,
+            tone: "green",
+          },
+          {
+            label: "Incidents",
+            value: incidents.length,
+            hint: "All severity levels",
+            icon: <AlertTriangle size={22} />,
+            tone: "red",
+          },
+          {
+            label: "5-Star Ratings",
+            value: fiveStarCount,
+            hint: "Top scores",
+            icon: <Star size={22} />,
+            tone: "green",
+          },
+        ]}
+      />
 
-      {/* Filter Bar */}
-      <div style={s.filterBar}>
-        <Filter size={14} color="#71717a" />
-        <input
-          type="text"
-          style={s.input}
-          placeholder="Rider ID..."
-          value={ratingRiderFilter}
-          onChange={(e) => onRiderFilterChange(e.target.value)}
-        />
-        <input
-          type="text"
-          style={s.input}
-          placeholder="Ride ID..."
-          value={ratingRideFilter}
-          onChange={(e) => onRideFilterChange(e.target.value)}
-        />
+      <div className="admin-filter-bar">
+        <Filter size={14} aria-hidden />
+        <label className="admin-filter-search">
+          <input
+            type="text"
+            placeholder="Rider ID..."
+            value={ratingRiderFilter}
+            onChange={(e) => onRiderFilterChange(e.target.value)}
+          />
+        </label>
+        <label className="admin-filter-search">
+          <input
+            type="text"
+            placeholder="Ride ID..."
+            value={ratingRideFilter}
+            onChange={(e) => onRideFilterChange(e.target.value)}
+          />
+        </label>
         <input
           type="date"
-          style={s.input}
+          className="admin-select-sm"
           value={ratingFromDateFilter}
           onChange={(e) => onFromDateChange(e.target.value)}
         />
         <input
           type="date"
-          style={s.input}
+          className="admin-select-sm"
           value={ratingToDateFilter}
           onChange={(e) => onToDateChange(e.target.value)}
         />
       </div>
 
-      {/* Main Grid */}
-      <div style={{ ...s.grid2, gridTemplateColumns: isMobile ? "1fr" : isTablet ? "1fr 280px" : "1fr 340px" }}>
-        {/* Ratings Table */}
-        <div style={s.card}>
-          <div style={s.cardHead}>
+      <div className="admin-overview-split">
+        <article className="admin-reference-card">
+          <div className="admin-reference-cardhead">
             <div>
-              <h3 style={s.cardTitle}>Rating Records</h3>
-              <p style={s.cardSub}>{ratings.length} submissions</p>
+              <h3>Rating Records</h3>
+              <p>{ratings.length} submissions</p>
             </div>
           </div>
 
           {ratings.length === 0 ? (
-            <div style={s.emptyWrap}>
-              <EmptyCard title="No ratings found." body="Rating submissions will appear here once rides are completed and rated." />
-            </div>
+            <EmptyCard
+              title="No ratings found."
+              body="Rating submissions will appear here once Accra rides are completed and rated."
+            />
           ) : (
             <>
-              <div style={{ overflowX: "auto" }}>
-                <table style={s.table}>
+              <div className="admin-table-wrapper">
+                <table className="admin-table">
                   <thead>
                     <tr>
-                      <th style={s.th}>Score</th>
-                      <th style={s.th}>Rater</th>
-                      <th style={s.th}>Rated (Rider)</th>
-                      <th style={s.th}>Category</th>
-                      <th style={s.th}>Review</th>
-                      <th style={s.th}>Date</th>
+                      <th>Score</th>
+                      <th>Rater</th>
+                      <th>Rated (Rider)</th>
+                      <th>Category</th>
+                      <th>Review</th>
+                      <th>Date</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -428,53 +200,54 @@ export function RatingsScreen({
                         onMouseEnter={() => setHoveredRow(rating.id)}
                         onMouseLeave={() => setHoveredRow(null)}
                         style={{
-                          background: hoveredRow === rating.id ? "#1f2125" : "transparent",
-                          transition: "background 0.15s",
+                          background:
+                            hoveredRow === rating.id
+                              ? "color-mix(in srgb, var(--accent-yellow) 8%, transparent)"
+                              : undefined,
                         }}
                       >
-                        <td style={s.td}>
+                        <td>
                           <strong
                             style={{
-                              color: rating.score >= 4 ? "#22c55e" : rating.score <= 2 ? "#ef4444" : "#f59e0b",
+                              color:
+                                rating.score >= 4
+                                  ? "var(--color-success)"
+                                  : rating.score <= 2
+                                    ? "var(--color-danger)"
+                                    : "var(--accent-yellow)",
                             }}
                           >
                             {rating.score} ★
                           </strong>
                         </td>
-                        <td style={s.td}>
-                          <span style={{ color: "#d4d4d8" }}>{rating.rater.fullName}</span>
+                        <td>
+                          <strong>{rating.rater.fullName}</strong>
                           <br />
-                          <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{rating.rater.phoneE164}</span>
+                          <small>{rating.rater.phoneE164}</small>
                         </td>
-                        <td style={s.td}>
-                          <span style={{ color: "#d4d4d8" }}>{rating.rated.fullName}</span>
+                        <td>
+                          <strong>{rating.rated.fullName}</strong>
                           <br />
-                          {rating.rated.riderProfile && (
-                            <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
-                              {rating.rated.riderProfile.displayCode}
-                            </span>
-                          )}
+                          {rating.rated.riderProfile ? (
+                            <small>{rating.rated.riderProfile.displayCode}</small>
+                          ) : null}
                         </td>
-                        <td style={s.td}>{rating.category ?? "General"}</td>
-                        <td style={{ ...s.td, maxWidth: 220, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>
+                        <td>{rating.category ?? "General"}</td>
+                        <td style={{ maxWidth: 220, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                           {rating.review?.body ?? "—"}
                         </td>
-                        <td style={{ ...s.td, whiteSpace: "nowrap" as const }}>{formatDateTime(rating.createdAt)}</td>
+                        <td style={{ whiteSpace: "nowrap" }}>{formatDateTime(rating.createdAt)}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
 
-              {/* Pagination */}
               {totalPages > 1 && (
-                <div style={s.pagination}>
+                <div className="admin-screen-toolbar" style={{ justifyContent: "center", marginTop: 12 }}>
                   <button
-                    style={{
-                      ...s.pageBtn,
-                      opacity: safePage === 1 ? 0.4 : 1,
-                      cursor: safePage === 1 ? "default" : "pointer",
-                    }}
+                    type="button"
+                    className="admin-btn-secondary"
                     disabled={safePage === 1}
                     onClick={() => {
                       setCurrentPage((p) => Math.max(1, p - 1));
@@ -486,10 +259,8 @@ export function RatingsScreen({
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                     <button
                       key={page}
-                      style={{
-                        ...s.pageBtn,
-                        ...(page === safePage ? s.pageBtnActive : {}),
-                      }}
+                      type="button"
+                      className={page === safePage ? "admin-btn-primary" : "admin-btn-secondary"}
                       onClick={() => {
                         setCurrentPage(page);
                         toast.addToast(`Page ${page} of ${totalPages}`, "info");
@@ -499,11 +270,8 @@ export function RatingsScreen({
                     </button>
                   ))}
                   <button
-                    style={{
-                      ...s.pageBtn,
-                      opacity: safePage === totalPages ? 0.4 : 1,
-                      cursor: safePage === totalPages ? "default" : "pointer",
-                    }}
+                    type="button"
+                    className="admin-btn-secondary"
                     disabled={safePage === totalPages}
                     onClick={() => {
                       setCurrentPage((p) => Math.min(totalPages, p + 1));
@@ -516,74 +284,79 @@ export function RatingsScreen({
               )}
             </>
           )}
-        </div>
+        </article>
 
-        {/* Sidebar */}
-        <div style={s.sidebar}>
-          {/* Rating Distribution */}
-          <div style={s.card}>
-            <div style={s.cardHead}>
-              <h3 style={s.cardTitle}>Rating Distribution</h3>
+        <aside className="admin-sidebar-panel">
+          <article className="admin-reference-card">
+            <div className="admin-reference-cardhead">
+              <div>
+                <h3>Rating Distribution</h3>
+                <p>Score breakdown</p>
+              </div>
             </div>
-            <ul style={s.distList}>
+            <ul className="admin-summary-list">
               {riderRatingDistribution.map((d) => (
-                <li key={d.score} style={s.distItem}>
-                  <span>
-                    {d.score} ★
-                  </span>
-                  <div style={s.distBarWrap}>
+                <li key={d.score}>
+                  <span>{d.score} ★</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <div
                       style={{
-                        ...s.distBar,
+                        height: 8,
+                        borderRadius: 4,
+                        minWidth: 4,
                         width: `${Math.max(4, (d.count / maxRatingCount) * 80)}px`,
-                        background: d.score >= 4 ? "#22c55e" : d.score <= 2 ? "#ef4444" : "#f59e0b",
+                        background:
+                          d.score >= 4
+                            ? "var(--color-success)"
+                            : d.score <= 2
+                              ? "var(--color-danger)"
+                              : "var(--accent-yellow)",
                       }}
                     />
-                    <strong style={{ fontSize: 12, minWidth: 20, textAlign: "right" as const }}>{d.count}</strong>
+                    <strong>{d.count}</strong>
                   </div>
                 </li>
               ))}
             </ul>
-          </div>
+          </article>
 
-          {/* Incident Summary */}
-          <div style={s.card}>
-            <div style={s.cardHead}>
-              <h3 style={s.cardTitle}>Incident Summary</h3>
+          <article className="admin-reference-card">
+            <div className="admin-reference-cardhead">
+              <div>
+                <h3>Incident Summary</h3>
+                <p>Severity snapshot</p>
+              </div>
             </div>
             {incidents.length === 0 ? (
-              <div style={s.emptyWrap}>
-                <EmptyCard title="No incidents." body="" />
-              </div>
+              <EmptyCard title="No incidents." body="" />
             ) : (
-              <ul style={s.summaryList}>
+              <ul className="admin-summary-list">
                 {(["HIGH", "MEDIUM", "LOW"] as const).map((severity) => {
                   const count = incidents.filter((i) => i.severity.toUpperCase() === severity).length;
-                  const bg = severity === "HIGH" ? "#3d0f0f" : severity === "MEDIUM" ? "#3d2e0f" : "#0f2e1a";
-                  const fg = severity === "HIGH" ? "#ef4444" : severity === "MEDIUM" ? "#f59e0b" : "#22c55e";
+                  const tone = severity === "HIGH" ? "red" : severity === "MEDIUM" ? "yellow" : "green";
                   return (
-                    <li key={severity} style={s.summaryItem}>
-                      <span style={{ ...s.severityBadge, background: bg, color: fg }}>{severity}</span>
-                      <strong style={{ color: fg }}>{count}</strong>
+                    <li key={severity}>
+                      <em className={`admin-reference-tag ${tone}`}>{severity}</em>
+                      <strong>{count}</strong>
                     </li>
                   );
                 })}
-                <li style={s.summaryItem}>
+                <li>
                   <span>Resolved</span>
-                  <strong style={{ color: "#22c55e" }}>
+                  <strong>
                     {incidents.filter((i) => ["resolved", "closed"].includes(i.status.toLowerCase())).length}
                   </strong>
                 </li>
-                <li style={s.summaryItem}>
+                <li>
                   <span>Open</span>
-                  <strong style={{ color: "#ef4444" }}>
+                  <strong>
                     {incidents.filter((i) => !["resolved", "closed"].includes(i.status.toLowerCase())).length}
                   </strong>
                 </li>
               </ul>
             )}
-          </div>
-        </div>
+          </article>
+        </aside>
       </div>
     </div>
   );

@@ -173,7 +173,7 @@ export function RequestDashboardScreen({
   return (
     <div className="exact-admin-screen">
       <AdminPageHeader
-        title="Requests"
+        title="Ride Requests"
         subtitle="Live ride and delivery queue for Accra operations — fares in Ghana cedis."
       />
 

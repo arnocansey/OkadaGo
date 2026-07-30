@@ -4,6 +4,7 @@ import { formatMoney } from "@/lib/currency";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
 import { SkeletonKPI, SkeletonTable, SkeletonChart, SkeletonDonut } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
+import { AdminKpiRow } from "./ui/AdminKpiRow";
 import type { RiderFinancialRow } from "./types";
 import {
   CreditCard,
@@ -22,8 +23,6 @@ import {
   Eye,
   Download,
   Zap,
-  ArrowUpRight,
-  ArrowDownRight,
   Star,
 } from "lucide-react";
 
@@ -49,7 +48,7 @@ export function RiderEarningsScreen({
   dataLoading = false,
 }: RiderEarningsScreenProps) {
   const { addToast } = useAdminToast();
-  const { isMobile, isTablet } = useBreakpoint();
+  const { isMobile } = useBreakpoint();
   const [activeTab, setActiveTab] = useState<"Daily" | "Weekly" | "Monthly">("Daily");
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -57,7 +56,7 @@ export function RiderEarningsScreen({
 
   if (dataLoading) {
     return (
-      <div className="exact-admin-screen" style={{ display: "flex", flexDirection: "column", gap: 20, padding: isMobile ? "16px 12px" : "24px 28px", minHeight: "100vh" }}>
+      <div className="exact-admin-screen">
         <SkeletonKPI count={5} />
         <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr", gap: 14 }}>
           <SkeletonChart />
@@ -73,15 +72,6 @@ export function RiderEarningsScreen({
   const tripEarnings = totalRiderGrossRevenue - totalRiderCommission;
   const incentives = totalRiderGrossRevenue * 0.05;
   const netEarnings = totalRiderEarnings + incentives;
-  const earningRiders = riderFinancialRows.filter((row) => row.earnings > 0);
-
-  const kpis = [
-    { label: "Total Earnings", value: totalRiderGrossRevenue, icon: DollarSign, color: "var(--brand-orange)", change: "+12.5%", up: true },
-    { label: "Trip Earnings", value: tripEarnings, icon: TrendingUp, color: "var(--success)", change: "+8.2%", up: true },
-    { label: "Incentives", value: incentives, icon: Award, color: "var(--brand-yellow)", change: "+24.1%", up: true },
-    { label: "Commissions", value: -totalRiderCommission, icon: Target, color: "var(--danger)", change: "-3.4%", up: false },
-    { label: "Net Earnings", value: netEarnings, icon: TrendingUp, color: "var(--info)", change: "+15.7%", up: true },
-  ];
 
   const topRiders = [...riderFinancialRows]
     .filter((row) => row.completedCount > 0)
@@ -135,71 +125,39 @@ export function RiderEarningsScreen({
   ];
 
   const incentivesList = [
-    { title: "Early Bird Bonus", desc: "$2.50 per ride before 7 AM", badge: "Active" },
+    { title: "Early Bird Bonus", desc: "₵2.50 per ride before 7 AM", badge: "Active" },
     { title: "Peak Hour Boost", desc: "15% extra on rides 5-8 PM", badge: "Active" },
-    { title: "Weekend Warrior", desc: "$5 flat bonus for 10+ weekend rides", badge: "Active" },
-    { title: "Referral Bonus", desc: "$50 per new rider referred", badge: "Active" },
-    { title: "Streak Incentive", desc: "$10 bonus for 5-day consecutive rides", badge: "Paused" },
+    { title: "Weekend Warrior", desc: "₵5 flat bonus for 10+ weekend rides", badge: "Active" },
+    { title: "Referral Bonus", desc: "₵50 per new rider referred", badge: "Active" },
+    { title: "Streak Incentive", desc: "₵10 bonus for 5-day consecutive rides", badge: "Paused" },
   ];
 
   const rankColors = ["var(--brand-orange)", "var(--brand-yellow)", "#cd7f32"];
 
   return (
-    <div className="exact-admin-screen" style={{ display: "flex", flexDirection: "column", gap: 20, padding: isMobile ? "16px 12px" : "24px 28px", minHeight: "100vh", fontFamily: "var(--font-family)" }}>
+    <div className="exact-admin-screen">
       <AdminPageHeader
         title="Rider Earnings"
-        subtitle="Review rider earnings estimated from completed trips and platform commission."
+        subtitle="Accra completed-trip earnings, surge incentives, and commission in GHS."
         actions={
-          <div style={{ display: "flex", gap: 10 }}>
-            {(["View All", "View Full History"] as const).map((label) => (
-              <button
-                key={label}
-                onClick={() => addToast(label + " clicked")}
-                style={{
-                  padding: "8px 18px",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: "var(--text-primary)",
-                  background: "var(--bg-card)",
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 8,
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "var(--accent-orange)";
-                  e.currentTarget.style.background = "color-mix(in srgb, var(--accent-orange) 10%, transparent)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "var(--border-color)";
-                  e.currentTarget.style.background = "var(--bg-card)";
-                }}
-              >
-                {label === "View All" ? <Eye size={14} style={{ marginRight: 6, verticalAlign: -2 }} /> : <Download size={14} style={{ marginRight: 6, verticalAlign: -2 }} />}
-                {label}
-              </button>
-            ))}
+          <div className="admin-screen-toolbar">
+            <button type="button" className="admin-btn-secondary" onClick={() => addToast("View All clicked")}>
+              <Eye size={14} /> View All
+            </button>
+            <button type="button" className="admin-btn-secondary" onClick={() => addToast("View Full History clicked")}>
+              <Download size={14} /> View Full History
+            </button>
           </div>
         }
       />
 
-      {/* Tabs */}
-      <div style={{ display: "flex", gap: 4, background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 10, padding: 4, width: isMobile ? "100%" : "fit-content", overflowX: isMobile ? "auto" : undefined }}>
+      <div className="admin-tabs">
         {tabs.map((tab) => (
           <button
             key={tab}
+            type="button"
+            className={`admin-tab${activeTab === tab ? " active" : ""}`}
             onClick={() => setActiveTab(tab)}
-            style={{
-              padding: "7px 20px",
-              fontSize: 13,
-              fontWeight: 600,
-              color: activeTab === tab ? "#fff" : "var(--text-secondary)",
-              background: activeTab === tab ? "var(--brand-orange)" : "transparent",
-              border: "none",
-              borderRadius: 7,
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-            }}
           >
             {tab === "Daily" ? <Calendar size={14} style={{ marginRight: 6, verticalAlign: -2 }} /> : null}
             {tab}
@@ -207,114 +165,35 @@ export function RiderEarningsScreen({
         ))}
       </div>
 
-      {/* KPI Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : isTablet ? "repeat(3, 1fr)" : "repeat(5, 1fr)", gap: 14 }}>
-        {kpis.map((kpi) => {
-          const Icon = kpi.icon;
-          return (
-            <div
-              key={kpi.label}
-              style={{
-                background: "var(--bg-card)",
-                border: "1px solid var(--border)",
-                borderRadius: 12,
-                padding: "18px 16px",
-                display: "flex",
-                flexDirection: "column",
-                gap: 10,
-                transition: "all 0.25s ease",
-                cursor: "default",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = kpi.color;
-                e.currentTarget.style.boxShadow = `0 0 20px color-mix(in srgb, ${kpi.color} 15%, transparent)`;
-                e.currentTarget.style.transform = "translateY(-2px)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "var(--border)";
-                e.currentTarget.style.boxShadow = "none";
-                e.currentTarget.style.transform = "translateY(0)";
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                  {kpi.label}
-                </span>
-                <div
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 8,
-                    background: `color-mix(in srgb, ${kpi.color} 12%, transparent)`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Icon size={16} color={kpi.color} />
-                </div>
-              </div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.5px" }}>
-                {formatMoney(adminCurrency, Math.abs(kpi.value))}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: kpi.up ? "var(--success)" : "var(--danger)" }}>
-                {kpi.up ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                {kpi.change} <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>vs last period</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <AdminKpiRow
+        items={[
+          { label: "Total Earnings", value: formatMoney(adminCurrency, totalRiderGrossRevenue), hint: "+12.5% vs last period", icon: <DollarSign size={22} />, tone: "yellow" },
+          { label: "Trip Earnings", value: formatMoney(adminCurrency, tripEarnings), hint: "+8.2% vs last period", icon: <TrendingUp size={22} />, tone: "green" },
+          { label: "Incentives", value: formatMoney(adminCurrency, incentives), hint: "+24.1% vs last period", icon: <Award size={22} />, tone: "yellow" },
+          { label: "Commissions", value: formatMoney(adminCurrency, totalRiderCommission), hint: "-3.4% vs last period", icon: <Target size={22} />, tone: "red" },
+          { label: "Net Earnings", value: formatMoney(adminCurrency, netEarnings), hint: "+15.7% vs last period", icon: <TrendingUp size={22} />, tone: "green" },
+        ]}
+      />
 
-      {/* Charts Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : isTablet ? "1fr 1fr" : "2fr 1fr", gap: 14 }}>
-        {/* Earnings Overview Line Chart */}
-        <div
-          style={{
-            background: "var(--bg-card)",
-            border: "1px solid var(--border)",
-            borderRadius: 12,
-            padding: "20px",
-            transition: "all 0.25s ease",
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--brand-orange)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; }}
-        >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+      <div className="admin-overview-split">
+        <article className="admin-reference-card">
+          <div className="admin-reference-cardhead">
             <div>
-              <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>Earnings Overview</h3>
-              <p style={{ margin: "3px 0 0", fontSize: 12, color: "var(--text-muted)" }}>Earnings & trips over {activeTab.toLowerCase()} period</p>
+              <h3>Earnings Overview</h3>
+              <p>Accra earnings & trips over the {activeTab.toLowerCase()} period (GHS).</p>
             </div>
             <button
+              type="button"
+              className="admin-btn-ghost"
               onClick={() => addToast("Options clicked")}
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: 7,
-                border: "1px solid var(--border)",
-                background: "transparent",
-                color: "var(--text-muted)",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--brand-orange)"; e.currentTarget.style.color = "var(--brand-orange)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--text-muted)"; }}
+              aria-label="Chart options"
             >
               <MoreHorizontal size={16} />
             </button>
           </div>
-          <div style={{ display: "flex", gap: 18, marginBottom: 12, fontSize: 12 }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ width: 10, height: 3, borderRadius: 2, background: "var(--text-primary)", display: "inline-block" }} />
-              <span style={{ color: "var(--text-muted)" }}>Trips</span>
-            </span>
-            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ width: 10, height: 3, borderRadius: 2, background: "var(--brand-orange)", display: "inline-block" }} />
-              <span style={{ color: "var(--text-muted)" }}>Earnings</span>
-            </span>
+          <div className="admin-reference-legend">
+            <span><i className="black" /> Trips</span>
+            <span><i className="yellow" /> Earnings</span>
           </div>
           <svg width={chartWidth} height={chartHeight} style={{ width: "100%", height: "auto" }}>
             {tripsPath && (
@@ -354,26 +233,15 @@ export function RiderEarningsScreen({
               </text>
             ))}
           </svg>
-        </div>
+        </article>
 
-        {/* Donut Chart */}
-        <div
-          style={{
-            background: "var(--bg-card)",
-            border: "1px solid var(--border)",
-            borderRadius: 12,
-            padding: "20px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            transition: "all 0.25s ease",
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--brand-orange)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; }}
-        >
-          <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "var(--text-primary)", alignSelf: "flex-start" }}>Earnings Breakdown</h3>
-          <p style={{ margin: "3px 0 0", fontSize: 12, color: "var(--text-muted)", alignSelf: "flex-start" }}>Revenue distribution</p>
+        <article className="admin-reference-card">
+          <div className="admin-reference-cardhead">
+            <div>
+              <h3>Earnings Breakdown</h3>
+              <p>GHS revenue distribution for Accra riders.</p>
+            </div>
+          </div>
           <div style={{ position: "relative", width: 120, height: 120, margin: "20px 0" }}>
             <svg width={120} height={120} viewBox={`0 0 ${donutRadius * 2} ${donutRadius * 2}`}>
               {(() => {
@@ -429,45 +297,21 @@ export function RiderEarningsScreen({
               </div>
             ))}
           </div>
-        </div>
+        </article>
       </div>
 
-      {/* Bar Chart & Incentives */}
-      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : isTablet ? "1fr 1fr" : "2fr 1fr", gap: 14 }}>
-        {/* Bar Chart */}
-        <div
-          style={{
-            background: "var(--bg-card)",
-            border: "1px solid var(--border)",
-            borderRadius: 12,
-            padding: "20px",
-            transition: "all 0.25s ease",
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--brand-orange)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; }}
-        >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+      <div className="admin-overview-split">
+        <article className="admin-reference-card">
+          <div className="admin-reference-cardhead">
             <div>
-              <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>Earnings by Day of Week</h3>
-              <p style={{ margin: "3px 0 0", fontSize: 12, color: "var(--text-muted)" }}>Weekly breakdown</p>
+              <h3>Earnings by Day of Week</h3>
+              <p>Weekly Accra trip & GHS earnings breakdown.</p>
             </div>
             <button
+              type="button"
+              className="admin-btn-ghost"
               onClick={() => addToast("Options clicked")}
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: 7,
-                border: "1px solid var(--border)",
-                background: "transparent",
-                color: "var(--text-muted)",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--brand-orange)"; e.currentTarget.style.color = "var(--brand-orange)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--text-muted)"; }}
+              aria-label="Bar chart options"
             >
               <BarChart3 size={16} />
             </button>
@@ -490,45 +334,22 @@ export function RiderEarningsScreen({
               );
             })}
           </svg>
-        </div>
+        </article>
 
-        {/* Incentives Sidebar */}
-        <div
-          style={{
-            background: "var(--bg-card)",
-            border: "1px solid var(--border)",
-            borderRadius: 12,
-            padding: "20px",
-            transition: "all 0.25s ease",
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--brand-orange)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; }}
-        >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+        <article className="admin-reference-card">
+          <div className="admin-reference-cardhead">
             <div>
-              <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 7 }}>
-                <Zap size={16} color="var(--brand-yellow)" />
+              <h3>
+                <Zap size={16} color="var(--brand-yellow)" style={{ marginRight: 6, verticalAlign: -2 }} />
                 Incentives & Bonuses
               </h3>
-              <p style={{ margin: "3px 0 0", fontSize: 12, color: "var(--text-muted)" }}>Active rider programs</p>
+              <p>Active Accra rider surge and bonus programs.</p>
             </div>
             <button
+              type="button"
+              className="admin-btn-ghost"
               onClick={() => addToast("Options clicked")}
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: 7,
-                border: "1px solid var(--border)",
-                background: "transparent",
-                color: "var(--text-muted)",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--brand-orange)"; e.currentTarget.style.color = "var(--brand-orange)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--text-muted)"; }}
+              aria-label="Incentive options"
             >
               <MoreHorizontal size={16} />
             </button>
@@ -566,44 +387,22 @@ export function RiderEarningsScreen({
               </div>
             ))}
           </div>
-        </div>
+        </article>
       </div>
 
-      {/* Top Earners Table */}
-      <div
-        style={{
-          background: "var(--bg-card)",
-          border: "1px solid var(--border)",
-          borderRadius: 12,
-          padding: "20px",
-          transition: "all 0.25s ease",
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--brand-orange)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; }}
-      >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+      <article className="admin-reference-card">
+        <div className="admin-reference-cardhead">
           <div>
-            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 7 }}>
-              <Star size={16} color="var(--brand-yellow)" />
+            <h3>
+              <Star size={16} color="var(--brand-yellow)" style={{ marginRight: 6, verticalAlign: -2 }} />
               Top Earning Riders
             </h3>
-            <p style={{ margin: "3px 0 0", fontSize: 12, color: "var(--text-muted)" }}>Top 15 earners this period</p>
+            <p>Top 15 Accra earners this period (GHS).</p>
           </div>
           <button
+            type="button"
+            className="admin-btn-secondary"
             onClick={() => addToast("View Full History clicked")}
-            style={{
-              padding: "6px 14px",
-              fontSize: 12,
-              fontWeight: 600,
-              color: "var(--brand-orange)",
-              background: "transparent",
-              border: "1px solid var(--brand-orange)",
-              borderRadius: 7,
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "color-mix(in srgb, var(--brand-orange) 10%, transparent)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
           >
             View Full History
           </button>
@@ -685,93 +484,46 @@ export function RiderEarningsScreen({
             </table>
           </div>
         )}
-      </div>
+      </article>
 
-      {/* Summary Table with Pagination */}
-      <div
-        style={{
-          background: "var(--bg-card)",
-          border: "1px solid var(--border)",
-          borderRadius: 12,
-          padding: "20px",
-          transition: "all 0.25s ease",
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--brand-orange)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; }}
-      >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+      <article className="admin-reference-card">
+        <div className="admin-reference-cardhead">
           <div>
-            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 7 }}>
-              <Users size={16} color="var(--brand-orange)" />
+            <h3>
+              <Users size={16} color="var(--brand-orange)" style={{ marginRight: 6, verticalAlign: -2 }} />
               All Riders Summary
             </h3>
-            <p style={{ margin: "3px 0 0", fontSize: 12, color: "var(--text-muted)" }}>
-              {sortedAllRows.length} riders · Page {currentPage} of {totalPages || 1}
+            <p>
+              {sortedAllRows.length} Accra riders · Page {currentPage} of {totalPages || 1}
             </p>
           </div>
           <div style={{ display: "flex", gap: 6 }}>
             <button
+              type="button"
+              className="admin-btn-ghost"
               onClick={() => { if (currentPage > 1) setCurrentPage(currentPage - 1); }}
               disabled={currentPage <= 1}
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: 7,
-                border: "1px solid var(--border)",
-                background: currentPage <= 1 ? "var(--bg-primary)" : "transparent",
-                color: currentPage <= 1 ? "var(--text-muted)" : "var(--text-primary)",
-                cursor: currentPage <= 1 ? "not-allowed" : "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "all 0.2s ease",
-                opacity: currentPage <= 1 ? 0.5 : 1,
-              }}
+              aria-label="Previous page"
             >
               <ChevronLeft size={16} />
             </button>
             <button
+              type="button"
+              className="admin-btn-ghost"
               onClick={() => { if (currentPage < totalPages) setCurrentPage(currentPage + 1); }}
               disabled={currentPage >= totalPages}
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: 7,
-                border: "1px solid var(--border)",
-                background: currentPage >= totalPages ? "var(--bg-primary)" : "transparent",
-                color: currentPage >= totalPages ? "var(--text-muted)" : "var(--text-primary)",
-                cursor: currentPage >= totalPages ? "not-allowed" : "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "all 0.2s ease",
-                opacity: currentPage >= totalPages ? 0.5 : 1,
-              }}
+              aria-label="Next page"
             >
               <ChevronRight size={16} />
             </button>
           </div>
         </div>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+        <div className="admin-table-wrapper">
+          <table className="admin-table">
             <thead>
               <tr>
                 {["Rider", "Code", "Completed", "Earnings", "Commission"].map((h) => (
-                  <th
-                    key={h}
-                    style={{
-                      textAlign: "left",
-                      padding: "10px 12px",
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: "var(--text-muted)",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.5px",
-                      borderBottom: "1px solid var(--border)",
-                    }}
-                  >
-                    {h}
-                  </th>
+                  <th key={h}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -787,24 +539,18 @@ export function RiderEarningsScreen({
                     cursor: "default",
                   }}
                 >
-                  <td style={{ padding: "10px 12px", fontWeight: 600, color: "var(--text-primary)" }}>
-                    {row.rider.user.fullName}
-                  </td>
-                  <td style={{ padding: "10px 12px", color: "var(--text-muted)", fontFamily: "monospace", fontSize: 12 }}>
-                    {row.rider.displayCode}
-                  </td>
-                  <td style={{ padding: "10px 12px", color: "var(--text-secondary)" }}>{row.completedCount}</td>
-                  <td style={{ padding: "10px 12px", fontWeight: 700, color: row.earnings > 0 ? "var(--success)" : "var(--text-muted)" }}>
+                  <td style={{ fontWeight: 600 }}>{row.rider.user.fullName}</td>
+                  <td><code style={{ fontSize: 12 }}>{row.rider.displayCode}</code></td>
+                  <td>{row.completedCount}</td>
+                  <td style={{ fontWeight: 700, color: row.earnings > 0 ? "var(--success)" : "var(--text-muted)" }}>
                     {formatMoney(adminCurrency, row.earnings)}
                   </td>
-                  <td style={{ padding: "10px 12px", color: "var(--text-muted)" }}>
-                    {formatMoney(adminCurrency, row.commission)}
-                  </td>
+                  <td>{formatMoney(adminCurrency, row.commission)}</td>
                 </tr>
               ))}
               {paginatedRows.length === 0 && (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: "center", padding: "24px 0", color: "var(--text-muted)", fontSize: 13 }}>
+                  <td colSpan={5} style={{ textAlign: "center", padding: "24px 0", color: "var(--text-muted)" }}>
                     No riders found.
                   </td>
                 </tr>
@@ -812,7 +558,7 @@ export function RiderEarningsScreen({
             </tbody>
           </table>
         </div>
-      </div>
+      </article>
     </div>
   );
 }

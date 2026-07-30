@@ -4,8 +4,6 @@ import { useCallback, useMemo, useState } from "react";
 import {
   Bell,
   Bike,
-  BookOpen,
-  CalendarDays,
   ChevronDown,
   CreditCard,
   FileText,
@@ -69,9 +67,11 @@ export type AdminShellProps = {
 };
 
 const navGroups = [
-  { label: "", key: "main" as const },
-  { label: "", key: "finance" as const },
-  { label: "", key: "system" as const }
+  { label: "", key: "home" as const },
+  { label: "Operations", key: "operations" as const },
+  { label: "People", key: "people" as const },
+  { label: "Management", key: "management" as const },
+  { label: "System", key: "system" as const }
 ];
 
 const screenPermissions: Partial<Record<AdminConsoleScreen, string>> = {
@@ -108,35 +108,35 @@ const screenPermissions: Partial<Record<AdminConsoleScreen, string>> = {
 };
 
 const screenMeta: Record<AdminConsoleScreen, AdminScreenMeta> = {
-  dashboard: { eyebrow: "", title: "Home", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/requests", quickActionNote: "" },
-  rides: { eyebrow: "", title: "Requests", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders", quickActionNote: "" },
+  dashboard: { eyebrow: "", title: "Overview", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/requests", quickActionNote: "" },
+  rides: { eyebrow: "", title: "Ride Requests", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders", quickActionNote: "" },
   deliveries: { eyebrow: "", title: "Deliveries", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/requests", quickActionNote: "" },
   riders: { eyebrow: "", title: "Riders", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
-  riderVerification: { eyebrow: "", title: "Verify", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/documents", quickActionNote: "" },
-  riderDocuments: { eyebrow: "", title: "Docs", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/verification", quickActionNote: "" },
-  riderPerformance: { eyebrow: "", title: "Stats", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/earnings", quickActionNote: "" },
-  riderEarnings: { eyebrow: "", title: "Earn", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/payouts", quickActionNote: "" },
+  riderVerification: { eyebrow: "", title: "Verify Riders", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/documents", quickActionNote: "" },
+  riderDocuments: { eyebrow: "", title: "Documents", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/verification", quickActionNote: "" },
+  riderPerformance: { eyebrow: "", title: "Performance", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/earnings", quickActionNote: "" },
+  riderEarnings: { eyebrow: "", title: "Earnings", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/payouts", quickActionNote: "" },
   riderWallet: { eyebrow: "", title: "Wallet", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/payouts", quickActionNote: "" },
   riderPayouts: { eyebrow: "", title: "Payouts", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
   riderComplaints: { eyebrow: "", title: "Cases", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/reports-analytics", quickActionNote: "" },
-  riderActivity: { eyebrow: "", title: "Live", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders", quickActionNote: "" },
+  riderActivity: { eyebrow: "", title: "Live Monitoring", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders", quickActionNote: "" },
   riderSuspensions: { eyebrow: "", title: "Banned", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/verification", quickActionNote: "" },
-  passengers: { eyebrow: "", title: "Users", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
+  passengers: { eyebrow: "", title: "Passengers", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
   payments: { eyebrow: "", title: "Finance", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/reports-analytics", quickActionNote: "" },
   ratings: { eyebrow: "", title: "Ratings", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
   promotions: { eyebrow: "", title: "Promos", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
   zones: { eyebrow: "", title: "Zones", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
   supportTickets: { eyebrow: "", title: "Support", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/complaints", quickActionNote: "" },
   sosIncidents: { eyebrow: "", title: "SOS", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/support-tickets", quickActionNote: "" },
-  escalationRules: { eyebrow: "", title: "Escalate", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/support-tickets", quickActionNote: "" },
+  escalationRules: { eyebrow: "", title: "Escalation", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/support-tickets", quickActionNote: "" },
   notifications: { eyebrow: "", title: "Alerts", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
   reports: { eyebrow: "", title: "Reports", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
   auditLogs: { eyebrow: "", title: "Audit", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/admins", quickActionNote: "" },
   settings: { eyebrow: "", title: "Settings", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/admins", quickActionNote: "" },
   paymentMethods: { eyebrow: "", title: "Payments", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
-  integrations: { eyebrow: "", title: "APIs", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
-  taxesCompliance: { eyebrow: "", title: "Tax", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
-  settingsNotifications: { eyebrow: "", title: "Alerts", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
+  integrations: { eyebrow: "", title: "Integrations", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
+  taxesCompliance: { eyebrow: "", title: "Taxes & Compliance", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
+  settingsNotifications: { eyebrow: "", title: "Alert Settings", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
   admins: { eyebrow: "", title: "Staff", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" }
 };
 
@@ -155,6 +155,7 @@ export function AdminShell({
   const [expandedNavSections, setExpandedNavSections] = useState<Record<string, boolean>>({});
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [desktopOpen, setDesktopOpen] = useState(true);
+  const [topSearch, setTopSearch] = useState("");
   const [theme, setTheme] = useState<"light" | "dark">(() => {
     if (typeof window === "undefined") return "dark";
     const stored = window.localStorage.getItem("okadago.admin-theme");
@@ -202,20 +203,20 @@ export function AdminShell({
   const navItems: AdminNavItem[] = useMemo(() => {
     const allItems: AdminNavItem[] = [
       {
-        label: "Home",
+        label: "Dashboard",
         href: "/",
         icon: LayoutDashboard,
         screen: "dashboard",
-        group: "main",
+        group: "home",
         hint: "",
         badge: `${badgeData.activeTripsCount}`
       },
       {
-        label: "Requests",
+        label: "Ride Requests",
         href: "/requests",
         icon: Bike,
         screen: "rides",
-        group: "main",
+        group: "operations",
         hint: "",
         badge: `${badgeData.completedTripsCount}`
       },
@@ -224,87 +225,60 @@ export function AdminShell({
         href: "/deliveries",
         icon: Package,
         screen: "deliveries",
-        group: "main",
+        group: "operations",
         hint: "",
         badge: `${badgeData.deliveriesCount}`
+      },
+      {
+        label: "Zones",
+        href: "/zones",
+        icon: Globe,
+        screen: "zones",
+        group: "operations",
+        hint: "",
+        badge: `${badgeData.zonesActiveCount}`
+      },
+      {
+        label: "SOS",
+        href: "/sos",
+        icon: ShieldAlert,
+        screen: "sosIncidents",
+        group: "operations",
+        hint: "",
+        badge: `${badgeData.openSosCount}`
       },
       {
         label: "Riders",
         href: "/riders",
         icon: User,
         screen: "riders",
-        group: "main",
+        group: "people",
         hint: "",
         badge: `${badgeData.activeRidersCount}`,
         children: [
-          {
-            label: "All",
-            href: "/riders",
-            screen: "riders",
-            badge: `${badgeData.ridersCount}`
-          },
+          { label: "All Riders", href: "/riders", screen: "riders", badge: `${badgeData.ridersCount}` },
           {
             label: "Verify",
             href: "/riders/verification",
             screen: "riderVerification",
             badge: `${badgeData.riderVerificationPending + badgeData.riderVerificationUnderReview}`
           },
-          {
-            label: "Docs",
-            href: "/riders/documents",
-            screen: "riderDocuments",
-            badge: `${badgeData.riderDocumentMissing}`
-          },
-          {
-            label: "Stats",
-            href: "/riders/performance",
-            screen: "riderPerformance",
-            badge: `${badgeData.completedTripsCount}`
-          },
-          {
-            label: "Earn",
-            href: "/riders/earnings",
-            screen: "riderEarnings",
-            badge: `${badgeData.topRiderPerformanceEarningsCount}`
-          },
-          {
-            label: "Wallet",
-            href: "/riders/wallet",
-            screen: "riderWallet",
-            badge: `${badgeData.riderWalletTransactionsCount}`
-          },
-          {
-            label: "Payouts",
-            href: "/riders/payouts",
-            screen: "riderPayouts",
-            badge: `${badgeData.riderPayoutRequestedCount}`
-          },
-          {
-            label: "Cases",
-            href: "/riders/complaints",
-            screen: "riderComplaints",
-            badge: `${badgeData.riderIncidentsCount}`
-          },
-          {
-            label: "Live",
-            href: "/riders/activity-tracking",
-            screen: "riderActivity",
-            badge: `${badgeData.ridersWithCoordsCount}`
-          },
-          {
-            label: "Banned",
-            href: "/riders/suspensions",
-            screen: "riderSuspensions",
-            badge: `${badgeData.suspendedRidersCount}`
-          }
+          { label: "Documents", href: "/riders/documents", screen: "riderDocuments", badge: `${badgeData.riderDocumentMissing}` },
+          { label: "Stats", href: "/riders/performance", screen: "riderPerformance", badge: `${badgeData.completedTripsCount}` },
+          { label: "Earnings", href: "/riders/earnings", screen: "riderEarnings", badge: `${badgeData.topRiderPerformanceEarningsCount}` },
+          { label: "Wallet", href: "/riders/wallet", screen: "riderWallet", badge: `${badgeData.riderWalletTransactionsCount}` },
+          { label: "Payouts", href: "/riders/payouts", screen: "riderPayouts", badge: `${badgeData.riderPayoutRequestedCount}` },
+          { label: "Cases", href: "/riders/complaints", screen: "riderComplaints", badge: `${badgeData.riderIncidentsCount}` },
+          { label: "Live Monitoring", href: "/riders/activity-tracking", screen: "riderActivity", badge: `${badgeData.ridersWithCoordsCount}` },
+          { label: "Banned", href: "/riders/suspensions", screen: "riderSuspensions", badge: `${badgeData.suspendedRidersCount}` }
         ]
       },
       {
-        label: "Users",
+        label: "Passengers",
         href: "/users",
         icon: Users,
         screen: "passengers",
-        group: "main",
+        group: "people",
         hint: "",
         badge: `${badgeData.passengersCount}`
       },
@@ -313,7 +287,7 @@ export function AdminShell({
         href: "/finance",
         icon: CreditCard,
         screen: "payments",
-        group: "finance",
+        group: "management",
         hint: "",
         badge: `${badgeData.pendingPayoutRequestsCount}`
       },
@@ -322,7 +296,7 @@ export function AdminShell({
         href: "/reports-analytics",
         icon: FileText,
         screen: "ratings",
-        group: "finance",
+        group: "management",
         hint: "",
         badge: `${badgeData.ratingsCount}`
       },
@@ -331,7 +305,7 @@ export function AdminShell({
         href: "/reports",
         icon: TrendingUp,
         screen: "reports",
-        group: "finance",
+        group: "management",
         hint: "",
         badge: ""
       },
@@ -340,7 +314,7 @@ export function AdminShell({
         href: "/promotions",
         icon: Tag,
         screen: "promotions",
-        group: "finance",
+        group: "management",
         hint: "",
         badge: `${badgeData.promoAdjustedTripsCount}`
       },
@@ -354,16 +328,7 @@ export function AdminShell({
         badge: `${badgeData.openSupportTicketsCount}`
       },
       {
-        label: "SOS",
-        href: "/sos",
-        icon: ShieldAlert,
-        screen: "sosIncidents",
-        group: "main",
-        hint: "",
-        badge: `${badgeData.openSosCount}`
-      },
-      {
-        label: "Escalate",
+        label: "Escalation",
         href: "/escalation-rules",
         icon: Headphones,
         screen: "escalationRules",
@@ -378,15 +343,6 @@ export function AdminShell({
         group: "system",
         hint: "",
         badge: ""
-      },
-      {
-        label: "Zones",
-        href: "/zones",
-        icon: Globe,
-        screen: "zones",
-        group: "system",
-        hint: "",
-        badge: `${badgeData.zonesActiveCount}`
       },
       {
         label: "Audit",
@@ -404,12 +360,12 @@ export function AdminShell({
         screen: "settings",
         group: "system",
         hint: "",
-        badge: `${badgeData.zonesActiveCount}`,
+        badge: "",
         children: [
           { label: "General", href: "/settings", screen: "settings" },
           { label: "Payments", href: "/payment-methods", screen: "paymentMethods" },
-          { label: "Tax", href: "/taxes-compliance", screen: "taxesCompliance" },
-          { label: "APIs", href: "/integrations", screen: "integrations" },
+          { label: "Taxes", href: "/taxes-compliance", screen: "taxesCompliance" },
+          { label: "Integrations", href: "/integrations", screen: "integrations" },
           { label: "Alerts", href: "/settings-notifications", screen: "settingsNotifications" }
         ]
       },
@@ -452,7 +408,6 @@ export function AdminShell({
 
   return (
     <ImmersivePage className="exact-admin-page" data-theme={theme}>
-      {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
           className="exact-admin-overlay"
@@ -462,10 +417,12 @@ export function AdminShell({
       )}
 
       <div className={`exact-admin-shell ${desktopOpen ? "" : "desktop-collapsed"}`}>
-        {/* Sidebar */}
         <aside className={`exact-admin-sidebar ${sidebarOpen ? "open" : ""}`}>
           <div className="exact-admin-brand">
-            <BrandMark variant="wordmark" height={36} product="shared" />
+            <div className="exact-admin-brand-copy">
+              <BrandMark variant="wordmark" height={32} product="shared" />
+              <small>Fleet Management</small>
+            </div>
             <button
               type="button"
               className="exact-admin-sidebar-close"
@@ -479,6 +436,7 @@ export function AdminShell({
           <nav className="exact-admin-nav" aria-label="Admin navigation">
             {navGroups.map((group) => {
               const groupItems = navItems.filter((item) => item.group === group.key);
+              if (groupItems.length === 0) return null;
               return (
                 <div key={group.key} className="exact-admin-navgroup">
                   {group.label ? <p className="exact-admin-navlabel">{group.label}</p> : null}
@@ -496,17 +454,14 @@ export function AdminShell({
                             onClick={() => toggleSection(item.screen)}
                             aria-expanded={isExpanded}
                           >
-                            <Icon size={16} />
+                            <Icon size={18} />
                             <div className="exact-admin-navcopy">
                               <strong>{item.label}</strong>
                             </div>
                             {item.badge && item.badge !== "0" && item.badge !== "New" && item.badge !== "" && (
                               <em>{item.badge}</em>
                             )}
-                            <ChevronDown
-                              size={14}
-                              className="exact-admin-nav-chevron"
-                            />
+                            <ChevronDown size={14} className="exact-admin-nav-chevron" />
                           </button>
                         ) : (
                           <a
@@ -514,7 +469,7 @@ export function AdminShell({
                             className={item.screen === screen ? "active" : ""}
                             onClick={closeSidebar}
                           >
-                            <Icon size={16} />
+                            <Icon size={18} />
                             <div className="exact-admin-navcopy">
                               <strong>{item.label}</strong>
                             </div>
@@ -548,18 +503,19 @@ export function AdminShell({
             })}
           </nav>
 
-          <div className="exact-admin-profile" onClick={onSignOut} title="Sign out">
-            <div className="exact-avatar">{initials}</div>
+          <button type="button" className="exact-admin-profile" onClick={onSignOut} title="Sign out">
+            <div className="exact-avatar">{initials || "OG"}</div>
             <div>
               <strong>{userName.split(" ")[0] || userName}</strong>
-              <span>Out</span>
+              <span>
+                <LogOut size={12} style={{ display: "inline", marginRight: 4 }} />
+                Sign out
+              </span>
             </div>
-          </div>
+          </button>
         </aside>
 
-        {/* Main content */}
         <div className="exact-admin-main">
-          {/* Top bar */}
           <header className="exact-admin-topbar">
             <button
               type="button"
@@ -570,29 +526,40 @@ export function AdminShell({
               <Menu size={20} />
             </button>
 
-            <div className="exact-admin-topmeta">
-              <strong>{currentMeta.title}</strong>
-            </div>
+            <label className="admin-top-search">
+              <Search size={16} />
+              <input
+                type="search"
+                value={topSearch}
+                onChange={(event) => setTopSearch(event.target.value)}
+                placeholder="Search rides, riders, or users..."
+                aria-label="Search admin console"
+              />
+            </label>
 
-            <div className="exact-admin-top-profile">
+            <div className="exact-admin-top-actions">
               <button
                 type="button"
                 className="exact-admin-menu-button"
                 onClick={toggleTheme}
-                title="Toggle Theme Mode"
-                style={{ marginRight: 8, opacity: 0.8 }}
+                title="Toggle theme"
               >
                 {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
               </button>
-              <div className="exact-avatar">{initials}</div>
-              <strong className="exact-admin-top-user">{userName}</strong>
+              <a href="/notifications" className="exact-admin-menu-button" title="Alerts" aria-label="Alerts">
+                <Bell size={18} />
+              </a>
+              <div className="exact-admin-top-profile">
+                <div className="exact-avatar">{initials || "OG"}</div>
+                <div className="exact-admin-topmeta">
+                  <strong className="exact-admin-top-user">{userName}</strong>
+                  <span>{currentMeta.title}</span>
+                </div>
+              </div>
             </div>
           </header>
 
-          {/* Page content */}
-          <main className="exact-admin-scroll">
-            {children}
-          </main>
+          <main className="exact-admin-scroll">{children}</main>
         </div>
       </div>
     </ImmersivePage>

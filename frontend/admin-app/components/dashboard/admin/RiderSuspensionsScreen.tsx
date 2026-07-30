@@ -3,7 +3,6 @@ import {
   Shield,
   Clock,
   CheckCircle,
-  Hourglass,
   Search,
   MoreVertical,
   X,
@@ -14,6 +13,7 @@ import {
 import { useAdminToast } from "./AdminToast";
 import { SkeletonKPI, SkeletonTable } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
+import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
 
 export type RiderSuspensionsScreenProps = {
@@ -59,7 +59,7 @@ function getSuspensionData(accountStatus?: string) {
 
 function getStatusStyle(status: string) {
   if (status === "Active") return { background: "rgba(245,158,11,0.15)", color: "#f59e0b" };
-  if (status === "Expired") return { background: "rgba(107,114,128,0.15)", color: "#9ca3af" };
+  if (status === "Expired") return { background: "rgba(107,114,128,0.15)", color: "var(--text-secondary)" };
   return { background: "rgba(16,185,129,0.15)", color: "#10b981" };
 }
 
@@ -129,7 +129,7 @@ export function RiderSuspensionsScreen({
 
   if (dataLoading) {
     return (
-      <div className="exact-admin-screen" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", gap: 20 }}>
+      <div className="exact-admin-screen">
         <SkeletonKPI count={4} />
         <SkeletonTable rows={5} cols={5} />
       </div>
@@ -197,83 +197,41 @@ export function RiderSuspensionsScreen({
     }
   };
 
+  const fleetShare =
+    totalRiders > 0 ? Math.round((suspendedRiders.length / totalRiders) * 100) : 0;
+
   return (
-    <div
-      className="exact-admin-screen"
-      style={{
-        padding: isMobile ? "16px 12px" : 24,
-        minHeight: "100vh",
-        color: "var(--text-primary)",
-        fontFamily: "var(--font-family)",
-      }}
-    >
+    <div className="exact-admin-screen">
       <AdminPageHeader
         title="Suspensions"
-        subtitle="Review riders whose account status indicates blocked, suspended, or rejected access."
+        subtitle="Accra banned and restricted riders pending review or reinstatement."
       />
 
-      {/* ── KPI Row ── */}
-      <section style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : isTablet ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
-        {/* Total Suspended */}
-        <article style={{ background: "#1e2028", borderRadius: 14, padding: "18px 20px", border: "1px solid #2a2d35", display: "flex", alignItems: "center", gap: 14, transition: "border-color 0.2s, box-shadow 0.2s" }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(239,68,68,0.4)"; e.currentTarget.style.boxShadow = "0 0 16px rgba(239,68,68,0.1)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#2a2d35"; e.currentTarget.style.boxShadow = "none"; }}
-        >
-          <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(239,68,68,0.15)", color: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <Shield size={22} />
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: "#9ca3af", marginBottom: 2 }}>Total Suspended</div>
-            <div style={{ fontSize: 26, fontWeight: 700, lineHeight: 1 }}>{suspendedRiders.length}</div>
-            <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>All time suspensions</div>
-          </div>
-        </article>
-
-        {/* Currently Suspended */}
-        <article style={{ background: "#1e2028", borderRadius: 14, padding: "18px 20px", border: "1px solid #2a2d35", display: "flex", alignItems: "center", gap: 14, transition: "border-color 0.2s, box-shadow 0.2s" }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(245,158,11,0.4)"; e.currentTarget.style.boxShadow = "0 0 16px rgba(245,158,11,0.1)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#2a2d35"; e.currentTarget.style.boxShadow = "none"; }}
-        >
-          <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(245,158,11,0.15)", color: "#f59e0b", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <Clock size={22} />
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: "#9ca3af", marginBottom: 2 }}>Currently Suspended</div>
-            <div style={{ fontSize: 26, fontWeight: 700, lineHeight: 1 }}>{activeCount}</div>
-            <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Active restrictions</div>
-          </div>
-        </article>
-
-        {/* Reinstated */}
-        <article style={{ background: "#1e2028", borderRadius: 14, padding: "18px 20px", border: "1px solid #2a2d35", display: "flex", alignItems: "center", gap: 14, transition: "border-color 0.2s, box-shadow 0.2s" }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(16,185,129,0.4)"; e.currentTarget.style.boxShadow = "0 0 16px rgba(16,185,129,0.1)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#2a2d35"; e.currentTarget.style.boxShadow = "none"; }}
-        >
-          <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(16,185,129,0.15)", color: "#10b981", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <CheckCircle size={22} />
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: "#9ca3af", marginBottom: 2 }}>Reinstated</div>
-            <div style={{ fontSize: 26, fontWeight: 700, lineHeight: 1 }}>{reinstatedCount}</div>
-            <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Access restored</div>
-          </div>
-        </article>
-
-        {/* Avg Duration */}
-        <article style={{ background: "var(--bg-card)", borderRadius: 14, padding: "18px 20px", border: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: 14, transition: "border-color 0.2s, box-shadow 0.2s" }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = "color-mix(in srgb, var(--accent-yellow) 40%, transparent)"; e.currentTarget.style.boxShadow = "0 0 16px color-mix(in srgb, var(--accent-yellow) 10%, transparent)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border-color)"; e.currentTarget.style.boxShadow = "none"; }}
-        >
-          <div style={{ width: 44, height: 44, borderRadius: 10, background: "var(--accent-yellow-light)", color: "var(--accent-yellow)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <Hourglass size={22} />
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: "#9ca3af", marginBottom: 2 }}>Avg Duration</div>
-            <div style={{ fontSize: 26, fontWeight: 700, lineHeight: 1 }}>7d 4h</div>
-            <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Per suspension event</div>
-          </div>
-        </article>
-      </section>
+      <AdminKpiRow
+        items={[
+          {
+            label: "Total Suspended",
+            value: suspendedRiders.length,
+            hint: `${fleetShare}% of Accra fleet`,
+            icon: <Shield size={22} />,
+            tone: "red",
+          },
+          {
+            label: "Currently Suspended",
+            value: activeCount,
+            hint: "Active restrictions",
+            icon: <Clock size={22} />,
+            tone: "yellow",
+          },
+          {
+            label: "Reinstated",
+            value: reinstatedCount,
+            hint: "Access restored",
+            icon: <CheckCircle size={22} />,
+            tone: "green",
+          },
+        ]}
+      />
 
       {/* ── Split Layout ── */}
       <div
@@ -285,134 +243,54 @@ export function RiderSuspensionsScreen({
         }}
       >
         {/* ── LEFT: List Panel ── */}
-        <article style={{ background: "#1e2028", borderRadius: 16, border: "1px solid #2a2d35", padding: 20, minWidth: 0 }}>
-          {/* Tabs */}
-          <div style={{ display: "flex", gap: 0, borderBottom: "1px solid #2a2d35", marginBottom: 20, overflowX: "auto" }}>
+        <article className="admin-reference-card" style={{ minWidth: 0, padding: 20 }}>
+          <div className="admin-tabs" style={{ marginBottom: 16 }}>
             {TABS.map((tab) => (
               <button
                 key={tab}
                 type="button"
+                className={`admin-tab${activeTab === tab ? " active" : ""}`}
                 onClick={() => handleTabChange(tab)}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: "10px 18px",
-                  fontSize: 13,
-                  fontWeight: activeTab === tab ? 700 : 500,
-                  color: activeTab === tab ? "#f59e0b" : "#9ca3af",
-                  borderBottom: activeTab === tab ? "2px solid #f59e0b" : "2px solid transparent",
-                  marginBottom: -1,
-                  whiteSpace: "nowrap",
-                  transition: "color 0.15s",
-                }}
               >
                 {tab}
               </button>
             ))}
           </div>
 
-          {/* Filter Bar */}
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 16 }}>
-            {/* Search */}
-            <div style={{ position: "relative", flex: "1 1 200px", minWidth: 160 }}>
-              <Search
-                size={14}
-                style={{
-                  position: "absolute",
-                  left: 10,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  color: "#9ca3af",
-                  pointerEvents: "none",
-                }}
-              />
+          <div className="admin-filter-bar">
+            <label className="admin-filter-search">
+              <Search size={14} aria-hidden />
               <input
-                type="text"
+                type="search"
                 placeholder="Search rider..."
                 value={searchQuery}
                 onChange={handleSearch}
-                style={{
-                  background: "#0f1117",
-                  border: "1px solid #2a2d35",
-                  borderRadius: 8,
-                  padding: "8px 10px 8px 32px",
-                  color: "var(--text-primary)",
-                  fontSize: 13,
-                  width: "100%",
-                  outline: "none",
-                  transition: "border-color 0.15s",
-                }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = "#f59e0b"; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = "#2a2d35"; }}
               />
-            </div>
-
-            {/* Reason Filter */}
+            </label>
             <select
+              className="admin-select-sm"
               value={reasonFilter}
               onChange={(e) => setReasonFilter(e.target.value)}
-              style={{
-                background: "#0f1117",
-                border: "1px solid #2a2d35",
-                borderRadius: 8,
-                padding: "8px 10px",
-                color: "#9ca3af",
-                fontSize: 13,
-                cursor: "pointer",
-                outline: "none",
-                transition: "border-color 0.15s",
-              }}
-              onFocus={(e) => { e.currentTarget.style.borderColor = "#f59e0b"; }}
-              onBlur={(e) => { e.currentTarget.style.borderColor = "#2a2d35"; }}
             >
               <option>All Reasons</option>
               <option>Policy violation</option>
               <option>Multiple complaints</option>
               <option>Safety violation</option>
             </select>
-
-            {/* Status Filter */}
             <select
+              className="admin-select-sm"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              style={{
-                background: "#0f1117",
-                border: "1px solid #2a2d35",
-                borderRadius: 8,
-                padding: "8px 10px",
-                color: "#9ca3af",
-                fontSize: 13,
-                cursor: "pointer",
-                outline: "none",
-                transition: "border-color 0.15s",
-              }}
-              onFocus={(e) => { e.currentTarget.style.borderColor = "#f59e0b"; }}
-              onBlur={(e) => { e.currentTarget.style.borderColor = "#2a2d35"; }}
             >
               <option>All Status</option>
               <option>Active</option>
               <option>Expired</option>
               <option>Reinstated</option>
             </select>
-
-            {/* Duration Filter */}
             <select
+              className="admin-select-sm"
               value={durationFilter}
               onChange={(e) => setDurationFilter(e.target.value)}
-              style={{
-                background: "#0f1117",
-                border: "1px solid #2a2d35",
-                borderRadius: 8,
-                padding: "8px 10px",
-                color: "#9ca3af",
-                fontSize: 13,
-                cursor: "pointer",
-                outline: "none",
-                transition: "border-color 0.15s",
-              }}
-              onFocus={(e) => { e.currentTarget.style.borderColor = "#f59e0b"; }}
-              onBlur={(e) => { e.currentTarget.style.borderColor = "#2a2d35"; }}
             >
               <option>All Durations</option>
               <option>7 days</option>
@@ -437,7 +315,7 @@ export function RiderSuspensionsScreen({
                         color: "var(--text-muted)",
                         textTransform: "uppercase",
                         letterSpacing: 0.05,
-                        borderBottom: "1px solid #2a2d35",
+                        borderBottom: "1px solid var(--border-color)",
                         whiteSpace: "nowrap",
                       }}
                     >
@@ -479,7 +357,7 @@ export function RiderSuspensionsScreen({
                               <div style={{ fontWeight: 600, fontSize: 13, color: "var(--text-primary)" }}>{rider.user.fullName}</div>
                               <div style={{ color: "var(--text-muted)", fontSize: 11 }}>{rider.user.phoneE164}</div>
                               <div style={{ color: "var(--text-muted)", fontSize: 11 }}>
-                                <code style={{ fontSize: 10, opacity: 0.7, color: "#9ca3af" }}>{rider.displayCode}</code>
+                                <code style={{ fontSize: 10, opacity: 0.7, color: "var(--text-secondary)" }}>{rider.displayCode}</code>
                               </div>
                             </div>
                           </div>
@@ -506,12 +384,12 @@ export function RiderSuspensionsScreen({
 
                         {/* Suspended On */}
                         <td style={{ padding: "10px 12px", borderBottom: "1px solid #1f2130" }}>
-                          <span style={{ fontSize: 12, color: "#9ca3af" }}>{susp.suspendedOn}</span>
+                          <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{susp.suspendedOn}</span>
                         </td>
 
                         {/* Ends On */}
                         <td style={{ padding: "10px 12px", borderBottom: "1px solid #1f2130" }}>
-                          <span style={{ fontSize: 12, color: "#9ca3af" }}>{susp.endsOn}</span>
+                          <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{susp.endsOn}</span>
                         </td>
 
                         {/* Actions */}
@@ -523,7 +401,7 @@ export function RiderSuspensionsScreen({
                               background: "transparent",
                               border: "none",
                               cursor: "pointer",
-                              color: "#9ca3af",
+                              color: "var(--text-secondary)",
                               padding: 4,
                               borderRadius: 6,
                               display: "inline-flex",
@@ -531,8 +409,8 @@ export function RiderSuspensionsScreen({
                               justifyContent: "center",
                               transition: "color 0.15s, background 0.15s",
                             }}
-                            onMouseEnter={(e) => { e.currentTarget.style.color = "#e5e7eb"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.color = "#9ca3af"; e.currentTarget.style.background = "transparent"; }}
+                            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text-primary)"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-secondary)"; e.currentTarget.style.background = "transparent"; }}
                           >
                             <MoreVertical size={16} />
                           </button>
@@ -547,7 +425,7 @@ export function RiderSuspensionsScreen({
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16, paddingTop: 12, borderTop: "1px solid #2a2d35" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16, paddingTop: 12, borderTop: "1px solid var(--border-color)" }}>
               <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
                 Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} of {filtered.length}
               </span>
@@ -557,9 +435,9 @@ export function RiderSuspensionsScreen({
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   style={{
-                    background: currentPage === 1 ? "#2a2d35" : "#1f2130",
-                    color: currentPage === 1 ? "#6b7280" : "#e5e7eb",
-                    border: "1px solid #2a2d35",
+                    background: currentPage === 1 ? "var(--border-color)" : "var(--bg-surface-2)",
+                    color: currentPage === 1 ? "#6b7280" : "var(--text-primary)",
+                    border: "1px solid var(--border-color)",
                     borderRadius: 6,
                     padding: "5px 10px",
                     fontSize: 12,
@@ -577,9 +455,9 @@ export function RiderSuspensionsScreen({
                     type="button"
                     onClick={() => setCurrentPage(p)}
                     style={{
-                      background: p === currentPage ? "#f59e0b" : "#1f2130",
-                      color: p === currentPage ? "#000" : "#e5e7eb",
-                      border: `1px solid ${p === currentPage ? "#f59e0b" : "#2a2d35"}`,
+                      background: p === currentPage ? "#f59e0b" : "var(--bg-surface-2)",
+                      color: p === currentPage ? "#000" : "var(--text-primary)",
+                      border: `1px solid ${p === currentPage ? "#f59e0b" : "var(--border-color)"}`,
                       borderRadius: 6,
                       padding: "5px 10px",
                       fontSize: 12,
@@ -588,7 +466,7 @@ export function RiderSuspensionsScreen({
                       transition: "all 0.15s",
                     }}
                     onMouseEnter={(e) => { if (p !== currentPage) { e.currentTarget.style.borderColor = "#f59e0b"; e.currentTarget.style.color = "#f59e0b"; } }}
-                    onMouseLeave={(e) => { if (p !== currentPage) { e.currentTarget.style.borderColor = "#2a2d35"; e.currentTarget.style.color = "#e5e7eb"; } }}
+                    onMouseLeave={(e) => { if (p !== currentPage) { e.currentTarget.style.borderColor = "var(--border-color)"; e.currentTarget.style.color = "var(--text-primary)"; } }}
                   >
                     {p}
                   </button>
@@ -598,9 +476,9 @@ export function RiderSuspensionsScreen({
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   style={{
-                    background: currentPage === totalPages ? "#2a2d35" : "#1f2130",
-                    color: currentPage === totalPages ? "#6b7280" : "#e5e7eb",
-                    border: "1px solid #2a2d35",
+                    background: currentPage === totalPages ? "var(--border-color)" : "var(--bg-surface-2)",
+                    color: currentPage === totalPages ? "#6b7280" : "var(--text-primary)",
+                    border: "1px solid var(--border-color)",
                     borderRadius: 6,
                     padding: "5px 10px",
                     fontSize: 12,
@@ -619,12 +497,10 @@ export function RiderSuspensionsScreen({
 
         {/* ── RIGHT: Detail Panel ── */}
         {selectedRider && suspDetails && (
-          <div
+          <article
+            className="admin-reference-card"
             style={{
-              background: "#1e2028",
-              borderRadius: 16,
               padding: 24,
-              border: "1px solid #2a2d35",
               position: "sticky",
               top: 24,
               maxHeight: "calc(100vh - 48px)",
@@ -641,26 +517,26 @@ export function RiderSuspensionsScreen({
                   background: "transparent",
                   border: "none",
                   cursor: "pointer",
-                  color: "#9ca3af",
+                  color: "var(--text-secondary)",
                   display: "flex",
                   alignItems: "center",
                   padding: 4,
                   borderRadius: 6,
                   transition: "color 0.15s, background 0.15s",
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = "#e5e7eb"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = "#9ca3af"; e.currentTarget.style.background = "transparent"; }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text-primary)"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-secondary)"; e.currentTarget.style.background = "transparent"; }}
               >
                 <X size={18} />
               </button>
             </div>
 
             {/* Rider Info */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16, paddingBottom: 16, borderBottom: "1px solid #2a2d35" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16, paddingBottom: 16, borderBottom: "1px solid var(--border-color)" }}>
               <Avatar name={selectedRider.user.fullName} size={40} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 700, fontSize: 14, color: "var(--text-primary)" }}>{selectedRider.user.fullName}</div>
-                <div style={{ color: "#9ca3af", fontSize: 12 }}>{selectedRider.user.phoneE164}</div>
+                <div style={{ color: "var(--text-secondary)", fontSize: 12 }}>{selectedRider.user.phoneE164}</div>
               </div>
               <button
                 type="button"
@@ -684,10 +560,10 @@ export function RiderSuspensionsScreen({
             </div>
 
             {/* Detail Rows */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20, paddingBottom: 20, borderBottom: "1px solid #2a2d35" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20, paddingBottom: 20, borderBottom: "1px solid var(--border-color)" }}>
               {/* Status */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 12, color: "#9ca3af" }}>Status</span>
+                <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Status</span>
                 <span style={{ ...getStatusStyle(suspDetails.status), borderRadius: 20, padding: "3px 10px", fontSize: 12, fontWeight: 600 }}>
                   {suspDetails.status}
                 </span>
@@ -696,7 +572,7 @@ export function RiderSuspensionsScreen({
               {/* Reason */}
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <span style={{ fontSize: 12, color: "#9ca3af" }}>Reason</span>
+                  <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Reason</span>
                   <span style={{ fontSize: 13, fontWeight: 600, textAlign: "right", maxWidth: "60%", color: "var(--text-primary)" }}>
                     {suspDetails.reason}
                   </span>
@@ -708,31 +584,31 @@ export function RiderSuspensionsScreen({
 
               {/* Duration */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 12, color: "#9ca3af" }}>Duration</span>
+                <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Duration</span>
                 <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{suspDetails.duration}</span>
               </div>
 
               {/* Suspended On */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 12, color: "#9ca3af" }}>Suspended On</span>
+                <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Suspended On</span>
                 <span style={{ fontSize: 13, color: "#d1d5db" }}>{suspDetails.suspendedOn}</span>
               </div>
 
               {/* Ends On */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 12, color: "#9ca3af" }}>Ends On</span>
+                <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Ends On</span>
                 <span style={{ fontSize: 13, color: "#d1d5db" }}>{suspDetails.endsOn}</span>
               </div>
 
               {/* Suspended By */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 12, color: "#9ca3af" }}>Suspended By</span>
+                <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Suspended By</span>
                 <span style={{ fontSize: 13, color: "#d1d5db" }}>Admin (Super Admin)</span>
               </div>
 
               {/* Evidence */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 12, color: "#9ca3af" }}>Evidence</span>
+                <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Evidence</span>
                 <button
                   type="button"
                   style={{
@@ -762,7 +638,7 @@ export function RiderSuspensionsScreen({
                 style={{
                   flex: 1,
                   background: "transparent",
-                  border: "1px solid #2a2d35",
+                  border: "1px solid var(--border-color)",
                   borderRadius: 8,
                   padding: "9px 12px",
                   color: "var(--text-primary)",
@@ -776,7 +652,7 @@ export function RiderSuspensionsScreen({
                   transition: "all 0.15s",
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#f59e0b"; e.currentTarget.style.color = "#f59e0b"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#2a2d35"; e.currentTarget.style.color = "#e5e7eb"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border-color)"; e.currentTarget.style.color = "var(--text-primary)"; }}
               >
                 <Mail size={14} />
                 Send Warning
@@ -787,7 +663,7 @@ export function RiderSuspensionsScreen({
                 style={{
                   flex: 1,
                   background: "transparent",
-                  border: "1px solid #2a2d35",
+                  border: "1px solid var(--border-color)",
                   borderRadius: 8,
                   padding: "9px 12px",
                   color: "var(--text-primary)",
@@ -801,7 +677,7 @@ export function RiderSuspensionsScreen({
                   transition: "all 0.15s",
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#f59e0b"; e.currentTarget.style.color = "#f59e0b"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#2a2d35"; e.currentTarget.style.color = "#e5e7eb"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border-color)"; e.currentTarget.style.color = "var(--text-primary)"; }}
               >
                 <ClipboardList size={14} />
                 Add Note
@@ -856,12 +732,12 @@ export function RiderSuspensionsScreen({
 
             {/* Suspension History */}
             <div>
-              <div style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)", marginBottom: 4, paddingBottom: 10, borderBottom: "1px solid #2a2d35" }}>
+              <div style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)", marginBottom: 4, paddingBottom: 10, borderBottom: "1px solid var(--border-color)" }}>
                 Suspension History
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 0, marginTop: 16, position: "relative" }}>
                 {/* Timeline line */}
-                <div style={{ position: "absolute", left: 4, top: 8, bottom: 8, width: 2, background: "#2a2d35" }} />
+                <div style={{ position: "absolute", left: 4, top: 8, bottom: 8, width: 2, background: "var(--border-color)" }} />
                 {suspensionHistory.map((h, i) => (
                   <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start", position: "relative", paddingBottom: i < suspensionHistory.length - 1 ? 20 : 0 }}>
                     <div
@@ -869,17 +745,16 @@ export function RiderSuspensionsScreen({
                         width: 10,
                         height: 10,
                         borderRadius: "50%",
-                        background: i === 0 ? "#f59e0b" : "#6b7280",
-                        border: i === 0 ? "2px solid rgba(245,158,11,0.3)" : "2px solid transparent",
+                        background: i === 0 ? "var(--accent-yellow)" : "var(--text-muted)",
+                        border: i === 0 ? "2px solid color-mix(in srgb, var(--accent-yellow) 30%, transparent)" : "2px solid transparent",
                         flexShrink: 0,
                         marginTop: 4,
                         zIndex: 1,
-                        boxShadow: i === 0 ? "0 0 8px rgba(245,158,11,0.3)" : "none",
                       }}
                     />
                     <div>
                       <div style={{ fontWeight: 600, fontSize: 13, color: "var(--text-primary)" }}>{h.event}</div>
-                      <div style={{ color: "#9ca3af", fontSize: 12 }}>{h.date}</div>
+                      <div style={{ color: "var(--text-secondary)", fontSize: 12 }}>{h.date}</div>
                       <div style={{ color: "var(--text-muted)", fontSize: 12 }}>
                         Reason: {h.reason}
                       </div>
@@ -888,7 +763,7 @@ export function RiderSuspensionsScreen({
                 ))}
               </div>
             </div>
-          </div>
+          </article>
         )}
       </div>
     </div>

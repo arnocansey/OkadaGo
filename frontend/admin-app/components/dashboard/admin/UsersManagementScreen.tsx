@@ -1,9 +1,8 @@
-import { Users, MapPin, Search } from "lucide-react";
+import { Users, MapPin, Search, Bike, User } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
-import type { PassengerRecord, RiderRecord } from "./types";
+import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { statusTone, formatDateTime } from "./utils";
-import { Bike, User } from "lucide-react";
 
 type ManagedUser = {
   id: string;
@@ -62,62 +61,58 @@ export function UsersManagementScreen({
   return (
     <div className="exact-admin-screen">
       <AdminPageHeader
-        title="Users Management"
-        subtitle="Registered passenger and rider accounts with pending vs verified counts."
+        title="Passengers"
+        subtitle="Accra passenger and rider accounts — pending vs verified counts."
       />
 
-      <section className="admin-reference-kpis">
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon green"><Users size={22} /></div>
-          <div>
-            <span>Total Users</span>
-            <strong>{totalUsers}</strong>
-            <small>{passengersCount} passengers, {ridersCount} riders</small>
-          </div>
-        </article>
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon yellow"><User size={22} /></div>
-          <div>
-            <span>Passengers</span>
-            <strong>{passengersCount}</strong>
-            <small>{passengerPendingCount} pending · {passengerVerifiedCount} verified</small>
-          </div>
-        </article>
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon green"><Bike size={22} /></div>
-          <div>
-            <span>Riders</span>
-            <strong>{ridersCount}</strong>
-            <small>{riderPendingCount} pending · {riderVerifiedCount} verified</small>
-          </div>
-        </article>
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon red"><Users size={22} /></div>
-          <div>
-            <span>Blocked Users</span>
-            <strong>{blockedUsers.length}</strong>
-            <small>Restricted access</small>
-          </div>
-        </article>
-      </section>
+      <AdminKpiRow
+        items={[
+          {
+            label: "Total Users",
+            value: totalUsers,
+            hint: `${passengersCount} passengers, ${ridersCount} riders`,
+            icon: <Users size={22} />,
+            tone: "green",
+          },
+          {
+            label: "Passengers",
+            value: passengersCount,
+            hint: `${passengerPendingCount} pending · ${passengerVerifiedCount} verified`,
+            icon: <User size={22} />,
+            tone: "yellow",
+          },
+          {
+            label: "Riders",
+            value: ridersCount,
+            hint: `${riderPendingCount} pending · ${riderVerifiedCount} verified`,
+            icon: <Bike size={22} />,
+            tone: "green",
+          },
+          {
+            label: "Blocked Users",
+            value: blockedUsers.length,
+            hint: "Restricted access",
+            icon: <Users size={22} />,
+            tone: "red",
+          },
+        ]}
+      />
 
-      {/* Search and filter */}
       <div className="admin-filter-bar">
-        <div className="admin-search-wrap">
-          <Search size={14} />
+        <label className="admin-filter-search">
+          <Search size={14} aria-hidden />
           <input
-            type="text"
-            className="admin-search-input"
+            type="search"
             placeholder="Search by name, phone, email, location..."
             value={adminSearchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
           />
-        </div>
+        </label>
         {(["all", "riders", "customers"] as const).map((view) => (
           <button
             key={view}
             type="button"
-            className={`admin-filter-pill ${userTypeView === view ? "active" : ""}`}
+            className={`admin-tab${userTypeView === view ? " active" : ""}`}
             onClick={() => onTypeViewChange(view)}
           >
             {view === "all" ? "All Users" : view === "riders" ? "Riders" : "Passengers"}
@@ -125,7 +120,7 @@ export function UsersManagementScreen({
         ))}
       </div>
 
-      <div className="admin-screen-grid-2">
+      <div className="admin-overview-split">
         <article className="admin-reference-card">
           <div className="admin-reference-cardhead">
             <div>
@@ -186,7 +181,7 @@ export function UsersManagementScreen({
             <div className="admin-reference-cardhead">
               <div>
                 <h3>Location Breakdown</h3>
-                <p>User distribution by city</p>
+                <p>User distribution across Accra zones</p>
               </div>
             </div>
             {userLocationSnapshot.length === 0 ? (
@@ -204,7 +199,7 @@ export function UsersManagementScreen({
                         style={{
                           height: 6,
                           width: `${Math.max(10, (count / userLocationMax) * 80)}px`,
-                          background: "var(--color-primary, #111827)",
+                          background: "var(--accent-orange)",
                           borderRadius: 3,
                           display: "inline-block",
                           marginRight: 8

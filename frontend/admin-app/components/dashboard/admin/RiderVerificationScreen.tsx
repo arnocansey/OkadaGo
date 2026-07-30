@@ -29,6 +29,7 @@ import type { RiderRecord } from "./types";
 import { formatDateTime, statusTone } from "./utils";
 import { useAdminToast } from "./AdminToast";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
+import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
 import { SkeletonKPI, SkeletonTable } from "./AdminSkeleton";
 
@@ -85,7 +86,7 @@ export function RiderVerificationScreen({
   dataLoading = false,
 }: RiderVerificationScreenProps) {
   const { addToast } = useAdminToast();
-  const { isMobile, isTablet } = useBreakpoint();
+  const { isMobile } = useBreakpoint();
 
   const [activeSubTab, setActiveSubTab] = useState<SubTab>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -96,7 +97,7 @@ export function RiderVerificationScreen({
 
   if (dataLoading) {
     return (
-      <div style={{ padding: 32, background: "var(--bg-primary)", minHeight: "100vh", display: "flex", flexDirection: "column", gap: 20 }}>
+      <div className="exact-admin-screen" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
         <SkeletonKPI count={4} />
         <SkeletonTable rows={6} cols={5} />
       </div>
@@ -133,50 +134,6 @@ export function RiderVerificationScreen({
   const selectedRow =
     selectedApplication !== null ? riderVerificationRows[selectedApplication] : null;
 
-  /* ── KPI config ── */
-  const kpis = [
-    {
-      label: "Pending",
-      value: riderVerificationStats.pending,
-      sub: "Awaiting review",
-      color: "var(--accent-yellow)",
-      bg: "var(--accent-yellow-light)",
-      icon: Clock,
-    },
-    {
-      label: "Under Review",
-      value: riderVerificationStats.underReview,
-      sub: "In verification",
-      color: "var(--accent-orange)",
-      bg: "color-mix(in srgb, var(--accent-orange) 15%, transparent)",
-      icon: Eye,
-    },
-    {
-      label: "Approved",
-      value: riderVerificationStats.approved,
-      sub: "Fully verified",
-      color: "var(--color-success)",
-      bg: "color-mix(in srgb, var(--color-success) 15%, transparent)",
-      icon: CheckCircle,
-    },
-    {
-      label: "Rejected",
-      value: riderVerificationStats.rejected,
-      sub: "Declined",
-      color: "var(--color-danger)",
-      bg: "color-mix(in srgb, var(--color-danger) 15%, transparent)",
-      icon: XCircle,
-    },
-    {
-      label: "Applied Today",
-      value: riderVerificationStats.today,
-      sub: "New applicants",
-      color: "var(--text-secondary)",
-      bg: "color-mix(in srgb, var(--text-secondary) 15%, transparent)",
-      icon: BadgeCheck,
-    },
-  ];
-
   /* ── action handlers ── */
   const handleVerify = (riderId: string, riderName: string) => {
     if (onRiderApproval) {
@@ -211,57 +168,7 @@ export function RiderVerificationScreen({
 
   const S = {
     root: {
-      background: "var(--bg-primary)",
-      minHeight: "100vh",
-      padding: 32,
-      fontFamily: "var(--font-family)",
-      color: "var(--text-primary)",
       position: "relative" as const,
-    } as React.CSSProperties,
-
-    /* KPI row */
-    kpiRow: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-      gap: 16,
-      marginBottom: 28,
-    } as React.CSSProperties,
-    kpi: (c: string, bg: string): React.CSSProperties => ({
-      background: bg,
-      border: `1px solid ${c}22`,
-      borderRadius: 14,
-      padding: "20px 22px",
-      display: "flex",
-      alignItems: "center",
-      gap: 16,
-      transition: "transform .15s, box-shadow .15s",
-    }),
-    kpiIcon: (c: string): React.CSSProperties => ({
-      width: 44,
-      height: 44,
-      borderRadius: 12,
-      background: `${c}22`,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      flexShrink: 0,
-    }),
-    kpiValue: {
-      fontSize: 26,
-      fontWeight: 700,
-      lineHeight: 1.1,
-    } as React.CSSProperties,
-    kpiLabel: {
-      fontSize: 12,
-      color: "var(--text-secondary)",
-      textTransform: "uppercase" as const,
-      letterSpacing: 0.6,
-      marginTop: 2,
-    } as React.CSSProperties,
-    kpiSub: {
-      fontSize: 11,
-      color: "var(--text-secondary)",
-      marginTop: 1,
     } as React.CSSProperties,
 
     /* card shell */
@@ -551,12 +458,12 @@ export function RiderVerificationScreen({
       width: 42,
       height: 42,
       borderRadius: 10,
-      background: "rgba(6,182,212,0.1)",
+      background: "var(--accent-soft)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       flexShrink: 0,
-      color: "#06b6d4",
+      color: "var(--accent-orange)",
     } as React.CSSProperties,
     actionRow: {
       display: "flex",
@@ -575,27 +482,18 @@ export function RiderVerificationScreen({
     <div className="exact-admin-screen" style={S.root}>
       <AdminPageHeader
         title="Rider Verification"
-        subtitle="Review rider approval readiness using live profile, vehicle, zone, and account data."
+        subtitle="Approve Okada riders from live profile, vehicle, and zone data."
       />
 
-      {/* ── KPI Cards ── */}
-      <div style={{ ...S.kpiRow, gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : isTablet ? "repeat(3, 1fr)" : S.kpiRow.gridTemplateColumns }}>
-        {kpis.map((k) => {
-          const Icon = k.icon;
-          return (
-            <div key={k.label} style={S.kpi(k.color, k.bg)}>
-              <div style={S.kpiIcon(k.color)}>
-                <Icon size={22} color={k.color} />
-              </div>
-              <div>
-                <div style={S.kpiLabel}>{k.label}</div>
-                <div style={{ ...S.kpiValue, color: k.color }}>{k.value}</div>
-                <div style={S.kpiSub}>{k.sub}</div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <AdminKpiRow
+        items={[
+          { label: "Pending", value: riderVerificationStats.pending, hint: "Awaiting review", icon: <Clock size={22} />, tone: "yellow" },
+          { label: "Under Review", value: riderVerificationStats.underReview, hint: "In verification", icon: <Eye size={22} />, tone: "yellow" },
+          { label: "Approved", value: riderVerificationStats.approved, hint: "Fully verified", icon: <CheckCircle size={22} />, tone: "green" },
+          { label: "Rejected", value: riderVerificationStats.rejected, hint: "Declined", icon: <XCircle size={22} />, tone: "red" },
+          { label: "Applied Today", value: riderVerificationStats.today, hint: "New applicants", icon: <BadgeCheck size={22} />, tone: "neutral" }
+        ]}
+      />
 
       {/* ── Main Card ── */}
       <div style={S.card}>

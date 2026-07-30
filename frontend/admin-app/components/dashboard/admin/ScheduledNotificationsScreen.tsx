@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Bell, Send, Clock, XCircle, RefreshCw } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
+import { AdminKpiRow } from "./ui/AdminKpiRow";
 import type { OpsJobStatus, ScheduledBroadcastRecord } from "./types";
 import { formatDateTime } from "./utils";
 
@@ -54,47 +55,23 @@ export function ScheduledNotificationsScreen({
   return (
     <div className="exact-admin-screen">
       <AdminPageHeader
-        title="Notifications"
-        subtitle="Schedule broadcast messages to riders, passengers, or a service zone."
+        title="System Alerts & Broadcasts"
+        subtitle="Schedule push alerts and broadcasts for Accra riders and passengers."
       />
-      <section className="admin-reference-kpis">
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon yellow"><Bell size={22} /></div>
-          <div>
-            <span>Total Notifications</span>
-            <strong>{notifications.length}</strong>
-            <small>All scheduled messages</small>
-          </div>
-        </article>
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon yellow"><Clock size={22} /></div>
-          <div>
-            <span>Pending</span>
-            <strong>{pendingCount}</strong>
-            <small>Awaiting delivery</small>
-          </div>
-        </article>
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon green"><Send size={22} /></div>
-          <div>
-            <span>Sent</span>
-            <strong>{sentCount}</strong>
-            <small>Successfully delivered</small>
-          </div>
-        </article>
-        <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon red"><XCircle size={22} /></div>
-          <div>
-            <span>Failed</span>
-            <strong>{failedCount}</strong>
-            <small>
-              {lastFinished
-                ? `Worker last ran ${formatDateTime(lastFinished)}`
-                : "Delivery errors"}
-            </small>
-          </div>
-        </article>
-      </section>
+      <AdminKpiRow
+        items={[
+          { label: "Total Notifications", value: notifications.length, hint: "All scheduled messages", icon: <Bell size={22} />, tone: "yellow" },
+          { label: "Pending", value: pendingCount, hint: "Awaiting delivery", icon: <Clock size={22} />, tone: "yellow" },
+          { label: "Sent", value: sentCount, hint: "Successfully delivered", icon: <Send size={22} />, tone: "green" },
+          {
+            label: "Failed",
+            value: failedCount,
+            hint: lastFinished ? `Worker last ran ${formatDateTime(lastFinished)}` : "Delivery errors",
+            icon: <XCircle size={22} />,
+            tone: "red",
+          },
+        ]}
+      />
 
       {opsJobStatus?.broadcasts ? (
         <article className="admin-reference-card" style={{ marginBottom: 16 }}>
@@ -114,7 +91,7 @@ export function ScheduledNotificationsScreen({
         </article>
       ) : null}
 
-      <div className="admin-screen-grid-2">
+      <div className="admin-overview-split">
         <article className="admin-reference-card">
           <div className="admin-reference-cardhead">
             <div><h3>Schedule New Notification</h3><p>Queue a push notification for future delivery</p></div>
@@ -182,8 +159,8 @@ export function ScheduledNotificationsScreen({
             </div>
             <button
               type="button"
-              className="admin-select-sm"
-              style={{ alignSelf: "flex-start", background: "var(--okada-yellow, #f7c600)", color: "#0a0b0d", fontWeight: 600, border: "none", padding: "8px 20px", borderRadius: 8, cursor: isMutating || !title.trim() || !body.trim() || !scheduledAt ? "not-allowed" : "pointer", opacity: isMutating || !title.trim() || !body.trim() || !scheduledAt ? 0.5 : 1 }}
+              className="admin-btn-primary"
+              style={{ alignSelf: "flex-start", opacity: isMutating || !title.trim() || !body.trim() || !scheduledAt ? 0.5 : 1, cursor: isMutating || !title.trim() || !body.trim() || !scheduledAt ? "not-allowed" : "pointer" }}
               onClick={handleSchedule}
               disabled={isMutating || !title.trim() || !body.trim() || !scheduledAt}
             >

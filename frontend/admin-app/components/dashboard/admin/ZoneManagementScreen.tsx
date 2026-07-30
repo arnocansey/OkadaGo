@@ -1,4 +1,4 @@
-import { Globe, DollarSign, MapPin, Settings } from "lucide-react";
+import { Globe, MapPin } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
@@ -59,12 +59,14 @@ export function ZoneManagementScreen({
   return (
     <div className="exact-admin-screen">
       <AdminPageHeader
-        title="Service zones"
-        subtitle="Toggle zone availability and ride/delivery dispatch flags."
+        title="Service Zones"
+        subtitle="Toggle Accra service zones and ride/delivery dispatch coverage."
       />
-      <section className="admin-reference-kpis">
+      <section className="admin-kpi-grid">
         <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon green"><Globe size={22} /></div>
+          <div className="admin-reference-kpi-icon green">
+            <Globe size={22} />
+          </div>
           <div>
             <span>Total Zones</span>
             <strong>{zones.length}</strong>
@@ -72,7 +74,9 @@ export function ZoneManagementScreen({
           </div>
         </article>
         <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon yellow"><Globe size={22} /></div>
+          <div className="admin-reference-kpi-icon yellow">
+            <Globe size={22} />
+          </div>
           <div>
             <span>Active Zones</span>
             <strong>{activeZones.length}</strong>
@@ -80,7 +84,9 @@ export function ZoneManagementScreen({
           </div>
         </article>
         <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon red"><Globe size={22} /></div>
+          <div className="admin-reference-kpi-icon red">
+            <Globe size={22} />
+          </div>
           <div>
             <span>Inactive Zones</span>
             <strong>{inactiveZones.length}</strong>
@@ -88,156 +94,167 @@ export function ZoneManagementScreen({
           </div>
         </article>
         <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon yellow"><MapPin size={22} /></div>
+          <div className="admin-reference-kpi-icon yellow">
+            <MapPin size={22} />
+          </div>
           <div>
             <span>Zones with Riders</span>
-            <strong>
-              {zones.filter((z) => (ridersPerZone[z.id] ?? 0) > 0).length}
-            </strong>
-            <small>Currently occupied</small>
+            <strong>{zones.filter((z) => (ridersPerZone[z.id] ?? 0) > 0).length}</strong>
+            <small>Currently occupied · {adminCurrency}</small>
           </div>
         </article>
       </section>
 
-      <article className="admin-reference-card" style={{ marginBottom: 16 }}>
-        <div className="admin-reference-cardhead">
-          <div>
-            <h3>Service Zone Directory</h3>
-            <p>All configured service zones with pricing parameters and activity levels.</p>
+      {zones.length === 0 ? (
+        <EmptyCard
+          title="No service zones."
+          body="Service zones need to be created from the backend API."
+        />
+      ) : (
+        <>
+          <div className="admin-zone-grid">
+            {zones.map((zone) => (
+              <article key={zone.id} className={`admin-zone-card ${zone.isActive ? "" : "inactive"}`}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "flex-start" }}>
+                  <div>
+                    <h4>{zone.name}</h4>
+                    <p>
+                      {zone.city} · {zone.currency}
+                    </p>
+                  </div>
+                  <em className={`admin-reference-tag ${zone.isActive ? "success" : "neutral"}`}>
+                    {zone.isActive ? "Active" : "Inactive"}
+                  </em>
+                </div>
+                <div className="admin-zone-card-stats">
+                  <div>
+                    <span>Riders</span>
+                    <strong>{ridersPerZone[zone.id] ?? 0}</strong>
+                  </div>
+                  <div>
+                    <span>Rides</span>
+                    <strong>{ridesPerZone[zone.id] ?? 0}</strong>
+                  </div>
+                  <div>
+                    <span>Base Fare</span>
+                    <strong>{formatMoney(zone.currency, parseNumber(zone.baseFare))}</strong>
+                  </div>
+                  <div>
+                    <span>Min Fare</span>
+                    <strong>{formatMoney(zone.currency, parseNumber(zone.minimumFare))}</strong>
+                  </div>
+                </div>
+                <div className="admin-action-row" style={{ flexWrap: "wrap" }}>
+                  <ZoneToggle
+                    label="Zone"
+                    active={zone.isActive}
+                    disabled={!onZoneUpdate || isMutating}
+                    onToggle={() => onZoneUpdate?.(zone.id, { isActive: !zone.isActive })}
+                  />
+                  <ZoneToggle
+                    label="Rides"
+                    active={zone.ridesEnabled ?? true}
+                    disabled={!onZoneUpdate || isMutating}
+                    onToggle={() => onZoneUpdate?.(zone.id, { ridesEnabled: !(zone.ridesEnabled ?? true) })}
+                  />
+                  <ZoneToggle
+                    label="Delivery"
+                    active={zone.deliveriesEnabled ?? true}
+                    disabled={!onZoneUpdate || isMutating}
+                    onToggle={() =>
+                      onZoneUpdate?.(zone.id, { deliveriesEnabled: !(zone.deliveriesEnabled ?? true) })
+                    }
+                  />
+                </div>
+              </article>
+            ))}
           </div>
-        </div>
-        {zones.length === 0 ? (
-          <EmptyCard
-            title="No service zones."
-            body="Service zones need to be created from the backend API."
-          />
-        ) : (
-          <div className="admin-table-wrapper">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Zone Name</th>
-                  <th>City</th>
-                  <th>Currency</th>
-                  <th>Base Fare</th>
-                  <th>Per KM</th>
-                  <th>Per Min</th>
-                  <th>Min Fare</th>
-                  <th>Cancel Fee</th>
-                  <th>Waiting Fee</th>
-                  <th>Active Riders</th>
-                  <th>Total Rides</th>
-                  <th>Status</th>
-                  <th>Rides Module</th>
-                  <th>Delivery Module</th>
-                </tr>
-              </thead>
-              <tbody>
-                {zones.map((zone) => (
-                  <tr key={zone.id}>
-                    <td><strong>{zone.name}</strong></td>
-                    <td>{zone.city}</td>
-                    <td><small>{zone.currency}</small></td>
-                    <td>{formatMoney(zone.currency, parseNumber(zone.baseFare))}</td>
-                    <td>{formatMoney(zone.currency, parseNumber(zone.perKmFee))}</td>
-                    <td>{formatMoney(zone.currency, parseNumber(zone.perMinuteFee))}</td>
-                    <td>{formatMoney(zone.currency, parseNumber(zone.minimumFare))}</td>
-                    <td>{formatMoney(zone.currency, parseNumber(zone.cancellationFee))}</td>
-                    <td>{formatMoney(zone.currency, parseNumber(zone.waitingFeePerMin))}/min</td>
-                    <td>
-                      <strong>{ridersPerZone[zone.id] ?? 0}</strong>
-                    </td>
-                    <td>{ridesPerZone[zone.id] ?? 0}</td>
-                    <td>
-                      <ZoneToggle
-                        label="Zone"
-                        active={zone.isActive}
-                        disabled={!onZoneUpdate || isMutating}
-                        onToggle={() => onZoneUpdate?.(zone.id, { isActive: !zone.isActive })}
-                      />
-                    </td>
-                    <td>
-                      <ZoneToggle
-                        label="Rides"
-                        active={zone.ridesEnabled ?? true}
-                        disabled={!onZoneUpdate || isMutating}
-                        onToggle={() => onZoneUpdate?.(zone.id, { ridesEnabled: !(zone.ridesEnabled ?? true) })}
-                      />
-                    </td>
-                    <td>
-                      <ZoneToggle
-                        label="Delivery"
-                        active={zone.deliveriesEnabled ?? true}
-                        disabled={!onZoneUpdate || isMutating}
-                        onToggle={() =>
-                          onZoneUpdate?.(zone.id, { deliveriesEnabled: !(zone.deliveriesEnabled ?? true) })
-                        }
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </article>
 
-      {/* Zone cards for quick view */}
-      <div className="admin-zone-cards">
-        {zones.map((zone) => (
-          <article key={zone.id} className={`admin-zone-card ${zone.isActive ? "" : "inactive"}`}>
-            <div className="admin-zone-card-head">
+          <article className="admin-reference-card">
+            <div className="admin-reference-cardhead">
               <div>
-                <strong>{zone.name}</strong>
-                <small>{zone.city}</small>
-              </div>
-              <em className={`admin-reference-tag ${zone.isActive ? "success" : "neutral"}`}>
-                {zone.isActive ? "Active" : "Inactive"}
-              </em>
-            </div>
-            <div className="admin-zone-card-stats">
-              <div>
-                <span>Riders</span>
-                <strong>{ridersPerZone[zone.id] ?? 0}</strong>
-              </div>
-              <div>
-                <span>Rides</span>
-                <strong>{ridesPerZone[zone.id] ?? 0}</strong>
-              </div>
-              <div>
-                <span>Base Fare</span>
-                <strong>{formatMoney(zone.currency, parseNumber(zone.baseFare))}</strong>
-              </div>
-              <div>
-                <span>Min Fare</span>
-                <strong>{formatMoney(zone.currency, parseNumber(zone.minimumFare))}</strong>
+                <h3>Pricing directory</h3>
+                <p>Full fare parameters for every configured zone.</p>
               </div>
             </div>
-            <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
-              <ZoneToggle
-                label="Zone"
-                active={zone.isActive}
-                disabled={!onZoneUpdate || isMutating}
-                onToggle={() => onZoneUpdate?.(zone.id, { isActive: !zone.isActive })}
-              />
-              <ZoneToggle
-                label="Rides"
-                active={zone.ridesEnabled ?? true}
-                disabled={!onZoneUpdate || isMutating}
-                onToggle={() => onZoneUpdate?.(zone.id, { ridesEnabled: !(zone.ridesEnabled ?? true) })}
-              />
-              <ZoneToggle
-                label="Delivery"
-                active={zone.deliveriesEnabled ?? true}
-                disabled={!onZoneUpdate || isMutating}
-                onToggle={() =>
-                  onZoneUpdate?.(zone.id, { deliveriesEnabled: !(zone.deliveriesEnabled ?? true) })
-                }
-              />
+            <div className="admin-table-wrapper">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Zone Name</th>
+                    <th>City</th>
+                    <th>Currency</th>
+                    <th>Base Fare</th>
+                    <th>Per KM</th>
+                    <th>Per Min</th>
+                    <th>Min Fare</th>
+                    <th>Cancel Fee</th>
+                    <th>Waiting Fee</th>
+                    <th>Active Riders</th>
+                    <th>Total Rides</th>
+                    <th>Status</th>
+                    <th>Rides Module</th>
+                    <th>Delivery Module</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {zones.map((zone) => (
+                    <tr key={`dir-${zone.id}`}>
+                      <td>
+                        <strong>{zone.name}</strong>
+                      </td>
+                      <td>{zone.city}</td>
+                      <td>
+                        <small>{zone.currency}</small>
+                      </td>
+                      <td>{formatMoney(zone.currency, parseNumber(zone.baseFare))}</td>
+                      <td>{formatMoney(zone.currency, parseNumber(zone.perKmFee))}</td>
+                      <td>{formatMoney(zone.currency, parseNumber(zone.perMinuteFee))}</td>
+                      <td>{formatMoney(zone.currency, parseNumber(zone.minimumFare))}</td>
+                      <td>{formatMoney(zone.currency, parseNumber(zone.cancellationFee))}</td>
+                      <td>{formatMoney(zone.currency, parseNumber(zone.waitingFeePerMin))}/min</td>
+                      <td>
+                        <strong>{ridersPerZone[zone.id] ?? 0}</strong>
+                      </td>
+                      <td>{ridesPerZone[zone.id] ?? 0}</td>
+                      <td>
+                        <ZoneToggle
+                          label="Zone"
+                          active={zone.isActive}
+                          disabled={!onZoneUpdate || isMutating}
+                          onToggle={() => onZoneUpdate?.(zone.id, { isActive: !zone.isActive })}
+                        />
+                      </td>
+                      <td>
+                        <ZoneToggle
+                          label="Rides"
+                          active={zone.ridesEnabled ?? true}
+                          disabled={!onZoneUpdate || isMutating}
+                          onToggle={() =>
+                            onZoneUpdate?.(zone.id, { ridesEnabled: !(zone.ridesEnabled ?? true) })
+                          }
+                        />
+                      </td>
+                      <td>
+                        <ZoneToggle
+                          label="Delivery"
+                          active={zone.deliveriesEnabled ?? true}
+                          disabled={!onZoneUpdate || isMutating}
+                          onToggle={() =>
+                            onZoneUpdate?.(zone.id, {
+                              deliveriesEnabled: !(zone.deliveriesEnabled ?? true)
+                            })
+                          }
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </article>
-        ))}
-      </div>
+        </>
+      )}
     </div>
   );
 }

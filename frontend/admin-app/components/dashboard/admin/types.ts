@@ -206,7 +206,7 @@ export type AdminNavItem = {
   href: string;
   icon: typeof LayoutDashboard;
   screen: AdminConsoleScreen;
-  group: "main" | "finance" | "system";
+  group: "home" | "operations" | "people" | "management" | "system" | "main" | "finance";
   hint: string;
   badge?: string;
   children?: Array<{

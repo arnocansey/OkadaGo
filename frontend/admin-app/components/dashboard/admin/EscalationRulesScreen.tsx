@@ -68,7 +68,7 @@ const EscalationRulesScreen: FC<EscalationRulesScreenProps> = ({
     <div className="exact-admin-screen">
       <AdminPageHeader
         title="Escalation Rules"
-        subtitle="Automate how long tickets wait before escalating to the next ops tier."
+        subtitle="Ticket escalation paths and SLA thresholds for Accra ops."
         actions={
           <button type="button" className="admin-btn-primary" onClick={() => setShowForm((v) => !v)}>
             {showForm ? "Close form" : "Create Rule"}
@@ -132,7 +132,7 @@ const EscalationRulesScreen: FC<EscalationRulesScreenProps> = ({
         </article>
       ) : null}
 
-      <div className="admin-screen-grid-2">
+      <div className="admin-overview-split">
         <article className="admin-reference-card">
           <div className="admin-reference-cardhead">
             <div>
@@ -197,27 +197,25 @@ const EscalationRulesScreen: FC<EscalationRulesScreenProps> = ({
           )}
         </article>
 
-        <aside className="admin-sidebar-panel">
-          <article className="admin-reference-card">
-            <div className="admin-reference-cardhead">
-              <div>
-                <h3>Suggested timeline</h3>
-                <p>Reference SLA path</p>
-              </div>
+        <article className="admin-reference-card">
+          <div className="admin-reference-cardhead">
+            <div>
+              <h3>Suggested timeline</h3>
+              <p>Reference SLA path</p>
             </div>
-            <ul className="admin-summary-list">
-              {TIMELINE_STEPS.map((step) => (
-                <li key={step.time}>
-                  <span>
-                    <strong>{step.time}</strong> · {step.event}
-                    <br />
-                    <small>{step.detail}</small>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </article>
-        </aside>
+          </div>
+          <ul className="admin-summary-list">
+            {TIMELINE_STEPS.map((step) => (
+              <li key={step.time}>
+                <span>
+                  <strong>{step.time}</strong> · {step.event}
+                  <br />
+                  <small>{step.detail}</small>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </article>
       </div>
     </div>
   );

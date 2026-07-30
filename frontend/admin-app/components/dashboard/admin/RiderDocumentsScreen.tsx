@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { ClipboardList, CheckCircle, AlertTriangle, XCircle, Search } from "lucide-react";
 import { useAdminToast } from "./AdminToast";
 import { EmptyCard } from "./EmptyCard";
-import { useBreakpoint } from "../../../hooks/use-breakpoint";
 import { SkeletonKPI, SkeletonTable } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
+import { AdminKpiRow } from "./ui/AdminKpiRow";
 
 const DOCUMENT_TABS = [
   "All",
@@ -54,7 +55,6 @@ export function RiderDocumentsScreen({
   dataLoading = false,
 }: RiderDocumentsScreenProps) {
   const { addToast } = useAdminToast();
-  const { isMobile, isTablet } = useBreakpoint();
   const [activeTab, setActiveTab] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -63,7 +63,7 @@ export function RiderDocumentsScreen({
 
   if (dataLoading) {
     return (
-      <div style={{ padding: isMobile ? "16px 12px" : "32px", minHeight: "100vh", display: "flex", flexDirection: "column", gap: 20 }}>
+      <div className="exact-admin-screen">
         <SkeletonKPI count={5} />
         <SkeletonTable rows={5} cols={5} />
       </div>
@@ -92,99 +92,56 @@ export function RiderDocumentsScreen({
     safePage * ITEMS_PER_PAGE
   );
 
-  const kpiCards = [
-    {
-      label: "Total Documents",
-      value: riderDocumentStats.total,
-      icon: "\u{1F4CB}",
-      color: "var(--accent-orange)",
-      bg: "var(--accent-yellow-light)",
-    },
-    {
-      label: "Compliant",
-      value: riderDocumentStats.compliant,
-      icon: "\u2705",
-      color: "#22c55e",
-      bg: "rgba(34,197,94,0.12)",
-    },
-    {
-      label: "Expiring Soon",
-      value: riderDocumentStats.expiringSoon,
-      icon: "\u26A0\uFE0F",
-      color: "#f59e0b",
-      bg: "rgba(245,158,11,0.12)",
-    },
-    {
-      label: "Expired",
-      value: riderDocumentStats.expired,
-      icon: "\u274C",
-      color: "#ef4444",
-      bg: "rgba(239,68,68,0.12)",
-    },
-    {
-      label: "Missing",
-      value: riderDocumentStats.missing,
-      icon: "\u{1F50D}",
-      color: "#f87171",
-      bg: "rgba(248,113,113,0.12)",
-    },
-  ];
-
   return (
-    <div className="exact-admin-screen" style={{ ...styles.container, padding: isMobile ? "16px 12px" : styles.container.padding }}>
+    <div className="exact-admin-screen">
       <AdminPageHeader
         title="Rider Documents"
-        subtitle="Track rider document readiness and missing operational requirements from live records."
+        subtitle="Accra licences, national IDs, and expiry readiness for Ghana ops."
       />
 
-      {/* KPI Cards */}
-      <div style={{ ...styles.kpiGrid, gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : isTablet ? "repeat(3, 1fr)" : styles.kpiGrid.gridTemplateColumns }}>
-        {kpiCards.map((kpi) => (
-          <div key={kpi.label} style={styles.kpiCard}>
-            <div
-              style={{
-                ...styles.kpiIcon,
-                background: kpi.bg,
-                color: kpi.color,
-              }}
-            >
-              {kpi.icon}
-            </div>
-            <div style={styles.kpiContent}>
-              <span style={styles.kpiLabel}>{kpi.label}</span>
-              <strong style={styles.kpiValue}>{kpi.value}</strong>
-            </div>
-          </div>
-        ))}
-      </div>
+      <AdminKpiRow
+        items={[
+          {
+            label: "Total Documents",
+            value: riderDocumentStats.total,
+            hint: "All rider files",
+            icon: <ClipboardList size={22} />,
+            tone: "yellow",
+          },
+          {
+            label: "Compliant",
+            value: riderDocumentStats.compliant,
+            hint: "Valid for Accra ops",
+            icon: <CheckCircle size={22} />,
+            tone: "green",
+          },
+          {
+            label: "Expiring Soon",
+            value: riderDocumentStats.expiringSoon,
+            hint: "Renewal needed",
+            icon: <AlertTriangle size={22} />,
+            tone: "yellow",
+          },
+          {
+            label: "Expired",
+            value: riderDocumentStats.expired,
+            hint: `${riderDocumentStats.missing} missing`,
+            icon: <XCircle size={22} />,
+            tone: "red",
+          },
+        ]}
+      />
 
-      {/* Tabs */}
-      <div style={{ ...styles.tabBar, overflowX: "auto" }}>
+      <div className="admin-tabs" style={{ overflowX: "auto" }}>
         {DOCUMENT_TABS.map((tab) => (
           <button
             key={tab}
+            type="button"
+            className={`admin-tab${activeTab === tab ? " active" : ""}`}
             onClick={() => {
               setActiveTab(tab);
               setCurrentPage(1);
               addToast(`Filtered to ${tab} documents`);
-            }}
-            style={{
-              ...styles.tab,
-              ...(activeTab === tab ? styles.tabActive : {}),
-            }}
-            onMouseEnter={(e) => {
-              if (activeTab !== tab) {
-                (e.currentTarget as HTMLButtonElement).style.background =
-                  "rgba(255,255,255,0.06)";
-                (e.currentTarget as HTMLButtonElement).style.color = "#e2e8f0";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (activeTab !== tab) {
-                (e.currentTarget as HTMLButtonElement).style.background =
-                  "transparent";
-                (e.currentTarget as HTMLButtonElement).style.color = "#94a3b8";
-              }
             }}
           >
             {tab}
@@ -192,62 +149,47 @@ export function RiderDocumentsScreen({
         ))}
       </div>
 
-      {/* Filters */}
-      <div style={styles.filterRow}>
-        <div style={styles.searchWrapper}>
-          <span style={styles.searchIcon}>{"\u{1F50D}"}</span>
+      <div className="admin-filter-bar">
+        <label className="admin-filter-search">
+          <Search size={14} aria-hidden />
           <input
-            type="text"
+            type="search"
             placeholder="Search by name, code, phone, or doc number..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
               setCurrentPage(1);
             }}
-            style={styles.searchInput}
-            onFocus={(e) => {
-              (e.currentTarget as HTMLInputElement).style.borderColor =
-                "var(--accent-orange)";
-            }}
-            onBlur={(e) => {
-              (e.currentTarget as HTMLInputElement).style.borderColor =
-                "rgba(255,255,255,0.08)";
-            }}
           />
-        </div>
-        <div style={styles.filterGroup}>
-          <label style={styles.filterLabel}>Status:</label>
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setCurrentPage(1);
-              addToast(`Status filter: ${e.target.value}`);
-            }}
-            style={styles.select}
-          >
-            {STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div style={styles.resultCount}>
-          <span style={styles.resultText}>
-            {filtered.length} document{filtered.length !== 1 ? "s" : ""} found
-          </span>
-        </div>
+        </label>
+        <select
+          className="admin-select-sm"
+          value={statusFilter}
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
+            setCurrentPage(1);
+            addToast(`Status filter: ${e.target.value}`);
+          }}
+        >
+          {STATUS_OPTIONS.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+        <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+          {filtered.length} document{filtered.length !== 1 ? "s" : ""} found
+        </span>
       </div>
 
       {/* Table */}
       {filtered.length === 0 ? (
         <EmptyCard
           title="No document records."
-          body="No riders match your current filters. Try adjusting your search or filters."
+          body="No Accra riders match your current filters. Try adjusting your search or filters."
         />
       ) : (
-        <>
+        <article className="admin-reference-card">
           <div style={styles.tableWrapper}>
             <table style={styles.table}>
               <thead>
@@ -418,20 +360,13 @@ export function RiderDocumentsScreen({
               Next {"\u2192"}
             </button>
           </div>
-        </>
+        </article>
       )}
     </div>
   );
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  container: {
-    padding: "32px",
-    minHeight: "100vh",
-    background: "var(--bg-primary)",
-    color: "var(--text-primary)",
-    fontFamily: "var(--font-family)",
-  },
   kpiGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(5, 1fr)",

@@ -42,8 +42,31 @@ export function AuditLogsScreen({ auditLogs, totalAdmins }: AuditLogsScreenProps
   return (
     <div className="exact-admin-screen">
       <AdminPageHeader
-        title="Audit Logs"
-        subtitle="Live admin actions from the platform audit trail."
+        title="Audit Trail"
+        subtitle="OkadaGo Accra operator actions — who changed what across Ghana ops."
+        actions={
+          <div className="admin-screen-toolbar">
+            <label className="admin-filter-search">
+              <Search size={16} aria-hidden />
+              <input
+                type="search"
+                placeholder="Search actions, entities, actors…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </label>
+            <select
+              className="admin-select-sm"
+              value={entityFilter}
+              onChange={(e) => setEntityFilter(e.target.value)}
+            >
+              <option value="">All entities</option>
+              {entities.map((entity) => (
+                <option key={entity} value={entity}>{entity}</option>
+              ))}
+            </select>
+          </div>
+        }
       />
 
       <AdminKpiRow
@@ -55,28 +78,7 @@ export function AuditLogsScreen({ auditLogs, totalAdmins }: AuditLogsScreenProps
         ]}
       />
 
-      <div className="admin-filter-bar">
-        <Search size={14} />
-        <input
-          type="text"
-          className="admin-search-input"
-          placeholder="Search actions, entities, actors..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <select
-          className="admin-select-sm"
-          value={entityFilter}
-          onChange={(e) => setEntityFilter(e.target.value)}
-        >
-          <option value="">All entities</option>
-          {entities.map((entity) => (
-            <option key={entity} value={entity}>{entity}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className="admin-screen-grid-2">
+      <div className="admin-overview-split">
         <article className="admin-reference-card">
           <div className="admin-reference-cardhead">
             <div>
@@ -87,7 +89,7 @@ export function AuditLogsScreen({ auditLogs, totalAdmins }: AuditLogsScreenProps
           {filtered.length === 0 ? (
             <EmptyCard
               title="No audit events yet."
-              body="Admin actions will appear here as operators approve riders, review payouts, and resolve incidents."
+              body="Admin actions will appear here as operators approve riders, review payouts, and resolve Accra incidents."
             />
           ) : (
             <div className="admin-table-wrapper">

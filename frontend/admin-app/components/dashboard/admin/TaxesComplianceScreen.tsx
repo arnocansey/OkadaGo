@@ -22,7 +22,7 @@ export function TaxesComplianceScreen({ dataLoading = false }: TaxesComplianceSc
   if (dataLoading) {
     return (
       <div className="exact-admin-screen">
-        <EmptyCard title="Loading taxes & compliance…" body="" />
+        <EmptyCard title="Taxes & Compliance" body="" />
       </div>
     );
   }
@@ -31,7 +31,7 @@ export function TaxesComplianceScreen({ dataLoading = false }: TaxesComplianceSc
     <div className="exact-admin-screen">
       <AdminPageHeader
         title="Taxes & Compliance"
-        subtitle="Ghana reference rates for ops planning. This screen is documentation only — no tax ledger API is wired yet."
+        subtitle="Ghana tax and GRA compliance reference for Accra platform operations."
       />
 
       <AdminKpiRow
