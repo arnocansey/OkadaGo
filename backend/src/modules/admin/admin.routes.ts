@@ -42,7 +42,7 @@ const adminRiderService = new AdminRiderService();
 const adminOpsService = new AdminOpsService();
 const adminConsoleService = new AdminConsoleService();
 
-const LIVE_STREAM_INTERVAL_MS = 5000;
+const LIVE_STREAM_INTERVAL_MS = 12000;
 
 function extractBearerToken(authorizationHeader?: string) {
   if (!authorizationHeader?.startsWith("Bearer ")) {

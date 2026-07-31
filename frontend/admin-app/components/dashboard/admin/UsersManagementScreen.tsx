@@ -6,7 +6,7 @@ import { EmptyCard } from "./EmptyCard";
 import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
-import { AdminPagination, usePagination } from "./ui/AdminPagination";
+import { AdminPagination, hasServerPagination, usePagination } from "./ui/AdminPagination";
 import { statusTone, formatDateTime } from "./utils";
 
 const PAGE_SIZE = 15;
@@ -43,6 +43,10 @@ export type UsersManagementScreenProps = {
   riderVerifiedCount?: number;
   totalUsersCount?: number;
   dataLoading?: boolean;
+  page?: number;
+  totalItems?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
 };
 
 export function UsersManagementScreen({
@@ -63,15 +67,25 @@ export function UsersManagementScreen({
   riderPendingCount = 0,
   riderVerifiedCount = 0,
   totalUsersCount,
-  dataLoading = false
+  dataLoading = false,
+  page,
+  totalItems,
+  pageSize,
+  onPageChange
 }: UsersManagementScreenProps) {
   const totalUsers = totalUsersCount ?? passengersCount + ridersCount;
 
-  const { page, setPage, paginated } = usePagination(searchedManagedUsers, PAGE_SIZE);
+  const effectivePageSize = pageSize ?? PAGE_SIZE;
+  const serverPaginated = hasServerPagination({ page, totalItems, pageSize, onPageChange });
+  const clientPagination = usePagination(searchedManagedUsers, effectivePageSize);
+  const displayItems = serverPaginated ? searchedManagedUsers : clientPagination.paginated;
+  const paginationPage = serverPaginated ? page! : clientPagination.page;
+  const paginationTotal = serverPaginated ? totalItems! : searchedManagedUsers.length;
+  const paginationOnChange = serverPaginated ? onPageChange! : clientPagination.setPage;
 
   useEffect(() => {
-    setPage(1);
-  }, [adminSearchTerm, userTypeView, setPage]);
+    if (!serverPaginated) clientPagination.setPage(1);
+  }, [adminSearchTerm, userTypeView, serverPaginated, clientPagination.setPage]);
 
   if (dataLoading) {
     return <AdminPageSkeleton variant="table" kpis={4} rows={8} cols={6} />;
@@ -165,7 +179,7 @@ export function UsersManagementScreen({
                   </tr>
                 </thead>
                 <tbody>
-                  {paginated.map((user) => {
+                  {displayItems.map((user) => {
                     const Icon = user.icon;
                     return (
                       <tr key={user.id}>
@@ -192,10 +206,10 @@ export function UsersManagementScreen({
                 </tbody>
               </table>
               <AdminPagination
-                page={page}
-                totalItems={searchedManagedUsers.length}
-                pageSize={PAGE_SIZE}
-                onPageChange={setPage}
+                page={paginationPage}
+                totalItems={paginationTotal}
+                pageSize={effectivePageSize}
+                onPageChange={paginationOnChange}
               />
             </div>
           )}

@@ -1173,41 +1173,86 @@ async function suggestPlacesNominatim(
 }
 
 export class BootstrapService {
-  async listPassengers(limit = 25) {
+  async listPassengers(limit = 25, page = 1) {
     const where = {
       user: {
         role: UserRole.PASSENGER,
         deletedAt: null
       }
     };
+    const take = Math.min(Math.max(limit, 1), 200);
+    const skip = (Math.max(page, 1) - 1) * take;
     const [data, total] = await Promise.all([
       prisma.passengerProfile.findMany({
-        take: limit,
+        take,
+        skip,
         where,
         orderBy: { createdAt: "desc" },
-        include: { user: true }
+        include: {
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              phoneE164: true,
+              preferredCurrency: true,
+              role: true,
+              accountStatus: true,
+              isPhoneVerified: true
+            }
+          }
+        }
       }),
       prisma.passengerProfile.count({ where })
     ]);
-    return { data, total };
+    return { data, total, page: Math.max(page, 1), limit: take };
   }
 
-  async listRiders(limit = 25) {
+  async listRiders(limit = 25, page = 1) {
     const where = {
       user: {
         deletedAt: null
       }
     };
+    const take = Math.min(Math.max(limit, 1), 200);
+    const skip = (Math.max(page, 1) - 1) * take;
     const [data, total] = await Promise.all([
       prisma.riderProfile.findMany({
-        take: limit,
+        take,
+        skip,
         where,
         orderBy: { createdAt: "desc" },
-        include: { user: true, serviceZone: true, vehicle: true }
+        include: {
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              phoneE164: true,
+              preferredCurrency: true,
+              role: true,
+              accountStatus: true,
+              isPhoneVerified: true
+            }
+          },
+          serviceZone: {
+            select: { id: true, name: true, city: true, currency: true }
+          },
+          vehicle: {
+            select: {
+              id: true,
+              make: true,
+              model: true,
+              plateNumber: true,
+              vehicleType: true,
+              status: true
+            }
+          }
+        }
       }),
       prisma.riderProfile.count({ where })
     ]);
-    return { data, total };
+    return { data, total, page: Math.max(page, 1), limit: take };
   }
 
   async listServiceZones(limit = 25) {

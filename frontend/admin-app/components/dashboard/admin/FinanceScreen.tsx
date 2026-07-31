@@ -4,7 +4,7 @@ import { formatMoney } from "@/lib/currency";
 import { downloadCsv } from "@/lib/export-csv";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
-import { AdminPagination, usePagination } from "./ui/AdminPagination";
+import { AdminPagination, hasServerPagination, usePagination } from "./ui/AdminPagination";
 import type { WalletTransactionRecord, PayoutRequestRecord } from "./types";
 import { parseNumber, formatDateTime, statusTone, formatEnumLabel } from "./utils";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
@@ -55,6 +55,13 @@ export type FinanceScreenProps = {
   ) => void;
   onServerExport?: (entity: "wallet-transactions" | "payout-requests") => void;
   isMutating?: boolean;
+  walletPage?: number;
+  walletTotal?: number;
+  payoutPage?: number;
+  payoutTotal?: number;
+  listPageSize?: number;
+  onWalletPageChange?: (page: number) => void;
+  onPayoutPageChange?: (page: number) => void;
 };
 
 export function FinanceScreen({
@@ -95,26 +102,51 @@ export function FinanceScreen({
   dataLoading = false,
   onPayoutAction,
   onServerExport,
-  isMutating = false
+  isMutating = false,
+  walletPage: walletPageProp,
+  walletTotal,
+  payoutPage: payoutPageProp,
+  payoutTotal,
+  listPageSize,
+  onWalletPageChange,
+  onPayoutPageChange
 }: FinanceScreenProps) {
   const { isMobile } = useBreakpoint();
 
-  const { page: walletPage, setPage: setWalletPage, paginated: paginatedWalletTx } = usePagination(
-    walletTransactions,
-    PAGE_SIZE
-  );
-  const { page: payoutPage, setPage: setPayoutPage, paginated: paginatedPayouts } = usePagination(
-    payoutRequests,
-    PAGE_SIZE
-  );
+  const effectivePageSize = listPageSize ?? PAGE_SIZE;
+  const walletServerPaginated = hasServerPagination({
+    page: walletPageProp,
+    totalItems: walletTotal,
+    pageSize: listPageSize,
+    onPageChange: onWalletPageChange
+  });
+  const payoutServerPaginated = hasServerPagination({
+    page: payoutPageProp,
+    totalItems: payoutTotal,
+    pageSize: listPageSize,
+    onPageChange: onPayoutPageChange
+  });
+
+  const clientWalletPagination = usePagination(walletTransactions, effectivePageSize);
+  const clientPayoutPagination = usePagination(payoutRequests, effectivePageSize);
+
+  const paginatedWalletTx = walletServerPaginated ? walletTransactions : clientWalletPagination.paginated;
+  const walletPaginationPage = walletServerPaginated ? walletPageProp! : clientWalletPagination.page;
+  const walletPaginationTotal = walletServerPaginated ? walletTotal! : walletTransactions.length;
+  const walletPaginationOnChange = walletServerPaginated ? onWalletPageChange! : clientWalletPagination.setPage;
+
+  const paginatedPayouts = payoutServerPaginated ? payoutRequests : clientPayoutPagination.paginated;
+  const payoutPaginationPage = payoutServerPaginated ? payoutPageProp! : clientPayoutPagination.page;
+  const payoutPaginationTotal = payoutServerPaginated ? payoutTotal! : payoutRequests.length;
+  const payoutPaginationOnChange = payoutServerPaginated ? onPayoutPageChange! : clientPayoutPagination.setPage;
 
   useEffect(() => {
-    setWalletPage(1);
-  }, [transactionStatusFilter, transactionTypeFilter, setWalletPage]);
+    if (!walletServerPaginated) clientWalletPagination.setPage(1);
+  }, [transactionStatusFilter, transactionTypeFilter, walletServerPaginated, clientWalletPagination.setPage]);
 
   useEffect(() => {
-    setPayoutPage(1);
-  }, [payoutStatusFilter, setPayoutPage]);
+    if (!payoutServerPaginated) clientPayoutPagination.setPage(1);
+  }, [payoutStatusFilter, payoutServerPaginated, clientPayoutPagination.setPage]);
 
   if (dataLoading) {
     return <AdminPageSkeleton variant="table" kpis={4} rows={5} cols={7} />;
@@ -458,10 +490,10 @@ export function FinanceScreen({
               </tbody>
             </table>
             <AdminPagination
-              page={walletPage}
-              totalItems={walletTransactions.length}
-              pageSize={PAGE_SIZE}
-              onPageChange={setWalletPage}
+              page={walletPaginationPage}
+              totalItems={walletPaginationTotal}
+              pageSize={effectivePageSize}
+              onPageChange={walletPaginationOnChange}
             />
           </div>
         )}
@@ -587,10 +619,10 @@ export function FinanceScreen({
               </tbody>
             </table>
             <AdminPagination
-              page={payoutPage}
-              totalItems={payoutRequests.length}
-              pageSize={PAGE_SIZE}
-              onPageChange={setPayoutPage}
+              page={payoutPaginationPage}
+              totalItems={payoutPaginationTotal}
+              pageSize={effectivePageSize}
+              onPageChange={payoutPaginationOnChange}
             />
           </div>
         )}

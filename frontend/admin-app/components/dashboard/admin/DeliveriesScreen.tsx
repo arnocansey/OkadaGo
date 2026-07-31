@@ -7,7 +7,7 @@ import { EmptyCard } from "./EmptyCard";
 import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
-import { AdminPagination, usePagination } from "./ui/AdminPagination";
+import { AdminPagination, hasServerPagination, usePagination } from "./ui/AdminPagination";
 import type { DeliveryRecord } from "./types";
 import { parseNumber, formatDateTime, statusTone, formatEnumLabel } from "./utils";
 
@@ -22,6 +22,10 @@ export type DeliveriesScreenProps = {
   deliveryCommission: number;
   adminCurrency: string;
   dataLoading?: boolean;
+  page?: number;
+  totalItems?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
 };
 
 function isLiveStatus(status: string) {
@@ -37,7 +41,11 @@ export function DeliveriesScreen({
   deliveryRevenue,
   deliveryCommission,
   adminCurrency,
-  dataLoading = false
+  dataLoading = false,
+  page,
+  totalItems,
+  pageSize,
+  onPageChange
 }: DeliveriesScreenProps) {
   const [query, setQuery] = useState("");
 
@@ -82,11 +90,17 @@ export function DeliveriesScreen({
     });
   }, [sorted, query]);
 
-  const { page, setPage, paginated } = usePagination(filtered, PAGE_SIZE);
+  const effectivePageSize = pageSize ?? PAGE_SIZE;
+  const serverPaginated = hasServerPagination({ page, totalItems, pageSize, onPageChange });
+  const clientPagination = usePagination(filtered, effectivePageSize);
+  const displayItems = serverPaginated ? filtered : clientPagination.paginated;
+  const paginationPage = serverPaginated ? page! : clientPagination.page;
+  const paginationTotal = serverPaginated ? totalItems! : filtered.length;
+  const paginationOnChange = serverPaginated ? onPageChange! : clientPagination.setPage;
 
   useEffect(() => {
-    setPage(1);
-  }, [query, setPage]);
+    if (!serverPaginated) clientPagination.setPage(1);
+  }, [query, serverPaginated, clientPagination.setPage]);
 
   if (dataLoading) {
     return <AdminPageSkeleton variant="table" kpis={4} rows={6} cols={6} />;
@@ -193,7 +207,7 @@ export function DeliveriesScreen({
                   </tr>
                 </thead>
                 <tbody>
-                  {paginated.map((delivery) => (
+                  {displayItems.map((delivery) => (
                     <tr key={delivery.id}>
                       <td>
                         <code style={{ fontSize: 11 }}>{delivery.id.slice(-8)}</code>
@@ -248,10 +262,10 @@ export function DeliveriesScreen({
                 </tbody>
               </table>
               <AdminPagination
-                page={page}
-                totalItems={filtered.length}
-                pageSize={PAGE_SIZE}
-                onPageChange={setPage}
+                page={paginationPage}
+                totalItems={paginationTotal}
+                pageSize={effectivePageSize}
+                onPageChange={paginationOnChange}
               />
             </div>
           )}

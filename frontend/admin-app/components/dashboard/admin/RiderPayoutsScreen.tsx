@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAdminToast } from "./AdminToast";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
 import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
+import { AdminPagination, hasServerPagination, usePagination } from "./ui/AdminPagination";
 import { formatMoney } from "@/lib/currency";
 import { parseNumber, formatDateTime, statusTone } from "./utils";
 import type { PayoutRequestRecord } from "./types";
@@ -15,8 +16,6 @@ import {
   XCircle,
   Search,
   Download,
-  ChevronLeft,
-  ChevronRight,
   Filter,
   X,
   CreditCard,
@@ -47,6 +46,10 @@ export type RiderPayoutsScreenProps = {
   ) => void;
   isMutating: boolean;
   dataLoading?: boolean;
+  page?: number;
+  totalItems?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
 };
 
 const PAGE_SIZE = 8;
@@ -101,23 +104,18 @@ export function RiderPayoutsScreen({
   onPayoutAction,
   isMutating,
   dataLoading = false,
+  page,
+  totalItems,
+  pageSize,
+  onPageChange,
 }: RiderPayoutsScreenProps) {
   const { addToast } = useAdminToast();
   const { isMobile, isTablet } = useBreakpoint();
   const [activeTab, setActiveTab] = useState<TabOption>("All Payouts");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusOption>("All Statuses");
-  const [currentPage, setCurrentPage] = useState(1);
   const [selectedRow, setSelectedRow] = useState<string | null>(null);
   const [selectedPayoutIds, setSelectedPayoutIds] = useState<Set<string>>(new Set());
-
-  if (dataLoading) {
-    return <AdminPageSkeleton variant="split" kpis={5} rows={5} cols={6} />;
-  }
-
-  const processingCount = riderPayoutRequests.filter(
-    (p) => p.status.toLowerCase() === "processing" || p.status.toLowerCase() === "approved"
-  ).length;
 
   const sortedPayouts = riderPayoutRequests
     .slice()
@@ -141,8 +139,25 @@ export function RiderPayoutsScreen({
     return true;
   });
 
-  const totalPages = Math.ceil(filteredPayouts.length / PAGE_SIZE);
-  const paginatedPayouts = filteredPayouts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const effectivePageSize = pageSize ?? PAGE_SIZE;
+  const serverPaginated = hasServerPagination({ page, totalItems, pageSize, onPageChange });
+  const clientPagination = usePagination(filteredPayouts, effectivePageSize);
+  const paginatedPayouts = serverPaginated ? filteredPayouts : clientPagination.paginated;
+  const paginationPage = serverPaginated ? page! : clientPagination.page;
+  const paginationTotal = serverPaginated ? totalItems! : filteredPayouts.length;
+  const paginationOnChange = serverPaginated ? onPageChange! : clientPagination.setPage;
+
+  useEffect(() => {
+    if (!serverPaginated) clientPagination.setPage(1);
+  }, [activeTab, searchQuery, statusFilter, serverPaginated, clientPagination.setPage]);
+
+  if (dataLoading) {
+    return <AdminPageSkeleton variant="split" kpis={5} rows={5} cols={6} />;
+  }
+
+  const processingCount = riderPayoutRequests.filter(
+    (p) => p.status.toLowerCase() === "processing" || p.status.toLowerCase() === "approved"
+  ).length;
 
   const allPageIds = paginatedPayouts.map((p) => p.id);
   const allSelected = allPageIds.length > 0 && allPageIds.every((id) => selectedPayoutIds.has(id));
@@ -290,7 +305,7 @@ export function RiderPayoutsScreen({
               key={tab}
               type="button"
               className={`admin-tab${activeTab === tab ? " active" : ""}`}
-              onClick={() => { setActiveTab(tab); setCurrentPage(1); setSelectedRow(null); }}
+              onClick={() => { setActiveTab(tab); setSelectedRow(null); if (!serverPaginated) clientPagination.setPage(1); }}
             >
               {tab}
               <span style={{ marginLeft: 6, opacity: 0.75 }}>{tabCounts[tab]}</span>
@@ -307,7 +322,7 @@ export function RiderPayoutsScreen({
             type="text"
             placeholder="Search by rider name, code, phone..."
             value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+            onChange={(e) => { setSearchQuery(e.target.value); if (!serverPaginated) clientPagination.setPage(1); }}
             style={{ ...inputStyle, paddingLeft: 36 }}
             onFocus={(e) => { e.currentTarget.style.borderColor = "var(--brand-orange)"; }}
             onBlur={(e) => { e.currentTarget.style.borderColor = "var(--border)"; }}
@@ -317,7 +332,7 @@ export function RiderPayoutsScreen({
           <Filter size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", pointerEvents: "none" }} />
           <select
             value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value as StatusOption); setCurrentPage(1); }}
+            onChange={(e) => { setStatusFilter(e.target.value as StatusOption); if (!serverPaginated) clientPagination.setPage(1); }}
             style={{ ...inputStyle, paddingLeft: 36, paddingRight: 32, width: "auto", minWidth: 160, cursor: "pointer", appearance: "none" as const }}
           >
             {STATUS_OPTIONS.map((opt) => (
@@ -483,58 +498,12 @@ export function RiderPayoutsScreen({
               </tbody>
             </table>
           </div>
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--border)", flexDirection: isMobile ? "column" : "row", gap: isMobile ? 8 : undefined }}>
-              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                Page {currentPage} of {totalPages} · {filteredPayouts.length} results
-              </span>
-              <div style={{ display: "flex", gap: 6 }}>
-                <button
-                  type="button"
-                  disabled={currentPage <= 1}
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: 7,
-                    border: "1px solid var(--border)",
-                    background: currentPage <= 1 ? "var(--bg-primary)" : "transparent",
-                    color: currentPage <= 1 ? "var(--text-muted)" : "var(--text-primary)",
-                    cursor: currentPage <= 1 ? "not-allowed" : "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    opacity: currentPage <= 1 ? 0.5 : 1,
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                <button
-                  type="button"
-                  disabled={currentPage >= totalPages}
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: 7,
-                    border: "1px solid var(--border)",
-                    background: currentPage >= totalPages ? "var(--bg-primary)" : "transparent",
-                    color: currentPage >= totalPages ? "var(--text-muted)" : "var(--text-primary)",
-                    cursor: currentPage >= totalPages ? "not-allowed" : "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    opacity: currentPage >= totalPages ? 0.5 : 1,
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-            </div>
-          )}
+          <AdminPagination
+            page={paginationPage}
+            totalItems={paginationTotal}
+            pageSize={effectivePageSize}
+            onPageChange={paginationOnChange}
+          />
         </div>
 
         {/* Right Column: Detail Panel OR Sidebar */}

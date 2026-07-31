@@ -133,6 +133,16 @@ function haversineDistanceKm(
   return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+const adminUserListSelect = {
+  id: true,
+  fullName: true,
+  email: true,
+  phoneE164: true,
+  preferredCurrency: true,
+  accountStatus: true,
+  role: true
+} as const;
+
 const rideDetailsInclude = {
   passenger: {
     include: {
@@ -152,6 +162,39 @@ const rideDetailsInclude = {
     orderBy: {
       recordedAt: "desc" as const
     }
+  }
+} as const;
+
+/** Slim list payload for admin/ops tables — avoids full User rows + location history. */
+const rideListInclude = {
+  passenger: {
+    select: {
+      id: true,
+      user: { select: adminUserListSelect }
+    }
+  },
+  rider: {
+    select: {
+      id: true,
+      displayCode: true,
+      user: { select: adminUserListSelect },
+      vehicle: {
+        select: {
+          id: true,
+          make: true,
+          model: true,
+          plateNumber: true,
+          vehicleType: true,
+          status: true
+        }
+      },
+      serviceZone: {
+        select: { id: true, name: true, city: true, currency: true }
+      }
+    }
+  },
+  serviceZone: {
+    select: { id: true, name: true, city: true, currency: true }
   }
 } as const;
 
@@ -792,7 +835,7 @@ export class RideService {
       orderBy: {
         createdAt: "desc"
       },
-      include: rideDetailsInclude
+      include: rideListInclude
     });
 
     if (!page) return data;

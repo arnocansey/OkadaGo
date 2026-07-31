@@ -544,21 +544,24 @@ export class SafetyService {
 
     const fromDate = query.fromDate ? new Date(`${query.fromDate}T00:00:00.000Z`) : null;
     const toDate = query.toDate ? new Date(`${query.toDate}T23:59:59.999Z`) : null;
+    const where = {
+      status: query.status as IncidentStatus | undefined,
+      severity: query.severity as IncidentSeverity | undefined,
+      riderId: query.riderId,
+      rideId: query.rideId,
+      createdAt:
+        fromDate || toDate
+          ? {
+              gte: fromDate ?? undefined,
+              lte: toDate ?? undefined
+            }
+          : undefined
+    };
+    const limit = Math.min(Math.max(query.limit ?? 50, 1), 200);
+    const page = query.page;
 
-    return prisma.incident.findMany({
-      where: {
-        status: query.status as IncidentStatus | undefined,
-        severity: query.severity as IncidentSeverity | undefined,
-        riderId: query.riderId,
-        rideId: query.rideId,
-        createdAt:
-          fromDate || toDate
-            ? {
-                gte: fromDate ?? undefined,
-                lte: toDate ?? undefined
-              }
-            : undefined
-      },
+    const data = await prisma.incident.findMany({
+      where,
       include: {
         reporter: {
           select: {
@@ -598,8 +601,13 @@ export class SafetyService {
       orderBy: {
         createdAt: "desc"
       },
-      take: 120
+      take: limit,
+      ...(page ? { skip: (page - 1) * limit } : {})
     });
+
+    if (!page) return data;
+    const total = await prisma.incident.count({ where });
+    return { data, total, page, limit };
   }
 
   async reviewAdminIncident(token: string, incidentId: string, input: AdminIncidentReviewInput) {

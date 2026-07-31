@@ -56,6 +56,16 @@ const apiToDbPaymentMethod = {
   mobile_money: PaymentMethod.MOBILE_MONEY
 } as const;
 
+const adminUserListSelect = {
+  id: true,
+  fullName: true,
+  email: true,
+  phoneE164: true,
+  preferredCurrency: true,
+  accountStatus: true,
+  role: true
+} as const;
+
 const deliveryDetailsInclude = {
   passenger: {
     include: {
@@ -70,6 +80,39 @@ const deliveryDetailsInclude = {
     }
   },
   serviceZone: true
+} as const;
+
+/** Slim list payload for admin/ops tables. */
+const deliveryListInclude = {
+  passenger: {
+    select: {
+      id: true,
+      user: { select: adminUserListSelect }
+    }
+  },
+  rider: {
+    select: {
+      id: true,
+      displayCode: true,
+      user: { select: adminUserListSelect },
+      vehicle: {
+        select: {
+          id: true,
+          make: true,
+          model: true,
+          plateNumber: true,
+          vehicleType: true,
+          status: true
+        }
+      },
+      serviceZone: {
+        select: { id: true, name: true, city: true, currency: true }
+      }
+    }
+  },
+  serviceZone: {
+    select: { id: true, name: true, city: true, currency: true }
+  }
 } as const;
 
 function toApiDeliveryStatus(status: DeliveryStatus) {
@@ -538,7 +581,7 @@ export class DeliveryService {
       orderBy: {
         createdAt: "desc"
       },
-      include: deliveryDetailsInclude
+      include: deliveryListInclude
     });
 
     if (!page) return data;

@@ -105,15 +105,17 @@ export class DocumentService {
     });
   }
 
-  async listAllDocumentsAdmin(token: string, limit = 200) {
+  async listAllDocumentsAdmin(token: string, limit = 50, page?: number) {
     const session = await this.getActiveSession(token);
 
     if (!session.user.adminProfile) {
       throw new AppError("Admin access is required", 403, "ADMIN_ACCESS_REQUIRED");
     }
 
-    return prisma.riderDocument.findMany({
-      take: Math.min(Math.max(limit, 1), 500),
+    const take = Math.min(Math.max(limit, 1), 200);
+    const data = await prisma.riderDocument.findMany({
+      take,
+      ...(page ? { skip: (page - 1) * take } : {}),
       orderBy: { createdAt: "desc" },
       include: {
         rider: {
@@ -130,6 +132,10 @@ export class DocumentService {
         },
       },
     });
+
+    if (!page) return data;
+    const total = await prisma.riderDocument.count();
+    return { data, total, page, limit: take };
   }
 
   async reviewDocument(token: string, documentId: string, input: ReviewDocumentInput) {

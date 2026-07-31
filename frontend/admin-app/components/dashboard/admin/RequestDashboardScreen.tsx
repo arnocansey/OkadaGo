@@ -4,7 +4,7 @@ import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
-import { AdminPagination } from "./ui/AdminPagination";
+import { AdminPagination, hasServerPagination } from "./ui/AdminPagination";
 import type { RideRecord, DeliveryRecord } from "./types";
 import { parseNumber, formatDateTime, statusTone, formatEnumLabel } from "./utils";
 
@@ -35,6 +35,14 @@ export type RequestDashboardScreenProps = {
   onDeliveryAction: (deliveryId: string, action: "accept" | "decline") => void;
   isMutating: boolean;
   dataLoading?: boolean;
+  ridesPage?: number;
+  ridesTotal?: number;
+  ridesPageSize?: number;
+  onRidesPageChange?: (page: number) => void;
+  deliveriesPage?: number;
+  deliveriesTotal?: number;
+  deliveriesPageSize?: number;
+  onDeliveriesPageChange?: (page: number) => void;
 };
 
 const statusFilters: { key: RequestStatusView; label: string }[] = [
@@ -74,11 +82,34 @@ export function RequestDashboardScreen({
   onRideAction,
   onDeliveryAction,
   isMutating,
-  dataLoading = false
+  dataLoading = false,
+  ridesPage: ridesPageProp,
+  ridesTotal,
+  ridesPageSize,
+  onRidesPageChange,
+  deliveriesPage: deliveriesPageProp,
+  deliveriesTotal,
+  deliveriesPageSize,
+  onDeliveriesPageChange
 }: RequestDashboardScreenProps) {
   const [selectedRideIds, setSelectedRideIds] = useState<Set<string>>(new Set());
   const [selectedDeliveryIds, setSelectedDeliveryIds] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState("");
+  const effectiveRidesPageSize = ridesPageSize ?? REQUESTS_PAGE_SIZE;
+  const effectiveDeliveriesPageSize = deliveriesPageSize ?? REQUESTS_PAGE_SIZE;
+  const ridesServerPaginated = hasServerPagination({
+    page: ridesPageProp,
+    totalItems: ridesTotal,
+    pageSize: ridesPageSize,
+    onPageChange: onRidesPageChange
+  });
+  const deliveriesServerPaginated = hasServerPagination({
+    page: deliveriesPageProp,
+    totalItems: deliveriesTotal,
+    pageSize: deliveriesPageSize,
+    onPageChange: onDeliveriesPageChange
+  });
+
   const [ridePage, setRidePage] = useState(1);
   const [deliveryPage, setDeliveryPage] = useState(1);
 
@@ -86,9 +117,9 @@ export function RequestDashboardScreen({
 
   // Start from page 1 whenever the segment changes (tab, status filter, or search).
   useEffect(() => {
-    setRidePage(1);
-    setDeliveryPage(1);
-  }, [requestTab, requestStatusView, normalizedQuery]);
+    if (!ridesServerPaginated) setRidePage(1);
+    if (!deliveriesServerPaginated) setDeliveryPage(1);
+  }, [requestTab, requestStatusView, normalizedQuery, ridesServerPaginated, deliveriesServerPaginated]);
 
   const filteredRideCards = useMemo(() => {
     if (!normalizedQuery) return visibleRequestCards;
@@ -125,22 +156,32 @@ export function RequestDashboardScreen({
     });
   }, [visibleDeliveryRequestCards, normalizedQuery]);
 
-  const rideTotalPages = Math.max(1, Math.ceil(filteredRideCards.length / REQUESTS_PAGE_SIZE));
-  const safeRidePage = Math.min(ridePage, rideTotalPages);
+  const rideTotalPages = Math.max(1, Math.ceil(filteredRideCards.length / effectiveRidesPageSize));
+  const safeRidePage = ridesServerPaginated ? ridesPageProp! : Math.min(ridePage, rideTotalPages);
   const paginatedRideCards = useMemo(
-    () => filteredRideCards.slice((safeRidePage - 1) * REQUESTS_PAGE_SIZE, safeRidePage * REQUESTS_PAGE_SIZE),
-    [filteredRideCards, safeRidePage]
+    () =>
+      ridesServerPaginated
+        ? filteredRideCards
+        : filteredRideCards.slice(
+            (safeRidePage - 1) * effectiveRidesPageSize,
+            safeRidePage * effectiveRidesPageSize
+          ),
+    [filteredRideCards, safeRidePage, effectiveRidesPageSize, ridesServerPaginated]
   );
 
-  const deliveryTotalPages = Math.max(1, Math.ceil(filteredDeliveryCards.length / REQUESTS_PAGE_SIZE));
-  const safeDeliveryPage = Math.min(deliveryPage, deliveryTotalPages);
+  const deliveryTotalPages = Math.max(1, Math.ceil(filteredDeliveryCards.length / effectiveDeliveriesPageSize));
+  const safeDeliveryPage = deliveriesServerPaginated
+    ? deliveriesPageProp!
+    : Math.min(deliveryPage, deliveryTotalPages);
   const paginatedDeliveryCards = useMemo(
     () =>
-      filteredDeliveryCards.slice(
-        (safeDeliveryPage - 1) * REQUESTS_PAGE_SIZE,
-        safeDeliveryPage * REQUESTS_PAGE_SIZE
-      ),
-    [filteredDeliveryCards, safeDeliveryPage]
+      deliveriesServerPaginated
+        ? filteredDeliveryCards
+        : filteredDeliveryCards.slice(
+            (safeDeliveryPage - 1) * effectiveDeliveriesPageSize,
+            safeDeliveryPage * effectiveDeliveriesPageSize
+          ),
+    [filteredDeliveryCards, safeDeliveryPage, effectiveDeliveriesPageSize, deliveriesServerPaginated]
   );
 
   const toggleRideId = (id: string) => {
@@ -357,9 +398,9 @@ export function RequestDashboardScreen({
                   ))}
                   <AdminPagination
                     page={safeRidePage}
-                    totalItems={filteredRideCards.length}
-                    pageSize={REQUESTS_PAGE_SIZE}
-                    onPageChange={setRidePage}
+                    totalItems={ridesServerPaginated ? ridesTotal! : filteredRideCards.length}
+                    pageSize={effectiveRidesPageSize}
+                    onPageChange={ridesServerPaginated ? onRidesPageChange! : setRidePage}
                   />
                 </>
               )}
@@ -454,9 +495,9 @@ export function RequestDashboardScreen({
                   ))}
                   <AdminPagination
                     page={safeDeliveryPage}
-                    totalItems={filteredDeliveryCards.length}
-                    pageSize={REQUESTS_PAGE_SIZE}
-                    onPageChange={setDeliveryPage}
+                    totalItems={deliveriesServerPaginated ? deliveriesTotal! : filteredDeliveryCards.length}
+                    pageSize={effectiveDeliveriesPageSize}
+                    onPageChange={deliveriesServerPaginated ? onDeliveriesPageChange! : setDeliveryPage}
                   />
                 </>
               )}

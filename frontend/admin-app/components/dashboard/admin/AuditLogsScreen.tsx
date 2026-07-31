@@ -3,7 +3,7 @@ import { EmptyCard } from "./EmptyCard";
 import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
-import { AdminPagination, usePagination } from "./ui/AdminPagination";
+import { AdminPagination, hasServerPagination, usePagination } from "./ui/AdminPagination";
 import type { AuditLogRecord } from "./types";
 import { formatDateTime } from "./utils";
 import { useEffect, useMemo, useState } from "react";
@@ -15,9 +15,22 @@ export type AuditLogsScreenProps = {
   totalAdmins: number;
   onServerExport?: () => void;
   dataLoading?: boolean;
+  page?: number;
+  totalItems?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
 };
 
-export function AuditLogsScreen({ auditLogs, totalAdmins, onServerExport, dataLoading = false }: AuditLogsScreenProps) {
+export function AuditLogsScreen({
+  auditLogs,
+  totalAdmins,
+  onServerExport,
+  dataLoading = false,
+  page,
+  totalItems,
+  pageSize,
+  onPageChange
+}: AuditLogsScreenProps) {
   const [search, setSearch] = useState("");
   const [entityFilter, setEntityFilter] = useState("");
   const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
@@ -41,11 +54,17 @@ export function AuditLogsScreen({ auditLogs, totalAdmins, onServerExport, dataLo
     [logs, search, entityFilter]
   );
 
-  const { page, setPage, paginated } = usePagination(filtered, PAGE_SIZE);
+  const effectivePageSize = pageSize ?? PAGE_SIZE;
+  const serverPaginated = hasServerPagination({ page, totalItems, pageSize, onPageChange });
+  const clientPagination = usePagination(filtered, effectivePageSize);
+  const displayItems = serverPaginated ? filtered : clientPagination.paginated;
+  const paginationPage = serverPaginated ? page! : clientPagination.page;
+  const paginationTotal = serverPaginated ? totalItems! : filtered.length;
+  const paginationOnChange = serverPaginated ? onPageChange! : clientPagination.setPage;
 
   useEffect(() => {
-    setPage(1);
-  }, [search, entityFilter, setPage]);
+    if (!serverPaginated) clientPagination.setPage(1);
+  }, [search, entityFilter, serverPaginated, clientPagination.setPage]);
 
   if (dataLoading) {
     return <AdminPageSkeleton variant="table" kpis={3} rows={8} cols={5} />;
@@ -135,7 +154,7 @@ export function AuditLogsScreen({ auditLogs, totalAdmins, onServerExport, dataLo
                   </tr>
                 </thead>
                 <tbody>
-                  {paginated.map((log) => (
+                  {displayItems.map((log) => (
                       <tr
                         key={log.id}
                         onClick={() => setSelectedLogId(log.id)}
@@ -173,10 +192,10 @@ export function AuditLogsScreen({ auditLogs, totalAdmins, onServerExport, dataLo
                 </tbody>
               </table>
               <AdminPagination
-                page={page}
-                totalItems={filtered.length}
-                pageSize={PAGE_SIZE}
-                onPageChange={setPage}
+                page={paginationPage}
+                totalItems={paginationTotal}
+                pageSize={effectivePageSize}
+                onPageChange={paginationOnChange}
               />
             </div>
           )}

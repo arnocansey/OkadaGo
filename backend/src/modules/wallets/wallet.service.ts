@@ -163,7 +163,14 @@ export class WalletService {
         wallet: {
           include: {
             user: {
-              include: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                phoneE164: true,
+                preferredCurrency: true,
+                role: true,
+                accountStatus: true,
                 riderProfile: {
                   select: {
                     id: true,

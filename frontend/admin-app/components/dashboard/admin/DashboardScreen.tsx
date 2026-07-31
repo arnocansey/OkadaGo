@@ -209,9 +209,10 @@ export function DashboardScreen({
               className="admin-fleet-map"
               basemap="auto"
               emptyPlacement="bottom"
-              center={mapMarkers[0]?.position ?? ACCRA_MAP_CENTER}
+              center={ACCRA_MAP_CENTER}
               zoom={mapMarkers.length > 0 ? ACCRA_MAP_ZOOM_METRO : ACCRA_MAP_ZOOM_CITY}
               markers={mapMarkers}
+              showFitAll
               emptyTitle="Waiting for Accra GPS pings"
               emptyDescription="Turn a rider online with location on — markers appear here automatically."
             />

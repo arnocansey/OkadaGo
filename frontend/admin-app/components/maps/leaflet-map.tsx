@@ -212,7 +212,7 @@ export function LeafletMap({
         ? '&copy; <a href="https://developers.google.com/maps/documentation/javascript/" target="_blank" rel="noreferrer">Google Maps</a>'
         : '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors';
 
-  const mapKey = `map:${resolvedBasemap}:${center[0].toFixed(5)}:${center[1].toFixed(5)}:${zoom}`;
+  const mapKey = `map:${resolvedBasemap}`;
 
   const driverPositions = markers
     .filter((m) => m.variant === "driver")

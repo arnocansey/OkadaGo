@@ -6,7 +6,7 @@ import { EmptyCard } from "./EmptyCard";
 import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
-import { AdminPagination, usePagination } from "./ui/AdminPagination";
+import { AdminPagination, hasServerPagination, usePagination } from "./ui/AdminPagination";
 import type { AdminIncidentRecord, AdminSupportTicketRecord } from "./types";
 import { formatDateTime, statusTone, formatEnumLabel } from "./utils";
 
@@ -27,6 +27,10 @@ export type SupportTicketsScreenProps = {
   ) => void;
   isMutating: boolean;
   dataLoading?: boolean;
+  page?: number;
+  totalItems?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
 };
 
 function isHighPriority(priority: string) {
@@ -50,7 +54,11 @@ export function SupportTicketsScreen({
   resolvedSupportTickets,
   onIncidentAction,
   isMutating,
-  dataLoading = false
+  dataLoading = false,
+  page,
+  totalItems,
+  pageSize,
+  onPageChange
 }: SupportTicketsScreenProps) {
   const [tab, setTab] = useState<"tickets" | "incidents">("tickets");
   const [query, setQuery] = useState("");
@@ -76,10 +84,13 @@ export function SupportTicketsScreen({
     });
   }, [supportTickets, query]);
 
-  const { page: ticketPage, setPage: setTicketPage, paginated: paginatedTickets } = usePagination(
-    filteredTickets,
-    PAGE_SIZE
-  );
+  const effectivePageSize = pageSize ?? PAGE_SIZE;
+  const ticketsServerPaginated = hasServerPagination({ page, totalItems, pageSize, onPageChange });
+  const clientTicketPagination = usePagination(filteredTickets, effectivePageSize);
+  const paginatedTickets = ticketsServerPaginated ? filteredTickets : clientTicketPagination.paginated;
+  const ticketPaginationPage = ticketsServerPaginated ? page! : clientTicketPagination.page;
+  const ticketPaginationTotal = ticketsServerPaginated ? totalItems! : filteredTickets.length;
+  const ticketPaginationOnChange = ticketsServerPaginated ? onPageChange! : clientTicketPagination.setPage;
 
   const openAndInProgress = useMemo(
     () =>
@@ -93,8 +104,8 @@ export function SupportTicketsScreen({
     usePagination(openAndInProgress, PAGE_SIZE);
 
   useEffect(() => {
-    setTicketPage(1);
-  }, [query, setTicketPage]);
+    if (!ticketsServerPaginated) clientTicketPagination.setPage(1);
+  }, [query, ticketsServerPaginated, clientTicketPagination.setPage]);
 
   const escalations = useMemo(
     () =>
@@ -213,10 +224,10 @@ export function SupportTicketsScreen({
                     </tbody>
                   </table>
                   <AdminPagination
-                    page={ticketPage}
-                    totalItems={filteredTickets.length}
-                    pageSize={PAGE_SIZE}
-                    onPageChange={setTicketPage}
+                    page={ticketPaginationPage}
+                    totalItems={ticketPaginationTotal}
+                    pageSize={effectivePageSize}
+                    onPageChange={ticketPaginationOnChange}
                   />
                 </div>
               )}

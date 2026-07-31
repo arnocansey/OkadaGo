@@ -5,7 +5,7 @@ import { OperationsMap } from "@/components/maps/operations-map";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
-import { AdminPagination, usePagination } from "./ui/AdminPagination";
+import { AdminPagination, hasServerPagination, usePagination } from "./ui/AdminPagination";
 import type { RiderRecord } from "./types";
 import { statusTone } from "./utils";
 import { parseNumber, ACCRA_MAP_CENTER, ACCRA_MAP_ZOOM_CITY, ACCRA_MAP_ZOOM_METRO } from "./utils";
@@ -33,6 +33,10 @@ export type RidersScreenProps = {
   onBulkApprove?: (ids: string[]) => void;
   onBulkSuspend?: (ids: string[]) => void;
   dataLoading?: boolean;
+  page?: number;
+  totalItems?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
 };
 
 export function RidersScreen({
@@ -47,7 +51,11 @@ export function RidersScreen({
   onboardingPipeline,
   onBulkApprove,
   onBulkSuspend,
-  dataLoading = false
+  dataLoading = false,
+  page,
+  totalItems,
+  pageSize,
+  onPageChange
 }: RidersScreenProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -55,7 +63,13 @@ export function RidersScreen({
     () => riders.slice().sort((a, b) => Number(b.onlineStatus) - Number(a.onlineStatus)),
     [riders]
   );
-  const { page, setPage, paginated: pagedRiders } = usePagination(sortedRiders, PAGE_SIZE);
+  const effectivePageSize = pageSize ?? PAGE_SIZE;
+  const serverPaginated = hasServerPagination({ page, totalItems, pageSize, onPageChange });
+  const clientPagination = usePagination(sortedRiders, effectivePageSize);
+  const pagedRiders = serverPaginated ? sortedRiders : clientPagination.paginated;
+  const paginationPage = serverPaginated ? page! : clientPagination.page;
+  const paginationTotal = serverPaginated ? totalItems! : sortedRiders.length;
+  const paginationOnChange = serverPaginated ? onPageChange! : clientPagination.setPage;
 
   if (dataLoading) {
     return <AdminPageSkeleton variant="split" kpis={4} rows={6} cols={5} />;
@@ -168,9 +182,10 @@ export function RidersScreen({
               <OperationsMap
                 basemap="auto"
                 emptyPlacement="bottom"
-                center={mapMarkers[0]?.position ?? ACCRA_MAP_CENTER}
+                center={ACCRA_MAP_CENTER}
                 zoom={mapMarkers.length > 0 ? ACCRA_MAP_ZOOM_METRO : ACCRA_MAP_ZOOM_CITY}
                 markers={mapMarkers}
+                showFitAll
                 emptyTitle="Waiting for Accra GPS pings"
                 emptyDescription="Riders appear when they share live location from the rider app."
               />
@@ -246,10 +261,10 @@ export function RidersScreen({
               </ul>
             )}
             <AdminPagination
-              page={page}
-              totalItems={sortedRiders.length}
-              pageSize={PAGE_SIZE}
-              onPageChange={setPage}
+              page={paginationPage}
+              totalItems={paginationTotal}
+              pageSize={effectivePageSize}
+              onPageChange={paginationOnChange}
             />
           </article>
         </div>

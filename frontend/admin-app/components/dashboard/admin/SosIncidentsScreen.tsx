@@ -1,12 +1,16 @@
 "use client";
 
+import { useMemo } from "react";
 import { AlertTriangle, CheckCircle, Clock, ShieldAlert } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
+import { AdminPagination, hasServerPagination, usePagination } from "./ui/AdminPagination";
 import type { AdminIncidentRecord } from "./types";
 import { formatDateTime, formatEnumLabel, statusTone } from "./utils";
+
+const PAGE_SIZE = 10;
 
 export type SosIncidentsScreenProps = {
   incidents: AdminIncidentRecord[];
@@ -16,6 +20,10 @@ export type SosIncidentsScreenProps = {
   ) => void;
   isMutating: boolean;
   dataLoading?: boolean;
+  page?: number;
+  totalItems?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
 };
 
 function isSosIncident(incident: AdminIncidentRecord) {
@@ -51,20 +59,38 @@ export function SosIncidentsScreen({
   incidents,
   onIncidentAction,
   isMutating,
-  dataLoading = false
+  dataLoading = false,
+  page,
+  totalItems,
+  pageSize,
+  onPageChange
 }: SosIncidentsScreenProps) {
+  const effectivePageSize = pageSize ?? PAGE_SIZE;
+  const serverPaginated = hasServerPagination({ page, totalItems, pageSize, onPageChange });
+
+  const sosIncidents = useMemo(() => incidents.filter(isSosIncident), [incidents]);
+  const openSosAll = useMemo(
+    () =>
+      sosIncidents
+        .filter((i) => isOpenStatus(i.status))
+        .slice()
+        .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
+    [sosIncidents]
+  );
+
+  const clientPagination = usePagination(openSosAll, effectivePageSize);
+  const openSos = serverPaginated ? openSosAll : clientPagination.paginated;
+  const paginationPage = serverPaginated ? page! : clientPagination.page;
+  const paginationTotal = serverPaginated ? totalItems! : openSosAll.length;
+  const paginationOnChange = serverPaginated ? onPageChange! : clientPagination.setPage;
+
   if (dataLoading) {
     return <AdminPageSkeleton variant="table" kpis={4} rows={5} cols={5} />;
   }
-  const sosIncidents = incidents.filter(isSosIncident);
-  const openSos = sosIncidents
-    .filter((i) => isOpenStatus(i.status))
-    .slice()
-    .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
   const resolvedSos = sosIncidents.filter((i) =>
     ["resolved", "closed"].includes(i.status.toLowerCase())
   );
-  const breachedOpen = openSos.filter((i) => ageMinutes(i.createdAt) >= SOS_SLA_MINUTES).length;
+  const breachedOpen = openSosAll.filter((i) => ageMinutes(i.createdAt) >= SOS_SLA_MINUTES).length;
   const liveFeed = sosIncidents
     .slice()
     .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
@@ -79,17 +105,17 @@ export function SosIncidentsScreen({
 
       <AdminKpiRow
         items={[
-          { label: "Open SOS", value: openSos.length, hint: "Needs attention", icon: <ShieldAlert size={22} />, tone: "red" },
+          { label: "Open SOS", value: openSosAll.length, hint: "Needs attention", icon: <ShieldAlert size={22} />, tone: "red" },
           { label: `SLA > ${SOS_SLA_MINUTES}m`, value: breachedOpen, hint: "Open past target", icon: <AlertTriangle size={22} />, tone: "red" },
           { label: "In progress", value: sosIncidents.filter((i) => ["under_review", "actioned"].includes(i.status.toLowerCase())).length, hint: "Being handled", icon: <Clock size={22} />, tone: "yellow" },
           { label: "Resolved", value: resolvedSos.length, hint: "Closed critical cases", icon: <CheckCircle size={22} />, tone: "green" }
         ]}
       />
 
-      {openSos.length > 0 ? (
+      {openSosAll.length > 0 ? (
         <div className="admin-critical-banner" role="alert">
           <div>
-            <strong>CRITICAL: {openSos.length} active SOS in progress</strong>
+            <strong>CRITICAL: {openSosAll.length} active SOS in progress</strong>
             <span>
               {breachedOpen > 0
                 ? `${breachedOpen} past ${SOS_SLA_MINUTES}m SLA — prioritize Accra response now.`
@@ -105,10 +131,10 @@ export function SosIncidentsScreen({
           <div className="admin-reference-cardhead">
             <div>
               <h3>Priority queue</h3>
-              <p>{openSos.length} open critical incidents</p>
+              <p>{openSosAll.length} open critical incidents</p>
             </div>
           </div>
-          {openSos.length === 0 ? (
+          {openSosAll.length === 0 ? (
             <EmptyCard
               title="No open SOS incidents."
               body="Critical SOS alerts from the apps will appear here in real time."
@@ -160,6 +186,12 @@ export function SosIncidentsScreen({
                   </div>
                 );
               })}
+              <AdminPagination
+                page={paginationPage}
+                totalItems={paginationTotal}
+                pageSize={effectivePageSize}
+                onPageChange={paginationOnChange}
+              />
             </div>
           )}
         </article>
@@ -210,7 +242,7 @@ export function SosIncidentsScreen({
             <p>Trip, rider, and SLA detail for open SOS</p>
           </div>
         </div>
-        {openSos.length === 0 ? (
+        {openSosAll.length === 0 ? (
           <EmptyCard title="Queue clear." body="No open critical rows to expand." />
         ) : (
           <div className="admin-table-wrapper">

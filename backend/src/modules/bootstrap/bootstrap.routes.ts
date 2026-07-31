@@ -24,7 +24,7 @@ const bootstrapService = new BootstrapService();
 export const bootstrapRoutes: FastifyPluginAsync = async (server) => {
   server.get("/bootstrap/passengers", async (request) => {
     const query = parseQuery(request, listQuerySchema);
-    return bootstrapService.listPassengers(query.limit);
+    return bootstrapService.listPassengers(query.limit, query.page ?? 1);
   });
 
   server.post("/bootstrap/passengers", async (request, reply) => {
@@ -35,7 +35,7 @@ export const bootstrapRoutes: FastifyPluginAsync = async (server) => {
 
   server.get("/bootstrap/riders", async (request) => {
     const query = parseQuery(request, listQuerySchema);
-    return bootstrapService.listRiders(query.limit);
+    return bootstrapService.listRiders(query.limit, query.page ?? 1);
   });
 
   server.post("/bootstrap/riders", async (request, reply) => {

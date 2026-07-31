@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ClipboardList, CheckCircle, AlertTriangle, XCircle, Search } from "lucide-react";
 import { useAdminToast } from "./AdminToast";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
+import { AdminPagination, hasServerPagination, usePagination } from "./ui/AdminPagination";
 
 const DOCUMENT_TABS = [
   "All",
@@ -51,6 +52,10 @@ export type RiderDocumentsScreenProps = {
   onDocumentReview?: (documentId: string, status: "APPROVED" | "REJECTED" | "EXPIRED", notes?: string) => void;
   isMutating?: boolean;
   dataLoading?: boolean;
+  page?: number;
+  totalItems?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
 };
 
 export function RiderDocumentsScreen({
@@ -59,17 +64,16 @@ export function RiderDocumentsScreen({
   onDocumentReview,
   isMutating = false,
   dataLoading = false,
+  page,
+  totalItems,
+  pageSize,
+  onPageChange,
 }: RiderDocumentsScreenProps) {
   const { addToast } = useAdminToast();
   const [activeTab, setActiveTab] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [currentPage, setCurrentPage] = useState(1);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
-
-  if (dataLoading) {
-    return <AdminPageSkeleton variant="table" kpis={5} rows={5} cols={5} />;
-  }
 
   const filtered = riderDocumentRows.filter((row) => {
     const matchesTab =
@@ -86,12 +90,21 @@ export function RiderDocumentsScreen({
     return matchesTab && matchesSearch && matchesStatus;
   });
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
-  const safePage = Math.min(currentPage, totalPages);
-  const paginated = filtered.slice(
-    (safePage - 1) * ITEMS_PER_PAGE,
-    safePage * ITEMS_PER_PAGE
-  );
+  const effectivePageSize = pageSize ?? ITEMS_PER_PAGE;
+  const serverPaginated = hasServerPagination({ page, totalItems, pageSize, onPageChange });
+  const clientPagination = usePagination(filtered, effectivePageSize);
+  const paginated = serverPaginated ? filtered : clientPagination.paginated;
+  const paginationPage = serverPaginated ? page! : clientPagination.page;
+  const paginationTotal = serverPaginated ? totalItems! : filtered.length;
+  const paginationOnChange = serverPaginated ? onPageChange! : clientPagination.setPage;
+
+  useEffect(() => {
+    if (!serverPaginated) clientPagination.setPage(1);
+  }, [activeTab, searchQuery, statusFilter, serverPaginated, clientPagination.setPage]);
+
+  if (dataLoading) {
+    return <AdminPageSkeleton variant="table" kpis={5} rows={5} cols={5} />;
+  }
 
   return (
     <div className="exact-admin-screen">
@@ -141,7 +154,7 @@ export function RiderDocumentsScreen({
             className={`admin-tab${activeTab === tab ? " active" : ""}`}
             onClick={() => {
               setActiveTab(tab);
-              setCurrentPage(1);
+              if (!serverPaginated) clientPagination.setPage(1);
             }}
           >
             {tab}
@@ -158,7 +171,7 @@ export function RiderDocumentsScreen({
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
-              setCurrentPage(1);
+              if (!serverPaginated) clientPagination.setPage(1);
             }}
           />
         </label>
@@ -167,7 +180,7 @@ export function RiderDocumentsScreen({
           value={statusFilter}
           onChange={(e) => {
             setStatusFilter(e.target.value);
-            setCurrentPage(1);
+            if (!serverPaginated) clientPagination.setPage(1);
           }}
         >
           {STATUS_OPTIONS.map((s) => (
@@ -310,51 +323,12 @@ export function RiderDocumentsScreen({
             </table>
           </div>
 
-          {/* Pagination */}
-          <div style={styles.paginationRow}>
-            <button
-              style={{
-                ...styles.pageBtn,
-                ...(safePage === 1 ? styles.pageBtnDisabled : {}),
-              }}
-              disabled={safePage === 1}
-              onClick={() => {
-                setCurrentPage((p) => Math.max(1, p - 1));
-              }}
-            >
-              {"\u2190"} Prev
-            </button>
-            <div style={styles.pageNumbers}>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (page) => (
-                  <button
-                    key={page}
-                    onClick={() => {
-                      setCurrentPage(page);
-                    }}
-                    style={{
-                      ...styles.pageNum,
-                      ...(page === safePage ? styles.pageNumActive : {}),
-                    }}
-                  >
-                    {page}
-                  </button>
-                )
-              )}
-            </div>
-            <button
-              style={{
-                ...styles.pageBtn,
-                ...(safePage === totalPages ? styles.pageBtnDisabled : {}),
-              }}
-              disabled={safePage === totalPages}
-              onClick={() => {
-                setCurrentPage((p) => Math.min(totalPages, p + 1));
-              }}
-            >
-              Next {"\u2192"}
-            </button>
-          </div>
+          <AdminPagination
+            page={paginationPage}
+            totalItems={paginationTotal}
+            pageSize={effectivePageSize}
+            onPageChange={paginationOnChange}
+          />
         </article>
       )}
     </div>

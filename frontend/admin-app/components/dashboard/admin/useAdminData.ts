@@ -7,6 +7,8 @@ import { Bike, Package, Users, CreditCard, Star, Tag, MapPin, Bell, User } from 
 import { apiUrl, requestJson } from "@/lib/api";
 import { parseNumber, shortDate } from "./utils";
 import { useAdminToast } from "./AdminToast";
+import { needsForScreen } from "./adminQueryNeeds";
+import { listPageSize, requestPagedJson, type PagedResult } from "./paged";
 import type {
   AdminConsoleScreen,
   RideRecord,
@@ -28,6 +30,18 @@ import type {
   AdminUserStats,
   RiderDocumentRecord
 } from "./types";
+
+function useDocumentVisible() {
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const sync = () => setVisible(document.visibilityState === "visible");
+    sync();
+    document.addEventListener("visibilitychange", sync);
+    return () => document.removeEventListener("visibilitychange", sync);
+  }, []);
+  return visible;
+}
 
 // ─── query key constants ──────────────────────────────────────────────────────
 export const QK = {
@@ -119,9 +133,21 @@ function getDateKeys(from?: string, to?: string, defaultDays: number = 7): strin
 const DEFAULT_CURRENCY = "GHS";
 
 // ─── hook ─────────────────────────────────────────────────────────────────────
-export function useAdminData(token: string | null | undefined, isAdmin: boolean) {
+export function useAdminData(
+  token: string | null | undefined,
+  isAdmin: boolean,
+  screen: AdminConsoleScreen
+) {
   const queryClient = useQueryClient();
   const { addToast } = useAdminToast();
+  const tabVisible = useDocumentVisible();
+  const needs = useMemo(() => needsForScreen(screen), [screen]);
+  const want = useCallback((need: Parameters<typeof needs.has>[0]) => isAdmin && needs.has(need), [isAdmin, needs]);
+  const poll = useCallback(
+    (ms: number, need: Parameters<typeof needs.has>[0]) =>
+      tabVisible && isAdmin && needs.has(need) ? ms : false,
+    [tabVisible, isAdmin, needs]
+  );
 
   // ── local UI state ──────────────────────────────────────────────────────────
   const [requestTab, setRequestTab] = useState<"rides" | "delivery">("rides");
@@ -146,38 +172,92 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     passengerUserId: "", email: "", password: "", title: "", permissions: ""
   });
 
-  // ── queries (reduced polling intervals) ─────────────────────────────────────
-  const { data: ridesData, isPending: ridesPending } = useQuery<RideRecord[]>({
-    queryKey: QK.rides(token),
-    queryFn: () => requestJson("/rides?limit=300", { token }),
-    enabled: isAdmin,
-    refetchInterval: 30000,
+  // Server list paging — heavier screens pull a wider first page for charts.
+  const heavySample = screen === "dashboard" || screen === "reports" || screen === "promotions";
+  const ridesPageSize = listPageSize(heavySample);
+  const deliveriesPageSize = listPageSize(heavySample);
+  const [ridesPage, setRidesPage] = useState(1);
+  const [deliveriesPage, setDeliveriesPage] = useState(1);
+  const [ridersPage, setRidersPage] = useState(1);
+  const [passengersPage, setPassengersPage] = useState(1);
+  const [walletPage, setWalletPage] = useState(1);
+  const [payoutPage, setPayoutPage] = useState(1);
+  const [ratingsPage, setRatingsPage] = useState(1);
+  const [incidentsPage, setIncidentsPage] = useState(1);
+  const [auditPage, setAuditPage] = useState(1);
+  const [ticketsPage, setTicketsPage] = useState(1);
+  const [documentsPage, setDocumentsPage] = useState(1);
+  const LIST_PAGE = 25;
+
+  useEffect(() => {
+    setRidesPage(1);
+    setDeliveriesPage(1);
+    setRidersPage(1);
+    setPassengersPage(1);
+    setWalletPage(1);
+    setPayoutPage(1);
+    setRatingsPage(1);
+    setIncidentsPage(1);
+    setAuditPage(1);
+    setTicketsPage(1);
+    setDocumentsPage(1);
+  }, [screen]);
+
+  useEffect(() => {
+    setWalletPage(1);
+  }, [transactionStatusFilter, transactionTypeFilter]);
+
+  useEffect(() => {
+    setPayoutPage(1);
+  }, [payoutStatusFilter]);
+
+  useEffect(() => {
+    setRatingsPage(1);
+  }, [ratingRiderFilter, ratingRideFilter, ratingFromDateFilter, ratingToDateFilter]);
+
+  // ── queries (screen-scoped + server-paged + visibility-aware polling) ───────
+  const { data: ridesPaged, isPending: ridesPending } = useQuery<PagedResult<RideRecord>>({
+    queryKey: [...QK.rides(token), ridesPage, ridesPageSize],
+    queryFn: () => requestPagedJson<RideRecord>("/rides", { token, page: ridesPage, limit: ridesPageSize }),
+    enabled: want("rides"),
+    refetchInterval: poll(30000, "rides"),
     staleTime: 25000
   });
 
-  const { data: deliveriesData, isPending: deliveriesPending } = useQuery<DeliveryRecord[]>({
-    queryKey: QK.deliveries(token),
-    queryFn: () => requestJson("/deliveries?limit=300", { token }),
-    enabled: isAdmin,
-    refetchInterval: 30000,
+  const { data: deliveriesPaged, isPending: deliveriesPending } = useQuery<PagedResult<DeliveryRecord>>({
+    queryKey: [...QK.deliveries(token), deliveriesPage, deliveriesPageSize],
+    queryFn: () =>
+      requestPagedJson<DeliveryRecord>("/deliveries", {
+        token,
+        page: deliveriesPage,
+        limit: deliveriesPageSize
+      }),
+    enabled: want("deliveries"),
+    refetchInterval: poll(30000, "deliveries"),
     staleTime: 25000
   });
 
-  const { data: ridersResp, isPending: ridersPending } = useQuery<{ data: RiderRecord[]; total: number }>({
-    queryKey: QK.riders(token),
-    queryFn: () => requestJson("/bootstrap/riders?limit=200", { token }),
-    enabled: isAdmin,
-    refetchInterval: 45000,
+  const { data: ridersResp, isPending: ridersPending } = useQuery<PagedResult<RiderRecord>>({
+    queryKey: [...QK.riders(token), ridersPage, LIST_PAGE],
+    queryFn: () =>
+      requestPagedJson<RiderRecord>("/bootstrap/riders", { token, page: ridersPage, limit: LIST_PAGE }),
+    enabled: want("riders"),
+    refetchInterval: poll(45000, "riders"),
     staleTime: 40000
   });
   const ridersData = ridersResp?.data;
   const ridersTotal = ridersResp?.total ?? ridersData?.length ?? 0;
 
-  const { data: passengersResp, isPending: passengersPending } = useQuery<{ data: PassengerRecord[]; total: number }>({
-    queryKey: QK.passengers(token),
-    queryFn: () => requestJson("/bootstrap/passengers?limit=200", { token }),
-    enabled: isAdmin,
-    refetchInterval: 60000,
+  const { data: passengersResp, isPending: passengersPending } = useQuery<PagedResult<PassengerRecord>>({
+    queryKey: [...QK.passengers(token), passengersPage, LIST_PAGE],
+    queryFn: () =>
+      requestPagedJson<PassengerRecord>("/bootstrap/passengers", {
+        token,
+        page: passengersPage,
+        limit: LIST_PAGE
+      }),
+    enabled: want("passengers"),
+    refetchInterval: poll(60000, "passengers"),
     staleTime: 55000
   });
   const passengersData = passengersResp?.data;
@@ -186,76 +266,139 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
   const { data: userStats, isPending: userStatsPending } = useQuery<AdminUserStats>({
     queryKey: QK.userStats(token),
     queryFn: () => requestJson("/admin/user-stats", { token }),
-    enabled: isAdmin,
-    refetchInterval: 60000,
+    enabled: want("userStats"),
+    refetchInterval: poll(60000, "userStats"),
     staleTime: 55000
   });
 
-  const { data: walletTxData, isPending: walletTxPending } = useQuery<WalletTransactionRecord[]>({
-    queryKey: QK.walletTx(token),
-    queryFn: () => requestJson("/admin/payments/wallet-transactions?limit=300", { token }),
-    enabled: isAdmin,
-    refetchInterval: 45000,
+  const walletTypeAllowed = new Set([
+    "TOP_UP",
+    "DEBIT",
+    "CREDIT",
+    "REFUND",
+    "BONUS",
+    "COMMISSION",
+    "WITHDRAWAL",
+    "ADJUSTMENT"
+  ]);
+  const walletExtra = [
+    transactionStatusFilter ? `status=${encodeURIComponent(transactionStatusFilter)}` : "",
+    transactionTypeFilter && walletTypeAllowed.has(transactionTypeFilter)
+      ? `type=${encodeURIComponent(transactionTypeFilter)}`
+      : ""
+  ]
+    .filter(Boolean)
+    .join("&");
+
+  const { data: walletPaged, isPending: walletTxPending } = useQuery<PagedResult<WalletTransactionRecord>>({
+    queryKey: [...QK.walletTx(token), walletPage, LIST_PAGE, transactionStatusFilter, transactionTypeFilter],
+    queryFn: () =>
+      requestPagedJson<WalletTransactionRecord>("/admin/payments/wallet-transactions", {
+        token,
+        page: walletPage,
+        limit: LIST_PAGE,
+        extraQuery: walletExtra || undefined
+      }),
+    enabled: want("walletTx"),
+    refetchInterval: poll(45000, "walletTx"),
     staleTime: 40000
   });
 
-  const { data: payoutData, isPending: payoutPending } = useQuery<PayoutRequestRecord[]>({
-    queryKey: QK.payoutRequests(token),
-    queryFn: () => requestJson("/admin/payments/payout-requests?limit=200", { token }),
-    enabled: isAdmin,
-    refetchInterval: 45000,
+  const payoutExtra = payoutStatusFilter
+    ? `status=${encodeURIComponent(payoutStatusFilter)}`
+    : undefined;
+
+  const { data: payoutPaged, isPending: payoutPending } = useQuery<PagedResult<PayoutRequestRecord>>({
+    queryKey: [...QK.payoutRequests(token), payoutPage, LIST_PAGE, payoutStatusFilter],
+    queryFn: () =>
+      requestPagedJson<PayoutRequestRecord>("/admin/payments/payout-requests", {
+        token,
+        page: payoutPage,
+        limit: LIST_PAGE,
+        extraQuery: payoutExtra
+      }),
+    enabled: want("payout"),
+    refetchInterval: poll(45000, "payout"),
     staleTime: 40000
   });
 
-  const { data: ratingsData, isPending: ratingsPending } = useQuery<AdminRatingRecord[]>({
-    queryKey: QK.ratings(token),
-    queryFn: () => requestJson("/admin/ratings", { token }),
-    enabled: isAdmin,
-    refetchInterval: 60000,
+  const ratingsExtra = [
+    ratingRiderFilter ? `riderId=${encodeURIComponent(ratingRiderFilter)}` : "",
+    ratingRideFilter ? `rideId=${encodeURIComponent(ratingRideFilter)}` : "",
+    ratingFromDateFilter ? `fromDate=${encodeURIComponent(ratingFromDateFilter)}` : "",
+    ratingToDateFilter ? `toDate=${encodeURIComponent(ratingToDateFilter)}` : ""
+  ]
+    .filter(Boolean)
+    .join("&");
+
+  const { data: ratingsPaged, isPending: ratingsPending } = useQuery<PagedResult<AdminRatingRecord>>({
+    queryKey: [
+      ...QK.ratings(token),
+      ratingsPage,
+      LIST_PAGE,
+      ratingRiderFilter,
+      ratingRideFilter,
+      ratingFromDateFilter,
+      ratingToDateFilter
+    ],
+    queryFn: () =>
+      requestPagedJson<AdminRatingRecord>("/admin/ratings", {
+        token,
+        page: ratingsPage,
+        limit: LIST_PAGE,
+        extraQuery: ratingsExtra || undefined
+      }),
+    enabled: want("ratings"),
+    refetchInterval: poll(60000, "ratings"),
     staleTime: 55000
   });
 
-  const { data: incidentsData, isPending: incidentsPending } = useQuery<AdminIncidentRecord[]>({
-    queryKey: QK.incidents(token),
-    queryFn: () => requestJson("/admin/incidents", { token }),
-    enabled: isAdmin,
-    refetchInterval: 45000,
+  const { data: incidentsPaged, isPending: incidentsPending } = useQuery<PagedResult<AdminIncidentRecord>>({
+    queryKey: [...QK.incidents(token), incidentsPage, LIST_PAGE],
+    queryFn: () =>
+      requestPagedJson<AdminIncidentRecord>("/admin/incidents", {
+        token,
+        page: incidentsPage,
+        limit: LIST_PAGE
+      }),
+    enabled: want("incidents"),
+    refetchInterval: poll(45000, "incidents"),
     staleTime: 40000
   });
 
   const { data: adminAccountsData, isPending: adminAccountsPending } = useQuery<AdminAccountRecord[]>({
     queryKey: QK.adminAccounts(token),
     queryFn: () => requestJson("/admin/accounts", { token }),
-    enabled: isAdmin,
+    enabled: want("adminAccounts"),
     staleTime: 120000
   });
 
   const { data: adminPermissionsData } = useQuery<{ roles: Record<string, string[]> }>({
     queryKey: QK.adminPermissions(token),
     queryFn: () => requestJson("/admin/permissions", { token }),
-    enabled: isAdmin,
+    enabled: want("adminPermissions"),
     staleTime: 300000
   });
 
   const { data: adminModulesData } = useQuery<{ modules: string[] }>({
     queryKey: QK.adminModules(token),
     queryFn: () => requestJson("/admin/modules", { token }),
-    enabled: isAdmin,
+    enabled: want("adminModules"),
     staleTime: 300000
   });
 
   const { data: zonesData, isPending: zonesPending } = useQuery<ServiceZoneRecord[]>({
     queryKey: QK.zones(token),
     queryFn: () => requestJson("/bootstrap/service-zones?limit=100", { token }),
-    enabled: isAdmin,
+    enabled: want("zones"),
     staleTime: 120000
   });
 
-  const { data: auditLogsData, isPending: auditLogsPending } = useQuery<AuditLogRecord[]>({
-    queryKey: QK.auditLogs(token),
+  const { data: auditLogsPaged, isPending: auditLogsPending } = useQuery<PagedResult<AuditLogRecord>>({
+    queryKey: [...QK.auditLogs(token), auditPage, LIST_PAGE],
     queryFn: async () => {
       try {
-        const rows = await requestJson<Array<{
+        const paged = await requestPagedJson<{
           id: string;
           action: string;
           entityType?: string;
@@ -265,44 +408,54 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
           details?: Record<string, unknown> | null;
           createdAt: string;
           actor?: { id: string; fullName: string; email: string | null; role?: string } | null;
-        }>>("/admin/audit-logs?limit=300", { token });
-        return rows.map((row) => ({
-          id: row.id,
-          action: row.action,
-          entity: row.entity ?? row.entityType ?? "Unknown",
-          entityId: row.entityId,
-          details: row.details ?? row.changes ?? null,
-          createdAt: row.createdAt,
-          actor: row.actor
-            ? {
-                id: row.actor.id,
-                fullName: row.actor.fullName,
-                email: row.actor.email,
-                role: row.actor.role ?? "admin"
-              }
-            : null
-        }));
+        }>("/admin/audit-logs", { token, page: auditPage, limit: LIST_PAGE });
+        return {
+          ...paged,
+          data: paged.data.map((row) => ({
+            id: row.id,
+            action: row.action,
+            entity: row.entity ?? row.entityType ?? "Unknown",
+            entityId: row.entityId,
+            details: row.details ?? row.changes ?? null,
+            createdAt: row.createdAt,
+            actor: row.actor
+              ? {
+                  id: row.actor.id,
+                  fullName: row.actor.fullName,
+                  email: row.actor.email,
+                  role: row.actor.role ?? "admin"
+                }
+              : null
+          }))
+        };
       } catch (err) {
         console.warn("Audit logs not available in backend", err);
-        return [];
+        return { data: [], total: 0, page: auditPage, limit: LIST_PAGE };
       }
     },
-    enabled: isAdmin,
+    enabled: want("auditLogs"),
     staleTime: 60000
   });
 
-  const { data: supportTicketsData, isPending: supportTicketsPending } = useQuery<AdminSupportTicketRecord[]>({
-    queryKey: QK.supportTickets(token),
-    queryFn: () => requestJson("/admin/support/tickets?limit=200", { token }),
-    enabled: isAdmin,
-    refetchInterval: 30000,
+  const { data: supportTicketsPaged, isPending: supportTicketsPending } = useQuery<
+    PagedResult<AdminSupportTicketRecord>
+  >({
+    queryKey: [...QK.supportTickets(token), ticketsPage, LIST_PAGE],
+    queryFn: () =>
+      requestPagedJson<AdminSupportTicketRecord>("/admin/support/tickets", {
+        token,
+        page: ticketsPage,
+        limit: LIST_PAGE
+      }),
+    enabled: want("supportTickets"),
+    refetchInterval: poll(30000, "supportTickets"),
     staleTime: 25000
   });
 
   const { data: escalationRulesData, isPending: escalationRulesPending } = useQuery<EscalationRuleRecord[]>({
     queryKey: QK.escalationRules(token),
     queryFn: () => requestJson("/admin/escalation-rules", { token }),
-    enabled: isAdmin,
+    enabled: want("escalationRules"),
     staleTime: 30000
   });
 
@@ -339,22 +492,29 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
         createdAt: row.createdAt
       }));
     },
-    enabled: isAdmin,
+    enabled: want("scheduledBroadcasts"),
     staleTime: 20000
   });
 
   const { data: opsJobStatusData } = useQuery<OpsJobStatus>({
     queryKey: QK.opsJobStatus(token),
     queryFn: () => requestJson<OpsJobStatus>("/admin/ops-jobs/status", { token }),
-    enabled: isAdmin,
+    enabled: want("opsJobStatus"),
     staleTime: 15000,
-    refetchInterval: 30000
+    refetchInterval: poll(30000, "opsJobStatus")
   });
 
-  const { data: riderDocumentsData, isPending: riderDocumentsPending } = useQuery<RiderDocumentRecord[]>({
-    queryKey: QK.riderDocuments(token),
-    queryFn: () => requestJson<RiderDocumentRecord[]>("/admin/documents?limit=300", { token }),
-    enabled: isAdmin,
+  const { data: riderDocumentsPaged, isPending: riderDocumentsPending } = useQuery<
+    PagedResult<RiderDocumentRecord>
+  >({
+    queryKey: [...QK.riderDocuments(token), documentsPage, LIST_PAGE],
+    queryFn: () =>
+      requestPagedJson<RiderDocumentRecord>("/admin/documents", {
+        token,
+        page: documentsPage,
+        limit: LIST_PAGE
+      }),
+    enabled: want("riderDocuments"),
     staleTime: 20000
   });
 
@@ -363,7 +523,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
   }>({
     queryKey: QK.platformSettings(token),
     queryFn: () => requestJson("/admin/settings", { token }),
-    enabled: isAdmin,
+    enabled: want("platformSettings"),
     staleTime: 30000
   });
   const platformSettings = useMemo(
@@ -371,11 +531,15 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     [platformSettingsData]
   );
 
-  // ── live ops stream (SSE) ───────────────────────────────────────────────────
+  // ── live ops stream (SSE) — map / SOS screens only ──────────────────────────
   const [liveSnapshot, setLiveSnapshot] = useState<LiveOpsSnapshot | null>(null);
+  const liveStreamEnabled = want("liveStream") && tabVisible;
 
   useEffect(() => {
-    if (!isAdmin || !token || typeof window === "undefined") return;
+    if (!liveStreamEnabled || !token || typeof window === "undefined") {
+      setLiveSnapshot(null);
+      return;
+    }
     const source = new EventSource(apiUrl(`/admin/stream?token=${encodeURIComponent(token)}`));
     source.onmessage = (event) => {
       try {
@@ -386,18 +550,20 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     };
     return () => {
       source.close();
-      setLiveSnapshot(null);
     };
-  }, [isAdmin, token]);
+  }, [liveStreamEnabled, token]);
 
   // ── raw data ────────────────────────────────────────────────────────────────
-  const rides = useMemo(() => ridesData ?? [], [ridesData]);
-  const deliveries = useMemo(() => deliveriesData ?? [], [deliveriesData]);
+  const rides = useMemo(() => ridesPaged?.data ?? [], [ridesPaged]);
+  const ridesTotal = ridesPaged?.total ?? rides.length;
+  const deliveries = useMemo(() => deliveriesPaged?.data ?? [], [deliveriesPaged]);
+  const deliveriesTotal = deliveriesPaged?.total ?? deliveries.length;
+  /** Stable rider rows from the API — GPS overlays must not invalidate finance memos. */
+  const ridersBase = useMemo(() => ridersData ?? [], [ridersData]);
   const riders = useMemo(() => {
-    const base = ridersData ?? [];
-    if (!liveSnapshot?.riders?.length) return base;
+    if (!liveSnapshot?.riders?.length) return ridersBase;
     const liveById = new Map(liveSnapshot.riders.map((r) => [r.id, r]));
-    return base.map((rider) => {
+    return ridersBase.map((rider) => {
       const live = liveById.get(rider.id);
       if (!live) return rider;
       return {
@@ -407,16 +573,24 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
         currentLongitude: String(live.longitude)
       };
     });
-  }, [ridersData, liveSnapshot]);
+  }, [ridersBase, liveSnapshot]);
   const passengers = useMemo(() => passengersData ?? [], [passengersData]);
-  const walletTransactions = useMemo(() => walletTxData ?? [], [walletTxData]);
-  const payoutRequests = useMemo(() => payoutData ?? [], [payoutData]);
-  const ratings = useMemo(() => ratingsData ?? [], [ratingsData]);
-  const incidents = useMemo(() => incidentsData ?? [], [incidentsData]);
+  const walletTransactions = useMemo(() => walletPaged?.data ?? [], [walletPaged]);
+  const walletTxTotal = walletPaged?.total ?? walletTransactions.length;
+  const payoutRequests = useMemo(() => payoutPaged?.data ?? [], [payoutPaged]);
+  const payoutRequestsTotal = payoutPaged?.total ?? payoutRequests.length;
+  const ratings = useMemo(() => ratingsPaged?.data ?? [], [ratingsPaged]);
+  const ratingsTotal = ratingsPaged?.total ?? ratings.length;
+  const incidents = useMemo(() => incidentsPaged?.data ?? [], [incidentsPaged]);
+  const incidentsTotal = incidentsPaged?.total ?? incidents.length;
   const adminAccounts = useMemo(() => adminAccountsData ?? [], [adminAccountsData]);
   const zones = useMemo(() => zonesData ?? [], [zonesData]);
-  const auditLogs = useMemo(() => auditLogsData ?? [], [auditLogsData]);
-  const supportTickets = useMemo(() => supportTicketsData ?? [], [supportTicketsData]);
+  const auditLogs = useMemo(() => auditLogsPaged?.data ?? [], [auditLogsPaged]);
+  const auditTotal = auditLogsPaged?.total ?? auditLogs.length;
+  const supportTickets = useMemo(() => supportTicketsPaged?.data ?? [], [supportTicketsPaged]);
+  const supportTicketsTotal = supportTicketsPaged?.total ?? supportTickets.length;
+  const riderDocuments = useMemo(() => riderDocumentsPaged?.data ?? [], [riderDocumentsPaged]);
+  const riderDocumentsTotal = riderDocumentsPaged?.total ?? riderDocuments.length;
   const escalationRules = useMemo(() => escalationRulesData ?? [], [escalationRulesData]);
   const scheduledBroadcasts = useMemo(() => scheduledBroadcastsData ?? [], [scheduledBroadcastsData]);
   const opsJobStatus = opsJobStatusData ?? null;
@@ -429,12 +603,12 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
   // New SOS pushed over the live stream → refresh the incidents feed immediately.
   const liveSos = useMemo(() => liveSnapshot?.sos ?? [], [liveSnapshot]);
   useEffect(() => {
-    if (liveSos.length === 0) return;
+    if (!want("incidents") || liveSos.length === 0) return;
     const known = new Set(incidents.map((i) => i.id));
     if (liveSos.some((s) => !known.has(s.id))) {
       void queryClient.invalidateQueries({ queryKey: QK.incidents(token) });
     }
-  }, [liveSos, incidents, queryClient, token]);
+  }, [liveSos, incidents, queryClient, token, want]);
 
   // ── derived rider data ──────────────────────────────────────────────────────
   const activeRiders = useMemo(() => riders.filter((r) => r.onlineStatus), [riders]);
@@ -576,18 +750,9 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     [walletTransactions]
   );
 
-  const filteredWalletTransactions = useMemo(() => {
-    return walletTransactions.filter((t) => {
-      if (transactionStatusFilter && t.status.toUpperCase() !== transactionStatusFilter) return false;
-      if (transactionTypeFilter && !t.type.toUpperCase().includes(transactionTypeFilter)) return false;
-      return true;
-    });
-  }, [walletTransactions, transactionStatusFilter, transactionTypeFilter]);
-
-  const filteredPayoutRequests = useMemo(() => {
-    if (!payoutStatusFilter) return payoutRequests;
-    return payoutRequests.filter((p) => p.status.toUpperCase() === payoutStatusFilter);
-  }, [payoutRequests, payoutStatusFilter]);
+  // Filters are applied server-side via query params; keep aliases for screens.
+  const filteredWalletTransactions = walletTransactions;
+  const filteredPayoutRequests = payoutRequests;
 
   // ── finance daily buckets ───────────────────────────────────────────────────
   const financeDailyBuckets = useMemo(() => {
@@ -635,47 +800,82 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     [paymentMethodSnapshot]
   );
 
-  // ── rider financial rows ────────────────────────────────────────────────────
+  // ── rider financial rows (indexed joins; stable ridersBase — ignore live GPS) ─
   const riderFinancialRows = useMemo((): RiderFinancialRow[] => {
-    return riders.map((rider) => {
-      const riderRides = rides.filter((r) => r.rider?.user.fullName === rider.user.fullName);
-      const completed = riderRides.filter((r) => r.status.toLowerCase() === "completed");
-      const active = riderRides.filter((r) => !["completed", "cancelled"].includes(r.status.toLowerCase()));
-      const revenue = sum(completed.map((r) => r.finalFare ?? r.estimatedFare));
-      const commission = sum(completed.map((r) => r.platformCommission));
-      const earnings = revenue - commission;
+    const ridesByName = new Map<string, RideRecord[]>();
+    for (const ride of rides) {
+      const name = ride.rider?.user.fullName;
+      if (!name) continue;
+      const bucket = ridesByName.get(name);
+      if (bucket) bucket.push(ride);
+      else ridesByName.set(name, [ride]);
+    }
 
-      const riderRatings = ratings.filter((rat) => rat.rated.riderProfile?.id === rider.id);
-      const averageRating =
-        riderRatings.length > 0
-          ? riderRatings.reduce((s, r) => s + r.score, 0) / riderRatings.length
-          : 0;
+    const ratingsByRiderId = new Map<string, AdminRatingRecord[]>();
+    for (const rating of ratings) {
+      const id = rating.rated.riderProfile?.id;
+      if (!id) continue;
+      const bucket = ratingsByRiderId.get(id);
+      if (bucket) bucket.push(rating);
+      else ratingsByRiderId.set(id, [rating]);
+    }
 
-      const riderWalletTx = walletTransactions.filter(
-        (t) => t.wallet.user.riderProfile?.id === rider.id
-      );
-      const walletMovement = sum(riderWalletTx.map((t) => parseNumber(t.amount)));
+    const walletByRiderId = new Map<string, WalletTransactionRecord[]>();
+    for (const tx of walletTransactions) {
+      const id = tx.wallet.user.riderProfile?.id;
+      if (!id) continue;
+      const bucket = walletByRiderId.get(id);
+      if (bucket) bucket.push(tx);
+      else walletByRiderId.set(id, [tx]);
+    }
 
-      const riderPayouts = payoutRequests.filter((p) => p.rider.id === rider.id);
-      const payoutTotal = sum(
-        riderPayouts.filter((p) => p.status.toLowerCase() === "paid").map((p) => p.amount)
-      );
+    const payoutsByRiderId = new Map<string, PayoutRequestRecord[]>();
+    for (const payout of payoutRequests) {
+      const id = payout.rider.id;
+      const bucket = payoutsByRiderId.get(id);
+      if (bucket) bucket.push(payout);
+      else payoutsByRiderId.set(id, [payout]);
+    }
 
-      return {
-        rider,
-        rideCount: riderRides.length,
-        completedCount: completed.length,
-        activeCount: active.length,
-        revenue,
-        earnings,
-        commission,
-        averageRating,
-        ratingCount: riderRatings.length,
-        walletMovement,
-        payoutTotal
-      };
-    }).sort((a, b) => b.completedCount - a.completedCount);
-  }, [riders, rides, ratings, walletTransactions, payoutRequests]);
+    return ridersBase
+      .map((rider) => {
+        const riderRides = ridesByName.get(rider.user.fullName) ?? [];
+        const completed = riderRides.filter((r) => r.status.toLowerCase() === "completed");
+        const active = riderRides.filter((r) => !["completed", "cancelled"].includes(r.status.toLowerCase()));
+        const revenue = sum(completed.map((r) => r.finalFare ?? r.estimatedFare));
+        const commission = sum(completed.map((r) => r.platformCommission));
+        const earnings = revenue - commission;
+
+        const riderRatings = ratingsByRiderId.get(rider.id) ?? [];
+        const averageRating =
+          riderRatings.length > 0
+            ? riderRatings.reduce((s, r) => s + r.score, 0) / riderRatings.length
+            : 0;
+
+        const riderWalletTx = walletByRiderId.get(rider.id) ?? [];
+        const walletMovement = sum(riderWalletTx.map((t) => parseNumber(t.amount)));
+
+        const riderPayouts = payoutsByRiderId.get(rider.id) ?? [];
+        const payoutTotal = sum(
+          riderPayouts.filter((p) => p.status.toLowerCase() === "paid").map((p) => p.amount)
+        );
+
+        return {
+          rider,
+          rideCount: riderRides.length,
+          completedCount: completed.length,
+          activeCount: active.length,
+          revenue,
+          earnings,
+          commission,
+          averageRating,
+          ratingCount: riderRatings.length,
+          walletMovement,
+          payoutTotal
+        };
+      })
+      .sort((a, b) => b.completedCount - a.completedCount);
+  }, [ridersBase, rides, ratings, walletTransactions, payoutRequests]);
 
   // ── rider wallet aggregations ───────────────────────────────────────────────
   const riderWalletTransactions = useMemo(
@@ -838,15 +1038,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
   );
 
   // ── ratings ─────────────────────────────────────────────────────────────────
-  const filteredRatings = useMemo(() => {
-    return ratings.filter((r) => {
-      if (ratingRiderFilter && !r.rated.riderProfile?.id.includes(ratingRiderFilter)) return false;
-      if (ratingRideFilter && !r.ride.id.includes(ratingRideFilter)) return false;
-      if (ratingFromDateFilter && r.createdAt < ratingFromDateFilter) return false;
-      if (ratingToDateFilter && r.createdAt > ratingToDateFilter + "T23:59:59Z") return false;
-      return true;
-    });
-  }, [ratings, ratingRiderFilter, ratingRideFilter, ratingFromDateFilter, ratingToDateFilter]);
+  const filteredRatings = ratings;
 
   const riderRatingAverage = useMemo(() => {
     const riderRatings = ratings.filter((r) => r.rated.riderProfile != null);
@@ -938,7 +1130,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
   };
 
   const riderDocumentRows = useMemo(() => {
-    const docs = riderDocumentsData ?? [];
+    const docs = riderDocuments;
     return docs.map((doc) => {
       const daysLeft =
         doc.expiresAt && !Number.isNaN(new Date(doc.expiresAt).getTime())
@@ -961,7 +1153,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
         daysLeft
       };
     });
-  }, [riderDocumentsData]);
+  }, [riderDocuments]);
 
   const riderDocumentStats = useMemo(() => {
     const rows = riderDocumentRows;
@@ -1594,7 +1786,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     activeTripsCount: activeRides.length,
     completedTripsCount: completedRides.length,
     activeRidersCount: activeRiders.length,
-    ridersCount: riders.length,
+    ridersCount: ridersTotal,
     riderVerificationPending: riderVerificationStats.pending,
     riderVerificationUnderReview: riderVerificationStats.underReview,
     riderDocumentMissing: riderDocumentStats.missing,
@@ -1604,21 +1796,21 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     riderIncidentsCount: riderIncidents.length,
     ridersWithCoordsCount: ridersWithCoords.length,
     suspendedRidersCount: suspendedRiders.length,
-    passengersCount: passengers.length,
+    passengersCount: passengersTotal,
     pendingPayoutRequestsCount: pendingPayoutRequests.length,
     promoAdjustedTripsCount: promoAdjustedTrips.length,
     zonesActiveCount: zones.filter((z) => z.isActive).length,
     adminAccountsCount: adminAccounts.length,
-    ratingsCount: ratings.length,
+    ratingsCount: ratingsTotal,
     openSupportTicketsCount: openSupportTicketRows.length || openTickets.length,
     openSosCount,
-    deliveriesCount: deliveries.length,
+    deliveriesCount: deliveriesTotal,
     completedDeliveriesCount: completedDeliveries.length
   }), [
-    activeRides, completedRides, activeRiders, riders, riderVerificationStats,
+    activeRides, completedRides, activeRiders, ridersTotal, riderVerificationStats,
     riderDocumentStats, riderFinancialRows, riderWalletTransactions, requestedRiderPayouts,
-    riderIncidents, ridersWithCoords, suspendedRiders, passengers, pendingPayoutRequests,
-    promoAdjustedTrips, zones, adminAccounts, ratings, openTickets, openSupportTicketRows, openSosCount, deliveries, completedDeliveries
+    riderIncidents, ridersWithCoords, suspendedRiders, passengersTotal, pendingPayoutRequests,
+    promoAdjustedTrips, zones, adminAccounts, ratingsTotal, openTickets, openSupportTicketRows, openSosCount, deliveriesTotal, completedDeliveries
   ]);
 
   // ── screen highlights ───────────────────────────────────────────────────────
@@ -1834,14 +2026,14 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
   );
 
   const dataLoading =
-    ridesPending ||
-    deliveriesPending ||
-    ridersPending ||
-    walletTxPending ||
-    payoutPending ||
-    ratingsPending ||
-    incidentsPending ||
-    riderDocumentsPending;
+    (want("rides") && ridesPending) ||
+    (want("deliveries") && deliveriesPending) ||
+    (want("riders") && ridersPending) ||
+    (want("walletTx") && walletTxPending) ||
+    (want("payout") && payoutPending) ||
+    (want("ratings") && ratingsPending) ||
+    (want("incidents") && incidentsPending) ||
+    (want("riderDocuments") && riderDocumentsPending);
 
   return {
     // UI state
@@ -1871,13 +2063,30 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     adminForm, handleAdminFormChange,
     promoteForm, handlePromoteFormChange,
 
-    // Raw data
+    // Raw data + server page totals
     rides, deliveries, riders, passengers, passengersTotal, ridersTotal, userStats,
+    ridesTotal, deliveriesTotal, walletTxTotal, payoutRequestsTotal, ratingsTotal,
+    incidentsTotal, auditTotal, supportTicketsTotal, riderDocumentsTotal,
     walletTransactions, payoutRequests, ratings, incidents,
     adminAccounts, adminRoleEntries, adminModules, zones, auditLogs,
     supportTickets, escalationRules, scheduledBroadcasts, opsJobStatus,
     platformSettings,
     liveSos, liveOpsConnected: Boolean(liveSnapshot), liveOpsTimestamp: liveSnapshot?.timestamp ?? null,
+
+    // Server list paging controls
+    listPageSize: LIST_PAGE,
+    ridesPageSize, deliveriesPageSize,
+    ridesPage, setRidesPage,
+    deliveriesPage, setDeliveriesPage,
+    ridersPage, setRidersPage,
+    passengersPage, setPassengersPage,
+    walletPage, setWalletPage,
+    payoutPage, setPayoutPage,
+    ratingsPage, setRatingsPage,
+    incidentsPage, setIncidentsPage,
+    auditPage, setAuditPage,
+    ticketsPage, setTicketsPage,
+    documentsPage, setDocumentsPage,
 
     // Derived data
     activeRiders, ridersWithCoords, suspendedRiders, vehicleCount,

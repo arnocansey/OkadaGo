@@ -2,6 +2,20 @@
 
 import { useMemo, useState } from "react";
 
+export type ServerPaginationProps = {
+  page?: number;
+  totalItems?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
+};
+
+export function hasServerPagination(
+  props: ServerPaginationProps
+): props is Required<Pick<ServerPaginationProps, "page" | "totalItems" | "onPageChange">> &
+  ServerPaginationProps {
+  return props.page != null && props.totalItems != null && props.onPageChange != null;
+}
+
 /** Clamp + slice a list for page rendering. Resets are the caller's job (pass a key or call setPage(1)). */
 export function usePagination<T>(items: T[], pageSize: number) {
   const [page, setPage] = useState(1);

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Star, Filter, Download, AlertTriangle } from "lucide-react";
 import { downloadCsv } from "@/lib/export-csv";
 import { useAdminToast } from "./AdminToast";
@@ -6,6 +6,7 @@ import { EmptyCard } from "./EmptyCard";
 import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
+import { AdminPagination, hasServerPagination, usePagination } from "./ui/AdminPagination";
 import type { AdminRatingRecord, AdminIncidentRecord } from "./types";
 import { formatDateTime } from "./utils";
 
@@ -23,6 +24,10 @@ export type RatingsScreenProps = {
   onFromDateChange: (v: string) => void;
   onToDateChange: (v: string) => void;
   dataLoading?: boolean;
+  page?: number;
+  totalItems?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
 };
 
 const PAGE_SIZE = 8;
@@ -41,10 +46,32 @@ export function RatingsScreen({
   onFromDateChange,
   onToDateChange,
   dataLoading = false,
+  page,
+  totalItems,
+  pageSize,
+  onPageChange,
 }: RatingsScreenProps) {
-  const [currentPage, setCurrentPage] = useState(1);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const toast = useAdminToast();
+
+  const effectivePageSize = pageSize ?? PAGE_SIZE;
+  const serverPaginated = hasServerPagination({ page, totalItems, pageSize, onPageChange });
+  const clientPagination = usePagination(ratings, effectivePageSize);
+  const paginatedRatings = serverPaginated ? ratings : clientPagination.paginated;
+  const paginationPage = serverPaginated ? page! : clientPagination.page;
+  const paginationTotal = serverPaginated ? totalItems! : ratings.length;
+  const paginationOnChange = serverPaginated ? onPageChange! : clientPagination.setPage;
+
+  useEffect(() => {
+    if (!serverPaginated) clientPagination.setPage(1);
+  }, [
+    ratingRiderFilter,
+    ratingRideFilter,
+    ratingFromDateFilter,
+    ratingToDateFilter,
+    serverPaginated,
+    clientPagination.setPage,
+  ]);
 
   if (dataLoading) {
     return <AdminPageSkeleton variant="split" kpis={4} rows={5} cols={5} />;
@@ -53,10 +80,6 @@ export function RatingsScreen({
   const maxRatingCount = Math.max(1, ...riderRatingDistribution.map((d) => d.count));
   const withReview = ratings.filter((r) => Boolean(r.review?.body));
   const fiveStarCount = riderRatingDistribution.find((d) => d.score === 5)?.count ?? 0;
-
-  const totalPages = Math.max(1, Math.ceil(ratings.length / PAGE_SIZE));
-  const safePage = Math.min(currentPage, totalPages);
-  const paginatedRatings = ratings.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   function handleExport() {
     downloadCsv(
@@ -233,45 +256,12 @@ export function RatingsScreen({
                 </table>
               </div>
 
-              {totalPages > 1 && (
-                <div className="admin-screen-toolbar" style={{ justifyContent: "center", marginTop: 12 }}>
-                  <button
-                    type="button"
-                    className="admin-btn-secondary"
-                    disabled={safePage === 1}
-                    onClick={() => {
-                      setCurrentPage((p) => Math.max(1, p - 1));
-                      toast.addToast("Navigated to previous page", "info");
-                    }}
-                  >
-                    ← Prev
-                  </button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <button
-                      key={page}
-                      type="button"
-                      className={page === safePage ? "admin-btn-primary" : "admin-btn-secondary"}
-                      onClick={() => {
-                        setCurrentPage(page);
-                        toast.addToast(`Page ${page} of ${totalPages}`, "info");
-                      }}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    className="admin-btn-secondary"
-                    disabled={safePage === totalPages}
-                    onClick={() => {
-                      setCurrentPage((p) => Math.min(totalPages, p + 1));
-                      toast.addToast("Navigated to next page", "info");
-                    }}
-                  >
-                    Next →
-                  </button>
-                </div>
-              )}
+              <AdminPagination
+                page={paginationPage}
+                totalItems={paginationTotal}
+                pageSize={effectivePageSize}
+                onPageChange={paginationOnChange}
+              />
             </>
           )}
         </article>
