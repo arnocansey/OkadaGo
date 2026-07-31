@@ -31,7 +31,8 @@ import {
   riderRequestInfoSchema,
   adminExportParamsSchema,
   adminAuditLogsQuerySchema,
-  adminOpsSummaryQuerySchema
+  adminOpsSummaryQuerySchema,
+  adminFinanceSummaryQuerySchema
 } from "./admin.schemas.js";
 
 import { prisma } from "../../common/prisma.js";
@@ -175,6 +176,12 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
     const token = extractBearerToken(request.headers.authorization);
     const query = parseQuery(request, adminOpsSummaryQuerySchema);
     return adminConsoleService.getOpsSummary(token, query);
+  });
+
+  server.get("/admin/finance-summary", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const query = parseQuery(request, adminFinanceSummaryQuerySchema);
+    return adminConsoleService.getFinanceSummary(token, query);
   });
 
   server.get("/admin/riders", async (request) => {

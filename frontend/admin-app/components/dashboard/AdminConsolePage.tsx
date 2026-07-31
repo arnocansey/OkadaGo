@@ -491,10 +491,13 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             payoutOutflow={data.payoutOutflow}
             platformNetProfit={data.platformNetProfit}
             profitMargin={data.profitMargin}
-            postedWalletVolume={data.postedWalletTransactions.reduce(
-              (sum, t) => sum + Math.abs(parseNumber(t.amount)),
-              0
-            )}
+            postedWalletVolume={
+              data.financeSummary?.wallet.postedVolume ??
+              data.postedWalletTransactions.reduce(
+                (sum, t) => sum + Math.abs(parseNumber(t.amount)),
+                0
+              )
+            }
             pendingPayoutValue={data.pendingPayoutValue}
             payoutHoldBalance={data.riderWalletLockedBalance}
             financeDailyBuckets={data.financeDailyBuckets}
@@ -664,13 +667,29 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             deliveries={data.deliveries}
             riders={data.riders}
             passengers={data.passengers}
+            summaryDaily={data.financeSummary?.daily.map((day) => ({
+              key: day.key,
+              rides: day.rides,
+              deliveries: day.deliveries,
+              revenue: day.commission
+            }))}
+            totalCommission={data.financeSummary?.commission.total ?? data.totalCommission}
             adminCurrency={data.adminCurrency}
-            ridersTotal={data.userStats?.riders.total ?? data.ridersTotal}
-            passengersTotal={data.userStats?.passengers.total ?? data.passengersTotal}
-            riderPendingCount={data.userStats?.riders.pending}
-            riderVerifiedCount={data.userStats?.riders.verified}
-            passengerPendingCount={data.userStats?.passengers.pending}
-            passengerVerifiedCount={data.userStats?.passengers.verified}
+            ridersTotal={data.opsSummary?.riders.total ?? data.userStats?.riders.total ?? data.ridersTotal}
+            passengersTotal={
+              data.opsSummary?.passengers.total ??
+              data.userStats?.passengers.total ??
+              data.passengersTotal
+            }
+            riderPendingCount={data.opsSummary?.riders.pending ?? data.userStats?.riders.pending}
+            riderVerifiedCount={data.opsSummary?.riders.verified ?? data.userStats?.riders.verified}
+            passengerPendingCount={
+              data.opsSummary?.passengers.pending ?? data.userStats?.passengers.pending
+            }
+            passengerVerifiedCount={
+              data.opsSummary?.passengers.verified ?? data.userStats?.passengers.verified
+            }
+            onlineRidersCount={data.opsSummary?.riders.online}
             onServerExport={(entity) => void data.downloadServerCsv(entity)}
             dataLoading={data.dataLoading}
           />

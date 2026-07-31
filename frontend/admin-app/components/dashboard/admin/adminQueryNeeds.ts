@@ -3,6 +3,7 @@ import type { AdminConsoleScreen } from "./types";
 /** Data domains the admin console can fetch. */
 export type AdminQueryNeed =
   | "opsSummary"
+  | "financeSummary"
   | "rides"
   | "deliveries"
   | "riders"
@@ -35,22 +36,22 @@ const SCREEN_EXTRA: Record<AdminConsoleScreen, AdminQueryNeed[]> = {
   riders: ["riders", "liveStream", "zones"],
   riderVerification: ["riders", "userStats", "riderDocuments"],
   riderDocuments: ["riderDocuments"],
-  riderPerformance: ["riders", "rides", "ratings", "walletTx", "payout"],
-  riderEarnings: ["riders", "rides", "deliveries", "walletTx", "payout", "ratings"],
+  riderPerformance: ["financeSummary", "riders", "ratings"],
+  riderEarnings: ["financeSummary", "riders"],
   riderWallet: ["walletTx", "payout"],
   riderPayouts: ["walletTx", "payout"],
   riderComplaints: ["incidents", "adminAccounts"],
   riderActivity: ["riders", "liveStream", "walletTx", "payout", "ratings"],
   riderSuspensions: ["riders", "auditLogs"],
   passengers: ["passengers", "userStats"],
-  payments: ["rides", "deliveries", "walletTx", "payout"],
+  payments: ["financeSummary", "walletTx", "payout"],
   ratings: ["ratings"],
   promotions: ["rides", "zones"],
   zones: ["zones", "riders", "rides"],
   supportTickets: ["supportTickets"],
   sosIncidents: ["incidents", "liveStream"],
   notifications: ["scheduledBroadcasts", "opsJobStatus"],
-  reports: ["rides", "deliveries", "passengers", "ratings", "walletTx"],
+  reports: ["financeSummary"],
   auditLogs: ["auditLogs", "adminAccounts"],
   settings: [
     "zones",

@@ -20,7 +20,13 @@ export const payoutEligibilitySchema = z.object({
 
 export const riderPayoutRequestSchema = z.object({
   amount: z.number().positive(),
-  method: z.enum(["BANK_ACCOUNT", "MOBILE_MONEY"]).default("MOBILE_MONEY"),
+  method: z.preprocess((value) => {
+    if (typeof value !== "string") return value;
+    const normalized = value.trim().toUpperCase().replace(/[\s-]+/g, "_");
+    if (normalized === "MOBILE_MONEY" || normalized === "MOMO") return "MOBILE_MONEY";
+    if (normalized === "BANK_ACCOUNT" || normalized === "BANK") return "BANK_ACCOUNT";
+    return normalized;
+  }, z.enum(["BANK_ACCOUNT", "MOBILE_MONEY"]).default("MOBILE_MONEY")),
   destinationLabel: z.string().trim().min(3).max(191)
 });
 
@@ -76,14 +82,24 @@ export const adminPayoutReviewParamsSchema = z.object({
   payoutRequestId: z.string().cuid()
 });
 
-export const adminPayoutReviewSchema = z.object({
-  action: z.enum([
-    "mark_reviewing",
-    "approve",
-    "mark_processing",
-    "mark_paid",
-    "reject",
-    "cancel"
-  ]),
-  rejectionReason: z.string().trim().max(255).optional()
-});
+export const adminPayoutReviewSchema = z
+  .object({
+    action: z.enum([
+      "mark_reviewing",
+      "approve",
+      "mark_processing",
+      "mark_paid",
+      "reject",
+      "cancel"
+    ]),
+    rejectionReason: z.string().trim().max(255).optional()
+  })
+  .superRefine((value, ctx) => {
+    if (value.action === "reject" && (!value.rejectionReason || value.rejectionReason.length < 3)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["rejectionReason"],
+        message: "A rejection reason of at least 3 characters is required"
+      });
+    }
+  });

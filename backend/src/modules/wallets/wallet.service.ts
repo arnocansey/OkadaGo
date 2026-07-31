@@ -22,6 +22,12 @@ import {
   walletPaystackInitializeSchema,
   walletTopUpSchema
 } from "./wallet.schemas.js";
+import {
+  canTransitionPayout,
+  payoutStatusAfterAction,
+  type PayoutReviewAction,
+  type PayoutStatusName
+} from "./wallet-payout-transitions.js";
 
 type SettlementPreviewInput = z.infer<typeof settlementPreviewSchema>;
 type PayoutEligibilityInput = z.infer<typeof payoutEligibilitySchema>;
@@ -64,12 +70,6 @@ const pendingPayoutStatuses = [
   PayoutStatus.APPROVED,
   PayoutStatus.PROCESSING
 ];
-const finalPayoutStatuses: PayoutStatus[] = [
-  PayoutStatus.PAID,
-  PayoutStatus.REJECTED,
-  PayoutStatus.CANCELLED
-];
-
 function toSubunit(amount: number) {
   return Math.round(amount * 100);
 }
@@ -297,11 +297,14 @@ export class WalletService {
         throw new AppError("Payout request could not be found.", 404, "PAYOUT_REQUEST_NOT_FOUND");
       }
 
-      if (finalPayoutStatuses.includes(payoutRequest.status)) {
+      const fromStatus = payoutRequest.status as PayoutStatusName;
+      const action = input.action as PayoutReviewAction;
+
+      if (!canTransitionPayout(fromStatus, action)) {
         throw new AppError(
-          "This payout request has already reached a final state.",
+          `Cannot ${action} a payout in ${fromStatus} status.`,
           409,
-          "PAYOUT_REVIEW_CONFLICT"
+          "PAYOUT_INVALID_TRANSITION"
         );
       }
 
@@ -315,100 +318,49 @@ export class WalletService {
         }
       });
 
+      const nextStatus = payoutStatusAfterAction[action];
       const updateData: {
-        status?: PayoutStatus;
-        reviewerId?: string;
-        reviewedAt?: Date;
+        status: PayoutStatus;
+        reviewerId: string;
+        reviewedAt: Date;
         paidAt?: Date;
         rejectionReason?: string | null;
+        metadata?: object;
       } = {
+        status: nextStatus as PayoutStatus,
         reviewerId: session.user.id,
         reviewedAt: new Date()
       };
 
-      switch (input.action) {
+      switch (action) {
         case "mark_reviewing":
-          updateData.status = PayoutStatus.REVIEWING;
-          updateData.rejectionReason = null;
-          break;
         case "approve":
-          updateData.status = PayoutStatus.APPROVED;
           updateData.rejectionReason = null;
           break;
         case "mark_processing":
-          updateData.status = PayoutStatus.PROCESSING;
           updateData.rejectionReason = null;
           break;
         case "mark_paid":
-          updateData.status = PayoutStatus.PAID;
           updateData.paidAt = new Date();
           updateData.rejectionReason = null;
-
-          await tx.wallet.update({
-            where: {
-              id: payoutRequest.walletId
-            },
-            data: {
-              lockedBalance: {
-                decrement: payoutRequest.amount
-              }
-            }
-          });
-
-          if (payoutTransaction) {
-            await tx.walletTransaction.update({
-              where: {
-                id: payoutTransaction.id
-              },
-              data: {
-                status: WalletTransactionStatus.POSTED,
-                postedAt: new Date(),
-                description: `Admin marked payout as paid to ${payoutRequest.destinationLabel}`
-              }
-            });
-          }
+          await this.applyPayoutPaidLedger(tx, payoutRequest, payoutTransaction, "manual");
           break;
         case "reject":
         case "cancel":
-          updateData.status =
-            input.action === "reject" ? PayoutStatus.REJECTED : PayoutStatus.CANCELLED;
           updateData.rejectionReason =
-            input.action === "reject"
-              ? input.rejectionReason?.trim() || "Rejected by admin review"
+            action === "reject"
+              ? input.rejectionReason!.trim()
               : input.rejectionReason?.trim() || "Cancelled by admin review";
-
-          await tx.wallet.update({
-            where: {
-              id: payoutRequest.walletId
-            },
-            data: {
-              availableBalance: {
-                increment: payoutRequest.amount
-              },
-              lockedBalance: {
-                decrement: payoutRequest.amount
-              }
-            }
-          });
-
-          if (payoutTransaction) {
-            await tx.walletTransaction.update({
-              where: {
-                id: payoutTransaction.id
-              },
-              data: {
-                status: WalletTransactionStatus.REVERSED,
-                description:
-                  input.action === "reject"
-                    ? `Admin rejected payout to ${payoutRequest.destinationLabel}`
-                    : `Admin cancelled payout to ${payoutRequest.destinationLabel}`
-              }
-            });
-          }
+          await this.applyPayoutUnlockLedger(
+            tx,
+            payoutRequest,
+            payoutTransaction,
+            action === "reject" ? "rejected" : "cancelled"
+          );
           break;
       }
 
-      return tx.payoutRequest.update({
+      const updated = await tx.payoutRequest.update({
         where: {
           id: payoutRequest.id
         },
@@ -443,6 +395,494 @@ export class WalletService {
           }
         }
       });
+
+      await tx.auditLog.create({
+        data: {
+          actorUserId: session.user.id,
+          actorRole: UserRole.ADMIN,
+          action: `PAYOUT_${action.toUpperCase()}`,
+          entityType: "PayoutRequest",
+          entityId: payoutRequest.id,
+          changes: {
+            fromStatus,
+            toStatus: nextStatus,
+            amount: payoutRequest.amount.toString(),
+            currency: payoutRequest.currency,
+            destinationLabel: payoutRequest.destinationLabel,
+            method: payoutRequest.method,
+            rejectionReason: updateData.rejectionReason ?? null
+          }
+        }
+      });
+
+      return updated;
+    }).then(async (updated) => {
+      // Paystack transfer runs after the status txn commits (MoMo only, when enabled).
+      if (
+        input.action === "mark_processing" &&
+        updated.method === PayoutMethod.MOBILE_MONEY &&
+        appConfig.paystackTransfersEnabled
+      ) {
+        try {
+          return await this.initiatePaystackPayoutTransfer(updated.id);
+        } catch (error) {
+          // Status stays PROCESSING; metadata records the failure for admin retry/manual pay.
+          const message = error instanceof Error ? error.message : "Transfer initiation failed";
+          await prisma.payoutRequest.update({
+            where: { id: updated.id },
+            data: {
+              metadata: {
+                provider: "paystack",
+                transferStatus: "initiate_failed",
+                lastError: message,
+                failedAt: new Date().toISOString()
+              }
+            }
+          });
+          return prisma.payoutRequest.findUniqueOrThrow({
+            where: { id: updated.id },
+            include: {
+              rider: {
+                include: {
+                  user: {
+                    select: {
+                      id: true,
+                      fullName: true,
+                      phoneE164: true,
+                      preferredCurrency: true
+                    }
+                  }
+                }
+              },
+              reviewer: {
+                select: { id: true, fullName: true, email: true }
+              },
+              wallet: {
+                select: {
+                  id: true,
+                  availableBalance: true,
+                  lockedBalance: true,
+                  currency: true
+                }
+              }
+            }
+          });
+        }
+      }
+      return updated;
+    });
+  }
+
+  private async applyPayoutPaidLedger(
+    // Transaction client from prisma.$transaction
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tx: any,
+    payoutRequest: { id: string; walletId: string; amount: unknown; destinationLabel: string },
+    payoutTransaction: { id: string } | null,
+    source: "manual" | "paystack"
+  ) {
+    await tx.wallet.update({
+      where: { id: payoutRequest.walletId },
+      data: { lockedBalance: { decrement: payoutRequest.amount } }
+    });
+
+    if (payoutTransaction) {
+      await tx.walletTransaction.update({
+        where: { id: payoutTransaction.id },
+        data: {
+          status: WalletTransactionStatus.POSTED,
+          postedAt: new Date(),
+          description:
+            source === "paystack"
+              ? `Paystack transfer paid to ${payoutRequest.destinationLabel}`
+              : `Admin marked payout as paid to ${payoutRequest.destinationLabel}`
+        }
+      });
+    }
+  }
+
+  private async applyPayoutUnlockLedger(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tx: any,
+    payoutRequest: { id: string; walletId: string; amount: unknown; destinationLabel: string },
+    payoutTransaction: { id: string } | null,
+    reason: "rejected" | "cancelled" | "transfer_failed"
+  ) {
+    await tx.wallet.update({
+      where: { id: payoutRequest.walletId },
+      data: {
+        availableBalance: { increment: payoutRequest.amount },
+        lockedBalance: { decrement: payoutRequest.amount }
+      }
+    });
+
+    if (payoutTransaction) {
+      const description =
+        reason === "transfer_failed"
+          ? `Paystack transfer failed for ${payoutRequest.destinationLabel}`
+          : reason === "rejected"
+            ? `Admin rejected payout to ${payoutRequest.destinationLabel}`
+            : `Admin cancelled payout to ${payoutRequest.destinationLabel}`;
+      await tx.walletTransaction.update({
+        where: { id: payoutTransaction.id },
+        data: {
+          status: WalletTransactionStatus.REVERSED,
+          description
+        }
+      });
+    }
+  }
+
+  /** Infer Ghana MoMo telco code from a local/E.164 phone number. */
+  private inferGhanaMomoBankCode(destination: string) {
+    const digits = destination.replace(/\D/g, "");
+    const local =
+      digits.startsWith("233") && digits.length >= 12
+        ? `0${digits.slice(3)}`
+        : digits.startsWith("0")
+          ? digits
+          : digits;
+    const prefix = local.slice(0, 3);
+    if (["024", "025", "053", "054", "055", "059"].includes(prefix)) return "MTN";
+    if (["020", "050"].includes(prefix)) return "VOD";
+    if (["026", "027", "056", "057"].includes(prefix)) return "ATL";
+    return appConfig.paystackDefaultMomoBankCode;
+  }
+
+  private normalizeMomoAccountNumber(destination: string) {
+    const digits = destination.replace(/\D/g, "");
+    if (digits.startsWith("233") && digits.length >= 12) {
+      return `0${digits.slice(3)}`;
+    }
+    return digits.startsWith("0") ? digits : digits;
+  }
+
+  async initiatePaystackPayoutTransfer(payoutRequestId: string) {
+    if (!appConfig.paystackSecretKey) {
+      throw new AppError("Paystack is not configured", 503, "PAYSTACK_NOT_CONFIGURED");
+    }
+    if (!appConfig.paystackTransfersEnabled) {
+      throw new AppError("Paystack transfers are disabled", 503, "PAYSTACK_TRANSFERS_DISABLED");
+    }
+
+    const payout = await prisma.payoutRequest.findUnique({
+      where: { id: payoutRequestId },
+      include: {
+        rider: { include: { user: { select: { fullName: true, phoneE164: true } } } }
+      }
+    });
+
+    if (!payout) {
+      throw new AppError("Payout request could not be found.", 404, "PAYOUT_REQUEST_NOT_FOUND");
+    }
+    if (payout.status !== PayoutStatus.PROCESSING) {
+      throw new AppError(
+        "Only PROCESSING payouts can be disbursed via Paystack.",
+        409,
+        "PAYOUT_INVALID_TRANSITION"
+      );
+    }
+    if (payout.method !== PayoutMethod.MOBILE_MONEY) {
+      throw new AppError(
+        "Paystack auto-disbursement is only for MOBILE_MONEY payouts.",
+        400,
+        "PAYOUT_METHOD_UNSUPPORTED"
+      );
+    }
+
+    const existingMeta = (payout.metadata as Record<string, unknown> | null) ?? {};
+    if (existingMeta.transferCode || existingMeta.transferStatus === "success") {
+      return prisma.payoutRequest.findUniqueOrThrow({
+        where: { id: payout.id },
+        include: {
+          rider: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  fullName: true,
+                  phoneE164: true,
+                  preferredCurrency: true
+                }
+              }
+            }
+          },
+          reviewer: { select: { id: true, fullName: true, email: true } },
+          wallet: {
+            select: {
+              id: true,
+              availableBalance: true,
+              lockedBalance: true,
+              currency: true
+            }
+          }
+        }
+      });
+    }
+
+    const accountNumber = this.normalizeMomoAccountNumber(payout.destinationLabel);
+    const bankCode = this.inferGhanaMomoBankCode(payout.destinationLabel);
+    const currency = payout.currency || "GHS";
+    const amountSubunit = toSubunit(Number(payout.amount));
+    const reference = `payout-${payout.id}`;
+
+    const recipientResponse = await fetch(`${appConfig.paystackBaseUrl}/transferrecipient`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${appConfig.paystackSecretKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        type: "mobile_money",
+        name: payout.rider.user.fullName,
+        account_number: accountNumber,
+        bank_code: bankCode,
+        currency
+      })
+    });
+
+    if (!recipientResponse.ok) {
+      const message = await recipientResponse.text();
+      throw new AppError(
+        `Paystack recipient create failed: ${message}`,
+        502,
+        "PAYSTACK_RECIPIENT_FAILED"
+      );
+    }
+
+    const recipientPayload = (await recipientResponse.json()) as {
+      status: boolean;
+      message: string;
+      data?: { recipient_code?: string };
+    };
+    const recipientCode = recipientPayload.data?.recipient_code;
+    if (!recipientPayload.status || !recipientCode) {
+      throw new AppError(
+        recipientPayload.message || "Paystack recipient create failed",
+        502,
+        "PAYSTACK_RECIPIENT_FAILED"
+      );
+    }
+
+    const transferResponse = await fetch(`${appConfig.paystackBaseUrl}/transfer`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${appConfig.paystackSecretKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        source: "balance",
+        amount: amountSubunit,
+        recipient: recipientCode,
+        reason: `OkadaGo rider payout ${payout.rider.displayCode}`,
+        reference,
+        currency
+      })
+    });
+
+    if (!transferResponse.ok) {
+      const message = await transferResponse.text();
+      throw new AppError(
+        `Paystack transfer failed: ${message}`,
+        502,
+        "PAYSTACK_TRANSFER_FAILED"
+      );
+    }
+
+    const transferPayload = (await transferResponse.json()) as {
+      status: boolean;
+      message: string;
+      data?: {
+        transfer_code?: string;
+        status?: string;
+        reference?: string;
+      };
+    };
+
+    if (!transferPayload.status) {
+      throw new AppError(
+        transferPayload.message || "Paystack transfer failed",
+        502,
+        "PAYSTACK_TRANSFER_FAILED"
+      );
+    }
+
+    return prisma.payoutRequest.update({
+      where: { id: payout.id },
+      data: {
+        metadata: {
+          ...existingMeta,
+          provider: "paystack",
+          transferStatus: transferPayload.data?.status ?? "pending",
+          transferCode: transferPayload.data?.transfer_code ?? null,
+          transferReference: transferPayload.data?.reference ?? reference,
+          recipientCode,
+          momoBankCode: bankCode,
+          accountNumber,
+          initiatedAt: new Date().toISOString(),
+          lastError: null
+        }
+      },
+      include: {
+        rider: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                fullName: true,
+                phoneE164: true,
+                preferredCurrency: true
+              }
+            }
+          }
+        },
+        reviewer: { select: { id: true, fullName: true, email: true } },
+        wallet: {
+          select: {
+            id: true,
+            availableBalance: true,
+            lockedBalance: true,
+            currency: true
+          }
+        }
+      }
+    });
+  }
+
+  async handlePaystackTransferWebhook(rawBody: string, signatureHeader?: string) {
+    if (!appConfig.paystackSecretKey) {
+      throw new AppError("Paystack is not configured", 503, "PAYSTACK_NOT_CONFIGURED");
+    }
+
+    const crypto = await import("node:crypto");
+    const hash = crypto
+      .createHmac("sha512", appConfig.paystackSecretKey)
+      .update(rawBody)
+      .digest("hex");
+
+    if (!signatureHeader || hash !== signatureHeader) {
+      throw new AppError("Invalid Paystack signature", 401, "PAYSTACK_SIGNATURE_INVALID");
+    }
+
+    const event = JSON.parse(rawBody) as {
+      event?: string;
+      data?: {
+        reference?: string;
+        transfer_code?: string;
+        status?: string;
+        reason?: string;
+      };
+    };
+
+    const eventName = event.event ?? "";
+    if (!["transfer.success", "transfer.failed", "transfer.reversed"].includes(eventName)) {
+      return { ok: true, ignored: true };
+    }
+
+    const reference = event.data?.reference ?? "";
+    const payoutId = reference.startsWith("payout-") ? reference.slice("payout-".length) : null;
+    if (!payoutId) {
+      return { ok: true, ignored: true };
+    }
+
+    return prisma.$transaction(async (tx) => {
+      const payout = await tx.payoutRequest.findUnique({
+        where: { id: payoutId }
+      });
+      if (!payout) {
+        return { ok: true, ignored: true };
+      }
+
+      const meta = (payout.metadata as Record<string, unknown> | null) ?? {};
+      if (payout.status === PayoutStatus.PAID || meta.transferStatus === "success") {
+        return { ok: true, alreadySettled: true };
+      }
+
+      const payoutTransaction = await tx.walletTransaction.findFirst({
+        where: {
+          payoutRequestId: payout.id,
+          type: WalletTransactionType.WITHDRAWAL
+        },
+        orderBy: { createdAt: "desc" }
+      });
+
+      if (eventName === "transfer.success") {
+        if (payout.status !== PayoutStatus.PROCESSING) {
+          return { ok: true, ignored: true };
+        }
+        await this.applyPayoutPaidLedger(tx, payout, payoutTransaction, "paystack");
+        await tx.payoutRequest.update({
+          where: { id: payout.id },
+          data: {
+            status: PayoutStatus.PAID,
+            paidAt: new Date(),
+            rejectionReason: null,
+            metadata: {
+              ...meta,
+              provider: "paystack",
+              transferStatus: "success",
+              transferCode: event.data?.transfer_code ?? meta.transferCode ?? null,
+              transferReference: reference,
+              settledAt: new Date().toISOString(),
+              lastError: null
+            }
+          }
+        });
+        await tx.auditLog.create({
+          data: {
+            actorRole: UserRole.ADMIN,
+            action: "PAYOUT_PAYSTACK_SUCCESS",
+            entityType: "PayoutRequest",
+            entityId: payout.id,
+            changes: {
+              fromStatus: payout.status,
+              toStatus: "PAID",
+              reference,
+              transferCode: event.data?.transfer_code ?? null
+            }
+          }
+        });
+        return { ok: true, settled: "PAID" };
+      }
+
+      // failed / reversed — unlock if still PROCESSING
+      if (payout.status === PayoutStatus.PROCESSING) {
+        await this.applyPayoutUnlockLedger(tx, payout, payoutTransaction, "transfer_failed");
+        await tx.payoutRequest.update({
+          where: { id: payout.id },
+          data: {
+            status: PayoutStatus.REJECTED,
+            rejectionReason:
+              event.data?.reason?.slice(0, 255) || "Paystack transfer failed",
+            metadata: {
+              ...meta,
+              provider: "paystack",
+              transferStatus: eventName === "transfer.reversed" ? "reversed" : "failed",
+              transferCode: event.data?.transfer_code ?? meta.transferCode ?? null,
+              transferReference: reference,
+              failedAt: new Date().toISOString(),
+              lastError: event.data?.reason ?? eventName
+            }
+          }
+        });
+        await tx.auditLog.create({
+          data: {
+            actorRole: UserRole.ADMIN,
+            action: "PAYOUT_PAYSTACK_FAILED",
+            entityType: "PayoutRequest",
+            entityId: payout.id,
+            changes: {
+              fromStatus: payout.status,
+              toStatus: "REJECTED",
+              reference,
+              reason: event.data?.reason ?? eventName
+            }
+          }
+        });
+        return { ok: true, settled: "REJECTED" };
+      }
+
+      return { ok: true, ignored: true };
     });
   }
 

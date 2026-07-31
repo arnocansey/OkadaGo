@@ -320,6 +320,7 @@ export type PayoutRequestRecord = {
   requestedAt: string;
   reviewedAt: string | null;
   paidAt: string | null;
+  metadata?: Record<string, unknown> | null;
   rider: {
     id: string;
     displayCode: string;

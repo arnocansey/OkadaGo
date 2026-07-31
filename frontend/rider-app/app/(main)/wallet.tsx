@@ -140,7 +140,7 @@ export default function WalletScreen() {
       await api("/wallets/rider/payout-requests", {
         method: "POST",
         token: session!.token,
-        body: { amount, method: "mobile_money", destinationLabel: destination.trim() },
+        body: { amount, method: "MOBILE_MONEY", destinationLabel: destination.trim() },
       });
       setPayoutAmount("");
       setDestination("");

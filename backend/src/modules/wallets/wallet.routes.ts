@@ -75,4 +75,30 @@ export const walletRoutes: FastifyPluginAsync = async (server) => {
     );
     return reply.redirect(redirectUrl, 302);
   });
+
+  // Paystack transfer webhooks — signature verified against the raw JSON body.
+  server.post(
+    "/wallets/paystack/transfer-webhook",
+    {
+      preParsing: async (request, _reply, payload) => {
+        const chunks: Buffer[] = [];
+        for await (const chunk of payload) {
+          chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+        }
+        const raw = Buffer.concat(chunks);
+        (request as typeof request & { rawBody?: string }).rawBody = raw.toString("utf8");
+        const { Readable } = await import("node:stream");
+        return Readable.from(raw);
+      }
+    },
+    async (request, reply) => {
+      const signature = request.headers["x-paystack-signature"];
+      const signatureHeader = Array.isArray(signature) ? signature[0] : signature;
+      const rawBody =
+        (request as typeof request & { rawBody?: string }).rawBody ??
+        (typeof request.body === "string" ? request.body : JSON.stringify(request.body ?? {}));
+      const result = await walletService.handlePaystackTransferWebhook(rawBody, signatureHeader);
+      return reply.status(200).send(result);
+    }
+  );
 };

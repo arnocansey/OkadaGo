@@ -7,6 +7,7 @@ import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminPagination, hasServerPagination, usePagination } from "./ui/AdminPagination";
 import type { WalletTransactionRecord, PayoutRequestRecord } from "./types";
 import { parseNumber, formatDateTime, statusTone, formatEnumLabel } from "./utils";
+import { canPayoutAction } from "./payoutActions";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
 import { AdminPageSkeleton } from "./AdminSkeleton";
 
@@ -585,28 +586,42 @@ export function FinanceScreen({
                     {onPayoutAction ? (
                       <td>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                          {status === "REQUESTED" && (
+                          {canPayoutAction(status, "mark_reviewing") && (
                             <button type="button" className="admin-btn-secondary" disabled={isMutating} onClick={() => onPayoutAction(request.id, "mark_reviewing")}>
                               Review
                             </button>
                           )}
-                          {(status === "REQUESTED" || status === "REVIEWING") && (
+                          {canPayoutAction(status, "approve") && (
                             <button type="button" className="admin-btn-primary" disabled={isMutating} onClick={() => onPayoutAction(request.id, "approve")}>
                               Approve
                             </button>
                           )}
-                          {status === "APPROVED" && (
-                            <button type="button" className="admin-btn-secondary" disabled={isMutating} onClick={() => onPayoutAction(request.id, "mark_processing")}>
-                              Process
+                          {canPayoutAction(status, "mark_processing") && (
+                            <button
+                              type="button"
+                              className="admin-btn-secondary"
+                              disabled={isMutating}
+                              onClick={() => onPayoutAction(request.id, "mark_processing")}
+                            >
+                              {request.method.toUpperCase() === "MOBILE_MONEY" ? "Disburse" : "Process"}
                             </button>
                           )}
-                          {(status === "APPROVED" || status === "PROCESSING") && (
+                          {canPayoutAction(status, "mark_paid") && (
                             <button type="button" className="admin-btn-primary" disabled={isMutating} onClick={() => onPayoutAction(request.id, "mark_paid")}>
                               Mark Paid
                             </button>
                           )}
-                          {!["PAID", "REJECTED", "CANCELLED"].includes(status) && (
-                            <button type="button" className="admin-btn-secondary" disabled={isMutating} onClick={() => onPayoutAction(request.id, "reject", "Rejected from finance console")}>
+                          {canPayoutAction(status, "reject") && (
+                            <button
+                              type="button"
+                              className="admin-btn-secondary"
+                              disabled={isMutating}
+                              onClick={() => {
+                                const reason = window.prompt("Rejection reason (required)");
+                                if (!reason || reason.trim().length < 3) return;
+                                onPayoutAction(request.id, "reject", reason.trim());
+                              }}
+                            >
                               Reject
                             </button>
                           )}

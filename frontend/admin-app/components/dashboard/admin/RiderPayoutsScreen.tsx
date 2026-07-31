@@ -7,6 +7,7 @@ import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { AdminPagination, hasServerPagination, usePagination } from "./ui/AdminPagination";
 import { formatMoney } from "@/lib/currency";
 import { parseNumber, formatDateTime, statusTone } from "./utils";
+import { canPayoutAction, readPayoutProviderMeta } from "./payoutActions";
 import type { PayoutRequestRecord } from "./types";
 import {
   DollarSign,
@@ -54,17 +55,26 @@ export type RiderPayoutsScreenProps = {
 
 const PAGE_SIZE = 8;
 
-const STATUS_OPTIONS = ["All Statuses", "requested", "reviewing", "approved", "processing", "paid", "failed", "rejected"] as const;
+const STATUS_OPTIONS = [
+  "All Statuses",
+  "requested",
+  "reviewing",
+  "approved",
+  "processing",
+  "paid",
+  "rejected",
+  "cancelled"
+] as const;
 type StatusOption = (typeof STATUS_OPTIONS)[number];
 
 type TabOption = "All Payouts" | "Pending" | "Processing" | "Completed" | "Failed";
 
 const tabToStatuses: Record<TabOption, string[]> = {
   "All Payouts": [],
-  "Pending": ["requested", "reviewing"],
-  "Processing": ["approved", "processing"],
-  "Completed": ["paid"],
-  "Failed": ["failed", "rejected"],
+  Pending: ["requested", "reviewing"],
+  Processing: ["approved", "processing"],
+  Completed: ["paid"],
+  Failed: ["rejected", "cancelled"]
 };
 
 function statusBadgeColor(status: string) {
@@ -348,7 +358,13 @@ export function RiderPayoutsScreen({
             <button
               type="button"
               disabled={isMutating}
-              onClick={() => { selectedPayoutIds.forEach((id) => handleAction(id, "approve")); setSelectedPayoutIds(new Set()); }}
+              onClick={() => {
+                selectedPayoutIds.forEach((id) => {
+                  const row = riderPayoutRequests.find((p) => p.id === id);
+                  if (row && canPayoutAction(row.status, "approve")) handleAction(id, "approve");
+                });
+                setSelectedPayoutIds(new Set());
+              }}
               style={{ ...btnBase, color: "var(--success)", borderColor: "var(--success)", opacity: isMutating ? 0.5 : 1, cursor: isMutating ? "not-allowed" : "pointer" }}
             >
               <CheckCircle size={13} /> Approve All
@@ -356,7 +372,13 @@ export function RiderPayoutsScreen({
             <button
               type="button"
               disabled={isMutating}
-              onClick={() => { selectedPayoutIds.forEach((id) => handleAction(id, "mark_paid")); setSelectedPayoutIds(new Set()); }}
+              onClick={() => {
+                selectedPayoutIds.forEach((id) => {
+                  const row = riderPayoutRequests.find((p) => p.id === id);
+                  if (row && canPayoutAction(row.status, "mark_paid")) handleAction(id, "mark_paid");
+                });
+                setSelectedPayoutIds(new Set());
+              }}
               style={{ ...btnBase, color: "var(--success)", borderColor: "var(--success)", opacity: isMutating ? 0.5 : 1, cursor: isMutating ? "not-allowed" : "pointer" }}
             >
               <CheckCircle size={13} /> Mark Paid
@@ -635,12 +657,54 @@ export function RiderPayoutsScreen({
                   <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{selectedDetail.reviewer.fullName}</span>
                 </div>
               )}
+              {selectedDetail.rejectionReason && (
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Reason</span>
+                  <span style={{ fontSize: 12, color: "var(--danger)", textAlign: "right" }}>
+                    {selectedDetail.rejectionReason}
+                  </span>
+                </div>
+              )}
             </div>
+
+            {(() => {
+              const provider = readPayoutProviderMeta(selectedDetail.metadata);
+              if (!provider?.provider) return null;
+              return (
+                <div style={{ background: "var(--bg-primary)", borderRadius: 8, padding: 14, marginBottom: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                    Provider ({provider.provider})
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Transfer status</span>
+                    <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>
+                      {provider.transferStatus ?? "—"}
+                    </span>
+                  </div>
+                  {provider.momoBankCode ? (
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                      <span style={{ fontSize: 11, color: "var(--text-muted)" }}>MoMo telco</span>
+                      <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{provider.momoBankCode}</span>
+                    </div>
+                  ) : null}
+                  {provider.transferReference ? (
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                      <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Reference</span>
+                      <span style={{ fontSize: 11, fontFamily: "monospace", color: "var(--text-secondary)" }}>
+                        {provider.transferReference}
+                      </span>
+                    </div>
+                  ) : null}
+                  {provider.lastError ? (
+                    <div style={{ fontSize: 12, color: "var(--danger)" }}>{provider.lastError}</div>
+                  ) : null}
+                </div>
+              );
+            })()}
 
             {/* Action Buttons */}
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {["requested", "reviewing"].includes(selectedDetail.status.toLowerCase()) && (
-                <>
+              {canPayoutAction(selectedDetail.status, "mark_reviewing") && (
                   <button
                     type="button"
                     disabled={isMutating}
@@ -655,6 +719,8 @@ export function RiderPayoutsScreen({
                   >
                     Mark Reviewing
                   </button>
+              )}
+              {canPayoutAction(selectedDetail.status, "approve") && (
                   <button
                     type="button"
                     disabled={isMutating}
@@ -671,6 +737,8 @@ export function RiderPayoutsScreen({
                   >
                     <CheckCircle size={14} /> Approve
                   </button>
+              )}
+              {canPayoutAction(selectedDetail.status, "reject") && (
                   <div style={{ display: "flex", gap: 6 }}>
                     <input
                       type="text"
@@ -697,10 +765,8 @@ export function RiderPayoutsScreen({
                       <XCircle size={13} /> Reject
                     </button>
                   </div>
-                </>
               )}
-              {selectedDetail.status.toLowerCase() === "approved" && (
-                <>
+              {canPayoutAction(selectedDetail.status, "mark_processing") && (
                   <button
                     type="button"
                     disabled={isMutating}
@@ -713,27 +779,13 @@ export function RiderPayoutsScreen({
                       cursor: isMutating ? "not-allowed" : "pointer",
                     }}
                   >
-                    <Cog size={14} /> Mark Processing
+                    <Cog size={14} />{" "}
+                    {selectedDetail.method.toUpperCase() === "MOBILE_MONEY"
+                      ? "Start disbursement"
+                      : "Mark Processing"}
                   </button>
-                  <button
-                    type="button"
-                    disabled={isMutating}
-                    onClick={() => handleAction(selectedDetail.id, "mark_paid")}
-                    style={{
-                      ...btnBase,
-                      width: "100%",
-                      justifyContent: "center",
-                      color: "var(--success)",
-                      borderColor: "var(--success)",
-                      opacity: isMutating ? 0.5 : 1,
-                      cursor: isMutating ? "not-allowed" : "pointer",
-                    }}
-                  >
-                    <CheckCircle size={14} /> Mark Paid
-                  </button>
-                </>
               )}
-              {selectedDetail.status.toLowerCase() === "processing" && (
+              {canPayoutAction(selectedDetail.status, "mark_paid") && (
                 <button
                   type="button"
                   disabled={isMutating}

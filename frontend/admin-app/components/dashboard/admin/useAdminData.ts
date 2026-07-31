@@ -11,6 +11,7 @@ import { needsForScreen } from "./adminQueryNeeds";
 import { QK } from "./adminQueryKeys";
 import { useAdminLiveOps } from "./useAdminLiveOps";
 import { useAdminOpsSummary } from "./useAdminOpsSummary";
+import { useAdminFinanceSummary } from "./useAdminFinanceSummary";
 import { listPageSize, requestPagedJson, type PagedResult } from "./paged";
 import type {
   AdminConsoleScreen,
@@ -37,6 +38,28 @@ import type {
 export { QK } from "./adminQueryKeys";
 export type { LiveOpsSnapshot } from "./useAdminLiveOps";
 export type { AdminOpsSummary } from "./useAdminOpsSummary";
+export type { AdminFinanceSummary } from "./useAdminFinanceSummary";
+
+function stubRiderFromFinance(row: {
+  riderId: string;
+  name: string;
+  displayCode: string;
+}): RiderRecord {
+  return {
+    id: row.riderId,
+    displayCode: row.displayCode,
+    onlineStatus: false,
+    city: null,
+    currentLatitude: null,
+    currentLongitude: null,
+    serviceZone: null,
+    user: {
+      fullName: row.name,
+      phoneE164: "",
+      preferredCurrency: "GHS"
+    }
+  };
+}
 
 function useDocumentVisible() {
   const [visible, setVisible] = useState(true);
@@ -187,6 +210,17 @@ export function useAdminData(
     from: dashboardDateRange.from,
     to: dashboardDateRange.to,
     refetchInterval: poll(30000, "opsSummary")
+  });
+
+  const {
+    data: financeSummary,
+    isPending: financeSummaryPending
+  } = useAdminFinanceSummary({
+    enabled: want("financeSummary"),
+    token,
+    from: dashboardDateRange.from,
+    to: dashboardDateRange.to,
+    refetchInterval: poll(45000, "financeSummary")
   });
 
   const { data: ridesPaged, isPending: ridesPending } = useQuery<PagedResult<RideRecord>>({
@@ -682,16 +716,7 @@ export function useAdminData(
   );
   const deliveryRevenuePercent = 100 - rideRevenuePercent;
 
-  // ── finance aggregations ────────────────────────────────────────────────────
-  const totalRevenue = useMemo(
-    () => sum(completedRides.map((r) => r.finalFare ?? r.estimatedFare)) +
-      sum(completedDeliveries.map((d) => d.finalFee ?? d.estimatedFee)),
-    [completedRides, completedDeliveries]
-  );
-  const totalCommission = useMemo(
-    () => sum([...completedRides.map((r) => r.platformCommission), ...completedDeliveries.map((d) => d.platformCommission)]),
-    [completedRides, completedDeliveries]
-  );
+  // ── finance aggregations (prefer server finance-summary) ───────────────────
   const paidPayoutRequests = useMemo(
     () => payoutRequests.filter((p) => p.status.toLowerCase() === "paid"),
     [payoutRequests]
@@ -700,15 +725,35 @@ export function useAdminData(
     () => payoutRequests.filter((p) => ["requested", "reviewing", "approved", "processing"].includes(p.status.toLowerCase())),
     [payoutRequests]
   );
-  const payoutOutflow = useMemo(
-    () => sum(paidPayoutRequests.map((p) => p.amount)),
-    [paidPayoutRequests]
+  const totalRevenue = useMemo(
+    () =>
+      financeSummary?.revenue.total ??
+      sum(completedRides.map((r) => r.finalFare ?? r.estimatedFare)) +
+        sum(completedDeliveries.map((d) => d.finalFee ?? d.estimatedFee)),
+    [financeSummary, completedRides, completedDeliveries]
   );
-  const platformNetProfit = totalCommission - payoutOutflow;
-  const profitMargin = totalRevenue > 0 ? (platformNetProfit / totalRevenue) * 100 : 0;
+  const totalCommission = useMemo(
+    () =>
+      financeSummary?.commission.total ??
+      sum([
+        ...completedRides.map((r) => r.platformCommission),
+        ...completedDeliveries.map((d) => d.platformCommission)
+      ]),
+    [financeSummary, completedRides, completedDeliveries]
+  );
+  const payoutOutflow = useMemo(
+    () => financeSummary?.payouts.paidOutflow ?? sum(paidPayoutRequests.map((p) => p.amount)),
+    [financeSummary, paidPayoutRequests]
+  );
+  const platformNetProfit =
+    financeSummary?.platformNetProfit ?? totalCommission - payoutOutflow;
+  const profitMargin =
+    financeSummary?.profitMargin ??
+    (totalRevenue > 0 ? (platformNetProfit / totalRevenue) * 100 : 0);
   const pendingPayoutValue = useMemo(
-    () => sum(pendingPayoutRequests.map((p) => p.amount)),
-    [pendingPayoutRequests]
+    () =>
+      financeSummary?.payouts.pendingValue ?? sum(pendingPayoutRequests.map((p) => p.amount)),
+    [financeSummary, pendingPayoutRequests]
   );
 
   const postedWalletTransactions = useMemo(
@@ -730,15 +775,29 @@ export function useAdminData(
 
   // ── finance daily buckets ───────────────────────────────────────────────────
   const financeDailyBuckets = useMemo(() => {
+    if (financeSummary?.daily?.length) {
+      return financeSummary.daily.map((bucket) => ({
+        key: bucket.key,
+        label: shortDate(bucket.key + "T12:00:00Z"),
+        revenue: bucket.revenue,
+        commission: bucket.commission
+      }));
+    }
     const dayKeys = getDateKeys(dashboardDateRange.from, dashboardDateRange.to, 10);
     return dayKeys.map((key) => {
       const dayRides = completedRides.filter((r) => r.createdAt.slice(0, 10) === key);
       const dayDeliveries = completedDeliveries.filter((d) => d.createdAt.slice(0, 10) === key);
-      const revenue = sum([...dayRides.map((r) => r.finalFare ?? r.estimatedFare), ...dayDeliveries.map((d) => d.finalFee ?? d.estimatedFee)]);
-      const commission = sum([...dayRides.map((r) => r.platformCommission), ...dayDeliveries.map((d) => d.platformCommission)]);
+      const revenue = sum([
+        ...dayRides.map((r) => r.finalFare ?? r.estimatedFare),
+        ...dayDeliveries.map((d) => d.finalFee ?? d.estimatedFee)
+      ]);
+      const commission = sum([
+        ...dayRides.map((r) => r.platformCommission),
+        ...dayDeliveries.map((d) => d.platformCommission)
+      ]);
       return { key, label: shortDate(key + "T12:00:00Z"), revenue, commission };
     });
-  }, [completedRides, completedDeliveries, dashboardDateRange]);
+  }, [financeSummary, completedRides, completedDeliveries, dashboardDateRange]);
 
   const financeDailyMax = useMemo(
     () => Math.max(1, ...financeDailyBuckets.map((b) => b.revenue)),
@@ -746,13 +805,20 @@ export function useAdminData(
   );
 
   const payoutDailyBuckets = useMemo(() => {
+    if (financeSummary?.daily?.length) {
+      return financeSummary.daily.map((bucket) => ({
+        key: bucket.key,
+        label: shortDate(bucket.key + "T12:00:00Z"),
+        payouts: bucket.payouts
+      }));
+    }
     const dayKeys = getDateKeys(dashboardDateRange.from, dashboardDateRange.to, 10);
     return dayKeys.map((key) => {
       const dayPayouts = paidPayoutRequests.filter((p) => p.paidAt?.slice(0, 10) === key);
       const payouts = sum(dayPayouts.map((p) => p.amount));
       return { key, label: shortDate(key + "T12:00:00Z"), payouts };
     });
-  }, [paidPayoutRequests, dashboardDateRange]);
+  }, [financeSummary, paidPayoutRequests, dashboardDateRange]);
 
   const payoutDailyMax = useMemo(
     () => Math.max(1, ...payoutDailyBuckets.map((b) => b.payouts)),
@@ -760,6 +826,9 @@ export function useAdminData(
   );
 
   const paymentMethodSnapshot = useMemo(() => {
+    if (financeSummary?.paymentMethods?.length) {
+      return financeSummary.paymentMethods;
+    }
     const map: Record<string, number> = {};
     walletTransactions.forEach((t) => {
       if (t.payment?.method) {
@@ -767,15 +836,35 @@ export function useAdminData(
       }
     });
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
-  }, [walletTransactions]);
+  }, [financeSummary, walletTransactions]);
 
   const paymentMethodTotal = useMemo(
     () => paymentMethodSnapshot.reduce((sum, [, v]) => sum + v, 0),
     [paymentMethodSnapshot]
   );
 
-  // ── rider financial rows (indexed joins; stable ridersBase — ignore live GPS) ─
+  // ── rider financial rows (server top riders, else sample joins) ─────────────
   const riderFinancialRows = useMemo((): RiderFinancialRow[] => {
+    if (financeSummary?.topRiders?.length) {
+      const riderById = new Map(ridersBase.map((r) => [r.id, r]));
+      return financeSummary.topRiders.map((row) => {
+        const rider = riderById.get(row.riderId) ?? stubRiderFromFinance(row);
+        return {
+          rider,
+          rideCount: row.completedCount,
+          completedCount: row.completedCount,
+          activeCount: 0,
+          revenue: row.revenue,
+          earnings: row.earnings,
+          commission: row.commission,
+          averageRating: row.averageRating,
+          ratingCount: row.ratingCount,
+          walletMovement: 0,
+          payoutTotal: row.payoutTotal
+        };
+      });
+    }
+
     const ridesByName = new Map<string, RideRecord[]>();
     for (const ride of rides) {
       const name = ride.rider?.user.fullName;
@@ -849,7 +938,7 @@ export function useAdminData(
         };
       })
       .sort((a, b) => b.completedCount - a.completedCount);
-  }, [ridersBase, rides, ratings, walletTransactions, payoutRequests]);
+  }, [financeSummary, ridersBase, rides, ratings, walletTransactions, payoutRequests]);
 
   // ── rider wallet aggregations ───────────────────────────────────────────────
   const riderWalletTransactions = useMemo(
@@ -865,46 +954,72 @@ export function useAdminData(
     [riderWalletTransactions]
   );
   const riderWalletAvailableBalance = useMemo(
-    () => sum(payoutRequests.map((p) => p.wallet.availableBalance)),
-    [payoutRequests]
+    () =>
+      financeSummary?.wallet.availableBalance ??
+      sum(payoutRequests.map((p) => p.wallet.availableBalance)),
+    [financeSummary, payoutRequests]
   );
   const riderWalletLockedBalance = useMemo(
-    () => sum(payoutRequests.map((p) => p.wallet.lockedBalance)),
-    [payoutRequests]
+    () =>
+      financeSummary?.wallet.lockedBalance ??
+      sum(payoutRequests.map((p) => p.wallet.lockedBalance)),
+    [financeSummary, payoutRequests]
   );
   const riderWalletMovementTotal = riderWalletCredits - riderWalletDebits;
 
   // ── finance reconciliation breakdown ────────────────────────────────────────
   const totalRideRevenue = useMemo(
-    () => sum(completedRides.map((r) => r.finalFare ?? r.estimatedFare)),
-    [completedRides]
+    () =>
+      financeSummary?.revenue.rides ??
+      sum(completedRides.map((r) => r.finalFare ?? r.estimatedFare)),
+    [financeSummary, completedRides]
   );
   const totalDeliveryRevenue = useMemo(
-    () => sum(completedDeliveries.map((d) => d.finalFee ?? d.estimatedFee)),
-    [completedDeliveries]
+    () =>
+      financeSummary?.revenue.deliveries ??
+      sum(completedDeliveries.map((d) => d.finalFee ?? d.estimatedFee)),
+    [financeSummary, completedDeliveries]
   );
   const totalRideCommission = useMemo(
-    () => sum(completedRides.map((r) => r.platformCommission)),
-    [completedRides]
+    () =>
+      financeSummary?.commission.rides ??
+      sum(completedRides.map((r) => r.platformCommission)),
+    [financeSummary, completedRides]
   );
   const totalDeliveryCommission = useMemo(
-    () => sum(completedDeliveries.map((d) => d.platformCommission)),
-    [completedDeliveries]
+    () =>
+      financeSummary?.commission.deliveries ??
+      sum(completedDeliveries.map((d) => d.platformCommission)),
+    [financeSummary, completedDeliveries]
   );
   const riderEarningsTotal = useMemo(
-    () => sum(riderFinancialRows.map((r) => r.earnings)),
-    [riderFinancialRows]
+    () =>
+      financeSummary?.riderEarningsTotal ??
+      sum(riderFinancialRows.map((r) => r.earnings)),
+    [financeSummary, riderFinancialRows]
   );
 
   // ── rider earning buckets ───────────────────────────────────────────────────
   const riderEarningBuckets = useMemo(() => {
+    if (financeSummary?.daily?.length) {
+      return financeSummary.daily.map((bucket) => ({
+        key: bucket.key,
+        label: shortDate(bucket.key + "T12:00:00Z"),
+        trips: bucket.rides,
+        earnings: bucket.riderEarnings
+      }));
+    }
     const dayKeys = getDateKeys(dashboardDateRange.from, dashboardDateRange.to, 10);
     return dayKeys.map((key) => {
       const dayRides = completedRides.filter((r) => r.createdAt.slice(0, 10) === key);
-      const earnings = sum(dayRides.map((r) => parseNumber(r.finalFare ?? r.estimatedFare) - parseNumber(r.platformCommission)));
+      const earnings = sum(
+        dayRides.map(
+          (r) => parseNumber(r.finalFare ?? r.estimatedFare) - parseNumber(r.platformCommission)
+        )
+      );
       return { key, label: shortDate(key + "T12:00:00Z"), trips: dayRides.length, earnings };
     });
-  }, [completedRides, dashboardDateRange]);
+  }, [financeSummary, completedRides, dashboardDateRange]);
 
   const riderChartMax = useMemo(
     () => Math.max(1, ...riderEarningBuckets.map((b) => Math.max(b.trips, b.earnings))),
@@ -912,16 +1027,16 @@ export function useAdminData(
   );
 
   const totalRiderGrossRevenue = useMemo(
-    () => sum(riderFinancialRows.map((r) => r.revenue)),
-    [riderFinancialRows]
+    () => financeSummary?.revenue.rides ?? sum(riderFinancialRows.map((r) => r.revenue)),
+    [financeSummary, riderFinancialRows]
   );
   const totalRiderEarnings = useMemo(
-    () => sum(riderFinancialRows.map((r) => r.earnings)),
-    [riderFinancialRows]
+    () => financeSummary?.riderEarningsTotal ?? sum(riderFinancialRows.map((r) => r.earnings)),
+    [financeSummary, riderFinancialRows]
   );
   const totalRiderCommission = useMemo(
-    () => sum(riderFinancialRows.map((r) => r.commission)),
-    [riderFinancialRows]
+    () => financeSummary?.commission.rides ?? sum(riderFinancialRows.map((r) => r.commission)),
+    [financeSummary, riderFinancialRows]
   );
 
   // ── rider payout data ───────────────────────────────────────────────────────
@@ -930,7 +1045,7 @@ export function useAdminData(
     [payoutRequests]
   );
   const failedRiderPayouts = useMemo(
-    () => payoutRequests.filter((p) => ["rejected", "failed"].includes(p.status.toLowerCase())),
+    () => payoutRequests.filter((p) => ["rejected", "cancelled"].includes(p.status.toLowerCase())),
     [payoutRequests]
   );
   const totalRiderPayoutValue = useMemo(
@@ -1508,6 +1623,8 @@ export function useAdminData(
   // ── mutations ───────────────────────────────────────────────────────────────
   const invalidateOpsSummary = () =>
     queryClient.invalidateQueries({ queryKey: QK.opsSummary });
+  const invalidateFinanceSummary = () =>
+    queryClient.invalidateQueries({ queryKey: QK.financeSummary });
 
   const incidentReviewMutation = useMutation({
     mutationFn: async ({ incidentId, status }: { incidentId: string; status: string }) =>
@@ -1541,7 +1658,8 @@ export function useAdminData(
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: QK.payoutRequests }),
         queryClient.invalidateQueries({ queryKey: QK.walletTx }),
-        invalidateOpsSummary()
+        invalidateOpsSummary(),
+        invalidateFinanceSummary()
       ]);
       addToast("Payout request processed", "success");
     },
@@ -2067,6 +2185,7 @@ export function useAdminData(
 
   const dataLoading =
     (want("opsSummary") && opsSummaryPending) ||
+    (want("financeSummary") && financeSummaryPending) ||
     (want("rides") && ridesPending) ||
     (want("deliveries") && deliveriesPending) ||
     (want("riders") && ridersPending) ||
@@ -2114,6 +2233,7 @@ export function useAdminData(
     platformSettings,
     liveSos, liveOpsConnected, liveOpsTimestamp,
     opsSummary,
+    financeSummary,
 
     // Server list paging controls
     listPageSize: LIST_PAGE,

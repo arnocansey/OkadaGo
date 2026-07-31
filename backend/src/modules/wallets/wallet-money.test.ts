@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import { canTransitionPayout } from "./wallet-payout-transitions.js";
 
 /**
  * Pure money-path helpers mirroring the wallet settlement math used by
@@ -25,30 +26,6 @@ function settlementPreview(input: {
     riderEarnings,
     platformNet: Number((commission - riderBonus).toFixed(2))
   };
-}
-
-function canTransitionPayout(
-  current: "REQUESTED" | "REVIEWING" | "APPROVED" | "PROCESSING" | "PAID" | "REJECTED" | "CANCELLED",
-  action: "mark_reviewing" | "approve" | "mark_processing" | "mark_paid" | "reject" | "cancel"
-) {
-  const finalStates = new Set(["PAID", "REJECTED", "CANCELLED"]);
-  if (finalStates.has(current)) return false;
-
-  const next: Record<typeof action, string> = {
-    mark_reviewing: "REVIEWING",
-    approve: "APPROVED",
-    mark_processing: "PROCESSING",
-    mark_paid: "PAID",
-    reject: "REJECTED",
-    cancel: "CANCELLED"
-  };
-
-  if (action === "mark_reviewing") return current === "REQUESTED";
-  if (action === "approve") return current === "REQUESTED" || current === "REVIEWING";
-  if (action === "mark_processing") return current === "APPROVED";
-  if (action === "mark_paid") return current === "APPROVED" || current === "PROCESSING";
-  if (action === "reject" || action === "cancel") return !finalStates.has(current);
-  return Boolean(next[action]);
 }
 
 describe("wallet settlement math", () => {
@@ -89,5 +66,9 @@ describe("payout review transitions", () => {
   it("rejects illegal mid-flow jumps", () => {
     assert.equal(canTransitionPayout("REQUESTED", "mark_processing"), false);
     assert.equal(canTransitionPayout("APPROVED", "mark_reviewing"), false);
+  });
+
+  it("allows approve directly from REQUESTED", () => {
+    assert.equal(canTransitionPayout("REQUESTED", "approve"), true);
   });
 });

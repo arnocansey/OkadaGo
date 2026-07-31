@@ -9,10 +9,18 @@ import type { RideRecord, DeliveryRecord, RiderRecord, PassengerRecord } from ".
 import { parseNumber, shortDate } from "./utils";
 
 export type ReportsScreenProps = {
-  rides: RideRecord[];
-  deliveries: DeliveryRecord[];
-  riders: RiderRecord[];
-  passengers: PassengerRecord[];
+  rides?: RideRecord[];
+  deliveries?: DeliveryRecord[];
+  riders?: RiderRecord[];
+  passengers?: PassengerRecord[];
+  /** Server daily buckets — preferred over sample list charts. */
+  summaryDaily?: Array<{
+    key: string;
+    rides: number;
+    deliveries: number;
+    revenue: number;
+  }>;
+  totalCommission?: number;
   adminCurrency: string;
   ridersTotal?: number;
   passengersTotal?: number;
@@ -20,6 +28,7 @@ export type ReportsScreenProps = {
   riderVerifiedCount?: number;
   passengerPendingCount?: number;
   passengerVerifiedCount?: number;
+  onlineRidersCount?: number;
   onServerExport?: (entity: "rides" | "deliveries" | "riders") => void;
   dataLoading?: boolean;
 };
@@ -32,7 +41,11 @@ type DailyBucket = {
   revenue: number;
 };
 
-function buildBuckets(rides: RideRecord[], deliveries: DeliveryRecord[], days: number): DailyBucket[] {
+function buildBucketsFromLists(
+  rides: RideRecord[],
+  deliveries: DeliveryRecord[],
+  days: number
+): DailyBucket[] {
   const now = Date.now();
   const buckets: DailyBucket[] = [];
 
@@ -58,11 +71,35 @@ function buildBuckets(rides: RideRecord[], deliveries: DeliveryRecord[], days: n
   return buckets;
 }
 
+function buildBucketsFromSummary(
+  summaryDaily: Array<{ key: string; rides: number; deliveries: number; revenue: number }>,
+  days: number
+): DailyBucket[] {
+  const now = Date.now();
+  const byKey = new Map(summaryDaily.map((row) => [row.key, row]));
+  const buckets: DailyBucket[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date(now - i * 86400000);
+    const key = date.toISOString().slice(0, 10);
+    const row = byKey.get(key);
+    buckets.push({
+      key,
+      label: shortDate(date.toISOString()),
+      rides: row?.rides ?? 0,
+      deliveries: row?.deliveries ?? 0,
+      revenue: row?.revenue ?? 0
+    });
+  }
+  return buckets;
+}
+
 export function ReportsScreen({
-  rides,
-  deliveries,
-  riders,
-  passengers,
+  rides = [],
+  deliveries = [],
+  riders = [],
+  passengers = [],
+  summaryDaily,
+  totalCommission,
   adminCurrency,
   ridersTotal,
   passengersTotal,
@@ -70,6 +107,7 @@ export function ReportsScreen({
   riderVerifiedCount = 0,
   passengerPendingCount = 0,
   passengerVerifiedCount = 0,
+  onlineRidersCount,
   onServerExport,
   dataLoading = false
 }: ReportsScreenProps) {
@@ -77,9 +115,27 @@ export function ReportsScreen({
   const riderCount = ridersTotal ?? riders.length;
   const passengerCount = passengersTotal ?? passengers.length;
 
-  const dailyBuckets30 = buildBuckets(rides, deliveries, 30);
-  const dailyBuckets7 = buildBuckets(rides, deliveries, 7);
-  const dailyBuckets = buildBuckets(rides, deliveries, rangeDays);
+  const dailyBuckets30 = useMemo(
+    () =>
+      summaryDaily?.length
+        ? buildBucketsFromSummary(summaryDaily, 30)
+        : buildBucketsFromLists(rides, deliveries, 30),
+    [summaryDaily, rides, deliveries]
+  );
+  const dailyBuckets7 = useMemo(
+    () =>
+      summaryDaily?.length
+        ? buildBucketsFromSummary(summaryDaily, 7)
+        : buildBucketsFromLists(rides, deliveries, 7),
+    [summaryDaily, rides, deliveries]
+  );
+  const dailyBuckets = useMemo(
+    () =>
+      summaryDaily?.length
+        ? buildBucketsFromSummary(summaryDaily, rangeDays)
+        : buildBucketsFromLists(rides, deliveries, rangeDays),
+    [summaryDaily, rides, deliveries, rangeDays]
+  );
 
   const demandHeat = useMemo(() => {
     const counts = new Map<string, number>();
@@ -115,8 +171,9 @@ export function ReportsScreen({
   const totalDeliveries30d = dailyBuckets30.reduce((sum, b) => sum + b.deliveries, 0);
 
   const allTimeCommission =
+    totalCommission ??
     rides.reduce((s, r) => s + parseNumber(r.platformCommission), 0) +
-    deliveries.reduce((s, d) => s + parseNumber(d.platformCommission), 0);
+      deliveries.reduce((s, d) => s + parseNumber(d.platformCommission), 0);
 
   const completedRides = rides.filter((r) => r.status.toLowerCase() === "completed");
   const cancelledRides = rides.filter((r) => r.status.toLowerCase() === "cancelled");
@@ -126,7 +183,8 @@ export function ReportsScreen({
   const deliveryCompletionRate =
     deliveries.length > 0 ? Math.round((completedDeliveries.length / deliveries.length) * 100) : 0;
 
-  const onlineRiders = riders.filter((r) => r.onlineStatus);
+  const onlineRiderTotal =
+    onlineRidersCount ?? riders.filter((r) => r.onlineStatus).length;
 
   const platformSummaryRows: (string | number)[][] = [
     [
@@ -245,7 +303,7 @@ export function ReportsScreen({
         <li>
           <span>Active Riders</span>
           <strong>
-            {onlineRiders.length} <small>of {riderCount} registered</small>
+            {onlineRiderTotal} <small>of {riderCount} registered</small>
           </strong>
         </li>
         <li>

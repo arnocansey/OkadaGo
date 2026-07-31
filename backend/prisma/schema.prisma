@@ -557,6 +557,8 @@ model Ride {
   @@index([serviceZoneId, status])
   @@index([riderId, status])
   @@index([passengerId, requestedAt])
+  @@index([createdAt])
+  @@index([status, createdAt])
 }
 
 model DeliveryRequest {
@@ -609,6 +611,8 @@ model DeliveryRequest {
   @@index([serviceZoneId, status])
   @@index([riderId, status])
   @@index([passengerId, requestedAt])
+  @@index([createdAt])
+  @@index([status, createdAt])
 }
 
 enum DeliveryStopType {

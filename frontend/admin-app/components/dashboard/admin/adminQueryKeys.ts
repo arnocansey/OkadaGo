@@ -6,6 +6,7 @@ export const QK = {
   passengers: ["passengers"] as const,
   userStats: ["admin-user-stats"] as const,
   opsSummary: ["admin-ops-summary"] as const,
+  financeSummary: ["admin-finance-summary"] as const,
   walletTx: ["admin-wallet-transactions"] as const,
   payoutRequests: ["admin-payout-requests"] as const,
   ratings: ["admin-ratings"] as const,
