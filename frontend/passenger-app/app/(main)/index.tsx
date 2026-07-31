@@ -24,7 +24,7 @@ export default function HomeScreen() {
   const { t } = useTranslation();
   const { session, activeRide, activeDelivery } = useApp();
   const { colors, typography, isDark } = useTheme();
-  const { latitude, longitude } = useUserLocation();
+  const { latitude, longitude, hasFix } = useUserLocation();
   const [service, setService] = useState<HomeService>("ride");
   const [savedPlaces, setSavedPlaces] = useState<SavedPlace[]>([]);
 
@@ -157,7 +157,7 @@ export default function HomeScreen() {
           latitudeDelta: 0.04,
           longitudeDelta: 0.04,
         }}
-        autoCenterOnLocation
+        autoCenterOnLocation={hasFix}
         showCenterButton
         centerButtonInset={{ bottom: MAP_SHEET_CENTER_INSET, right: spacing.lg }}
       />

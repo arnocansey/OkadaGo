@@ -18,6 +18,7 @@ export function useResolvedLocationAddress() {
     loading: locationLoading,
     error: locationError,
     permissionGranted,
+    hasFix,
     isMocked: liveLocationMocked,
     refresh: refreshLocation,
   } = useUserLocation();
@@ -29,10 +30,11 @@ export function useResolvedLocationAddress() {
   const userEditedRef = useRef(false);
   const requestIdRef = useRef(0);
 
-  const coords = manualCoords ?? {
-    latitude: permissionGranted ? latitude : ACCRA_REGION.latitude,
-    longitude: permissionGranted ? longitude : ACCRA_REGION.longitude,
-  };
+  /** Prefer a real GPS fix; never treat the Accra placeholder as the user's pickup. */
+  const coords = manualCoords ?? (hasFix
+    ? { latitude, longitude }
+    : { latitude: ACCRA_REGION.latitude, longitude: ACCRA_REGION.longitude });
+  const hasPickupCoords = Boolean(manualCoords) || hasFix;
   // A manually-selected address (autocomplete/pin drop) isn't sourced from the live GPS
   // fix, so the mock-location signal only applies when using the current-location coords.
   const isMocked = manualCoords ? false : liveLocationMocked;
@@ -82,11 +84,18 @@ export function useResolvedLocationAddress() {
 
   useEffect(() => {
     if (!session?.token || locationLoading) return;
-    if (userEditedRef.current) return;
+    if (userEditedRef.current || manualCoords) return;
 
     if (!permissionGranted || locationError === "Location permission denied") {
       setAddressState("");
       setHint(PERMISSION_DENIED_HINT);
+      setResolving(false);
+      return;
+    }
+
+    if (!hasFix) {
+      setAddressState(LOADING_TEXT);
+      setHint(null);
       setResolving(false);
       return;
     }
@@ -97,8 +106,10 @@ export function useResolvedLocationAddress() {
     locationLoading,
     permissionGranted,
     locationError,
+    hasFix,
     latitude,
     longitude,
+    manualCoords,
     resolveAddress,
   ]);
 
@@ -147,6 +158,8 @@ export function useResolvedLocationAddress() {
     setAddress,
     selectAddress,
     coords,
+    hasPickupCoords,
+    hasFix,
     isMocked,
     locationLoading,
     resolving,

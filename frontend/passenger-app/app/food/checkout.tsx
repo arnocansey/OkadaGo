@@ -49,6 +49,7 @@ export default function FoodCheckoutScreen() {
     submitAddress: dropoffSubmitAddress,
     setAddress: setDropoff,
     coords: { latitude: dropoffLatitude, longitude: dropoffLongitude },
+    hasPickupCoords: hasDropoffCoords,
     hint: dropoffHint,
   } = useResolvedLocationAddress();
   const { getRestaurant, loading: restaurantLoading } = useNearbyRestaurants();
@@ -68,6 +69,10 @@ export default function FoodCheckoutScreen() {
     if (!restaurant) return;
     if (notes.length < 4) {
       setError("Add pickup instructions so the courier knows what to collect.");
+      return;
+    }
+    if (!hasDropoffCoords) {
+      setError("Waiting for your GPS location. Allow location access or set the delivery address manually.");
       return;
     }
     setError("");
@@ -168,7 +173,13 @@ export default function FoodCheckoutScreen() {
             style={styles.addressInput}
           />
           {error ? <Text style={styles.error}>{error}</Text> : null}
-          <Button label="Request courier" loading={loading} disabled={!restaurant} onPress={submit} fullWidth />
+          <Button
+            label="Request courier"
+            loading={loading}
+            disabled={!restaurant || !hasDropoffCoords}
+            onPress={submit}
+            fullWidth
+          />
         </ScrollView>
         </SafeAreaView>
       </KeyboardAvoidingView>

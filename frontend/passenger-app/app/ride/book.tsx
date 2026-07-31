@@ -225,6 +225,7 @@ export default function BookRideScreen() {
     setAddress: setPickup,
     selectAddress: selectPickupAddress,
     coords: pickupCoords,
+    hasPickupCoords,
     isMocked: pickupIsMocked,
     hint: pickupHint,
     locationLoading: pickupLocationLoading,
@@ -405,7 +406,7 @@ export default function BookRideScreen() {
   const destResolved = destCoords !== FALLBACK_DEST;
 
   useEffect(() => {
-    if (!destination.trim() || !destResolved || !session) return;
+    if (!destination.trim() || !destResolved || !session || !hasPickupCoords) return;
     const params = new URLSearchParams({
       startLat: `${pickupCoords.latitude}`,
       startLon: `${pickupCoords.longitude}`,
@@ -415,7 +416,7 @@ export default function BookRideScreen() {
     api<RoutePreview>(`/bootstrap/route-preview?${params.toString()}`, { token: session.token })
       .then(setEstimate)
       .catch(() => setEstimate(null));
-  }, [destination, destResolved, session, pickupCoords, destCoords]);
+  }, [destination, destResolved, session, hasPickupCoords, pickupCoords, destCoords]);
 
   const estimatedFare = useMemo(() => {
     if (!estimate) return 0;
@@ -479,7 +480,9 @@ export default function BookRideScreen() {
 
   const markers = useMemo(() => {
     const pts = [];
-    pts.push({ id: "pickup", latitude: pickupCoords.latitude, longitude: pickupCoords.longitude, title: "Pickup", pinColor: colors.primary });
+    if (hasPickupCoords) {
+      pts.push({ id: "pickup", latitude: pickupCoords.latitude, longitude: pickupCoords.longitude, title: "Pickup", pinColor: colors.primary });
+    }
     additionalStops.forEach((stop, index) => {
       if (stop.latitude != null && stop.longitude != null) {
         pts.push({
@@ -495,7 +498,7 @@ export default function BookRideScreen() {
       pts.push({ id: "dest", latitude: destCoords.latitude, longitude: destCoords.longitude, title: "Destination", pinColor: colors.mapMarkerDestination });
     }
     return pts;
-  }, [pickupCoords, destCoords, destination, destResolved, additionalStops, colors]);
+  }, [hasPickupCoords, pickupCoords, destCoords, destination, destResolved, additionalStops, colors]);
 
   async function submit() {
     setError("");
@@ -511,6 +514,9 @@ export default function BookRideScreen() {
       }
       if (!destination.trim() || !destResolved) {
         throw new Error("Set a valid destination first.");
+      }
+      if (!hasPickupCoords) {
+        throw new Error("Waiting for your GPS location. Allow location access or set pickup manually.");
       }
 
       const pickupAddress = pickupSubmitAddress.trim() || pickup.trim();
@@ -621,7 +627,7 @@ export default function BookRideScreen() {
                 region={{ ...pickupCoords, latitudeDelta: 0.025, longitudeDelta: 0.025 }}
                 markers={markers}
                 routeCoordinates={routeCoordinates}
-                autoCenterOnLocation
+                autoCenterOnLocation={hasPickupCoords}
                 showCenterButton
                 centerButtonInset={{ bottom: spacing.lg, right: spacing.lg }}
                 fitToMarkers={markers.length >= 2 || Boolean(routeCoordinates?.length)}
@@ -922,7 +928,7 @@ export default function BookRideScreen() {
               loading={loading}
               onPress={submit}
               fullWidth
-              disabled={!destination.trim() || pickupLocationLoading || pickupResolving}
+              disabled={!destination.trim() || !hasPickupCoords || pickupLocationLoading || pickupResolving}
             />
           </View>
         </ScrollView>
