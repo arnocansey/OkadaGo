@@ -41,7 +41,7 @@ const SCREEN_EXTRA: Record<AdminConsoleScreen, AdminQueryNeed[]> = {
   riderWallet: ["walletTx", "payout"],
   riderPayouts: ["walletTx", "payout"],
   riderComplaints: ["incidents", "adminAccounts"],
-  riderActivity: ["riders", "liveStream", "walletTx", "payout", "ratings"],
+  riderActivity: ["riders", "liveStream", "rides", "walletTx", "payout", "ratings"],
   riderSuspensions: ["riders", "auditLogs"],
   passengers: ["passengers", "userStats"],
   payments: ["financeSummary", "walletTx", "payout"],

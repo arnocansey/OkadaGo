@@ -738,6 +738,36 @@ main {
     0 6px 14px rgba(0, 0, 0, 0.35);
 }
 
+.leaflet-marker.driver-online {
+  width: 14px;
+  height: 14px;
+  background: #22c55e;
+  border: 2px solid #fff;
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, #22c55e 28%, transparent),
+    0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+.leaflet-marker.driver-trip {
+  width: 14px;
+  height: 14px;
+  background: var(--accent-yellow, #f5c518);
+  border: 2px solid #fff;
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--accent-yellow, #f5c518) 28%, transparent),
+    0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+.leaflet-marker.driver-idle {
+  width: 14px;
+  height: 14px;
+  background: #6b7280;
+  border: 2px solid #fff;
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, #6b7280 28%, transparent),
+    0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
 .leaflet-marker.passenger {
   background: #22c55e;
 }

@@ -17,7 +17,15 @@ import { useIsMobile } from "@/hooks/use-mobile";
 const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim();
 const useGoogleTiles = Boolean(googleMapsKey);
 
-export type MapMarkerVariant = "default" | "pickup" | "destination" | "driver";
+export type MapMarkerVariant =
+  | "default"
+  | "pickup"
+  | "destination"
+  | "driver"
+  | "driverOnline"
+  | "driverTrip"
+  | "driverIdle"
+  | "passenger";
 
 export interface LeafletMapMarker {
   id: string;
@@ -70,6 +78,24 @@ const ICONS: Record<string, L.DivIcon> = {
     iconSize: [18, 18],
     iconAnchor: [9, 9]
   }),
+  driverOnline: L.divIcon({
+    className: "leaflet-custom-icon",
+    html: '<div class="leaflet-marker driver-online"></div>',
+    iconSize: [18, 18],
+    iconAnchor: [9, 9]
+  }),
+  driverTrip: L.divIcon({
+    className: "leaflet-custom-icon",
+    html: '<div class="leaflet-marker driver-trip"></div>',
+    iconSize: [18, 18],
+    iconAnchor: [9, 9]
+  }),
+  driverIdle: L.divIcon({
+    className: "leaflet-custom-icon",
+    html: '<div class="leaflet-marker driver-idle"></div>',
+    iconSize: [18, 18],
+    iconAnchor: [9, 9]
+  }),
   passenger: L.divIcon({
     className: "leaflet-custom-icon",
     html: '<div class="leaflet-marker passenger"></div>',
@@ -83,6 +109,15 @@ function pickIcon(variant: MapMarkerVariant | undefined): L.DivIcon | undefined 
     return ICONS[variant];
   }
   return undefined;
+}
+
+function isDriverVariant(variant: MapMarkerVariant | undefined): boolean {
+  return (
+    variant === "driver" ||
+    variant === "driverOnline" ||
+    variant === "driverTrip" ||
+    variant === "driverIdle"
+  );
 }
 
 function FitAllButton({ positions }: { positions: [number, number][] }) {
@@ -215,7 +250,7 @@ export function LeafletMap({
   const mapKey = `map:${resolvedBasemap}`;
 
   const driverPositions = markers
-    .filter((m) => m.variant === "driver")
+    .filter((m) => isDriverVariant(m.variant))
     .map((m) => m.position);
 
   return (
@@ -299,7 +334,7 @@ export function LeafletMap({
                 {m.label}
               </Tooltip>
             )}
-            {m.variant === "driver" && (
+            {isDriverVariant(m.variant) && (
               <Popup>
                 <div className="rider-popup">
                   <strong className="rider-popup-name">{m.label}</strong>

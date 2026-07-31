@@ -847,13 +847,19 @@ export function useAdminData(
   const riderFinancialRows = useMemo((): RiderFinancialRow[] => {
     if (financeSummary?.topRiders?.length) {
       const riderById = new Map(ridersBase.map((r) => [r.id, r]));
+      const activeByName = new Map<string, number>();
+      for (const ride of rides) {
+        const name = ride.rider?.user.fullName;
+        if (!name || ["completed", "cancelled"].includes(ride.status.toLowerCase())) continue;
+        activeByName.set(name, (activeByName.get(name) ?? 0) + 1);
+      }
       return financeSummary.topRiders.map((row) => {
         const rider = riderById.get(row.riderId) ?? stubRiderFromFinance(row);
         return {
           rider,
           rideCount: row.completedCount,
           completedCount: row.completedCount,
-          activeCount: 0,
+          activeCount: activeByName.get(rider.user.fullName) ?? 0,
           revenue: row.revenue,
           earnings: row.earnings,
           commission: row.commission,

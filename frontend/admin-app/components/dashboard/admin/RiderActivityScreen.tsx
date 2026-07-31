@@ -31,7 +31,15 @@ export type RiderActivityMapMarker = {
   id: string;
   position: [number, number];
   label: string;
-  variant?: "driver" | "passenger" | "incident" | "pickup" | "dropoff";
+  variant?:
+    | "driver"
+    | "driverOnline"
+    | "driverTrip"
+    | "driverIdle"
+    | "passenger"
+    | "incident"
+    | "pickup"
+    | "dropoff";
 };
 
 export type RiderActivityScreenProps = {
@@ -47,6 +55,8 @@ export type RiderActivityScreenProps = {
   }[];
   /** Prefer live SSE markers when available (full online fleet, not page sample). */
   mapMarkers?: RiderActivityMapMarker[];
+  /** Rider display names currently on an active ride (for On Trip / Idle filters). */
+  activeTripRiderNames?: string[];
   activeRidersCount: number;
   ridersWithCoordsCount: number;
   activeTripsCount: number;
@@ -115,6 +125,7 @@ export function RiderActivityScreen({
   activityRows,
   ridersWithCoords,
   mapMarkers: liveMapMarkers,
+  activeTripRiderNames = [],
   activeRidersCount,
   ridersWithCoordsCount,
   activeTripsCount,
@@ -128,6 +139,19 @@ export function RiderActivityScreen({
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedRider, setSelectedRider] = useState<RiderFinancialRow | null>(null);
 
+  const onTripNames = useMemo(() => {
+    const names = new Set(activeTripRiderNames);
+    for (const row of activityRows) {
+      if (row.activeCount > 0) names.add(row.rider.user.fullName);
+    }
+    return names;
+  }, [activityRows, activeTripRiderNames]);
+
+  const activityById = useMemo(() => {
+    const map = new Map(activityRows.map((row) => [row.rider.id, row]));
+    return map;
+  }, [activityRows]);
+
   const filteredRows = useMemo(() => {
     let rows = activityRows;
     if (searchQuery.trim()) {
@@ -139,45 +163,25 @@ export function RiderActivityScreen({
           (r.rider.city ?? "").toLowerCase().includes(q)
       );
     }
-    if (quickFilter === "Online") rows = rows.filter((r) => r.rider.onlineStatus);
+    if (quickFilter === "Online") {
+      rows = rows.filter((r) => r.rider.onlineStatus || onTripNames.has(r.rider.user.fullName));
+    }
     if (quickFilter === "Offline") rows = rows.filter((r) => !r.rider.onlineStatus);
-    if (quickFilter === "On Trip") rows = rows.filter((r) => r.activeCount > 0);
-    if (quickFilter === "Idle") rows = rows.filter((r) => r.rider.onlineStatus && r.activeCount === 0);
+    if (quickFilter === "On Trip") {
+      rows = rows.filter((r) => r.activeCount > 0 || onTripNames.has(r.rider.user.fullName));
+    }
+    if (quickFilter === "Idle") {
+      rows = rows.filter(
+        (r) => r.rider.onlineStatus && r.activeCount === 0 && !onTripNames.has(r.rider.user.fullName)
+      );
+    }
     return rows;
-  }, [activityRows, searchQuery, quickFilter]);
+  }, [activityRows, searchQuery, quickFilter, onTripNames]);
 
-  const timelineEvents = useMemo(() => {
-    const events: { id: string; rider: string; action: string; time: string; color: string }[] = [];
-    activityRows.slice(0, 20).forEach((r) => {
-      if (r.activeCount > 0) {
-        events.push({
-          id: r.rider.id + "-active",
-          rider: r.rider.user.fullName,
-          action: `Has ${r.activeCount} active trip${r.activeCount > 1 ? "s" : ""}`,
-          time: "Now",
-          color: D.green,
-        });
-      }
-      if (r.completedCount > 0) {
-        events.push({
-          id: r.rider.id + "-completed",
-          rider: r.rider.user.fullName,
-          action: `Completed ${r.completedCount} trip${r.completedCount > 1 ? "s" : ""} today`,
-          time: "Today",
-          color: D.blue,
-        });
-      }
-    });
-    return events.slice(0, 15);
-  }, [activityRows]);
-
-  if (dataLoading) {
-    return <AdminPageSkeleton variant="split" kpis={4} rows={5} cols={5} />;
-  }
-
-  const mapMarkers =
-    liveMapMarkers && liveMapMarkers.length > 0
-      ? liveMapMarkers
+  const mapMarkers = useMemo(() => {
+    const fromLive = Boolean(liveMapMarkers && liveMapMarkers.length > 0);
+    const base: RiderActivityMapMarker[] = fromLive
+      ? liveMapMarkers!
       : ridersWithCoords
           .map((rider) => {
             const lat = parseNumber(rider.currentLatitude);
@@ -193,6 +197,65 @@ export function RiderActivityScreen({
             };
           })
           .filter((marker): marker is RiderActivityMapMarker => marker != null);
+
+    return base
+      .map((marker) => {
+        const row = activityById.get(marker.id);
+        const onTrip =
+          (row?.activeCount ?? 0) > 0 || onTripNames.has(marker.label);
+        const online = fromLive
+          ? true
+          : Boolean(row?.rider.onlineStatus ?? ridersWithCoords.find((r) => r.id === marker.id)?.onlineStatus);
+
+        if (quickFilter === "Online" && !online && !onTrip) return null;
+        if (quickFilter === "On Trip" && !onTrip) return null;
+        if (quickFilter === "Idle" && !(online && !onTrip)) return null;
+
+        const variant = onTrip
+          ? ("driverTrip" as const)
+          : online
+            ? ("driverOnline" as const)
+            : ("driverIdle" as const);
+
+        return { ...marker, variant };
+      })
+      .filter((marker): marker is RiderActivityMapMarker => marker != null);
+  }, [
+    liveMapMarkers,
+    ridersWithCoords,
+    activityById,
+    onTripNames,
+    quickFilter,
+  ]);
+
+  const timelineEvents = useMemo(() => {
+    const events: { id: string; rider: string; action: string; time: string; color: string }[] = [];
+    activityRows.slice(0, 20).forEach((r) => {
+      if (r.activeCount > 0 || onTripNames.has(r.rider.user.fullName)) {
+        events.push({
+          id: r.rider.id + "-active",
+          rider: r.rider.user.fullName,
+          action: `Has ${Math.max(r.activeCount, 1)} active trip${r.activeCount > 1 ? "s" : ""}`,
+          time: "Now",
+          color: D.green,
+        });
+      }
+      if (r.completedCount > 0) {
+        events.push({
+          id: r.rider.id + "-completed",
+          rider: r.rider.user.fullName,
+          action: `Completed ${r.completedCount} trip${r.completedCount > 1 ? "s" : ""} today`,
+          time: "Today",
+          color: D.blue,
+        });
+      }
+    });
+    return events.slice(0, 15);
+  }, [activityRows, onTripNames]);
+
+  if (dataLoading) {
+    return <AdminPageSkeleton variant="split" kpis={4} rows={5} cols={5} />;
+  }
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / ITEMS_PER_PAGE));
   const paginatedRows = filteredRows.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
@@ -292,7 +355,10 @@ export function RiderActivityScreen({
                   <div>
                     <div style={{ fontSize: 15, fontWeight: 600 }}>Live Activity Map</div>
                     <div style={{ fontSize: 12, color: D.textMuted, marginTop: 2 }}>
-                      {ridersWithCoordsCount} riders with GPS coordinates
+                      {mapMarkers.length} shown
+                      {quickFilter !== "All" ? ` · ${quickFilter}` : ""}
+                      {" · "}
+                      {ridersWithCoordsCount} GPS total
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 6 }}>
@@ -365,19 +431,7 @@ export function RiderActivityScreen({
                       display: "inline-block",
                     }}
                   />{" "}
-                  Idle / Offline
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span
-                    style={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: "50%",
-                      background: D.red,
-                      display: "inline-block",
-                    }}
-                  />{" "}
-                  Alert
+                  Idle
                 </div>
               </div>
             </div>

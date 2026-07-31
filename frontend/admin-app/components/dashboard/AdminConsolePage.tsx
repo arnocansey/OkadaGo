@@ -428,6 +428,9 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             activityRows={data.riderFinancialRows}
             ridersWithCoords={data.ridersWithCoords}
             mapMarkers={data.mapMarkers}
+            activeTripRiderNames={data.activeRides
+              .map((ride) => ride.rider?.user.fullName)
+              .filter((name): name is string => Boolean(name))}
             activeRidersCount={data.liveOnlineCount ?? data.activeRiders.length}
             ridersWithCoordsCount={
               data.badgeData.ridersWithCoordsCount ?? data.mapMarkers.length
