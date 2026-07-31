@@ -2,7 +2,8 @@
 
 import { BrandMark } from "@/components/brand/BrandMark";
 import { ImmersivePage } from "@/components/layout/immersive-page";
-import { LoaderCircle, Shield } from "lucide-react";
+import { OkadaLoader } from "@/components/ui/OkadaLoader";
+import { Shield } from "lucide-react";
 
 export function AccessState({
   title,
@@ -36,8 +37,8 @@ export function AccessState({
           </div>
 
           {loading ? (
-            <div className="admin-access-gate-loading" role="status" aria-live="polite">
-              <LoaderCircle size={20} className="admin-access-gate-spinner" aria-hidden />
+            <div className="admin-access-gate-loading">
+              <OkadaLoader size="sm" />
               <span>Checking your session…</span>
             </div>
           ) : (

@@ -2883,7 +2883,7 @@ table.admin-table td,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   min-height: 48px;
   padding: 0 16px;
   border-radius: 12px;
@@ -2894,14 +2894,113 @@ table.admin-table td,
   font-weight: 600;
 }
 
-.admin-access-gate-spinner {
-  animation: admin-access-spin 0.9s linear infinite;
-  color: #ff6b00;
+/* ── OkadaGo branded loader (radar / fleet sweep) ── */
+.okada-loader {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
-@keyframes admin-access-spin {
+.okada-loader--sm {
+  gap: 8px;
+}
+
+.okada-loader-mark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.okada-loader-ring {
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  border: 1.5px solid rgba(247, 198, 0, 0.22);
+  animation: okada-loader-pulse 1.8s ease-out infinite;
+}
+
+.okada-loader-ring--delayed {
+  inset: 0;
+  border-color: rgba(255, 107, 0, 0.18);
+  animation-delay: 0.55s;
+}
+
+.okada-loader-sweep {
+  position: absolute;
+  inset: 4%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 240deg,
+    rgba(255, 107, 0, 0.08) 280deg,
+    rgba(247, 198, 0, 0.85) 330deg,
+    #ff6b00 360deg
+  );
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+  animation: okada-loader-sweep 1.15s linear infinite;
+}
+
+.okada-loader-core {
+  position: relative;
+  z-index: 1;
+  width: 34%;
+  height: 34%;
+  display: grid;
+  place-items: center;
+  transform: rotate(45deg);
+  animation: okada-loader-breathe 1.4s ease-in-out infinite;
+}
+
+.okada-loader-core-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 22%;
+  background: linear-gradient(145deg, #f7c600 0%, #ff6b00 100%);
+  box-shadow:
+    0 0 0 2px rgba(15, 23, 42, 0.35),
+    0 0 14px rgba(247, 198, 0, 0.45);
+}
+
+.okada-loader-label {
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: inherit;
+  text-align: center;
+}
+
+@keyframes okada-loader-sweep {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes okada-loader-pulse {
+  0% {
+    opacity: 0.85;
+    transform: scale(0.86);
+  }
+  70% {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes okada-loader-breathe {
+  0%,
+  100% {
+    transform: rotate(45deg) scale(0.92);
+  }
+  50% {
+    transform: rotate(45deg) scale(1.06);
   }
 }
 
