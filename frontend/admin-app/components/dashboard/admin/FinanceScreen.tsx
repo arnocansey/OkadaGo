@@ -1,12 +1,16 @@
+import { useEffect } from "react";
 import { CreditCard, TrendingUp, TrendingDown, Filter, Download } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
 import { downloadCsv } from "@/lib/export-csv";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
+import { AdminPagination, usePagination } from "./ui/AdminPagination";
 import type { WalletTransactionRecord, PayoutRequestRecord } from "./types";
 import { parseNumber, formatDateTime, statusTone, formatEnumLabel } from "./utils";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
 import { SkeletonKPI, SkeletonTable } from "./AdminSkeleton";
+
+const PAGE_SIZE = 10;
 
 export type FinanceScreenProps = {
   walletTransactions: WalletTransactionRecord[];
@@ -44,6 +48,13 @@ export type FinanceScreenProps = {
   totalDeliveryCommission: number;
   riderEarningsTotal: number;
   dataLoading?: boolean;
+  onPayoutAction?: (
+    payoutRequestId: string,
+    action: "mark_reviewing" | "approve" | "mark_processing" | "mark_paid" | "reject",
+    rejectionReason?: string
+  ) => void;
+  onServerExport?: (entity: "wallet-transactions" | "payout-requests") => void;
+  isMutating?: boolean;
 };
 
 export function FinanceScreen({
@@ -81,9 +92,30 @@ export function FinanceScreen({
   totalRideCommission,
   totalDeliveryCommission,
   riderEarningsTotal,
-  dataLoading = false
+  dataLoading = false,
+  onPayoutAction,
+  onServerExport,
+  isMutating = false
 }: FinanceScreenProps) {
   const { isMobile } = useBreakpoint();
+
+  const { page: walletPage, setPage: setWalletPage, paginated: paginatedWalletTx } = usePagination(
+    walletTransactions,
+    PAGE_SIZE
+  );
+  const { page: payoutPage, setPage: setPayoutPage, paginated: paginatedPayouts } = usePagination(
+    payoutRequests,
+    PAGE_SIZE
+  );
+
+  useEffect(() => {
+    setWalletPage(1);
+  }, [transactionStatusFilter, transactionTypeFilter, setWalletPage]);
+
+  useEffect(() => {
+    setPayoutPage(1);
+  }, [payoutStatusFilter, setPayoutPage]);
+
   if (dataLoading) {
     return (
       <div className="exact-admin-screen" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -125,17 +157,6 @@ export function FinanceScreen({
           </div>
         }
       />
-      <style>{`
-        @media (max-width: 767px) {
-          .admin-kpi-grid { grid-template-columns: 1fr 1fr !important; }
-          .admin-reference-grid-3 { grid-template-columns: 1fr !important; }
-          .admin-table-wrapper { overflow-x: auto; }
-          .admin-reference-card { padding: 12px !important; }
-        }
-        @media (min-width: 768px) and (max-width: 1023px) {
-          .admin-reference-grid-3 { grid-template-columns: 1fr 1fr !important; }
-        }
-      `}</style>
       <section className="admin-kpi-grid">
         <article className="admin-reference-kpi">
           <div className="admin-reference-kpi-icon green"><CreditCard size={22} /></div>
@@ -305,7 +326,7 @@ export function FinanceScreen({
           </div>
         </article>
 
-        <article className="admin-reference-card" style={{ gridColumn: "span 2" }}>
+        <article className="admin-reference-card admin-grid-span-2">
           <div className="admin-reference-cardhead">
             <div>
               <h3>Recent Transactions</h3>
@@ -357,20 +378,22 @@ export function FinanceScreen({
             <button
               className="admin-select-sm"
               onClick={() =>
-                downloadCsv(
-                  "wallet-transactions.csv",
-                  ["User", "Role", "Type", "Direction", "Amount", "Status", "Reference", "Date"],
-                  walletTransactions.map((tx) => [
-                    tx.wallet.user.fullName,
-                    tx.wallet.user.role,
-                    tx.type,
-                    tx.direction,
-                    tx.amount,
-                    tx.status,
-                    tx.reference ?? "",
-                    tx.createdAt
-                  ])
-                )
+                onServerExport
+                  ? onServerExport("wallet-transactions")
+                  : downloadCsv(
+                      "wallet-transactions.csv",
+                      ["User", "Role", "Type", "Direction", "Amount", "Status", "Reference", "Date"],
+                      walletTransactions.map((tx) => [
+                        tx.wallet.user.fullName,
+                        tx.wallet.user.role,
+                        tx.type,
+                        tx.direction,
+                        tx.amount,
+                        tx.status,
+                        tx.reference ?? "",
+                        tx.createdAt
+                      ])
+                    )
               }
             >
               <Download size={14} /> Export CSV
@@ -416,7 +439,7 @@ export function FinanceScreen({
                 </tr>
               </thead>
               <tbody>
-                {walletTransactions.slice(0, 50).map((tx) => (
+                {paginatedWalletTx.map((tx) => (
                   <tr key={tx.id}>
                     <td>
                       <strong>{tx.wallet.user.fullName}</strong>
@@ -439,6 +462,12 @@ export function FinanceScreen({
                 ))}
               </tbody>
             </table>
+            <AdminPagination
+              page={walletPage}
+              totalItems={walletTransactions.length}
+              pageSize={PAGE_SIZE}
+              onPageChange={setWalletPage}
+            />
           </div>
         )}
       </article>
@@ -454,20 +483,22 @@ export function FinanceScreen({
             <button
               className="admin-select-sm"
               onClick={() =>
-                downloadCsv(
-                  "payout-requests.csv",
-                  ["Rider", "Code", "Amount", "Method", "Destination", "Status", "Requested", "Reviewer"],
-                  payoutRequests.map((request) => [
-                    request.rider.user.fullName,
-                    request.rider.displayCode,
-                    request.amount,
-                    request.method,
-                    request.destinationLabel,
-                    request.status,
-                    request.requestedAt,
-                    request.reviewer?.fullName ?? "—"
-                  ])
-                )
+                onServerExport
+                  ? onServerExport("payout-requests")
+                  : downloadCsv(
+                      "payout-requests.csv",
+                      ["Rider", "Code", "Amount", "Method", "Destination", "Status", "Requested", "Reviewer"],
+                      payoutRequests.map((request) => [
+                        request.rider.user.fullName,
+                        request.rider.displayCode,
+                        request.amount,
+                        request.method,
+                        request.destinationLabel,
+                        request.status,
+                        request.requestedAt,
+                        request.reviewer?.fullName ?? "—"
+                      ])
+                    )
               }
             >
               <Download size={14} /> Export CSV
@@ -501,10 +532,13 @@ export function FinanceScreen({
                   <th>Status</th>
                   <th>Requested</th>
                   <th>Reviewer</th>
+                  {onPayoutAction ? <th>Actions</th> : null}
                 </tr>
               </thead>
               <tbody>
-                {payoutRequests.map((request) => (
+                {paginatedPayouts.map((request) => {
+                  const status = request.status.toUpperCase();
+                  return (
                   <tr key={request.id}>
                     <td>
                       <strong>{request.rider.user.fullName}</strong>
@@ -521,10 +555,48 @@ export function FinanceScreen({
                     </td>
                     <td><small>{formatDateTime(request.requestedAt)}</small></td>
                     <td><small>{request.reviewer?.fullName ?? "—"}</small></td>
+                    {onPayoutAction ? (
+                      <td>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                          {status === "REQUESTED" && (
+                            <button type="button" className="admin-btn-secondary" disabled={isMutating} onClick={() => onPayoutAction(request.id, "mark_reviewing")}>
+                              Review
+                            </button>
+                          )}
+                          {(status === "REQUESTED" || status === "REVIEWING") && (
+                            <button type="button" className="admin-btn-primary" disabled={isMutating} onClick={() => onPayoutAction(request.id, "approve")}>
+                              Approve
+                            </button>
+                          )}
+                          {status === "APPROVED" && (
+                            <button type="button" className="admin-btn-secondary" disabled={isMutating} onClick={() => onPayoutAction(request.id, "mark_processing")}>
+                              Process
+                            </button>
+                          )}
+                          {(status === "APPROVED" || status === "PROCESSING") && (
+                            <button type="button" className="admin-btn-primary" disabled={isMutating} onClick={() => onPayoutAction(request.id, "mark_paid")}>
+                              Mark Paid
+                            </button>
+                          )}
+                          {!["PAID", "REJECTED", "CANCELLED"].includes(status) && (
+                            <button type="button" className="admin-btn-secondary" disabled={isMutating} onClick={() => onPayoutAction(request.id, "reject", "Rejected from finance console")}>
+                              Reject
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    ) : null}
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
+            <AdminPagination
+              page={payoutPage}
+              totalItems={payoutRequests.length}
+              pageSize={PAGE_SIZE}
+              onPageChange={setPayoutPage}
+            />
           </div>
         )}
       </article>

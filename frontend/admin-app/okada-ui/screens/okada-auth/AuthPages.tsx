@@ -106,6 +106,8 @@ export function AuthPages({
   const [countryCode, setCountryCode] = useState("+233");
   const [showPassword, setShowPassword] = useState(false);
   const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [totpCode, setTotpCode] = useState("");
+  const [needsTotp, setNeedsTotp] = useState(false);
   const passwordStrength = useMemo(() => getPasswordStrength(password), [password]);
 
   useEffect(() => {
@@ -233,7 +235,8 @@ export function AuthPages({
           ? await adminLogin({
               email: email.trim(),
               password,
-              device
+              device,
+              totpCode: totpCode.trim() || undefined
             })
           : audience === "rider"
             ? await riderLogin({
@@ -254,6 +257,15 @@ export function AuthPages({
       navigateAfterAuth(resolvePostAuthTarget());
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Unable to sign in right now.";
+      if (audience === "admin" && /two-factor/i.test(msg)) {
+        setNeedsTotp(true);
+        if (!totpCode.trim()) {
+          setInfoMessage("Enter the 6-digit code from your authenticator app to finish signing in.");
+          setErrorMessage(null);
+          showToast("Two-factor code required", "info");
+          return;
+        }
+      }
       setErrorMessage(msg);
       showToast(msg, "error");
     } finally {
@@ -485,6 +497,26 @@ export function AuthPages({
                       </button>
                     </div>
                   </div>
+
+                  {audience === "admin" && needsTotp && (
+                    <div className="space-y-2">
+                      <Label htmlFor="totp">Two-Factor Code</Label>
+                      <Input
+                        id="totp"
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={6}
+                        placeholder="123456"
+                        value={totpCode}
+                        onChange={(event) => setTotpCode(event.target.value.replace(/\D/g, ""))}
+                        autoFocus
+                        required
+                      />
+                      <p className="text-xs text-slate-500">
+                        Open your authenticator app and enter the current 6-digit code.
+                      </p>
+                    </div>
+                  )}
 
                   <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
                     <Button type="submit" className="h-12 w-full bg-primary text-base text-[#0a0b0d] hover:bg-primary/90" disabled={loading}>

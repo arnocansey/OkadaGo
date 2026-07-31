@@ -115,14 +115,18 @@ export class TicketService {
   async listAdminTickets(token: string, query: AdminTicketsQuery) {
     await this.requireAdmin(token);
 
-    return prisma.supportTicket.findMany({
-      where: {
-        deletedAt: null,
-        ...(query.status ? { status: query.status } : {}),
-        ...(query.priority ? { priority: query.priority } : {})
-      },
+    const where = {
+      deletedAt: null,
+      ...(query.status ? { status: query.status } : {}),
+      ...(query.priority ? { priority: query.priority } : {})
+    };
+    const page = query.page;
+
+    const data = await prisma.supportTicket.findMany({
+      where,
       orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
       take: query.limit,
+      ...(page ? { skip: (page - 1) * query.limit } : {}),
       include: {
         createdBy: {
           select: {
@@ -151,6 +155,10 @@ export class TicketService {
         _count: { select: { messages: true } }
       }
     });
+
+    if (!page) return data;
+    const total = await prisma.supportTicket.count({ where });
+    return { data, total, page, limit: query.limit };
   }
 
   async updateAdminTicket(token: string, ticketId: string, input: AdminUpdateTicketInput) {

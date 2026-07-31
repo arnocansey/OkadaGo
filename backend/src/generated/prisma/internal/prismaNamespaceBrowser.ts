@@ -57,6 +57,8 @@ export const ModelName = {
   PassengerProfile: 'PassengerProfile',
   RiderProfile: 'RiderProfile',
   AdminProfile: 'AdminProfile',
+  AdminNote: 'AdminNote',
+  PlatformSetting: 'PlatformSetting',
   DispatcherProfile: 'DispatcherProfile',
   Vehicle: 'Vehicle',
   RiderDocument: 'RiderDocument',
@@ -210,11 +212,36 @@ export const AdminProfileScalarFieldEnum = {
   userId: 'userId',
   title: 'title',
   permissions: 'permissions',
+  totpSecret: 'totpSecret',
+  totpEnabled: 'totpEnabled',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type AdminProfileScalarFieldEnum = (typeof AdminProfileScalarFieldEnum)[keyof typeof AdminProfileScalarFieldEnum]
+
+
+export const AdminNoteScalarFieldEnum = {
+  id: 'id',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  authorId: 'authorId',
+  body: 'body',
+  createdAt: 'createdAt'
+} as const
+
+export type AdminNoteScalarFieldEnum = (typeof AdminNoteScalarFieldEnum)[keyof typeof AdminNoteScalarFieldEnum]
+
+
+export const PlatformSettingScalarFieldEnum = {
+  key: 'key',
+  value: 'value',
+  updatedById: 'updatedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PlatformSettingScalarFieldEnum = (typeof PlatformSettingScalarFieldEnum)[keyof typeof PlatformSettingScalarFieldEnum]
 
 
 export const DispatcherProfileScalarFieldEnum = {

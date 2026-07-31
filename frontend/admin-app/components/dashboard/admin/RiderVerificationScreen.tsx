@@ -49,6 +49,8 @@ export type RiderVerificationScreenProps = {
     today: number;
   };
   onRiderApproval?: (riderProfileId: string, action: "approve" | "reject", reason?: string) => void;
+  onRequestInfo?: (riderProfileId: string, message: string) => void;
+  onExportCsv?: () => void;
   isMutating?: boolean;
   dataLoading?: boolean;
 };
@@ -82,6 +84,8 @@ export function RiderVerificationScreen({
   riderVerificationRows,
   riderVerificationStats,
   onRiderApproval,
+  onRequestInfo,
+  onExportCsv,
   isMutating = false,
   dataLoading = false,
 }: RiderVerificationScreenProps) {
@@ -94,6 +98,8 @@ export function RiderVerificationScreen({
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedApplication, setSelectedApplication] = useState<number | null>(null);
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const [requestInfoOpen, setRequestInfoOpen] = useState(false);
+  const [requestInfoMessage, setRequestInfoMessage] = useState("");
 
   if (dataLoading) {
     return (
@@ -168,14 +174,29 @@ export function RiderVerificationScreen({
     }
     addToast(`Queued approval for ${eligible.length} rider${eligible.length === 1 ? "" : "s"}`, "info");
   };
-  const handleRequestInfo = () => {
-    addToast("Request-info messaging is not connected yet", "info");
+  const handleSendRequestInfo = (riderId: string) => {
+    if (!onRequestInfo) {
+      addToast("Request-info messaging is unavailable", "error");
+      return;
+    }
+    const message = requestInfoMessage.trim();
+    if (message.length < 5) {
+      addToast("Write a short message describing what you need from the rider", "info");
+      return;
+    }
+    onRequestInfo(riderId, message);
+    setRequestInfoOpen(false);
+    setRequestInfoMessage("");
   };
   const handleScheduleInterview = () => {
     addToast("Interview scheduling is not connected yet", "info");
   };
   const handleExportReport = () => {
-    addToast("CSV export is not available in this console yet", "info");
+    if (onExportCsv) {
+      onExportCsv();
+    } else {
+      addToast("CSV export is unavailable", "error");
+    }
   };
 
   /* ════════════════════════════════════════════════════════════════ */
@@ -984,7 +1005,7 @@ export function RiderVerificationScreen({
               </button>
               <button
                 style={S.btn("info")}
-                onClick={handleRequestInfo}
+                onClick={() => setRequestInfoOpen((open) => !open)}
               >
                 <MessageSquare size={15} /> Request Info
               </button>
@@ -995,6 +1016,45 @@ export function RiderVerificationScreen({
                 <Calendar size={15} /> Schedule Interview
               </button>
             </div>
+
+            {requestInfoOpen && (
+              <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+                <textarea
+                  value={requestInfoMessage}
+                  onChange={(e) => setRequestInfoMessage(e.target.value)}
+                  placeholder="Tell the rider what extra information or documents you need…"
+                  rows={3}
+                  maxLength={500}
+                  style={{
+                    width: "100%",
+                    boxSizing: "border-box",
+                    padding: "10px 14px",
+                    fontSize: 13,
+                    borderRadius: 10,
+                    border: "1px solid var(--border-color)",
+                    background: "var(--bg-primary)",
+                    color: "var(--text-primary)",
+                    resize: "vertical",
+                    outline: "none",
+                  }}
+                />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    style={S.btn("info")}
+                    disabled={isMutating}
+                    onClick={() => handleSendRequestInfo(selectedRow.rider.id)}
+                  >
+                    <MessageSquare size={14} /> Send Request
+                  </button>
+                  <button
+                    style={S.btn("outline")}
+                    onClick={() => { setRequestInfoOpen(false); setRequestInfoMessage(""); }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

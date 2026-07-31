@@ -145,15 +145,20 @@ export class WalletService {
   async listAdminWalletTransactions(token: string, filters: AdminWalletTransactionsQueryInput) {
     await this.getCurrentAdminSession(token);
 
-    return prisma.walletTransaction.findMany({
-      where: {
-        ...(filters.status ? { status: filters.status } : {}),
-        ...(filters.type ? { type: filters.type } : {})
-      },
+    const where = {
+      ...(filters.status ? { status: filters.status } : {}),
+      ...(filters.type ? { type: filters.type } : {})
+    };
+    const limit = filters.limit ?? 120;
+    const page = filters.page;
+
+    const data = await prisma.walletTransaction.findMany({
+      where,
       orderBy: {
         createdAt: "desc"
       },
-      take: 120,
+      take: limit,
+      ...(page ? { skip: (page - 1) * limit } : {}),
       include: {
         wallet: {
           include: {
@@ -201,19 +206,28 @@ export class WalletService {
         }
       }
     });
+
+    if (!page) return data;
+    const total = await prisma.walletTransaction.count({ where });
+    return { data, total, page, limit };
   }
 
   async listAdminPayoutRequests(token: string, filters: AdminPayoutRequestsQueryInput) {
     await this.getCurrentAdminSession(token);
 
-    return prisma.payoutRequest.findMany({
-      where: {
-        ...(filters.status ? { status: filters.status } : {})
-      },
+    const where = {
+      ...(filters.status ? { status: filters.status } : {})
+    };
+    const limit = filters.limit ?? 80;
+    const page = filters.page;
+
+    const data = await prisma.payoutRequest.findMany({
+      where,
       orderBy: {
         requestedAt: "desc"
       },
-      take: 80,
+      take: limit,
+      ...(page ? { skip: (page - 1) * limit } : {}),
       include: {
         rider: {
           include: {
@@ -244,6 +258,10 @@ export class WalletService {
         }
       }
     });
+
+    if (!page) return data;
+    const total = await prisma.payoutRequest.count({ where });
+    return { data, total, page, limit };
   }
 
   async reviewAdminPayoutRequest(

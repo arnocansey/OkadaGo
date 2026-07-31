@@ -528,14 +528,22 @@ export class DeliveryService {
     });
   }
 
-  async listDeliveries() {
-    return prisma.deliveryRequest.findMany({
-      take: 50,
+  async listDeliveries(query: { limit?: number; page?: number } = {}) {
+    const limit = Math.min(Math.max(query.limit ?? 50, 1), 300);
+    const page = query.page;
+
+    const data = await prisma.deliveryRequest.findMany({
+      take: limit,
+      ...(page ? { skip: (page - 1) * limit } : {}),
       orderBy: {
         createdAt: "desc"
       },
       include: deliveryDetailsInclude
     });
+
+    if (!page) return data;
+    const total = await prisma.deliveryRequest.count();
+    return { data, total, page, limit };
   }
 
   async getDelivery(deliveryId: string) {

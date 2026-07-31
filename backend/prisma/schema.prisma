@@ -252,6 +252,7 @@ model User {
   auditLogs         AuditLog[]         @relation("AuditActor")
   approvedDocuments RiderDocument[]    @relation("DocumentReviewer")
   approvedPayouts   PayoutRequest[]    @relation("PayoutReviewer")
+  adminNotes        AdminNote[]        @relation("AdminNoteAuthor")
 
   @@index([role, accountStatus])
   @@index([createdAt])
@@ -360,9 +361,34 @@ model AdminProfile {
   userId      String   @unique
   title       String?  @db.VarChar(120)
   permissions Json?
+  /// TOTP two-factor auth. Secret is base32; login requires a code once enabled.
+  totpSecret  String?  @db.VarChar(64)
+  totpEnabled Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   user        User     @relation(fields: [userId], references: [id])
+}
+
+/// Free-form ops note pinned to any admin-managed entity (rider, incident, payout, …).
+model AdminNote {
+  id         String   @id @default(cuid())
+  entityType String   @db.VarChar(40)
+  entityId   String   @db.VarChar(64)
+  authorId   String
+  body       String   @db.VarChar(1000)
+  createdAt  DateTime @default(now())
+  author     User     @relation("AdminNoteAuthor", fields: [authorId], references: [id])
+
+  @@index([entityType, entityId, createdAt])
+}
+
+/// Key-value store for persisted platform settings edited from the admin console.
+model PlatformSetting {
+  key         String   @id @db.VarChar(80)
+  value       Json
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model DispatcherProfile {
@@ -959,6 +985,10 @@ enum BroadcastAudience {
   RIDERS
   PASSENGERS
   ZONE
+  /// Riders whose last online ping is older than 7 days (re-engagement).
+  INACTIVE_RIDERS
+  /// Passengers who signed up but have no completed rides yet.
+  NEW_PASSENGERS
 }
 
 enum BroadcastStatus {

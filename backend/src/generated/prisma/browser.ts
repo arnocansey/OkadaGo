@@ -48,6 +48,16 @@ export type RiderProfile = Prisma.RiderProfileModel
  */
 export type AdminProfile = Prisma.AdminProfileModel
 /**
+ * Model AdminNote
+ * Free-form ops note pinned to any admin-managed entity (rider, incident, payout, …).
+ */
+export type AdminNote = Prisma.AdminNoteModel
+/**
+ * Model PlatformSetting
+ * Key-value store for persisted platform settings edited from the admin console.
+ */
+export type PlatformSetting = Prisma.PlatformSettingModel
+/**
  * Model DispatcherProfile
  * 
  */

@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { Bike, Package, Users, CreditCard, Star, Tag, MapPin, Bell, User } from "lucide-react";
 
-import { requestJson } from "@/lib/api";
+import { apiUrl, requestJson } from "@/lib/api";
 import { parseNumber, shortDate } from "./utils";
 import { useAdminToast } from "./AdminToast";
 import type {
@@ -49,8 +49,30 @@ export const QK = {
   escalationRules: (token?: string | null) => ["admin-escalation-rules", token],
   scheduledBroadcasts: (token?: string | null) => ["admin-scheduled-broadcasts", token],
   opsJobStatus: (token?: string | null) => ["admin-ops-jobs-status", token],
-  riderDocuments: (token?: string | null) => ["admin-rider-documents", token]
+  riderDocuments: (token?: string | null) => ["admin-rider-documents", token],
+  platformSettings: (token?: string | null) => ["admin-platform-settings", token]
 } as const;
+
+// ─── live ops stream types ────────────────────────────────────────────────────
+export type LiveOpsSnapshot = {
+  timestamp: string;
+  riders: Array<{
+    id: string;
+    displayCode: string;
+    name: string;
+    latitude: number;
+    longitude: number;
+  }>;
+  sos: Array<{
+    id: string;
+    severity: string;
+    status: string;
+    category: string;
+    description: string;
+    createdAt: string;
+    reporter: { fullName: string; phoneE164: string };
+  }>;
+};
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 function sum(values: (string | number | null | undefined)[]): number {
@@ -127,7 +149,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
   // ── queries (reduced polling intervals) ─────────────────────────────────────
   const { data: ridesData, isPending: ridesPending } = useQuery<RideRecord[]>({
     queryKey: QK.rides(token),
-    queryFn: () => requestJson("/rides", { token }),
+    queryFn: () => requestJson("/rides?limit=300", { token }),
     enabled: isAdmin,
     refetchInterval: 30000,
     staleTime: 25000
@@ -135,7 +157,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
 
   const { data: deliveriesData, isPending: deliveriesPending } = useQuery<DeliveryRecord[]>({
     queryKey: QK.deliveries(token),
-    queryFn: () => requestJson("/deliveries", { token }),
+    queryFn: () => requestJson("/deliveries?limit=300", { token }),
     enabled: isAdmin,
     refetchInterval: 30000,
     staleTime: 25000
@@ -171,7 +193,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
 
   const { data: walletTxData, isPending: walletTxPending } = useQuery<WalletTransactionRecord[]>({
     queryKey: QK.walletTx(token),
-    queryFn: () => requestJson("/admin/payments/wallet-transactions", { token }),
+    queryFn: () => requestJson("/admin/payments/wallet-transactions?limit=300", { token }),
     enabled: isAdmin,
     refetchInterval: 45000,
     staleTime: 40000
@@ -179,7 +201,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
 
   const { data: payoutData, isPending: payoutPending } = useQuery<PayoutRequestRecord[]>({
     queryKey: QK.payoutRequests(token),
-    queryFn: () => requestJson("/admin/payments/payout-requests", { token }),
+    queryFn: () => requestJson("/admin/payments/payout-requests?limit=200", { token }),
     enabled: isAdmin,
     refetchInterval: 45000,
     staleTime: 40000
@@ -243,7 +265,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
           details?: Record<string, unknown> | null;
           createdAt: string;
           actor?: { id: string; fullName: string; email: string | null; role?: string } | null;
-        }>>("/admin/audit-logs", { token });
+        }>>("/admin/audit-logs?limit=300", { token });
         return rows.map((row) => ({
           id: row.id,
           action: row.action,
@@ -271,7 +293,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
 
   const { data: supportTicketsData } = useQuery<AdminSupportTicketRecord[]>({
     queryKey: QK.supportTickets(token),
-    queryFn: () => requestJson("/admin/support/tickets", { token }),
+    queryFn: () => requestJson("/admin/support/tickets?limit=200", { token }),
     enabled: isAdmin,
     refetchInterval: 30000,
     staleTime: 25000
@@ -336,10 +358,56 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     staleTime: 20000
   });
 
+  const { data: platformSettingsData, isPending: platformSettingsPending } = useQuery<{
+    settings: Record<string, unknown>;
+  }>({
+    queryKey: QK.platformSettings(token),
+    queryFn: () => requestJson("/admin/settings", { token }),
+    enabled: isAdmin,
+    staleTime: 30000
+  });
+  const platformSettings = useMemo(
+    () => platformSettingsData?.settings ?? {},
+    [platformSettingsData]
+  );
+
+  // ── live ops stream (SSE) ───────────────────────────────────────────────────
+  const [liveSnapshot, setLiveSnapshot] = useState<LiveOpsSnapshot | null>(null);
+
+  useEffect(() => {
+    if (!isAdmin || !token || typeof window === "undefined") return;
+    const source = new EventSource(apiUrl(`/admin/stream?token=${encodeURIComponent(token)}`));
+    source.onmessage = (event) => {
+      try {
+        setLiveSnapshot(JSON.parse(event.data) as LiveOpsSnapshot);
+      } catch {
+        // Malformed frame — keep the previous snapshot.
+      }
+    };
+    return () => {
+      source.close();
+      setLiveSnapshot(null);
+    };
+  }, [isAdmin, token]);
+
   // ── raw data ────────────────────────────────────────────────────────────────
   const rides = useMemo(() => ridesData ?? [], [ridesData]);
   const deliveries = useMemo(() => deliveriesData ?? [], [deliveriesData]);
-  const riders = useMemo(() => ridersData ?? [], [ridersData]);
+  const riders = useMemo(() => {
+    const base = ridersData ?? [];
+    if (!liveSnapshot?.riders?.length) return base;
+    const liveById = new Map(liveSnapshot.riders.map((r) => [r.id, r]));
+    return base.map((rider) => {
+      const live = liveById.get(rider.id);
+      if (!live) return rider;
+      return {
+        ...rider,
+        onlineStatus: true,
+        currentLatitude: String(live.latitude),
+        currentLongitude: String(live.longitude)
+      };
+    });
+  }, [ridersData, liveSnapshot]);
   const passengers = useMemo(() => passengersData ?? [], [passengersData]);
   const walletTransactions = useMemo(() => walletTxData ?? [], [walletTxData]);
   const payoutRequests = useMemo(() => payoutData ?? [], [payoutData]);
@@ -357,6 +425,16 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     [adminPermissionsData]
   );
   const adminModules = useMemo(() => adminModulesData?.modules ?? [], [adminModulesData]);
+
+  // New SOS pushed over the live stream → refresh the incidents feed immediately.
+  const liveSos = useMemo(() => liveSnapshot?.sos ?? [], [liveSnapshot]);
+  useEffect(() => {
+    if (liveSos.length === 0) return;
+    const known = new Set(incidents.map((i) => i.id));
+    if (liveSos.some((s) => !known.has(s.id))) {
+      void queryClient.invalidateQueries({ queryKey: QK.incidents(token) });
+    }
+  }, [liveSos, incidents, queryClient, token]);
 
   // ── derived rider data ──────────────────────────────────────────────────────
   const activeRiders = useMemo(() => riders.filter((r) => r.onlineStatus), [riders]);
@@ -1070,7 +1148,8 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
 
-    if (requestStatusView === "all") return sorted.slice(0, 40);
+    // No hard cap here — the Requests screen paginates whatever segment it gets.
+    if (requestStatusView === "all") return sorted;
     if (requestStatusView === "pending") {
       return sorted.filter((r) => ["searching", "pending"].includes(r.status.toLowerCase()));
     }
@@ -1086,14 +1165,14 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
         .filter((r) => r.status.toLowerCase() === "cancelled")
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }
-    return sorted.slice(0, 40);
+    return sorted;
   }, [rides, completedRides, requestStatusView]);
 
   const visibleDeliveryRequestCards = useMemo(() => {
-    if (requestStatusView === "all") return deliveries.slice(0, 30);
+    if (requestStatusView === "all") return deliveries;
     if (requestStatusView === "completed") return completedDeliveries;
     if (requestStatusView === "cancelled") return cancelledDeliveries;
-    return deliveries.filter((d) => !["delivered", "cancelled"].includes(d.status.toLowerCase())).slice(0, 30);
+    return deliveries.filter((d) => !["delivered", "cancelled"].includes(d.status.toLowerCase()));
   }, [deliveries, completedDeliveries, cancelledDeliveries, requestStatusView]);
 
   const requestPeakBuckets = useMemo(() => {
@@ -1446,7 +1525,13 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     mutationFn: async (input: {
       title: string;
       body: string;
-      targetAudience: "all" | "riders" | "passengers" | "zone";
+      targetAudience:
+        | "all"
+        | "riders"
+        | "passengers"
+        | "zone"
+        | "inactive_riders"
+        | "new_passengers";
       targetZone?: string;
       scheduledAt: string;
     }) => {
@@ -1670,6 +1755,84 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     supportTickets, openSosCount, incidents, scheduledBroadcasts, escalationRules
   ]);
 
+  // ── platform settings persistence ───────────────────────────────────────────
+  const saveSettingsMutation = useMutation({
+    mutationFn: async (settings: Record<string, unknown>) =>
+      requestJson("/admin/settings", {
+        method: "PUT",
+        token,
+        body: JSON.stringify({ settings })
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: QK.platformSettings(token) });
+      addToast("Platform settings saved", "success");
+    },
+    onError: (error) => addToast((error as Error).message || "Could not save settings", "error")
+  });
+
+  // ── rider info request ──────────────────────────────────────────────────────
+  const requestRiderInfoMutation = useMutation({
+    mutationFn: async ({ riderProfileId, message }: { riderProfileId: string; message: string }) =>
+      requestJson(`/admin/riders/${riderProfileId}/request-info`, {
+        method: "POST",
+        token,
+        body: JSON.stringify({ message })
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: QK.auditLogs(token) });
+      addToast("Info request sent to rider", "success");
+    },
+    onError: (error) => addToast((error as Error).message || "Could not send info request", "error")
+  });
+
+  // ── incident assignment ─────────────────────────────────────────────────────
+  const incidentAssignMutation = useMutation({
+    mutationFn: async ({ incidentId, assignedToId }: { incidentId: string; assignedToId: string }) =>
+      requestJson(`/admin/incidents/${incidentId}`, {
+        method: "PATCH",
+        token,
+        body: JSON.stringify({ assignedToId })
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: QK.incidents(token) });
+      addToast("Incident assigned", "success");
+    },
+    onError: (error) => addToast((error as Error).message || "Could not assign incident", "error")
+  });
+
+  // ── full-dataset CSV export from the backend ────────────────────────────────
+  const downloadServerCsv = useCallback(
+    async (
+      entity:
+        | "rides"
+        | "deliveries"
+        | "wallet-transactions"
+        | "payout-requests"
+        | "riders"
+        | "audit-logs"
+    ) => {
+      try {
+        const response = await fetch(apiUrl(`/admin/export/${entity}`), {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined
+        });
+        if (!response.ok) {
+          throw new Error(`Export failed with status ${response.status}`);
+        }
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = `${entity}-${new Date().toISOString().slice(0, 10)}.csv`;
+        anchor.click();
+        URL.revokeObjectURL(url);
+        addToast(`Exported ${entity.replace(/-/g, " ")} (full dataset)`, "success");
+      } catch (error) {
+        addToast((error as Error).message || "Export failed", "error");
+      }
+    },
+    [token, addToast]
+  );
+
   const dataLoading =
     ridesPending ||
     deliveriesPending ||
@@ -1704,6 +1867,8 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     walletTransactions, payoutRequests, ratings, incidents,
     adminAccounts, adminRoleEntries, adminModules, zones, auditLogs,
     supportTickets, escalationRules, scheduledBroadcasts, opsJobStatus,
+    platformSettings, platformSettingsPending,
+    liveSos, liveOpsConnected: Boolean(liveSnapshot), liveOpsTimestamp: liveSnapshot?.timestamp ?? null,
 
     // Derived data
     activeRiders, ridersWithCoords, suspendedRiders, vehicleCount,
@@ -1760,6 +1925,12 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     toggleEscalationRuleMutation,
     scheduleBroadcastMutation,
     cancelBroadcastMutation,
-    retryBroadcastMutation
+    retryBroadcastMutation,
+    saveSettingsMutation,
+    requestRiderInfoMutation,
+    incidentAssignMutation,
+
+    // Server export
+    downloadServerCsv
   };
 }

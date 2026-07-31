@@ -1,8 +1,14 @@
+"use client";
+
+import { useEffect } from "react";
 import { Users, MapPin, Search, Bike, User } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
+import { AdminPagination, usePagination } from "./ui/AdminPagination";
 import { statusTone, formatDateTime } from "./utils";
+
+const PAGE_SIZE = 15;
 
 type ManagedUser = {
   id: string;
@@ -57,6 +63,12 @@ export function UsersManagementScreen({
   totalUsersCount
 }: UsersManagementScreenProps) {
   const totalUsers = totalUsersCount ?? passengersCount + ridersCount;
+
+  const { page, setPage, paginated } = usePagination(searchedManagedUsers, PAGE_SIZE);
+
+  useEffect(() => {
+    setPage(1);
+  }, [adminSearchTerm, userTypeView, setPage]);
 
   return (
     <div className="exact-admin-screen">
@@ -146,7 +158,7 @@ export function UsersManagementScreen({
                   </tr>
                 </thead>
                 <tbody>
-                  {searchedManagedUsers.slice(0, 50).map((user) => {
+                  {paginated.map((user) => {
                     const Icon = user.icon;
                     return (
                       <tr key={user.id}>
@@ -172,6 +184,12 @@ export function UsersManagementScreen({
                   })}
                 </tbody>
               </table>
+              <AdminPagination
+                page={page}
+                totalItems={searchedManagedUsers.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setPage}
+              />
             </div>
           )}
         </article>

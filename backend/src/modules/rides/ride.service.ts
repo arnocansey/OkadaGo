@@ -782,14 +782,22 @@ export class RideService {
     return ride;
   }
 
-  async listRides() {
-    return prisma.ride.findMany({
-      take: 25,
+  async listRides(query: { limit?: number; page?: number } = {}) {
+    const limit = Math.min(Math.max(query.limit ?? 25, 1), 300);
+    const page = query.page;
+
+    const data = await prisma.ride.findMany({
+      take: limit,
+      ...(page ? { skip: (page - 1) * limit } : {}),
       orderBy: {
         createdAt: "desc"
       },
       include: rideDetailsInclude
     });
+
+    if (!page) return data;
+    const total = await prisma.ride.count();
+    return { data, total, page, limit };
   }
 
   async listRideLocations(rideId: RideIdParams["rideId"], limit = 30) {

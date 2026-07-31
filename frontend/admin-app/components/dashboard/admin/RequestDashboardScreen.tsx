@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Bike, Package, CheckCircle, XCircle, Clock, Filter, Search } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
+import { AdminPagination } from "./ui/AdminPagination";
 import type { RideRecord, DeliveryRecord } from "./types";
 import { parseNumber, formatDateTime, statusTone, formatEnumLabel } from "./utils";
 
@@ -43,6 +44,8 @@ const statusFilters: { key: RequestStatusView; label: string }[] = [
   { key: "cancelled", label: "Cancelled" }
 ];
 
+const REQUESTS_PAGE_SIZE = 10;
+
 function isActionableStatus(status: string) {
   return ["searching", "pending"].includes(status.toLowerCase());
 }
@@ -73,8 +76,16 @@ export function RequestDashboardScreen({
   const [selectedRideIds, setSelectedRideIds] = useState<Set<string>>(new Set());
   const [selectedDeliveryIds, setSelectedDeliveryIds] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState("");
+  const [ridePage, setRidePage] = useState(1);
+  const [deliveryPage, setDeliveryPage] = useState(1);
 
   const normalizedQuery = query.trim().toLowerCase();
+
+  // Start from page 1 whenever the segment changes (tab, status filter, or search).
+  useEffect(() => {
+    setRidePage(1);
+    setDeliveryPage(1);
+  }, [requestTab, requestStatusView, normalizedQuery]);
 
   const filteredRideCards = useMemo(() => {
     if (!normalizedQuery) return visibleRequestCards;
@@ -111,6 +122,24 @@ export function RequestDashboardScreen({
     });
   }, [visibleDeliveryRequestCards, normalizedQuery]);
 
+  const rideTotalPages = Math.max(1, Math.ceil(filteredRideCards.length / REQUESTS_PAGE_SIZE));
+  const safeRidePage = Math.min(ridePage, rideTotalPages);
+  const paginatedRideCards = useMemo(
+    () => filteredRideCards.slice((safeRidePage - 1) * REQUESTS_PAGE_SIZE, safeRidePage * REQUESTS_PAGE_SIZE),
+    [filteredRideCards, safeRidePage]
+  );
+
+  const deliveryTotalPages = Math.max(1, Math.ceil(filteredDeliveryCards.length / REQUESTS_PAGE_SIZE));
+  const safeDeliveryPage = Math.min(deliveryPage, deliveryTotalPages);
+  const paginatedDeliveryCards = useMemo(
+    () =>
+      filteredDeliveryCards.slice(
+        (safeDeliveryPage - 1) * REQUESTS_PAGE_SIZE,
+        safeDeliveryPage * REQUESTS_PAGE_SIZE
+      ),
+    [filteredDeliveryCards, safeDeliveryPage]
+  );
+
   const toggleRideId = (id: string) => {
     setSelectedRideIds((prev) => {
       const next = new Set(prev);
@@ -120,7 +149,7 @@ export function RequestDashboardScreen({
     });
   };
   const toggleAllRides = () => {
-    const actionable = filteredRideCards.filter((r) => isActionableStatus(r.status)).map((r) => r.id);
+    const actionable = paginatedRideCards.filter((r) => isActionableStatus(r.status)).map((r) => r.id);
     if (actionable.length === 0) return;
     if (actionable.every((id) => selectedRideIds.has(id))) setSelectedRideIds(new Set());
     else setSelectedRideIds(new Set(actionable));
@@ -134,7 +163,7 @@ export function RequestDashboardScreen({
     });
   };
   const toggleAllDeliveries = () => {
-    const actionable = filteredDeliveryCards.filter((d) => isActionableStatus(d.status)).map((d) => d.id);
+    const actionable = paginatedDeliveryCards.filter((d) => isActionableStatus(d.status)).map((d) => d.id);
     if (actionable.length === 0) return;
     if (actionable.every((id) => selectedDeliveryIds.has(id))) setSelectedDeliveryIds(new Set());
     else setSelectedDeliveryIds(new Set(actionable));
@@ -251,17 +280,17 @@ export function RequestDashboardScreen({
                     <input
                       type="checkbox"
                       checked={
-                        filteredRideCards.some((r) => isActionableStatus(r.status)) &&
-                        filteredRideCards
+                        paginatedRideCards.some((r) => isActionableStatus(r.status)) &&
+                        paginatedRideCards
                           .filter((r) => isActionableStatus(r.status))
                           .every((r) => selectedRideIds.has(r.id))
                       }
                       onChange={toggleAllRides}
-                      disabled={!filteredRideCards.some((r) => isActionableStatus(r.status))}
+                      disabled={!paginatedRideCards.some((r) => isActionableStatus(r.status))}
                     />
-                    Select pending rides
+                    Select pending rides on this page
                   </label>
-                  {filteredRideCards.map((ride) => (
+                  {paginatedRideCards.map((ride) => (
                     <article key={ride.id} className="admin-request-card">
                       <div className="admin-request-card-head">
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -319,6 +348,12 @@ export function RequestDashboardScreen({
                       )}
                     </article>
                   ))}
+                  <AdminPagination
+                    page={safeRidePage}
+                    totalItems={filteredRideCards.length}
+                    pageSize={REQUESTS_PAGE_SIZE}
+                    onPageChange={setRidePage}
+                  />
                 </>
               )}
             </>
@@ -341,17 +376,17 @@ export function RequestDashboardScreen({
                     <input
                       type="checkbox"
                       checked={
-                        filteredDeliveryCards.some((d) => isActionableStatus(d.status)) &&
-                        filteredDeliveryCards
+                        paginatedDeliveryCards.some((d) => isActionableStatus(d.status)) &&
+                        paginatedDeliveryCards
                           .filter((d) => isActionableStatus(d.status))
                           .every((d) => selectedDeliveryIds.has(d.id))
                       }
                       onChange={toggleAllDeliveries}
-                      disabled={!filteredDeliveryCards.some((d) => isActionableStatus(d.status))}
+                      disabled={!paginatedDeliveryCards.some((d) => isActionableStatus(d.status))}
                     />
-                    Select pending deliveries
+                    Select pending deliveries on this page
                   </label>
-                  {filteredDeliveryCards.map((delivery) => (
+                  {paginatedDeliveryCards.map((delivery) => (
                     <article key={delivery.id} className="admin-request-card">
                       <div className="admin-request-card-head">
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -410,6 +445,12 @@ export function RequestDashboardScreen({
                       )}
                     </article>
                   ))}
+                  <AdminPagination
+                    page={safeDeliveryPage}
+                    totalItems={filteredDeliveryCards.length}
+                    pageSize={REQUESTS_PAGE_SIZE}
+                    onPageChange={setDeliveryPage}
+                  />
                 </>
               )}
             </>
@@ -480,15 +521,15 @@ export function RequestDashboardScreen({
             {selectedCount} {activeTab === "rides" ? "ride" : "delivery"}
             {selectedCount !== 1 ? "s" : ""} selected
           </span>
-          <button type="button" className="admin-select-sm" onClick={handleBulkAccept}>
+          <button type="button" className="admin-btn-primary" onClick={handleBulkAccept}>
             <CheckCircle size={14} /> Accept Selected
           </button>
-          <button type="button" className="admin-select-sm" onClick={handleBulkDecline}>
+          <button type="button" className="admin-btn-secondary" onClick={handleBulkDecline}>
             <XCircle size={14} /> Decline Selected
           </button>
           <button
             type="button"
-            className="admin-select-sm"
+            className="admin-btn-secondary"
             onClick={() => {
               setSelectedRideIds(new Set());
               setSelectedDeliveryIds(new Set());

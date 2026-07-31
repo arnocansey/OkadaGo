@@ -9,6 +9,9 @@ import { useAdminToast } from "./AdminToast";
 
 export type TaxesComplianceScreenProps = {
   dataLoading?: boolean;
+  platformSettings?: Record<string, unknown>;
+  onSaveSettings?: (settings: Record<string, unknown>) => void;
+  settingsSaving?: boolean;
 };
 
 const GHANA_RATES = [
@@ -49,13 +52,23 @@ function loadProfile(): TaxProfile {
   }
 }
 
-export function TaxesComplianceScreen({ dataLoading = false }: TaxesComplianceScreenProps) {
+export function TaxesComplianceScreen({
+  dataLoading = false,
+  platformSettings,
+  onSaveSettings,
+  settingsSaving = false
+}: TaxesComplianceScreenProps) {
   const { addToast } = useAdminToast();
   const [profile, setProfile] = useState<TaxProfile>(EMPTY_PROFILE);
 
   useEffect(() => {
+    const fromServer = platformSettings?.taxProfile;
+    if (fromServer && typeof fromServer === "object") {
+      setProfile({ ...EMPTY_PROFILE, ...(fromServer as TaxProfile) });
+      return;
+    }
     setProfile(loadProfile());
-  }, []);
+  }, [platformSettings]);
 
   if (dataLoading) {
     return (
@@ -66,6 +79,12 @@ export function TaxesComplianceScreen({ dataLoading = false }: TaxesComplianceSc
   }
 
   const saveProfile = () => {
+    if (onSaveSettings) {
+      onSaveSettings({ taxProfile: profile });
+      // Keep a local fallback for offline reloads until the server round-trip finishes.
+      window.localStorage.setItem(TAX_PROFILE_KEY, JSON.stringify(profile));
+      return;
+    }
     window.localStorage.setItem(TAX_PROFILE_KEY, JSON.stringify(profile));
     addToast("Tax profile saved locally on this browser — not filed with GRA", "success");
   };
@@ -89,7 +108,11 @@ export function TaxesComplianceScreen({ dataLoading = false }: TaxesComplianceSc
         <div className="admin-reference-cardhead">
           <div>
             <h3>Company tax profile</h3>
-            <p>Stored in this browser only for ops reference. Saving does not submit anything to GRA.</p>
+            <p>
+              {onSaveSettings
+                ? "Saved to the server for all admins. Saving does not submit anything to GRA."
+                : "Stored in this browser only for ops reference. Saving does not submit anything to GRA."}
+            </p>
           </div>
         </div>
         <div
@@ -111,7 +134,7 @@ export function TaxesComplianceScreen({ dataLoading = false }: TaxesComplianceSc
             <label key={key} style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 12, color: "var(--text-secondary)" }}>
               {label}
               <input
-                className="admin-select-sm"
+                className="admin-input-sm"
                 value={profile[key]}
                 onChange={(e) => setProfile((prev) => ({ ...prev, [key]: e.target.value }))}
                 placeholder={label}
@@ -129,7 +152,7 @@ export function TaxesComplianceScreen({ dataLoading = false }: TaxesComplianceSc
               width: "100%",
               borderRadius: 8,
               border: "1px solid var(--border-color)",
-              background: "var(--input-bg, #0f1117)",
+              background: "var(--bg-primary)",
               color: "var(--text-primary)",
               padding: 10,
               fontSize: 13,
@@ -138,8 +161,8 @@ export function TaxesComplianceScreen({ dataLoading = false }: TaxesComplianceSc
             placeholder="Accountant contacts, filing calendar reminders, etc."
           />
         </label>
-        <button type="button" className="admin-btn-primary" onClick={saveProfile}>
-          <Building2 size={15} /> Save local tax profile
+        <button type="button" className="admin-btn-primary" onClick={saveProfile} disabled={settingsSaving}>
+          <Building2 size={15} /> {settingsSaving ? "Saving…" : onSaveSettings ? "Save tax profile" : "Save local tax profile"}
         </button>
       </article>
 

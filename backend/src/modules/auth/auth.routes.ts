@@ -3,6 +3,7 @@ import { AppError } from "../../common/errors.js";
 import { parseBody } from "../../common/validation.js";
 import {
   adminLoginSchema,
+  adminTotpCodeSchema,
   avatarUploadSchema,
   otpRequestSchema,
   otpVerifySchema,
@@ -52,6 +53,28 @@ export const authRoutes: FastifyPluginAsync = async (server) => {
   server.post("/auth/admin/login", async (request) => {
     const input = parseBody(request, adminLoginSchema);
     return authService.loginAdmin(input);
+  });
+
+  server.get("/auth/admin/2fa", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return authService.getAdminTotpStatus(token);
+  });
+
+  server.post("/auth/admin/2fa/setup", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return authService.setupAdminTotp(token);
+  });
+
+  server.post("/auth/admin/2fa/enable", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const input = parseBody(request, adminTotpCodeSchema);
+    return authService.enableAdminTotp(token, input.code);
+  });
+
+  server.post("/auth/admin/2fa/disable", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const input = parseBody(request, adminTotpCodeSchema);
+    return authService.disableAdminTotp(token, input.code);
   });
 
   server.get("/auth/session", async (request) => {

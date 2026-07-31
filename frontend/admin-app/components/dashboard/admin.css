@@ -666,10 +666,14 @@
   align-items: start;
 }
 
-@media (max-width: 1100px) {
-  .admin-reference-grid-3,
-  .admin-screen-grid-2 {
-    grid-template-columns: 1fr;
+/* Card that spans two tracks only while the grid is 3 columns wide */
+.admin-reference-grid-3 > .admin-grid-span-2 {
+  grid-column: span 2;
+}
+
+@media (max-width: 1200px) {
+  .admin-reference-grid-3 > .admin-grid-span-2 {
+    grid-column: auto;
   }
 }
 
@@ -1536,7 +1540,7 @@
   }
 
   .admin-input-sm,
-  .admin-select-sm,
+  select.admin-select-sm,
   .admin-filter-pill {
     width: 100%;
     box-sizing: border-box;
@@ -1978,7 +1982,8 @@ html {
 
 .admin-reference-kpi small,
 .exact-admin-kpi small {
-  display: none;
+  font-size: 0.7rem;
+  margin-top: 2px;
 }
 
 .admin-reference-grid-3,
@@ -2090,6 +2095,42 @@ table.admin-table td,
   cursor: pointer;
 }
 
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.admin-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-pagination-controls button[disabled] {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.admin-pagination-page {
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.admin-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
 .admin-bulk-bar {
   position: sticky;
   bottom: 0;
@@ -2109,7 +2150,8 @@ table.admin-table td,
 .admin-kpi-grid,
 .admin-reference-kpis {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* auto-fit keeps rows balanced whether a screen shows 3, 4, or 5 KPIs */
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 10px;
   margin-bottom: 12px;
 }

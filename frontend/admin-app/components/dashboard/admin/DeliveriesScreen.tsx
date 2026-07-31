@@ -1,13 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Package, Truck, CheckCircle, XCircle, Search } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
+import { AdminPagination, usePagination } from "./ui/AdminPagination";
 import type { DeliveryRecord } from "./types";
 import { parseNumber, formatDateTime, statusTone, formatEnumLabel } from "./utils";
+
+const PAGE_SIZE = 12;
 
 export type DeliveriesScreenProps = {
   deliveries: DeliveryRecord[];
@@ -76,6 +79,12 @@ export function DeliveriesScreen({
       return hay.includes(q);
     });
   }, [sorted, query]);
+
+  const { page, setPage, paginated } = usePagination(filtered, PAGE_SIZE);
+
+  useEffect(() => {
+    setPage(1);
+  }, [query, setPage]);
 
   const completionRate =
     deliveries.length > 0 ? Math.round((completedDeliveries.length / deliveries.length) * 100) : 0;
@@ -178,7 +187,7 @@ export function DeliveriesScreen({
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((delivery) => (
+                  {paginated.map((delivery) => (
                     <tr key={delivery.id}>
                       <td>
                         <code style={{ fontSize: 11 }}>{delivery.id.slice(-8)}</code>
@@ -232,6 +241,12 @@ export function DeliveriesScreen({
                   ))}
                 </tbody>
               </table>
+              <AdminPagination
+                page={page}
+                totalItems={filtered.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setPage}
+              />
             </div>
           )}
         </article>

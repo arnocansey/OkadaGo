@@ -37,6 +37,8 @@ export type RideRecord = {
   status: string;
   pickupAddress: string;
   destinationAddress: string;
+  pickupLatitude?: string | number | null;
+  pickupLongitude?: string | number | null;
   currency: string;
   estimatedFare: string | number | null;
   finalFare: string | number | null;
@@ -483,7 +485,7 @@ export type ScheduledBroadcastRecord = {
   id: string;
   title: string;
   body: string;
-  targetAudience: "all" | "riders" | "passengers" | "zone";
+  targetAudience: "all" | "riders" | "passengers" | "zone" | "inactive_riders" | "new_passengers";
   targetZone?: string;
   scheduledAt: string;
   status: "pending" | "sent" | "failed" | "cancelled";

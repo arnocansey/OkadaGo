@@ -81,7 +81,13 @@ export const riderLoginSchema = passengerLoginSchema;
 export const adminLoginSchema = z.object({
   email: z.string().email(),
   password: passwordSchema,
-  device: deviceSchema.optional()
+  device: deviceSchema.optional(),
+  /// 6-digit authenticator code, required only when the admin has 2FA enabled.
+  totpCode: z.string().trim().min(6).max(8).optional()
+});
+
+export const adminTotpCodeSchema = z.object({
+  code: z.string().trim().min(6).max(8)
 });
 
 export const passengerSettingsUpdateSchema = z.object({

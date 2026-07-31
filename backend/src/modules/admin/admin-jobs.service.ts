@@ -267,6 +267,26 @@ export class AdminJobsService {
       return passengers.map((u) => u.id);
     }
 
+    if (broadcast.targetAudience === "INACTIVE_RIDERS") {
+      const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const riders = await prisma.riderProfile.findMany({
+        where: {
+          deletedAt: null,
+          OR: [{ lastOnlineAt: { lt: cutoff } }, { lastOnlineAt: null }]
+        },
+        select: { userId: true }
+      });
+      return riders.map((r) => r.userId);
+    }
+
+    if (broadcast.targetAudience === "NEW_PASSENGERS") {
+      const passengers = await prisma.passengerProfile.findMany({
+        where: { deletedAt: null, totalTrips: 0 },
+        select: { userId: true }
+      });
+      return passengers.map((p) => p.userId);
+    }
+
     if (broadcast.targetAudience === "ZONE" && broadcast.targetZoneId) {
       const zone = await prisma.serviceZone.findUnique({
         where: { id: broadcast.targetZoneId },

@@ -615,14 +615,29 @@ export class SafetyService {
       throw new AppError("Incident could not be found.", 404, "INCIDENT_NOT_FOUND");
     }
 
+    if (input.assignedToId) {
+      const assignee = await prisma.user.findFirst({
+        where: { id: input.assignedToId, deletedAt: null },
+        include: { adminProfile: true }
+      });
+      if (!assignee?.adminProfile) {
+        throw new AppError("Assignee must be an admin", 400, "INVALID_ASSIGNEE");
+      }
+    }
+
     return prisma.incident.update({
       where: {
         id: incidentId
       },
       data: {
-        status: input.status as IncidentStatus,
-        assignedToId: session.user.id,
-        resolvedAt: input.status === "RESOLVED" || input.status === "CLOSED" ? new Date() : null
+        ...(input.status ? { status: input.status as IncidentStatus } : {}),
+        assignedToId: input.assignedToId ?? session.user.id,
+        ...(input.status
+          ? {
+              resolvedAt:
+                input.status === "RESOLVED" || input.status === "CLOSED" ? new Date() : null
+            }
+          : {})
       },
       include: {
         reporter: {

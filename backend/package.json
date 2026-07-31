@@ -9,6 +9,7 @@
     "start": "tsx src/main.ts",
     "start:prod": "node dist/main.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node --import tsx --test src/**/*.test.ts",
     "admin:bootstrap": "tsx src/scripts/create-first-admin.ts",
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",

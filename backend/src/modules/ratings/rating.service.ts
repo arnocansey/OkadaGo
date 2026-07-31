@@ -385,24 +385,30 @@ export class RatingService {
     const fromDate = query.fromDate ? new Date(`${query.fromDate}T00:00:00.000Z`) : null;
     const toDate = query.toDate ? new Date(`${query.toDate}T23:59:59.999Z`) : null;
 
-    return prisma.rating.findMany({
-      where: {
-        rated: {
-          riderProfile: query.riderId
-            ? {
-                id: query.riderId
-              }
-            : undefined
-        },
-        rideId: query.rideId,
-        createdAt:
-          fromDate || toDate
-            ? {
-                gte: fromDate ?? undefined,
-                lte: toDate ?? undefined
-              }
-            : undefined
+    const where = {
+      rated: {
+        riderProfile: query.riderId
+          ? {
+              id: query.riderId
+            }
+          : undefined
       },
+      rideId: query.rideId,
+      createdAt:
+        fromDate || toDate
+          ? {
+              gte: fromDate ?? undefined,
+              lte: toDate ?? undefined
+            }
+          : undefined
+    };
+    const limit = query.limit ?? 300;
+    const page = query.page;
+
+    const data = await prisma.rating.findMany({
+      where,
+      take: limit,
+      ...(page ? { skip: (page - 1) * limit } : {}),
       include: {
         ride: {
           select: {
@@ -447,5 +453,9 @@ export class RatingService {
         createdAt: "desc"
       }
     });
+
+    if (!page) return data;
+    const total = await prisma.rating.count({ where });
+    return { data, total, page, limit };
   }
 }

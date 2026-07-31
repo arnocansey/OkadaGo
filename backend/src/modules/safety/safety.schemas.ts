@@ -61,7 +61,14 @@ export const adminIncidentsQuerySchema = z.object({
   toDate: z.string().date().optional()
 });
 
-export const adminIncidentReviewSchema = z.object({
-  status: z.enum(["UNDER_REVIEW", "ACTIONED", "RESOLVED", "CLOSED"]),
-  note: z.string().trim().min(2).max(500).optional()
-});
+export const adminIncidentReviewSchema = z
+  .object({
+    status: z.enum(["UNDER_REVIEW", "ACTIONED", "RESOLVED", "CLOSED"]).optional(),
+    note: z.string().trim().min(2).max(500).optional(),
+    /// Explicitly assign the incident to another admin (defaults to the acting admin on status changes).
+    assignedToId: z.string().cuid().optional()
+  })
+  .refine((value) => value.status || value.assignedToId, {
+    message: "Provide a status or an assignee",
+    path: ["status"]
+  });

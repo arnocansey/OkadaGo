@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   Settings as SettingsIcon,
   Building2,
@@ -30,6 +30,7 @@ import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { useAdminToast } from "./AdminToast";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
 import { SkeletonForm } from "./AdminSkeleton";
+import { requestJson } from "@/lib/api";
 import type { ServiceZoneRecord, AdminAccountRecord, AuditLogRecord } from "./types";
 
 export type SettingsScreenProps = {
@@ -40,6 +41,10 @@ export type SettingsScreenProps = {
   adminCurrency: string;
   auditLogs?: AuditLogRecord[];
   dataLoading?: boolean;
+  token?: string | null;
+  platformSettings?: Record<string, unknown>;
+  onSaveSettings?: (settings: Record<string, unknown>) => void;
+  settingsSaving?: boolean;
 };
 
 type SectionKey =
@@ -145,6 +150,10 @@ export function SettingsScreen({
   adminCurrency,
   auditLogs = [],
   dataLoading = false,
+  token,
+  platformSettings,
+  onSaveSettings,
+  settingsSaving = false,
 }: SettingsScreenProps) {
   const { addToast } = useAdminToast();
   const { isMobile, isTablet } = useBreakpoint();
@@ -186,16 +195,125 @@ export function SettingsScreen({
   const updateField = (key: string, value: string) =>
     setFormValues((prev) => ({ ...prev, [key]: value }));
 
+  // Apply persisted server settings onto local form state.
+  const applyServerSettings = (settings: Record<string, unknown>) => {
+    setFormValues((prev) => {
+      const next = { ...prev };
+      for (const key of Object.keys(prev)) {
+        const value = settings[key];
+        if (typeof value === "string") next[key] = value;
+        if (typeof value === "number") next[key] = String(value);
+      }
+      return next;
+    });
+    setToggles((prev) => {
+      const next = { ...prev };
+      for (const key of Object.keys(prev)) {
+        const value = settings[key];
+        if (typeof value === "boolean") next[key] = value;
+      }
+      return next;
+    });
+  };
+
+  // Hydrate the form once when persisted settings first arrive.
+  const hydratedRef = useRef(false);
+  useEffect(() => {
+    if (hydratedRef.current || !platformSettings || Object.keys(platformSettings).length === 0) return;
+    hydratedRef.current = true;
+    applyServerSettings(platformSettings);
+  }, [platformSettings]);
+
   const handleSave = () => {
-    addToast("Platform settings save API is not connected yet — changes on this screen are local preview only", "info");
+    if (!onSaveSettings) {
+      addToast("Settings persistence is unavailable", "error");
+      return;
+    }
+    const { currentPassword: _cp, newPassword: _np, confirmPassword: _cf, ...persistable } = formValues;
+    onSaveSettings({ ...persistable, ...toggles });
   };
 
   const handleReset = () => {
-    addToast("Reset is preview-only until settings persistence exists", "info");
+    if (platformSettings && Object.keys(platformSettings).length > 0) {
+      applyServerSettings(platformSettings);
+      addToast("Reverted to last saved values", "info");
+    } else {
+      addToast("No saved settings to revert to yet", "info");
+    }
   };
 
   const handleConnect = (service: string) => {
     addToast(`${service} connection is not wired in this console yet`, "info");
+  };
+
+  // ── two-factor authentication (TOTP) ────────────────────────────────────────
+  const [totpEnabled, setTotpEnabled] = useState<boolean | null>(null);
+  const [totpSetup, setTotpSetup] = useState<{ secret: string; otpauthUrl: string } | null>(null);
+  const [totpCode, setTotpCode] = useState("");
+  const [totpBusy, setTotpBusy] = useState(false);
+
+  useEffect(() => {
+    if (!token) return;
+    requestJson<{ totpEnabled: boolean }>("/auth/admin/2fa", { token })
+      .then((res) => setTotpEnabled(res.totpEnabled))
+      .catch(() => setTotpEnabled(null));
+  }, [token]);
+
+  const handleTotpSetup = async () => {
+    if (!token) return;
+    setTotpBusy(true);
+    try {
+      const setup = await requestJson<{ secret: string; otpauthUrl: string }>(
+        "/auth/admin/2fa/setup",
+        { method: "POST", token }
+      );
+      setTotpSetup(setup);
+      setTotpCode("");
+      addToast("Scan or enter the secret in your authenticator app, then confirm with a code", "info");
+    } catch (error) {
+      addToast((error as Error).message || "Could not start 2FA setup", "error");
+    } finally {
+      setTotpBusy(false);
+    }
+  };
+
+  const handleTotpEnable = async () => {
+    if (!token || !totpCode) return;
+    setTotpBusy(true);
+    try {
+      await requestJson("/auth/admin/2fa/enable", {
+        method: "POST",
+        token,
+        body: JSON.stringify({ code: totpCode })
+      });
+      setTotpEnabled(true);
+      setTotpSetup(null);
+      setTotpCode("");
+      addToast("Two-factor authentication enabled — you'll need a code at every sign-in", "success");
+    } catch (error) {
+      addToast((error as Error).message || "Invalid code — 2FA was not enabled", "error");
+    } finally {
+      setTotpBusy(false);
+    }
+  };
+
+  const handleTotpDisable = async () => {
+    if (!token || !totpCode) return;
+    setTotpBusy(true);
+    try {
+      await requestJson("/auth/admin/2fa/disable", {
+        method: "POST",
+        token,
+        body: JSON.stringify({ code: totpCode })
+      });
+      setTotpEnabled(false);
+      setTotpCode("");
+      addToast("Two-factor authentication disabled", "success");
+    } catch (error) {
+      addToast((error as Error).message || "Invalid code — 2FA is still enabled", "error");
+    } finally {
+      setTotpBusy(false);
+    }
   };
 
   const handleExportLogs = () => {
@@ -364,28 +482,93 @@ export function SettingsScreen({
         </button>
       </div>
 
-      <div style={{ ...cardStyle, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ ...cardStyle, display: "flex", flexDirection: "column", gap: 14 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{
-            width: 40, height: 40, borderRadius: 10, background: toggles.require2FA ? DARK.greenBg : DARK.surfaceAlt,
+            width: 40, height: 40, borderRadius: 10, background: totpEnabled ? DARK.greenBg : DARK.surfaceAlt,
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
-            <Shield size={20} style={{ color: toggles.require2FA ? DARK.green : DARK.textMuted }} />
+            <Shield size={20} style={{ color: totpEnabled ? DARK.green : DARK.textMuted }} />
           </div>
-          <div>
-            <div style={{ color: DARK.text, fontSize: 13, fontWeight: 600 }}>Two-Factor Authentication</div>
-            <div style={{ color: DARK.textMuted, fontSize: 12 }}>Require 2FA for all admin accounts</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: DARK.text, fontSize: 13, fontWeight: 600 }}>Two-Factor Authentication (TOTP)</div>
+            <div style={{ color: DARK.textMuted, fontSize: 12 }}>
+              {totpEnabled === null
+                ? "Checking status…"
+                : totpEnabled
+                  ? "Enabled — an authenticator code is required at every sign-in"
+                  : "Disabled — protect your account with an authenticator app"}
+            </div>
           </div>
+          {totpEnabled === false && !totpSetup && (
+            <button
+              style={{ ...btnBase, background: DARK.accent, color: "#fff" }}
+              disabled={totpBusy}
+              onClick={handleTotpSetup}
+            >
+              <Key size={14} /> Set up 2FA
+            </button>
+          )}
         </div>
-        <button onClick={() => toggle("require2FA")} style={{
-          width: 44, height: 24, borderRadius: 12, border: "none", cursor: "pointer", position: "relative",
-          background: toggles.require2FA ? DARK.green : DARK.surfaceAlt, transition: "background 0.2s",
-        }}>
-          <span style={{
-            position: "absolute", top: 3, left: toggles.require2FA ? 23 : 3,
-            width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s",
-          }} />
-        </button>
+
+        {totpSetup && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, borderTop: `1px solid ${DARK.border}`, paddingTop: 14 }}>
+            <div style={{ color: DARK.textMuted, fontSize: 12, lineHeight: 1.5 }}>
+              Add this secret to Google Authenticator, Authy, or a compatible app (choose &quot;enter key manually&quot;),
+              then confirm with the 6-digit code it shows.
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <span style={{ color: DARK.textMuted, fontSize: 11, textTransform: "uppercase" as const }}>Secret key</span>
+              <code style={{ color: DARK.text, fontSize: 14, letterSpacing: 2, wordBreak: "break-all", background: DARK.input, padding: "8px 12px", borderRadius: 8, border: `1px solid ${DARK.border}` }}>
+                {totpSetup.secret}
+              </code>
+            </div>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+              <input
+                style={{ ...inputStyle, width: 160 }}
+                placeholder="6-digit code"
+                inputMode="numeric"
+                maxLength={6}
+                value={totpCode}
+                onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ""))}
+              />
+              <button
+                style={{ ...btnBase, background: DARK.green, color: "#fff" }}
+                disabled={totpBusy || totpCode.length !== 6}
+                onClick={handleTotpEnable}
+              >
+                <Check size={14} /> Confirm &amp; Enable
+              </button>
+              <button
+                style={{ ...btnBase, background: DARK.surfaceAlt, color: DARK.textMuted, border: `1px solid ${DARK.border}` }}
+                disabled={totpBusy}
+                onClick={() => { setTotpSetup(null); setTotpCode(""); }}
+              >
+                <X size={14} /> Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {totpEnabled === true && (
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", borderTop: `1px solid ${DARK.border}`, paddingTop: 14 }}>
+            <input
+              style={{ ...inputStyle, width: 160 }}
+              placeholder="6-digit code"
+              inputMode="numeric"
+              maxLength={6}
+              value={totpCode}
+              onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ""))}
+            />
+            <button
+              style={{ ...btnBase, background: DARK.red, color: "#fff" }}
+              disabled={totpBusy || totpCode.length !== 6}
+              onClick={handleTotpDisable}
+            >
+              <X size={14} /> Disable 2FA
+            </button>
+          </div>
+        )}
       </div>
 
       <h3 style={{ color: DARK.text, fontSize: 14, fontWeight: 700, margin: "4px 0 0" }}>Change Password</h3>
@@ -672,10 +855,11 @@ export function SettingsScreen({
           <button
             type="button"
             className="admin-btn-primary"
-            style={{ ...btnBase, background: DARK.yellow, color: "#0b0f19", padding: "11px 24px" }}
+            style={{ ...btnBase, background: DARK.yellow, color: "#0b0f19", padding: "11px 24px", opacity: settingsSaving ? 0.6 : 1 }}
             onClick={handleSave}
+            disabled={settingsSaving}
           >
-            <Save size={16} /> Save Changes
+            <Save size={16} /> {settingsSaving ? "Saving…" : "Save Changes"}
           </button>
           <button
             type="button"

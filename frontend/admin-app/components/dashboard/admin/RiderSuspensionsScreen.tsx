@@ -14,6 +14,7 @@ import { SkeletonKPI, SkeletonTable } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
+import { useAdminNotes } from "./useAdminNotes";
 import type { AuditLogRecord } from "./types";
 
 export type SuspendedRiderRow = {
@@ -40,6 +41,7 @@ export type RiderSuspensionsScreenProps = {
     reason?: string,
     durationDays?: number
   ) => void;
+  token?: string | null;
   isMutating?: boolean;
   dataLoading?: boolean;
 };
@@ -148,6 +150,7 @@ export function RiderSuspensionsScreen({
   totalRiders,
   auditLogs = [],
   onSuspensionAction,
+  token,
   isMutating = false,
   dataLoading = false,
 }: RiderSuspensionsScreenProps) {
@@ -159,9 +162,12 @@ export function RiderSuspensionsScreen({
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSuspension, setSelectedSuspension] = useState<string | null>(null);
   const [extendDays, setExtendDays] = useState(7);
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [noteDraft, setNoteDraft] = useState("");
 
   const { isMobile, isTablet } = useBreakpoint();
   const { addToast } = useAdminToast();
+  const { notes, addNote, addingNote } = useAdminNotes(token, "RIDER", selectedSuspension);
 
   const reasonOptions = useMemo(() => {
     const set = new Set<string>();
@@ -266,7 +272,11 @@ export function RiderSuspensionsScreen({
   };
 
   const handleAddNote = () => {
-    addToast("Ops notes are not stored yet — use suspension reason on extend/warn instead", "info");
+    if (!token) {
+      addToast("Ops notes are unavailable without a session", "error");
+      return;
+    }
+    setNoteOpen((open) => !open);
   };
 
   const handleReinstate = () => {
@@ -329,7 +339,7 @@ export function RiderSuspensionsScreen({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: isMobile ? "1fr" : isTablet ? "1fr 320px" : selectedSuspension ? "1fr 400px" : "1fr",
+          gridTemplateColumns: !selectedSuspension || isMobile ? "1fr" : isTablet ? "1fr 320px" : "1fr 400px",
           gap: 20,
           alignItems: "start",
         }}
@@ -451,7 +461,7 @@ export function RiderSuspensionsScreen({
                           if (!isSelected) e.currentTarget.style.background = "transparent";
                         }}
                       >
-                        <td style={{ padding: "10px 12px", borderBottom: "1px solid #1f2130" }}>
+                        <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--border-color)" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                             <Avatar name={rider.user.fullName} size={34} />
                             <div>
@@ -467,10 +477,10 @@ export function RiderSuspensionsScreen({
                             </div>
                           </div>
                         </td>
-                        <td style={{ padding: "10px 12px", borderBottom: "1px solid #1f2130" }}>
-                          <span style={{ fontSize: 13, color: "#d1d5db" }}>{susp.reason}</span>
+                        <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--border-color)" }}>
+                          <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>{susp.reason}</span>
                         </td>
-                        <td style={{ padding: "10px 12px", borderBottom: "1px solid #1f2130" }}>
+                        <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--border-color)" }}>
                           <span
                             style={{
                               background: "rgba(245,158,11,0.15)",
@@ -485,7 +495,7 @@ export function RiderSuspensionsScreen({
                             {susp.duration}
                           </span>
                         </td>
-                        <td style={{ padding: "10px 12px", borderBottom: "1px solid #1f2130" }}>
+                        <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--border-color)" }}>
                           <span
                             style={{
                               ...getStatusStyle(susp.status),
@@ -498,16 +508,16 @@ export function RiderSuspensionsScreen({
                             {susp.status}
                           </span>
                         </td>
-                        <td style={{ padding: "10px 12px", borderBottom: "1px solid #1f2130" }}>
+                        <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--border-color)" }}>
                           <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{susp.suspendedOn}</span>
                         </td>
-                        <td style={{ padding: "10px 12px", borderBottom: "1px solid #1f2130" }}>
+                        <td style={{ padding: "10px 12px", borderBottom: "1px solid var(--border-color)" }}>
                           <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{susp.endsOn}</span>
                         </td>
                         <td
                           style={{
                             padding: "10px 12px",
-                            borderBottom: "1px solid #1f2130",
+                            borderBottom: "1px solid var(--border-color)",
                             textAlign: "center",
                           }}
                         >
@@ -683,15 +693,15 @@ export function RiderSuspensionsScreen({
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Suspended On</span>
-                <span style={{ fontSize: 13, color: "#d1d5db" }}>{suspDetails.suspendedOn}</span>
+                <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>{suspDetails.suspendedOn}</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Ends On</span>
-                <span style={{ fontSize: 13, color: "#d1d5db" }}>{suspDetails.endsOn}</span>
+                <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>{suspDetails.endsOn}</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Zone / Plate</span>
-                <span style={{ fontSize: 13, color: "#d1d5db" }}>
+                <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>
                   {selectedRider.serviceZone?.name ?? "—"} · {selectedRider.vehicle?.plateNumber ?? "No plate"}
                 </span>
               </div>
@@ -718,6 +728,85 @@ export function RiderSuspensionsScreen({
                 Add Note
               </button>
             </div>
+
+            {noteOpen && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
+                <textarea
+                  value={noteDraft}
+                  onChange={(e) => setNoteDraft(e.target.value)}
+                  placeholder="Add an internal ops note about this rider…"
+                  rows={3}
+                  maxLength={1000}
+                  style={{
+                    width: "100%",
+                    boxSizing: "border-box",
+                    padding: "10px 14px",
+                    fontSize: 13,
+                    borderRadius: 10,
+                    border: "1px solid var(--border-color)",
+                    background: "var(--bg-primary)",
+                    color: "var(--text-primary)",
+                    resize: "vertical",
+                    outline: "none",
+                  }}
+                />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    type="button"
+                    className="admin-btn-primary"
+                    disabled={addingNote || noteDraft.trim().length < 2}
+                    onClick={() => {
+                      addNote(noteDraft.trim());
+                      setNoteDraft("");
+                    }}
+                  >
+                    Save Note
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-secondary"
+                    onClick={() => { setNoteOpen(false); setNoteDraft(""); }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {notes.length > 0 && (
+              <div style={{ marginBottom: 16 }}>
+                <div
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 13,
+                    color: "var(--text-primary)",
+                    marginBottom: 8,
+                    paddingBottom: 10,
+                    borderBottom: "1px solid var(--border-color)",
+                  }}
+                >
+                  Ops Notes ({notes.length})
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 200, overflowY: "auto" }}>
+                  {notes.map((note) => (
+                    <div
+                      key={note.id}
+                      style={{
+                        padding: "10px 12px",
+                        borderRadius: 10,
+                        border: "1px solid var(--border-color)",
+                        background: "var(--bg-primary)",
+                      }}
+                    >
+                      <div style={{ fontSize: 13, lineHeight: 1.5, color: "var(--text-primary)" }}>{note.body}</div>
+                      <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4 }}>
+                        {note.author.fullName} · {formatDateTime(note.createdAt)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <label style={{ display: "block", fontSize: 12, color: "var(--text-secondary)", marginBottom: 8 }}>
               Extend by (days)

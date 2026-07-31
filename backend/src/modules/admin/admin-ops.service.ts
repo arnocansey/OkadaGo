@@ -11,7 +11,9 @@ const audienceMap = {
   all: "ALL",
   riders: "RIDERS",
   passengers: "PASSENGERS",
-  zone: "ZONE"
+  zone: "ZONE",
+  inactive_riders: "INACTIVE_RIDERS",
+  new_passengers: "NEW_PASSENGERS"
 } as const;
 
 export class AdminOpsService {
@@ -62,6 +64,7 @@ export class AdminOpsService {
     await this.verifyAdmin(token);
     return prisma.scheduledBroadcast.findMany({
       orderBy: { scheduledAt: "desc" },
+      take: 300,
       include: { targetZone: { select: { id: true, name: true } } }
     });
   }

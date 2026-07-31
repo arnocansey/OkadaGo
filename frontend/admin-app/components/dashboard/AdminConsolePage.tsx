@@ -189,7 +189,9 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             riderVerificationRows={data.riderVerificationRows}
             riderVerificationStats={data.riderVerificationStats}
             onRiderApproval={(id, action, reason) => data.riderApprovalMutation.mutate({ riderProfileId: id, action, reason })}
-            isMutating={data.riderApprovalMutation.isPending}
+            onRequestInfo={(id, message) => data.requestRiderInfoMutation.mutate({ riderProfileId: id, message })}
+            onExportCsv={() => void data.downloadServerCsv("riders")}
+            isMutating={data.riderApprovalMutation.isPending || data.requestRiderInfoMutation.isPending}
             dataLoading={data.dataLoading}
           />
         );
@@ -277,7 +279,10 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             riderComplaintInProgress={data.riderComplaintInProgress}
             riderComplaintResolved={data.riderComplaintResolved}
             onIncidentAction={(id, status) => data.incidentReviewMutation.mutate({ incidentId: id, status })}
-            isMutating={data.incidentReviewMutation.isPending}
+            onIncidentAssign={(id, assignedToId) => data.incidentAssignMutation.mutate({ incidentId: id, assignedToId })}
+            adminAccounts={data.adminAccounts}
+            token={token}
+            isMutating={data.incidentReviewMutation.isPending || data.incidentAssignMutation.isPending}
             dataLoading={data.dataLoading}
           />
         );
@@ -303,6 +308,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             onSuspensionAction={(id, action, reason, durationDays) =>
               data.riderSuspensionMutation.mutate({ riderProfileId: id, action, reason, durationDays })
             }
+            token={token}
             isMutating={data.riderSuspensionMutation.isPending}
             dataLoading={data.dataLoading}
           />
@@ -369,6 +375,11 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             totalDeliveryCommission={data.totalDeliveryCommission}
             riderEarningsTotal={data.riderEarningsTotal}
             dataLoading={data.dataLoading}
+            onPayoutAction={(id, action, reason) =>
+              data.payoutReviewMutation.mutate({ payoutRequestId: id, action, rejectionReason: reason })
+            }
+            onServerExport={(entity) => void data.downloadServerCsv(entity)}
+            isMutating={data.payoutReviewMutation.isPending}
           />
         );
 
@@ -492,6 +503,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             riderVerifiedCount={data.userStats?.riders.verified}
             passengerPendingCount={data.userStats?.passengers.pending}
             passengerVerifiedCount={data.userStats?.passengers.verified}
+            onServerExport={(entity) => void data.downloadServerCsv(entity)}
           />
         );
 
@@ -500,6 +512,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
           <AuditLogsScreen
             auditLogs={data.auditLogs}
             totalAdmins={data.adminAccounts.length}
+            onServerExport={() => void data.downloadServerCsv("audit-logs")}
           />
         );
 
@@ -513,6 +526,10 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             adminCurrency={data.adminCurrency}
             auditLogs={data.auditLogs}
             dataLoading={data.dataLoading}
+            token={token}
+            platformSettings={data.platformSettings}
+            onSaveSettings={(settings) => data.saveSettingsMutation.mutate(settings)}
+            settingsSaving={data.saveSettingsMutation.isPending}
           />
         );
 
@@ -523,7 +540,14 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
         return <IntegrationsScreen dataLoading={data.dataLoading} />;
 
       case "taxesCompliance":
-        return <TaxesComplianceScreen dataLoading={data.dataLoading} />;
+        return (
+          <TaxesComplianceScreen
+            dataLoading={data.dataLoading}
+            platformSettings={data.platformSettings}
+            onSaveSettings={(settings) => data.saveSettingsMutation.mutate(settings)}
+            settingsSaving={data.saveSettingsMutation.isPending}
+          />
+        );
 
       case "settingsNotifications":
         return (

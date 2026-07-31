@@ -60,6 +60,7 @@ export async function adminLogin(input: {
   email: string;
   password: string;
   device: { deviceId: string; platform: string; userAgent: string };
+  totpCode?: string;
 }) {
   return postJson<SessionPayload, typeof input>("/auth/admin/login", input);
 }

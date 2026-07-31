@@ -317,7 +317,9 @@ export const BroadcastAudience = {
   ALL: 'ALL',
   RIDERS: 'RIDERS',
   PASSENGERS: 'PASSENGERS',
-  ZONE: 'ZONE'
+  ZONE: 'ZONE',
+  INACTIVE_RIDERS: 'INACTIVE_RIDERS',
+  NEW_PASSENGERS: 'NEW_PASSENGERS'
 } as const
 
 export type BroadcastAudience = (typeof BroadcastAudience)[keyof typeof BroadcastAudience]

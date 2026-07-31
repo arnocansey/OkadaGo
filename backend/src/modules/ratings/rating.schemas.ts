@@ -18,5 +18,7 @@ export const adminRatingsQuerySchema = z.object({
   riderId: z.string().cuid().optional(),
   rideId: z.string().cuid().optional(),
   fromDate: z.string().date().optional(),
-  toDate: z.string().date().optional()
+  toDate: z.string().date().optional(),
+  page: z.coerce.number().int().min(1).optional(),
+  limit: z.coerce.number().int().min(1).max(500).optional()
 });

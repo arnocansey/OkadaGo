@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Bell, Send, Clock, XCircle, RefreshCw } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
+import { AdminPagination, usePagination } from "./ui/AdminPagination";
 import type { OpsJobStatus, ScheduledBroadcastRecord } from "./types";
 import { formatDateTime } from "./utils";
+
+const PAGE_SIZE = 10;
 
 export type ScheduledNotification = ScheduledBroadcastRecord;
 
@@ -33,9 +36,23 @@ export function ScheduledNotificationsScreen({
 }: ScheduledNotificationsScreenProps) {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
-  const [audience, setAudience] = useState<"all" | "riders" | "passengers" | "zone">("all");
+  const [audience, setAudience] = useState<
+    "all" | "riders" | "passengers" | "zone" | "inactive_riders" | "new_passengers"
+  >("all");
   const [zone, setZone] = useState("");
   const [scheduledAt, setScheduledAt] = useState("");
+
+  const sortedNotifications = useMemo(
+    () =>
+      notifications
+        .slice()
+        .sort((a, b) => Date.parse(b.scheduledAt) - Date.parse(a.scheduledAt)),
+    [notifications]
+  );
+  const { page, setPage, paginated: pagedNotifications } = usePagination(
+    sortedNotifications,
+    PAGE_SIZE
+  );
 
   const pendingCount = notifications.filter((n) => n.status === "pending").length;
   const sentCount = notifications.filter((n) => n.status === "sent").length;
@@ -130,6 +147,8 @@ export function ScheduledNotificationsScreen({
                   <option value="all">All Users ({ridersCount + passengersCount})</option>
                   <option value="riders">Riders Only ({ridersCount})</option>
                   <option value="passengers">Passengers Only ({passengersCount})</option>
+                  <option value="inactive_riders">Inactive Riders (7d+)</option>
+                  <option value="new_passengers">New Passengers (0 trips)</option>
                   <option value="zone">Specific Zone</option>
                 </select>
               </div>
@@ -188,7 +207,7 @@ export function ScheduledNotificationsScreen({
                   </tr>
                 </thead>
                 <tbody>
-                  {notifications.map((n) => (
+                  {pagedNotifications.map((n) => (
                     <tr key={n.id}>
                       <td>
                         <strong>{n.title}</strong>
@@ -257,6 +276,12 @@ export function ScheduledNotificationsScreen({
                   ))}
                 </tbody>
               </table>
+              <AdminPagination
+                page={page}
+                totalItems={sortedNotifications.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setPage}
+              />
             </div>
           )}
         </article>

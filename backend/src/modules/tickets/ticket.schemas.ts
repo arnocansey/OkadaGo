@@ -17,7 +17,8 @@ export const adminTicketsQuerySchema = z.object({
     .enum(["OPEN", "PENDING_PASSENGER", "PENDING_RIDER", "ESCALATED", "RESOLVED", "CLOSED"])
     .optional(),
   priority: z.enum(["LOW", "NORMAL", "HIGH", "CRITICAL"]).optional(),
-  limit: z.coerce.number().int().min(1).max(100).default(50)
+  limit: z.coerce.number().int().min(1).max(500).default(50),
+  page: z.coerce.number().int().min(1).optional()
 });
 
 export const adminUpdateTicketSchema = z.object({

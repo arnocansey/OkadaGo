@@ -1,4 +1,5 @@
-import { TrendingUp, Bike, Package, Users, CreditCard, Download, FileSpreadsheet } from "lucide-react";
+import { useMemo, useState } from "react";
+import { TrendingUp, Bike, Package, Users, CreditCard, Download, FileSpreadsheet, Map as MapIcon } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
 import { downloadCsv } from "@/lib/export-csv";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
@@ -18,6 +19,7 @@ export type ReportsScreenProps = {
   riderVerifiedCount?: number;
   passengerPendingCount?: number;
   passengerVerifiedCount?: number;
+  onServerExport?: (entity: "rides" | "deliveries" | "riders") => void;
 };
 
 type DailyBucket = {
@@ -65,13 +67,41 @@ export function ReportsScreen({
   riderPendingCount = 0,
   riderVerifiedCount = 0,
   passengerPendingCount = 0,
-  passengerVerifiedCount = 0
+  passengerVerifiedCount = 0,
+  onServerExport
 }: ReportsScreenProps) {
+  const [rangeDays, setRangeDays] = useState<7 | 30 | 90>(30);
   const riderCount = ridersTotal ?? riders.length;
   const passengerCount = passengersTotal ?? passengers.length;
 
   const dailyBuckets30 = buildBuckets(rides, deliveries, 30);
   const dailyBuckets7 = buildBuckets(rides, deliveries, 7);
+  const dailyBuckets = buildBuckets(rides, deliveries, rangeDays);
+
+  const demandHeat = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const ride of rides) {
+      const zone = ride.serviceZone?.name?.trim();
+      if (zone) {
+        counts.set(zone, (counts.get(zone) ?? 0) + 1);
+        continue;
+      }
+      const lat = parseNumber(ride.pickupLatitude);
+      const lng = parseNumber(ride.pickupLongitude);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) {
+        counts.set("Unmapped", (counts.get("Unmapped") ?? 0) + 1);
+        continue;
+      }
+      // ~1.1km cells around Accra — coarse demand buckets without a map library.
+      const cell = `${lat.toFixed(2)},${lng.toFixed(2)}`;
+      counts.set(cell, (counts.get(cell) ?? 0) + 1);
+    }
+    return [...counts.entries()]
+      .map(([label, count]) => ({ label, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 24);
+  }, [rides]);
+  const demandMax = Math.max(1, ...demandHeat.map((cell) => cell.count));
 
   const totalRevenue7d = dailyBuckets7.reduce((sum, b) => sum + b.revenue, 0);
   const totalRides7d = dailyBuckets7.reduce((sum, b) => sum + b.rides, 0);
@@ -94,7 +124,6 @@ export function ReportsScreen({
     deliveries.length > 0 ? Math.round((completedDeliveries.length / deliveries.length) * 100) : 0;
 
   const onlineRiders = riders.filter((r) => r.onlineStatus);
-  const maxRide30 = Math.max(1, ...dailyBuckets30.map((b) => b.rides));
 
   const platformSummaryRows: (string | number)[][] = [
     [
@@ -133,9 +162,23 @@ export function ReportsScreen({
         subtitle="Rides, deliveries, revenue, and riders across Accra service zones."
         actions={
           <div className="admin-screen-toolbar">
+            <select
+              className="admin-select-sm"
+              value={rangeDays}
+              onChange={(e) => setRangeDays(Number(e.target.value) as 7 | 30 | 90)}
+            >
+              <option value={7}>Last 7 days</option>
+              <option value={30}>Last 30 days</option>
+              <option value={90}>Last 90 days</option>
+            </select>
             <button type="button" className="admin-btn-primary" onClick={exportPlatformSummary}>
               <Download size={14} /> Export Report
             </button>
+            {onServerExport ? (
+              <button type="button" className="admin-btn-secondary" onClick={() => onServerExport("rides")}>
+                <Download size={14} /> Full rides CSV
+              </button>
+            ) : null}
           </div>
         }
       />
@@ -213,7 +256,7 @@ export function ReportsScreen({
             <div className="admin-reference-cardhead">
               <div>
                 <h3>Ride Volume by Day</h3>
-                <p>30-day Accra ride & delivery volume.</p>
+                <p>{rangeDays}-day Accra ride & delivery volume.</p>
               </div>
             </div>
             <div className="admin-reference-legend">
@@ -221,13 +264,15 @@ export function ReportsScreen({
               <span><i className="yellow" /> Deliveries</span>
             </div>
             <div className="admin-reference-bars" style={{ flexWrap: "wrap", gap: 4 }}>
-              {dailyBuckets30.map((bucket) => (
+              {dailyBuckets.map((bucket) => {
+                const maxRide = Math.max(1, ...dailyBuckets.map((b) => b.rides));
+                return (
                 <div key={bucket.key} className="admin-reference-bar-day" style={{ minWidth: 20 }}>
                   <div className="admin-reference-bar-track">
                     <i
                       className="rides"
                       style={{
-                        height: bucket.rides === 0 ? 0 : `${Math.max(4, (bucket.rides / maxRide30) * 100)}%`
+                        height: bucket.rides === 0 ? 0 : `${Math.max(4, (bucket.rides / maxRide) * 100)}%`
                       }}
                     />
                     <i
@@ -236,14 +281,65 @@ export function ReportsScreen({
                         height:
                           bucket.deliveries === 0
                             ? 0
-                            : `${Math.max(4, (bucket.deliveries / maxRide30) * 100)}%`
+                            : `${Math.max(4, (bucket.deliveries / maxRide) * 100)}%`
                       }}
                     />
                   </div>
                   <span style={{ fontSize: 9 }}>{bucket.label}</span>
                 </div>
-              ))}
+                );
+              })}
             </div>
+          </article>
+
+          <article className="admin-reference-card">
+            <div className="admin-reference-cardhead">
+              <div>
+                <h3>Demand heatmap</h3>
+                <p>Pickup demand by service zone (or coarse GPS cell when zone is missing).</p>
+              </div>
+              <MapIcon size={18} style={{ color: "var(--text-secondary)" }} />
+            </div>
+            {demandHeat.length === 0 ? (
+              <p style={{ color: "var(--text-secondary)", fontSize: 13, margin: 0 }}>
+                No ride pickup data yet to plot demand.
+              </p>
+            ) : (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+                  gap: 8
+                }}
+              >
+                {demandHeat.map((cell) => {
+                  const intensity = cell.count / demandMax;
+                  return (
+                    <div
+                      key={cell.label}
+                      title={`${cell.label}: ${cell.count} rides`}
+                      style={{
+                        padding: "12px 14px",
+                        borderRadius: 12,
+                        border: "1px solid var(--border-color)",
+                        background: `color-mix(in srgb, var(--accent-orange) ${Math.round(intensity * 55)}%, var(--bg-primary))`,
+                        minHeight: 72,
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between"
+                      }}
+                    >
+                      <strong style={{ fontSize: 12, color: "var(--text-primary)", wordBreak: "break-word" }}>
+                        {cell.label}
+                      </strong>
+                      <span style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)" }}>
+                        {cell.count}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </article>
 
           <article className="admin-reference-card">

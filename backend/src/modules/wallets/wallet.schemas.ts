@@ -59,13 +59,17 @@ export const adminWalletTransactionsQuerySchema = z.object({
   status: z.enum(["PENDING", "POSTED", "REVERSED", "FAILED"]).optional(),
   type: z
     .enum(["TOP_UP", "DEBIT", "CREDIT", "REFUND", "BONUS", "COMMISSION", "WITHDRAWAL", "ADJUSTMENT"])
-    .optional()
+    .optional(),
+  page: z.coerce.number().int().min(1).optional(),
+  limit: z.coerce.number().int().min(1).max(500).optional()
 });
 
 export const adminPayoutRequestsQuerySchema = z.object({
   status: z
     .enum(["REQUESTED", "REVIEWING", "APPROVED", "PROCESSING", "PAID", "REJECTED", "CANCELLED"])
-    .optional()
+    .optional(),
+  page: z.coerce.number().int().min(1).optional(),
+  limit: z.coerce.number().int().min(1).max(500).optional()
 });
 
 export const adminPayoutReviewParamsSchema = z.object({

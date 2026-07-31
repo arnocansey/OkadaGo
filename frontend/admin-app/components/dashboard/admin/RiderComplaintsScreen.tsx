@@ -17,7 +17,8 @@ import { useAdminToast } from "./AdminToast";
 import { SkeletonKPI, SkeletonCard } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
-import type { AdminIncidentRecord } from "./types";
+import { useAdminNotes } from "./useAdminNotes";
+import type { AdminIncidentRecord, AdminAccountRecord } from "./types";
 import { formatDateTime, statusTone, formatEnumLabel } from "./utils";
 
 export type RiderComplaintsScreenProps = {
@@ -29,6 +30,9 @@ export type RiderComplaintsScreenProps = {
     incidentId: string,
     status: "UNDER_REVIEW" | "ACTIONED" | "RESOLVED" | "CLOSED"
   ) => void;
+  onIncidentAssign?: (incidentId: string, assignedToId: string) => void;
+  adminAccounts?: AdminAccountRecord[];
+  token?: string | null;
   isMutating: boolean;
   dataLoading?: boolean;
 };
@@ -72,6 +76,9 @@ export function RiderComplaintsScreen({
   riderComplaintInProgress,
   riderComplaintResolved,
   onIncidentAction,
+  onIncidentAssign,
+  adminAccounts = [],
+  token,
   isMutating,
   dataLoading = false,
 }: RiderComplaintsScreenProps) {
@@ -81,6 +88,14 @@ export function RiderComplaintsScreen({
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [noteDraft, setNoteDraft] = useState("");
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [assigneeId, setAssigneeId] = useState("");
+
+  const activeComplaintId =
+    selectedComplaint !== null ? riderIncidents[selectedComplaint]?.id ?? null : null;
+  const { notes, addNote, addingNote } = useAdminNotes(token, "INCIDENT", activeComplaintId);
 
   const closedIncidents = riderIncidents.filter(
     (i) => i.status.toLowerCase() === "closed"
@@ -571,11 +586,8 @@ export function RiderComplaintsScreen({
                 <button
                   type="button"
                   className="admin-btn-secondary"
-                  disabled
-                  title="Ops notes are not stored on complaints yet"
-                  onClick={() => {
-                    toast.addToast("Complaint notes are not stored yet", "info");
-                  }}
+                  disabled={!token}
+                  onClick={() => setNoteOpen((open) => !open)}
                 >
                   <StickyNote size={14} />
                   Note
@@ -585,11 +597,8 @@ export function RiderComplaintsScreen({
                 <button
                   type="button"
                   className="admin-btn-secondary"
-                  disabled
-                  title="Agent assignment is not connected yet"
-                  onClick={() => {
-                    toast.addToast("Complaint assignment is not connected yet", "info");
-                  }}
+                  disabled={!onIncidentAssign || adminAccounts.length === 0}
+                  onClick={() => setAssignOpen((open) => !open)}
                 >
                   <UserCheck size={14} />
                   Assign
@@ -618,6 +627,111 @@ export function RiderComplaintsScreen({
                 Close Complaint
               </button>
             </div>
+
+            {/* Assign to admin */}
+            {assignOpen && (
+              <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                <select
+                  className="admin-select-sm"
+                  value={assigneeId}
+                  onChange={(e) => setAssigneeId(e.target.value)}
+                  style={{ flex: 1 }}
+                >
+                  <option value="">Choose an admin…</option>
+                  {adminAccounts.map((account) => (
+                    <option key={account.id} value={account.user.id}>
+                      {account.user.fullName}
+                      {account.title ? ` — ${account.title}` : ""}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="admin-btn-primary"
+                  disabled={!assigneeId || isMutating}
+                  onClick={() => {
+                    if (onIncidentAssign && assigneeId) {
+                      onIncidentAssign(detailComplaint.id, assigneeId);
+                      setAssignOpen(false);
+                      setAssigneeId("");
+                    }
+                  }}
+                >
+                  <UserCheck size={14} /> Assign
+                </button>
+              </div>
+            )}
+
+            {/* Ops notes */}
+            {noteOpen && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
+                <textarea
+                  value={noteDraft}
+                  onChange={(e) => setNoteDraft(e.target.value)}
+                  placeholder="Add an internal ops note about this complaint…"
+                  rows={3}
+                  maxLength={1000}
+                  style={{
+                    width: "100%",
+                    boxSizing: "border-box",
+                    padding: "10px 14px",
+                    fontSize: 13,
+                    borderRadius: 10,
+                    border: "1px solid var(--border-color)",
+                    background: "var(--bg-primary)",
+                    color: "var(--text-primary)",
+                    resize: "vertical",
+                    outline: "none",
+                  }}
+                />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    type="button"
+                    className="admin-btn-primary"
+                    disabled={addingNote || noteDraft.trim().length < 2}
+                    onClick={() => {
+                      addNote(noteDraft.trim());
+                      setNoteDraft("");
+                    }}
+                  >
+                    <StickyNote size={14} /> Save Note
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-secondary"
+                    onClick={() => { setNoteOpen(false); setNoteDraft(""); }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {notes.length > 0 && (
+              <div style={{ marginTop: 16 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.7, color: "var(--text-secondary, #9ca3af)", marginBottom: 8 }}>
+                  Ops Notes ({notes.length})
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 220, overflowY: "auto" }}>
+                  {notes.map((note) => (
+                    <div
+                      key={note.id}
+                      style={{
+                        padding: "10px 12px",
+                        borderRadius: 10,
+                        border: "1px solid var(--border-color)",
+                        background: "var(--bg-primary)",
+                      }}
+                    >
+                      <div style={{ fontSize: 13, lineHeight: 1.5 }}>{note.body}</div>
+                      <div style={{ fontSize: 11, color: "var(--text-secondary, #9ca3af)", marginTop: 4 }}>
+                        {note.author.fullName} · {formatDateTime(note.createdAt)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </article>
         )}
       </div>

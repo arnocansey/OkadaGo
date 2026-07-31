@@ -14,6 +14,7 @@ import {
 } from "../wallets/wallet.schemas.js";
 import { AdminRiderService } from "./admin.service.js";
 import { AdminOpsService } from "./admin-ops.service.js";
+import { AdminConsoleService } from "./admin-console.service.js";
 import {
   riderApprovalParamsSchema,
   riderApprovalSchema,
@@ -23,7 +24,13 @@ import {
   updateEscalationRuleSchema,
   escalationRuleParamsSchema,
   createScheduledBroadcastSchema,
-  scheduledBroadcastParamsSchema
+  scheduledBroadcastParamsSchema,
+  adminNotesQuerySchema,
+  createAdminNoteSchema,
+  updatePlatformSettingsSchema,
+  riderRequestInfoSchema,
+  adminExportParamsSchema,
+  adminAuditLogsQuerySchema
 } from "./admin.schemas.js";
 
 import { prisma } from "../../common/prisma.js";
@@ -33,6 +40,9 @@ const walletService = new WalletService();
 const ratingService = new RatingService();
 const adminRiderService = new AdminRiderService();
 const adminOpsService = new AdminOpsService();
+const adminConsoleService = new AdminConsoleService();
+
+const LIVE_STREAM_INTERVAL_MS = 5000;
 
 function extractBearerToken(authorizationHeader?: string) {
   if (!authorizationHeader?.startsWith("Bearer ")) {
@@ -116,14 +126,18 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
   server.get("/admin/audit-logs", async (request) => {
     const token = extractBearerToken(request.headers.authorization);
     await authService.listAdmins(token);
-    const query = request.query as { limit?: number; offset?: number };
+    const query = parseQuery(request, adminAuditLogsQuerySchema);
+    const limit = query.limit ?? 50;
+    const skip = query.page ? (query.page - 1) * limit : query.offset ?? 0;
     const logs = await prisma.auditLog.findMany({
       orderBy: { createdAt: "desc" },
-      take: query?.limit ?? 50,
-      skip: query?.offset ?? 0,
+      take: limit,
+      skip,
       include: { actor: { select: { id: true, fullName: true, email: true } } }
     });
-    return logs;
+    if (!query.page) return logs;
+    const total = await prisma.auditLog.count();
+    return { data: logs, total, page: query.page, limit };
   });
 
   server.get("/admin/payments/wallet-transactions", async (request) => {
@@ -222,5 +236,97 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
   server.get("/admin/ops-jobs/status", async (request) => {
     const token = extractBearerToken(request.headers.authorization);
     return adminOpsService.getOpsJobStatus(token);
+  });
+
+  // ── Ops notes ──────────────────────────────────────────────────────────
+
+  server.get("/admin/notes", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const query = parseQuery(request, adminNotesQuerySchema);
+    return adminConsoleService.listNotes(token, query.entityType, query.entityId);
+  });
+
+  server.post("/admin/notes", async (request, reply) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const input = parseBody(request, createAdminNoteSchema);
+    const note = await adminConsoleService.createNote(token, input);
+    return reply.status(201).send(note);
+  });
+
+  // ── Platform settings ──────────────────────────────────────────────────
+
+  server.get("/admin/settings", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return adminConsoleService.getSettings(token);
+  });
+
+  server.put("/admin/settings", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const input = parseBody(request, updatePlatformSettingsSchema);
+    return adminConsoleService.updateSettings(token, input);
+  });
+
+  // ── Rider info request ─────────────────────────────────────────────────
+
+  server.post("/admin/riders/:riderProfileId/request-info", async (request, reply) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, riderSuspensionParamsSchema);
+    const input = parseBody(request, riderRequestInfoSchema);
+    const result = await adminConsoleService.requestRiderInfo(token, params.riderProfileId, input);
+    return reply.status(201).send(result);
+  });
+
+  // ── Full CSV export ────────────────────────────────────────────────────
+
+  server.get("/admin/export/:entity", async (request, reply) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, adminExportParamsSchema);
+    const { filename, csv } = await adminConsoleService.exportCsv(token, params.entity);
+    reply
+      .header("Content-Type", "text/csv; charset=utf-8")
+      .header("Content-Disposition", `attachment; filename="${filename}"`);
+    return reply.send(csv);
+  });
+
+  // ── Live ops stream (SSE) ──────────────────────────────────────────────
+  // EventSource cannot set headers, so the session token arrives as a query param.
+
+  server.get("/admin/stream", async (request, reply) => {
+    const query = request.query as { token?: string };
+    if (!query.token) {
+      throw new AppError("A session token is required", 401, "AUTHORIZATION_REQUIRED");
+    }
+
+    // Throws if the token is not a valid admin session.
+    const snapshot = await adminConsoleService.getLiveSnapshot(query.token);
+
+    reply.raw.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+      "Access-Control-Allow-Origin": request.headers.origin ?? "*"
+    });
+
+    const send = (payload: unknown) => {
+      reply.raw.write(`data: ${JSON.stringify(payload)}\n\n`);
+    };
+
+    send(snapshot);
+
+    const interval = setInterval(async () => {
+      try {
+        send(await adminConsoleService.buildLiveSnapshot());
+      } catch {
+        clearInterval(interval);
+        reply.raw.end();
+      }
+    }, LIVE_STREAM_INTERVAL_MS);
+
+    request.raw.on("close", () => {
+      clearInterval(interval);
+    });
+
+    // Keep the reply open; Fastify must not try to serialize a return value.
+    return reply;
   });
 };

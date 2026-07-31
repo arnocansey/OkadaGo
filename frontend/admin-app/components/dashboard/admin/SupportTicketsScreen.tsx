@@ -1,12 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Headphones, CheckCircle, Clock, AlertTriangle, Search } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
+import { AdminPagination, usePagination } from "./ui/AdminPagination";
 import type { AdminIncidentRecord, AdminSupportTicketRecord } from "./types";
 import { formatDateTime, statusTone, formatEnumLabel } from "./utils";
+
+const PAGE_SIZE = 10;
 
 export type SupportTicketsScreenProps = {
   incidents: AdminIncidentRecord[];
@@ -69,6 +72,26 @@ export function SupportTicketsScreen({
       return haystack.includes(q);
     });
   }, [supportTickets, query]);
+
+  const { page: ticketPage, setPage: setTicketPage, paginated: paginatedTickets } = usePagination(
+    filteredTickets,
+    PAGE_SIZE
+  );
+
+  const openAndInProgress = useMemo(
+    () =>
+      [...openTickets, ...inProgressTickets].sort(
+        (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)
+      ),
+    [openTickets, inProgressTickets]
+  );
+
+  const { page: incidentPage, setPage: setIncidentPage, paginated: paginatedIncidents } =
+    usePagination(openAndInProgress, PAGE_SIZE);
+
+  useEffect(() => {
+    setTicketPage(1);
+  }, [query, setTicketPage]);
 
   const escalations = useMemo(
     () =>
@@ -152,7 +175,7 @@ export function SupportTicketsScreen({
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredTickets.map((ticket) => (
+                      {paginatedTickets.map((ticket) => (
                         <tr key={ticket.id}>
                           <td>
                             <small>{formatDateTime(ticket.createdAt)}</small>
@@ -182,6 +205,12 @@ export function SupportTicketsScreen({
                       ))}
                     </tbody>
                   </table>
+                  <AdminPagination
+                    page={ticketPage}
+                    totalItems={filteredTickets.length}
+                    pageSize={PAGE_SIZE}
+                    onPageChange={setTicketPage}
+                  />
                 </div>
               )}
             </article>
@@ -235,10 +264,7 @@ export function SupportTicketsScreen({
               <EmptyCard title="No open incidents." body="All caught up." />
             ) : (
               <div className="admin-incident-list">
-                {[...openTickets, ...inProgressTickets]
-                  .slice()
-                  .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
-                  .map((ticket) => (
+                {paginatedIncidents.map((ticket) => (
                     <div key={ticket.id} className="admin-incident-item">
                       <div>
                         <strong>{ticket.reporter.fullName}</strong>
@@ -271,6 +297,12 @@ export function SupportTicketsScreen({
                       </div>
                     </div>
                   ))}
+                <AdminPagination
+                  page={incidentPage}
+                  totalItems={openAndInProgress.length}
+                  pageSize={PAGE_SIZE}
+                  onPageChange={setIncidentPage}
+                />
               </div>
             )}
           </article>

@@ -390,6 +390,8 @@ export const ModelName = {
   PassengerProfile: 'PassengerProfile',
   RiderProfile: 'RiderProfile',
   AdminProfile: 'AdminProfile',
+  AdminNote: 'AdminNote',
+  PlatformSetting: 'PlatformSetting',
   DispatcherProfile: 'DispatcherProfile',
   Vehicle: 'Vehicle',
   RiderDocument: 'RiderDocument',
@@ -434,7 +436,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "adminProfile" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "deliveryRequest" | "deliveryStop" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog" | "escalationRule" | "scheduledBroadcast" | "opsJobHeartbeat"
+    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "adminProfile" | "adminNote" | "platformSetting" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "deliveryRequest" | "deliveryStop" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog" | "escalationRule" | "scheduledBroadcast" | "opsJobHeartbeat"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -879,6 +881,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.AdminProfileCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.AdminProfileCountAggregateOutputType> | number
+        }
+      }
+    }
+    AdminNote: {
+      payload: Prisma.$AdminNotePayload<ExtArgs>
+      fields: Prisma.AdminNoteFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AdminNoteFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminNotePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AdminNoteFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminNotePayload>
+        }
+        findFirst: {
+          args: Prisma.AdminNoteFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminNotePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AdminNoteFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminNotePayload>
+        }
+        findMany: {
+          args: Prisma.AdminNoteFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminNotePayload>[]
+        }
+        create: {
+          args: Prisma.AdminNoteCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminNotePayload>
+        }
+        createMany: {
+          args: Prisma.AdminNoteCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AdminNoteCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminNotePayload>[]
+        }
+        delete: {
+          args: Prisma.AdminNoteDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminNotePayload>
+        }
+        update: {
+          args: Prisma.AdminNoteUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminNotePayload>
+        }
+        deleteMany: {
+          args: Prisma.AdminNoteDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AdminNoteUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AdminNoteUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminNotePayload>[]
+        }
+        upsert: {
+          args: Prisma.AdminNoteUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminNotePayload>
+        }
+        aggregate: {
+          args: Prisma.AdminNoteAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAdminNote>
+        }
+        groupBy: {
+          args: Prisma.AdminNoteGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AdminNoteGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AdminNoteCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AdminNoteCountAggregateOutputType> | number
+        }
+      }
+    }
+    PlatformSetting: {
+      payload: Prisma.$PlatformSettingPayload<ExtArgs>
+      fields: Prisma.PlatformSettingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PlatformSettingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformSettingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PlatformSettingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformSettingPayload>
+        }
+        findFirst: {
+          args: Prisma.PlatformSettingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformSettingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PlatformSettingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformSettingPayload>
+        }
+        findMany: {
+          args: Prisma.PlatformSettingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformSettingPayload>[]
+        }
+        create: {
+          args: Prisma.PlatformSettingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformSettingPayload>
+        }
+        createMany: {
+          args: Prisma.PlatformSettingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PlatformSettingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformSettingPayload>[]
+        }
+        delete: {
+          args: Prisma.PlatformSettingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformSettingPayload>
+        }
+        update: {
+          args: Prisma.PlatformSettingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformSettingPayload>
+        }
+        deleteMany: {
+          args: Prisma.PlatformSettingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PlatformSettingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PlatformSettingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformSettingPayload>[]
+        }
+        upsert: {
+          args: Prisma.PlatformSettingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformSettingPayload>
+        }
+        aggregate: {
+          args: Prisma.PlatformSettingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePlatformSetting>
+        }
+        groupBy: {
+          args: Prisma.PlatformSettingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PlatformSettingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PlatformSettingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PlatformSettingCountAggregateOutputType> | number
         }
       }
     }
@@ -3173,11 +3323,36 @@ export const AdminProfileScalarFieldEnum = {
   userId: 'userId',
   title: 'title',
   permissions: 'permissions',
+  totpSecret: 'totpSecret',
+  totpEnabled: 'totpEnabled',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type AdminProfileScalarFieldEnum = (typeof AdminProfileScalarFieldEnum)[keyof typeof AdminProfileScalarFieldEnum]
+
+
+export const AdminNoteScalarFieldEnum = {
+  id: 'id',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  authorId: 'authorId',
+  body: 'body',
+  createdAt: 'createdAt'
+} as const
+
+export type AdminNoteScalarFieldEnum = (typeof AdminNoteScalarFieldEnum)[keyof typeof AdminNoteScalarFieldEnum]
+
+
+export const PlatformSettingScalarFieldEnum = {
+  key: 'key',
+  value: 'value',
+  updatedById: 'updatedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PlatformSettingScalarFieldEnum = (typeof PlatformSettingScalarFieldEnum)[keyof typeof PlatformSettingScalarFieldEnum]
 
 
 export const DispatcherProfileScalarFieldEnum = {
@@ -4437,6 +4612,8 @@ export type GlobalOmitConfig = {
   passengerProfile?: Prisma.PassengerProfileOmit
   riderProfile?: Prisma.RiderProfileOmit
   adminProfile?: Prisma.AdminProfileOmit
+  adminNote?: Prisma.AdminNoteOmit
+  platformSetting?: Prisma.PlatformSettingOmit
   dispatcherProfile?: Prisma.DispatcherProfileOmit
   vehicle?: Prisma.VehicleOmit
   riderDocument?: Prisma.RiderDocumentOmit

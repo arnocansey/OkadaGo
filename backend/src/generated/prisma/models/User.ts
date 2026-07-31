@@ -300,6 +300,7 @@ export type UserWhereInput = {
   auditLogs?: Prisma.AuditLogListRelationFilter
   approvedDocuments?: Prisma.RiderDocumentListRelationFilter
   approvedPayouts?: Prisma.PayoutRequestListRelationFilter
+  adminNotes?: Prisma.AdminNoteListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -342,6 +343,7 @@ export type UserOrderByWithRelationInput = {
   auditLogs?: Prisma.AuditLogOrderByRelationAggregateInput
   approvedDocuments?: Prisma.RiderDocumentOrderByRelationAggregateInput
   approvedPayouts?: Prisma.PayoutRequestOrderByRelationAggregateInput
+  adminNotes?: Prisma.AdminNoteOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -387,6 +389,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   auditLogs?: Prisma.AuditLogListRelationFilter
   approvedDocuments?: Prisma.RiderDocumentListRelationFilter
   approvedPayouts?: Prisma.PayoutRequestListRelationFilter
+  adminNotes?: Prisma.AdminNoteListRelationFilter
 }, "id" | "email" | "phoneE164">
 
 export type UserOrderByWithAggregationInput = {
@@ -475,6 +478,7 @@ export type UserCreateInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -517,6 +521,7 @@ export type UserUncheckedCreateInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUpdateInput = {
@@ -559,6 +564,7 @@ export type UserUpdateInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -601,6 +607,7 @@ export type UserUncheckedUpdateInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -829,6 +836,20 @@ export type UserUpdateOneRequiredWithoutAdminProfileNestedInput = {
   upsert?: Prisma.UserUpsertWithoutAdminProfileInput
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAdminProfileInput, Prisma.UserUpdateWithoutAdminProfileInput>, Prisma.UserUncheckedUpdateWithoutAdminProfileInput>
+}
+
+export type UserCreateNestedOneWithoutAdminNotesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAdminNotesInput, Prisma.UserUncheckedCreateWithoutAdminNotesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAdminNotesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutAdminNotesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAdminNotesInput, Prisma.UserUncheckedCreateWithoutAdminNotesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAdminNotesInput
+  upsert?: Prisma.UserUpsertWithoutAdminNotesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAdminNotesInput, Prisma.UserUpdateWithoutAdminNotesInput>, Prisma.UserUncheckedUpdateWithoutAdminNotesInput>
 }
 
 export type UserCreateNestedOneWithoutDispatcherProfileInput = {
@@ -1118,6 +1139,7 @@ export type UserCreateWithoutSessionsInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -1159,6 +1181,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -1216,6 +1239,7 @@ export type UserUpdateWithoutSessionsInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -1257,6 +1281,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutDevicesInput = {
@@ -1298,6 +1323,7 @@ export type UserCreateWithoutDevicesInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutDevicesInput = {
@@ -1339,6 +1365,7 @@ export type UserUncheckedCreateWithoutDevicesInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutDevicesInput = {
@@ -1396,6 +1423,7 @@ export type UserUpdateWithoutDevicesInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDevicesInput = {
@@ -1437,6 +1465,7 @@ export type UserUncheckedUpdateWithoutDevicesInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutPassengerProfileInput = {
@@ -1478,6 +1507,7 @@ export type UserCreateWithoutPassengerProfileInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutPassengerProfileInput = {
@@ -1519,6 +1549,7 @@ export type UserUncheckedCreateWithoutPassengerProfileInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutPassengerProfileInput = {
@@ -1576,6 +1607,7 @@ export type UserUpdateWithoutPassengerProfileInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPassengerProfileInput = {
@@ -1617,6 +1649,7 @@ export type UserUncheckedUpdateWithoutPassengerProfileInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutRiderProfileInput = {
@@ -1658,6 +1691,7 @@ export type UserCreateWithoutRiderProfileInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutRiderProfileInput = {
@@ -1699,6 +1733,7 @@ export type UserUncheckedCreateWithoutRiderProfileInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutRiderProfileInput = {
@@ -1756,6 +1791,7 @@ export type UserUpdateWithoutRiderProfileInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRiderProfileInput = {
@@ -1797,6 +1833,7 @@ export type UserUncheckedUpdateWithoutRiderProfileInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutAdminProfileInput = {
@@ -1838,6 +1875,7 @@ export type UserCreateWithoutAdminProfileInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutAdminProfileInput = {
@@ -1879,6 +1917,7 @@ export type UserUncheckedCreateWithoutAdminProfileInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutAdminProfileInput = {
@@ -1936,6 +1975,7 @@ export type UserUpdateWithoutAdminProfileInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAdminProfileInput = {
@@ -1958,6 +1998,191 @@ export type UserUncheckedUpdateWithoutAdminProfileInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passengerProfile?: Prisma.PassengerProfileUncheckedUpdateOneWithoutUserNestedInput
   riderProfile?: Prisma.RiderProfileUncheckedUpdateOneWithoutUserNestedInput
+  dispatcherProfile?: Prisma.DispatcherProfileUncheckedUpdateOneWithoutUserNestedInput
+  sessions?: Prisma.UserSessionUncheckedUpdateManyWithoutUserNestedInput
+  devices?: Prisma.UserDeviceUncheckedUpdateManyWithoutUserNestedInput
+  wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
+  createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
+  assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
+  assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
+  ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
+  ratingsReceived?: Prisma.RatingUncheckedUpdateManyWithoutRatedNestedInput
+  reviewsGiven?: Prisma.ReviewUncheckedUpdateManyWithoutAuthorNestedInput
+  referralsSent?: Prisma.ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+  referralsReceived?: Prisma.ReferralUncheckedUpdateManyWithoutRefereeNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
+  approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
+  approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
+}
+
+export type UserCreateWithoutAdminNotesInput = {
+  id?: string
+  role: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  fullName: string
+  email?: string | null
+  phoneCountryCode: string
+  phoneLocal: string
+  phoneE164: string
+  passwordHash?: string | null
+  avatarUrl?: string | null
+  isPhoneVerified?: boolean
+  isEmailVerified?: boolean
+  preferredCurrency: string
+  lastSeenAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  passengerProfile?: Prisma.PassengerProfileCreateNestedOneWithoutUserInput
+  riderProfile?: Prisma.RiderProfileCreateNestedOneWithoutUserInput
+  adminProfile?: Prisma.AdminProfileCreateNestedOneWithoutUserInput
+  dispatcherProfile?: Prisma.DispatcherProfileCreateNestedOneWithoutUserInput
+  sessions?: Prisma.UserSessionCreateNestedManyWithoutUserInput
+  devices?: Prisma.UserDeviceCreateNestedManyWithoutUserInput
+  wallets?: Prisma.WalletCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
+  createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
+  assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
+  assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
+  ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
+  ratingsReceived?: Prisma.RatingCreateNestedManyWithoutRatedInput
+  reviewsGiven?: Prisma.ReviewCreateNestedManyWithoutAuthorInput
+  referralsSent?: Prisma.ReferralCreateNestedManyWithoutReferrerInput
+  referralsReceived?: Prisma.ReferralCreateNestedManyWithoutRefereeInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
+  approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
+  approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+}
+
+export type UserUncheckedCreateWithoutAdminNotesInput = {
+  id?: string
+  role: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  fullName: string
+  email?: string | null
+  phoneCountryCode: string
+  phoneLocal: string
+  phoneE164: string
+  passwordHash?: string | null
+  avatarUrl?: string | null
+  isPhoneVerified?: boolean
+  isEmailVerified?: boolean
+  preferredCurrency: string
+  lastSeenAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  passengerProfile?: Prisma.PassengerProfileUncheckedCreateNestedOneWithoutUserInput
+  riderProfile?: Prisma.RiderProfileUncheckedCreateNestedOneWithoutUserInput
+  adminProfile?: Prisma.AdminProfileUncheckedCreateNestedOneWithoutUserInput
+  dispatcherProfile?: Prisma.DispatcherProfileUncheckedCreateNestedOneWithoutUserInput
+  sessions?: Prisma.UserSessionUncheckedCreateNestedManyWithoutUserInput
+  devices?: Prisma.UserDeviceUncheckedCreateNestedManyWithoutUserInput
+  wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
+  createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
+  assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
+  assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
+  ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
+  ratingsReceived?: Prisma.RatingUncheckedCreateNestedManyWithoutRatedInput
+  reviewsGiven?: Prisma.ReviewUncheckedCreateNestedManyWithoutAuthorInput
+  referralsSent?: Prisma.ReferralUncheckedCreateNestedManyWithoutReferrerInput
+  referralsReceived?: Prisma.ReferralUncheckedCreateNestedManyWithoutRefereeInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
+  approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
+  approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+}
+
+export type UserCreateOrConnectWithoutAdminNotesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutAdminNotesInput, Prisma.UserUncheckedCreateWithoutAdminNotesInput>
+}
+
+export type UserUpsertWithoutAdminNotesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutAdminNotesInput, Prisma.UserUncheckedUpdateWithoutAdminNotesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutAdminNotesInput, Prisma.UserUncheckedCreateWithoutAdminNotesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutAdminNotesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutAdminNotesInput, Prisma.UserUncheckedUpdateWithoutAdminNotesInput>
+}
+
+export type UserUpdateWithoutAdminNotesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneCountryCode?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneLocal?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneE164?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPhoneVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  preferredCurrency?: Prisma.StringFieldUpdateOperationsInput | string
+  lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  passengerProfile?: Prisma.PassengerProfileUpdateOneWithoutUserNestedInput
+  riderProfile?: Prisma.RiderProfileUpdateOneWithoutUserNestedInput
+  adminProfile?: Prisma.AdminProfileUpdateOneWithoutUserNestedInput
+  dispatcherProfile?: Prisma.DispatcherProfileUpdateOneWithoutUserNestedInput
+  sessions?: Prisma.UserSessionUpdateManyWithoutUserNestedInput
+  devices?: Prisma.UserDeviceUpdateManyWithoutUserNestedInput
+  wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
+  createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
+  assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
+  assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
+  ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
+  ratingsReceived?: Prisma.RatingUpdateManyWithoutRatedNestedInput
+  reviewsGiven?: Prisma.ReviewUpdateManyWithoutAuthorNestedInput
+  referralsSent?: Prisma.ReferralUpdateManyWithoutReferrerNestedInput
+  referralsReceived?: Prisma.ReferralUpdateManyWithoutRefereeNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
+  approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
+  approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+}
+
+export type UserUncheckedUpdateWithoutAdminNotesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneCountryCode?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneLocal?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneE164?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPhoneVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  preferredCurrency?: Prisma.StringFieldUpdateOperationsInput | string
+  lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  passengerProfile?: Prisma.PassengerProfileUncheckedUpdateOneWithoutUserNestedInput
+  riderProfile?: Prisma.RiderProfileUncheckedUpdateOneWithoutUserNestedInput
+  adminProfile?: Prisma.AdminProfileUncheckedUpdateOneWithoutUserNestedInput
   dispatcherProfile?: Prisma.DispatcherProfileUncheckedUpdateOneWithoutUserNestedInput
   sessions?: Prisma.UserSessionUncheckedUpdateManyWithoutUserNestedInput
   devices?: Prisma.UserDeviceUncheckedUpdateManyWithoutUserNestedInput
@@ -2018,6 +2243,7 @@ export type UserCreateWithoutDispatcherProfileInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutDispatcherProfileInput = {
@@ -2059,6 +2285,7 @@ export type UserUncheckedCreateWithoutDispatcherProfileInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutDispatcherProfileInput = {
@@ -2116,6 +2343,7 @@ export type UserUpdateWithoutDispatcherProfileInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDispatcherProfileInput = {
@@ -2157,6 +2385,7 @@ export type UserUncheckedUpdateWithoutDispatcherProfileInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutApprovedDocumentsInput = {
@@ -2198,6 +2427,7 @@ export type UserCreateWithoutApprovedDocumentsInput = {
   referralsReceived?: Prisma.ReferralCreateNestedManyWithoutRefereeInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutApprovedDocumentsInput = {
@@ -2239,6 +2469,7 @@ export type UserUncheckedCreateWithoutApprovedDocumentsInput = {
   referralsReceived?: Prisma.ReferralUncheckedCreateNestedManyWithoutRefereeInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutApprovedDocumentsInput = {
@@ -2296,6 +2527,7 @@ export type UserUpdateWithoutApprovedDocumentsInput = {
   referralsReceived?: Prisma.ReferralUpdateManyWithoutRefereeNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutApprovedDocumentsInput = {
@@ -2337,6 +2569,7 @@ export type UserUncheckedUpdateWithoutApprovedDocumentsInput = {
   referralsReceived?: Prisma.ReferralUncheckedUpdateManyWithoutRefereeNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutWalletsInput = {
@@ -2378,6 +2611,7 @@ export type UserCreateWithoutWalletsInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutWalletsInput = {
@@ -2419,6 +2653,7 @@ export type UserUncheckedCreateWithoutWalletsInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutWalletsInput = {
@@ -2476,6 +2711,7 @@ export type UserUpdateWithoutWalletsInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutWalletsInput = {
@@ -2517,6 +2753,7 @@ export type UserUncheckedUpdateWithoutWalletsInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutApprovedPayoutsInput = {
@@ -2558,6 +2795,7 @@ export type UserCreateWithoutApprovedPayoutsInput = {
   referralsReceived?: Prisma.ReferralCreateNestedManyWithoutRefereeInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutApprovedPayoutsInput = {
@@ -2599,6 +2837,7 @@ export type UserUncheckedCreateWithoutApprovedPayoutsInput = {
   referralsReceived?: Prisma.ReferralUncheckedCreateNestedManyWithoutRefereeInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutApprovedPayoutsInput = {
@@ -2656,6 +2895,7 @@ export type UserUpdateWithoutApprovedPayoutsInput = {
   referralsReceived?: Prisma.ReferralUpdateManyWithoutRefereeNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutApprovedPayoutsInput = {
@@ -2697,6 +2937,7 @@ export type UserUncheckedUpdateWithoutApprovedPayoutsInput = {
   referralsReceived?: Prisma.ReferralUncheckedUpdateManyWithoutRefereeNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutRatingsGivenInput = {
@@ -2738,6 +2979,7 @@ export type UserCreateWithoutRatingsGivenInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutRatingsGivenInput = {
@@ -2779,6 +3021,7 @@ export type UserUncheckedCreateWithoutRatingsGivenInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutRatingsGivenInput = {
@@ -2825,6 +3068,7 @@ export type UserCreateWithoutRatingsReceivedInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutRatingsReceivedInput = {
@@ -2866,6 +3110,7 @@ export type UserUncheckedCreateWithoutRatingsReceivedInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutRatingsReceivedInput = {
@@ -2923,6 +3168,7 @@ export type UserUpdateWithoutRatingsGivenInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRatingsGivenInput = {
@@ -2964,6 +3210,7 @@ export type UserUncheckedUpdateWithoutRatingsGivenInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUpsertWithoutRatingsReceivedInput = {
@@ -3016,6 +3263,7 @@ export type UserUpdateWithoutRatingsReceivedInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRatingsReceivedInput = {
@@ -3057,6 +3305,7 @@ export type UserUncheckedUpdateWithoutRatingsReceivedInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutReviewsGivenInput = {
@@ -3098,6 +3347,7 @@ export type UserCreateWithoutReviewsGivenInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutReviewsGivenInput = {
@@ -3139,6 +3389,7 @@ export type UserUncheckedCreateWithoutReviewsGivenInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutReviewsGivenInput = {
@@ -3196,6 +3447,7 @@ export type UserUpdateWithoutReviewsGivenInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReviewsGivenInput = {
@@ -3237,6 +3489,7 @@ export type UserUncheckedUpdateWithoutReviewsGivenInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutReferralsSentInput = {
@@ -3278,6 +3531,7 @@ export type UserCreateWithoutReferralsSentInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutReferralsSentInput = {
@@ -3319,6 +3573,7 @@ export type UserUncheckedCreateWithoutReferralsSentInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutReferralsSentInput = {
@@ -3365,6 +3620,7 @@ export type UserCreateWithoutReferralsReceivedInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutReferralsReceivedInput = {
@@ -3406,6 +3662,7 @@ export type UserUncheckedCreateWithoutReferralsReceivedInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutReferralsReceivedInput = {
@@ -3463,6 +3720,7 @@ export type UserUpdateWithoutReferralsSentInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReferralsSentInput = {
@@ -3504,6 +3762,7 @@ export type UserUncheckedUpdateWithoutReferralsSentInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUpsertWithoutReferralsReceivedInput = {
@@ -3556,6 +3815,7 @@ export type UserUpdateWithoutReferralsReceivedInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReferralsReceivedInput = {
@@ -3597,6 +3857,7 @@ export type UserUncheckedUpdateWithoutReferralsReceivedInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutNotificationsInput = {
@@ -3638,6 +3899,7 @@ export type UserCreateWithoutNotificationsInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -3679,6 +3941,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -3736,6 +3999,7 @@ export type UserUpdateWithoutNotificationsInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -3777,6 +4041,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutCreatedTicketsInput = {
@@ -3818,6 +4083,7 @@ export type UserCreateWithoutCreatedTicketsInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutCreatedTicketsInput = {
@@ -3859,6 +4125,7 @@ export type UserUncheckedCreateWithoutCreatedTicketsInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutCreatedTicketsInput = {
@@ -3905,6 +4172,7 @@ export type UserCreateWithoutAssignedTicketsInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutAssignedTicketsInput = {
@@ -3946,6 +4214,7 @@ export type UserUncheckedCreateWithoutAssignedTicketsInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutAssignedTicketsInput = {
@@ -4003,6 +4272,7 @@ export type UserUpdateWithoutCreatedTicketsInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCreatedTicketsInput = {
@@ -4044,6 +4314,7 @@ export type UserUncheckedUpdateWithoutCreatedTicketsInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUpsertWithoutAssignedTicketsInput = {
@@ -4096,6 +4367,7 @@ export type UserUpdateWithoutAssignedTicketsInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAssignedTicketsInput = {
@@ -4137,6 +4409,7 @@ export type UserUncheckedUpdateWithoutAssignedTicketsInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutReportedIncidentsInput = {
@@ -4178,6 +4451,7 @@ export type UserCreateWithoutReportedIncidentsInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutReportedIncidentsInput = {
@@ -4219,6 +4493,7 @@ export type UserUncheckedCreateWithoutReportedIncidentsInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutReportedIncidentsInput = {
@@ -4265,6 +4540,7 @@ export type UserCreateWithoutAssignedIncidentsInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutAssignedIncidentsInput = {
@@ -4306,6 +4582,7 @@ export type UserUncheckedCreateWithoutAssignedIncidentsInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutAssignedIncidentsInput = {
@@ -4363,6 +4640,7 @@ export type UserUpdateWithoutReportedIncidentsInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReportedIncidentsInput = {
@@ -4404,6 +4682,7 @@ export type UserUncheckedUpdateWithoutReportedIncidentsInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUpsertWithoutAssignedIncidentsInput = {
@@ -4456,6 +4735,7 @@ export type UserUpdateWithoutAssignedIncidentsInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAssignedIncidentsInput = {
@@ -4497,6 +4777,7 @@ export type UserUncheckedUpdateWithoutAssignedIncidentsInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutEmergencyContactsInput = {
@@ -4538,6 +4819,7 @@ export type UserCreateWithoutEmergencyContactsInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutEmergencyContactsInput = {
@@ -4579,6 +4861,7 @@ export type UserUncheckedCreateWithoutEmergencyContactsInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutEmergencyContactsInput = {
@@ -4636,6 +4919,7 @@ export type UserUpdateWithoutEmergencyContactsInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutEmergencyContactsInput = {
@@ -4677,6 +4961,7 @@ export type UserUncheckedUpdateWithoutEmergencyContactsInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutSavedPlacesInput = {
@@ -4718,6 +5003,7 @@ export type UserCreateWithoutSavedPlacesInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutSavedPlacesInput = {
@@ -4759,6 +5045,7 @@ export type UserUncheckedCreateWithoutSavedPlacesInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutSavedPlacesInput = {
@@ -4816,6 +5103,7 @@ export type UserUpdateWithoutSavedPlacesInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSavedPlacesInput = {
@@ -4857,6 +5145,7 @@ export type UserUncheckedUpdateWithoutSavedPlacesInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutAuditLogsInput = {
@@ -4898,6 +5187,7 @@ export type UserCreateWithoutAuditLogsInput = {
   referralsReceived?: Prisma.ReferralCreateNestedManyWithoutRefereeInput
   approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -4939,6 +5229,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   referralsReceived?: Prisma.ReferralUncheckedCreateNestedManyWithoutRefereeInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -4996,6 +5287,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   referralsReceived?: Prisma.ReferralUpdateManyWithoutRefereeNestedInput
   approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -5037,6 +5329,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   referralsReceived?: Prisma.ReferralUncheckedUpdateManyWithoutRefereeNestedInput
   approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
   approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 
@@ -5063,6 +5356,7 @@ export type UserCountOutputType = {
   auditLogs: number
   approvedDocuments: number
   approvedPayouts: number
+  adminNotes: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -5084,6 +5378,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   auditLogs?: boolean | UserCountOutputTypeCountAuditLogsArgs
   approvedDocuments?: boolean | UserCountOutputTypeCountApprovedDocumentsArgs
   approvedPayouts?: boolean | UserCountOutputTypeCountApprovedPayoutsArgs
+  adminNotes?: boolean | UserCountOutputTypeCountAdminNotesArgs
 }
 
 /**
@@ -5222,6 +5517,13 @@ export type UserCountOutputTypeCountApprovedPayoutsArgs<ExtArgs extends runtime.
   where?: Prisma.PayoutRequestWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountAdminNotesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AdminNoteWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -5263,6 +5565,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
   approvedDocuments?: boolean | Prisma.User$approvedDocumentsArgs<ExtArgs>
   approvedPayouts?: boolean | Prisma.User$approvedPayoutsArgs<ExtArgs>
+  adminNotes?: boolean | Prisma.User$adminNotesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -5350,6 +5653,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
   approvedDocuments?: boolean | Prisma.User$approvedDocumentsArgs<ExtArgs>
   approvedPayouts?: boolean | Prisma.User$approvedPayoutsArgs<ExtArgs>
+  adminNotes?: boolean | Prisma.User$adminNotesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -5380,6 +5684,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
     approvedDocuments: Prisma.$RiderDocumentPayload<ExtArgs>[]
     approvedPayouts: Prisma.$PayoutRequestPayload<ExtArgs>[]
+    adminNotes: Prisma.$AdminNotePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -5815,6 +6120,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   auditLogs<T extends Prisma.User$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   approvedDocuments<T extends Prisma.User$approvedDocumentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$approvedDocumentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RiderDocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   approvedPayouts<T extends Prisma.User$approvedPayoutsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$approvedPayoutsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PayoutRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  adminNotes<T extends Prisma.User$adminNotesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$adminNotesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AdminNotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6759,6 +7065,30 @@ export type User$approvedPayoutsArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.PayoutRequestScalarFieldEnum | Prisma.PayoutRequestScalarFieldEnum[]
+}
+
+/**
+ * User.adminNotes
+ */
+export type User$adminNotesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AdminNote
+   */
+  select?: Prisma.AdminNoteSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AdminNote
+   */
+  omit?: Prisma.AdminNoteOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AdminNoteInclude<ExtArgs> | null
+  where?: Prisma.AdminNoteWhereInput
+  orderBy?: Prisma.AdminNoteOrderByWithRelationInput | Prisma.AdminNoteOrderByWithRelationInput[]
+  cursor?: Prisma.AdminNoteWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AdminNoteScalarFieldEnum | Prisma.AdminNoteScalarFieldEnum[]
 }
 
 /**

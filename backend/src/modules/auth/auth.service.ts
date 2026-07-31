@@ -1,5 +1,6 @@
 import { AppError } from "../../common/errors.js";
 import { hashPassword, makeSessionToken, verifyPassword } from "../../common/auth.js";
+import { buildOtpAuthUrl, generateTotpSecret, verifyTotpCode } from "../../common/totp.js";
 import { appConfig } from "../../common/config.js";
 import { prisma } from "../../common/prisma.js";
 import { makeReferralCode, makeRiderCode } from "../../common/codes.js";
@@ -435,7 +436,89 @@ export class AuthService {
       throw new AppError("Invalid admin credentials", 401, "INVALID_CREDENTIALS");
     }
 
+    if (user.adminProfile?.totpEnabled && user.adminProfile.totpSecret) {
+      if (!input.totpCode) {
+        throw new AppError(
+          "A two-factor authentication code is required",
+          401,
+          "TOTP_REQUIRED"
+        );
+      }
+      if (!verifyTotpCode(user.adminProfile.totpSecret, input.totpCode)) {
+        throw new AppError("Invalid two-factor authentication code", 401, "TOTP_INVALID");
+      }
+    }
+
     return this.createSession(user.id, input.device);
+  }
+
+  /** Generates (or regenerates) a TOTP secret; 2FA only activates after enableAdminTotp verifies a code. */
+  async setupAdminTotp(token: string) {
+    const session = await this.getActiveSession(token);
+    if (!session.user.adminProfile) {
+      throw new AppError("Admin access is required", 403, "ADMIN_ACCESS_REQUIRED");
+    }
+
+    const secret = generateTotpSecret();
+    await prisma.adminProfile.update({
+      where: { id: session.user.adminProfile.id },
+      data: { totpSecret: secret, totpEnabled: false }
+    });
+
+    return {
+      secret,
+      otpauthUrl: buildOtpAuthUrl(secret, session.user.email ?? session.user.phoneE164)
+    };
+  }
+
+  async enableAdminTotp(token: string, code: string) {
+    const session = await this.getActiveSession(token);
+    const profile = session.user.adminProfile;
+    if (!profile) {
+      throw new AppError("Admin access is required", 403, "ADMIN_ACCESS_REQUIRED");
+    }
+    if (!profile.totpSecret) {
+      throw new AppError("Run 2FA setup first", 400, "TOTP_NOT_SET_UP");
+    }
+    if (!verifyTotpCode(profile.totpSecret, code)) {
+      throw new AppError("Invalid two-factor authentication code", 401, "TOTP_INVALID");
+    }
+
+    await prisma.adminProfile.update({
+      where: { id: profile.id },
+      data: { totpEnabled: true }
+    });
+
+    return { totpEnabled: true };
+  }
+
+  async disableAdminTotp(token: string, code: string) {
+    const session = await this.getActiveSession(token);
+    const profile = session.user.adminProfile;
+    if (!profile) {
+      throw new AppError("Admin access is required", 403, "ADMIN_ACCESS_REQUIRED");
+    }
+    if (!profile.totpEnabled || !profile.totpSecret) {
+      throw new AppError("2FA is not enabled", 400, "TOTP_NOT_ENABLED");
+    }
+    if (!verifyTotpCode(profile.totpSecret, code)) {
+      throw new AppError("Invalid two-factor authentication code", 401, "TOTP_INVALID");
+    }
+
+    await prisma.adminProfile.update({
+      where: { id: profile.id },
+      data: { totpEnabled: false, totpSecret: null }
+    });
+
+    return { totpEnabled: false };
+  }
+
+  async getAdminTotpStatus(token: string) {
+    const session = await this.getActiveSession(token);
+    if (!session.user.adminProfile) {
+      throw new AppError("Admin access is required", 403, "ADMIN_ACCESS_REQUIRED");
+    }
+    return { totpEnabled: session.user.adminProfile.totpEnabled };
   }
 
   async getSessionByToken(token: string) {
