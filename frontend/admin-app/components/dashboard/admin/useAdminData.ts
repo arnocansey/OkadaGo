@@ -2021,8 +2021,11 @@ export function useAdminData(
       { label: "Resolved", value: `${riderComplaintResolved.length}` }
     ],
     riderActivity: [
-      { label: "Online", value: `${activeRiders.length}` },
-      { label: "GPS active", value: `${ridersWithCoords.length}` }
+      { label: "Online", value: `${liveOnlineCount}` },
+      {
+        label: "GPS active",
+        value: `${liveSnapshot?.riders?.length ?? opsSummary?.riders.withCoords ?? ridersWithCoords.length}`
+      }
     ],
     riderSuspensions: [
       { label: "Flagged", value: `${suspendedRiders.length}` },
@@ -2094,7 +2097,7 @@ export function useAdminData(
       { label: "Active", value: `${escalationRules.filter((r) => r.enabled).length}` }
     ]
   }), [
-    opsSummary, liveOnlineCount, activeRides, activeRiders, adminCurrency, totalDashboardRevenue,
+    opsSummary, liveSnapshot, liveOnlineCount, activeRides, activeRiders, adminCurrency, totalDashboardRevenue,
     rides, ridesTotal, completedRides, deliveries, deliveriesTotal, completedDeliveries, activeDeliveries,
     riders, ridersTotal, vehicleCount, riderVerificationStats,
     riderDocumentStats, riderRatingAverage, totalRiderEarnings, totalRiderCommission,
@@ -2251,6 +2254,7 @@ export function useAdminData(
     documentsPage, setDocumentsPage,
 
     // Derived data
+    liveOnlineCount,
     activeRiders, ridersWithCoords, suspendedRiders, vehicleCount,
     completedRides, activeRides, completedDeliveries, cancelledDeliveries, activeDeliveries,
     mapMarkers, adminCurrency,

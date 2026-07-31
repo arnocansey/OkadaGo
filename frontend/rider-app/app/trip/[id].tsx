@@ -43,7 +43,7 @@ export default function TripScreen() {
   const { id, kind } = useLocalSearchParams<{ id: string; kind?: string }>();
   const { session, rides, deliveries, refresh } = useApp();
   const { colors, typography, stackHeaderOptions } = useTheme();
-  const { latitude, longitude, isMocked } = useUserLocation();
+  const { latitude, longitude, isMocked, hasFix } = useUserLocation();
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -126,7 +126,7 @@ export default function TripScreen() {
     if (!ACTIVE_STATUSES.includes((trip.status ?? "").toLowerCase())) return;
 
     const postLocation = () => {
-      if (!isRide) return;
+      if (!isRide || !hasFix) return;
       api(`/rides/${trip.id}/location`, {
         method: "POST",
         token: session.token,
@@ -143,7 +143,7 @@ export default function TripScreen() {
     postLocation();
     const timer = setInterval(postLocation, 5000);
     return () => clearInterval(timer);
-  }, [trip?.id, trip?.status, session?.token, session?.user.riderProfileId, latitude, longitude, isMocked, isRide]);
+  }, [trip?.id, trip?.status, session?.token, session?.user.riderProfileId, latitude, longitude, isMocked, isRide, hasFix]);
 
   const markers = useMemo(() => {
     if (!trip) return [];

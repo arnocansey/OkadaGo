@@ -12,11 +12,20 @@ import { parseNumber, ACCRA_MAP_CENTER, ACCRA_MAP_ZOOM_CITY, ACCRA_MAP_ZOOM_METR
 
 const PAGE_SIZE = 12;
 
+export type RiderMapMarker = {
+  id: string;
+  position: [number, number];
+  label: string;
+  variant?: "driver" | "passenger" | "incident" | "pickup" | "dropoff";
+};
+
 export type RidersScreenProps = {
   riders: RiderRecord[];
   ridersTotal: number;
   activeRiders: RiderRecord[];
   ridersWithCoords: RiderRecord[];
+  /** Prefer live SSE markers when available (full online fleet, not page sample). */
+  mapMarkers?: RiderMapMarker[];
   rideZoneSnapshot: [string, number][];
   riderCitySnapshot: [string, number][];
   riderZoneSnapshot: [string, number][];
@@ -44,6 +53,7 @@ export function RidersScreen({
   ridersTotal,
   activeRiders,
   ridersWithCoords,
+  mapMarkers: liveMapMarkers,
   rideZoneSnapshot: _rideZoneSnapshot,
   riderCitySnapshot,
   riderZoneSnapshot,
@@ -95,12 +105,24 @@ export function RidersScreen({
     });
   };
 
-  const mapMarkers = ridersWithCoords.map((rider) => ({
-    id: rider.id,
-    position: [parseNumber(rider.currentLatitude), parseNumber(rider.currentLongitude)] as [number, number],
-    label: rider.user.fullName,
-    variant: "driver" as const
-  }));
+  const mapMarkers =
+    liveMapMarkers && liveMapMarkers.length > 0
+      ? liveMapMarkers
+      : ridersWithCoords
+          .map((rider) => {
+            const lat = parseNumber(rider.currentLatitude);
+            const lng = parseNumber(rider.currentLongitude);
+            if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) {
+              return null;
+            }
+            return {
+              id: rider.id,
+              position: [lat, lng] as [number, number],
+              label: rider.user.fullName,
+              variant: "driver" as const
+            };
+          })
+          .filter((marker): marker is RiderMapMarker => marker != null);
 
   const pendingCount = onboardingPipeline.pending ?? Math.max(0, onboardingPipeline.signedUp - onboardingPipeline.verified);
   const verifiedCount = onboardingPipeline.verified;

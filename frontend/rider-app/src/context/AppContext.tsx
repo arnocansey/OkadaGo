@@ -24,7 +24,7 @@ type AppState = {
   refreshSession: () => Promise<void>;
   updateUser: (user: Session["user"]) => Promise<void>;
   setMessage: (message: string) => void;
-  toggleOnline: () => Promise<void>;
+  toggleOnline: (location?: { latitude: number; longitude: number; isMocked?: boolean }) => Promise<void>;
   setOnline: (value: boolean) => void;
   activeRide: Ride | undefined;
   activeDelivery: Delivery | undefined;
@@ -145,14 +145,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await clearSavedSession();
   }
 
-  async function toggleOnline() {
+  async function toggleOnline(location?: { latitude: number; longitude: number; isMocked?: boolean }) {
     if (!session?.user.riderProfileId) return;
     const nextOnline = !online;
     try {
       await api(`/riders/${session.user.riderProfileId}/availability`, {
         method: "PATCH",
         token: session.token,
-        body: { onlineStatus: nextOnline, serviceZoneId: zones[0]?.id },
+        body: {
+          onlineStatus: nextOnline,
+          serviceZoneId: zones[0]?.id,
+          ...(location
+            ? {
+                latitude: location.latitude,
+                longitude: location.longitude,
+                isMocked: location.isMocked,
+              }
+            : {}),
+        },
       });
       setOnline(nextOnline);
     } catch (error) {

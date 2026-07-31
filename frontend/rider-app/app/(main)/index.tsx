@@ -22,8 +22,12 @@ export default function DashboardScreen() {
   const { t } = useTranslation();
   const { session, online, toggleOnline, wallets, rides, activeRide, activeDelivery, incomingRide, incomingDelivery, refresh } = useApp();
   const { colors, typography, isDark } = useTheme();
-  const { latitude, longitude } = useUserLocation();
+  const { latitude, longitude, hasFix, isMocked } = useUserLocation();
   const [sosLoading, setSosLoading] = useState(false);
+
+  const locationPing = hasFix
+    ? { latitude, longitude, isMocked }
+    : undefined;
 
   // Keeps currentLatitude/currentLongitude (and the PostGIS currentLocation
   // column) fresh while the rider is online but not on a trip. Deliberately
@@ -57,7 +61,7 @@ export default function DashboardScreen() {
     // Going offline never needs a balance check.
     if (online) {
       try {
-        await toggleOnline();
+        await toggleOnline(locationPing);
       } catch {
         // toggleOnline already sets the banner message
       }
@@ -96,7 +100,7 @@ export default function DashboardScreen() {
     }
 
     try {
-      await toggleOnline();
+      await toggleOnline(locationPing);
     } catch (error) {
       if (error instanceof ApiError && error.code === "RIDER_NOT_APPROVED") {
         Alert.alert(

@@ -259,6 +259,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
               ridersTotal={data.userStats?.riders.total ?? data.ridersTotal}
               activeRiders={data.activeRiders}
               ridersWithCoords={data.ridersWithCoords}
+              mapMarkers={data.mapMarkers}
               rideZoneSnapshot={data.rideZoneSnapshot}
               riderCitySnapshot={data.riderCitySnapshot}
               riderZoneSnapshot={data.riderZoneSnapshot}
@@ -426,8 +427,11 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
           <RiderActivityScreen
             activityRows={data.riderFinancialRows}
             ridersWithCoords={data.ridersWithCoords}
-            activeRidersCount={data.activeRiders.length}
-            ridersWithCoordsCount={data.ridersWithCoords.length}
+            mapMarkers={data.mapMarkers}
+            activeRidersCount={data.liveOnlineCount ?? data.activeRiders.length}
+            ridersWithCoordsCount={
+              data.badgeData.ridersWithCoordsCount ?? data.mapMarkers.length
+            }
             activeTripsCount={data.activeRides.length}
             dataLoading={data.dataLoading}
           />
