@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { Users, MapPin, Search, Bike, User } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { AdminPagination, usePagination } from "./ui/AdminPagination";
@@ -41,6 +42,7 @@ export type UsersManagementScreenProps = {
   riderPendingCount?: number;
   riderVerifiedCount?: number;
   totalUsersCount?: number;
+  dataLoading?: boolean;
 };
 
 export function UsersManagementScreen({
@@ -60,7 +62,8 @@ export function UsersManagementScreen({
   passengerVerifiedCount = 0,
   riderPendingCount = 0,
   riderVerifiedCount = 0,
-  totalUsersCount
+  totalUsersCount,
+  dataLoading = false
 }: UsersManagementScreenProps) {
   const totalUsers = totalUsersCount ?? passengersCount + ridersCount;
 
@@ -69,6 +72,10 @@ export function UsersManagementScreen({
   useEffect(() => {
     setPage(1);
   }, [adminSearchTerm, userTypeView, setPage]);
+
+  if (dataLoading) {
+    return <AdminPageSkeleton variant="table" kpis={4} rows={8} cols={6} />;
+  }
 
   return (
     <div className="exact-admin-screen">

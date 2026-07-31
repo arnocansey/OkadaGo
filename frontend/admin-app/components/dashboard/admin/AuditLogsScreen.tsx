@@ -1,5 +1,6 @@
 import { ClipboardList, Shield, User, Search, Download, X } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminPagination, usePagination } from "./ui/AdminPagination";
@@ -13,9 +14,10 @@ export type AuditLogsScreenProps = {
   auditLogs: AuditLogRecord[];
   totalAdmins: number;
   onServerExport?: () => void;
+  dataLoading?: boolean;
 };
 
-export function AuditLogsScreen({ auditLogs, totalAdmins, onServerExport }: AuditLogsScreenProps) {
+export function AuditLogsScreen({ auditLogs, totalAdmins, onServerExport, dataLoading = false }: AuditLogsScreenProps) {
   const [search, setSearch] = useState("");
   const [entityFilter, setEntityFilter] = useState("");
   const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
@@ -44,6 +46,10 @@ export function AuditLogsScreen({ auditLogs, totalAdmins, onServerExport }: Audi
   useEffect(() => {
     setPage(1);
   }, [search, entityFilter, setPage]);
+
+  if (dataLoading) {
+    return <AdminPageSkeleton variant="table" kpis={3} rows={8} cols={5} />;
+  }
 
   const entities = [...new Set(logs.map((l) => l.entity))];
 

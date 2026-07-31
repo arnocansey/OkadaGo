@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Bell, ShieldAlert } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { AdminIncidentRecord, ScheduledBroadcastRecord } from "./types";
@@ -22,7 +23,7 @@ export function SettingsNotificationsScreen({
   recentIncidents = []
 }: SettingsNotificationsScreenProps) {
   if (dataLoading) {
-    return <div className="exact-admin-screen"><EmptyCard title="Notification Overview" body="" /></div>;
+    return <AdminPageSkeleton variant="split" kpis={3} rows={5} cols={4} />;
   }
 
   const pending = broadcasts.filter((b) => b.status === "pending").length;

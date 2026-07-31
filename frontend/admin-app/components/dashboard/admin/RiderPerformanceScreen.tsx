@@ -23,7 +23,7 @@ import { EmptyCard } from "./EmptyCard";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { useAdminToast } from "./AdminToast";
-import { SkeletonKPI, SkeletonChart, SkeletonDonut, SkeletonTable } from "./AdminSkeleton";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import type { RiderFinancialRow } from "./types";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
 
@@ -360,16 +360,7 @@ export function RiderPerformanceScreen({
   }, [filtered, totalEarnings, topRiderPerformanceRows.length, adminCurrency, completedTrips, activeTrips]);
 
   if (dataLoading) {
-    return (
-      <div className="exact-admin-screen">
-        <SkeletonKPI count={4} />
-        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 20 }}>
-          <SkeletonChart />
-          <SkeletonDonut />
-        </div>
-        <SkeletonTable rows={5} cols={5} />
-      </div>
-    );
+    return <AdminPageSkeleton variant="dashboard" kpis={4} />;
   }
 
   const ratedRiders = topRiderPerformanceRows.filter(

@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Star, Filter, Download, AlertTriangle } from "lucide-react";
 import { downloadCsv } from "@/lib/export-csv";
-import { useBreakpoint } from "../../../hooks/use-breakpoint";
 import { useAdminToast } from "./AdminToast";
 import { EmptyCard } from "./EmptyCard";
-import { SkeletonKPI, SkeletonTable, SkeletonDonut } from "./AdminSkeleton";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import type { AdminRatingRecord, AdminIncidentRecord } from "./types";
@@ -43,21 +42,12 @@ export function RatingsScreen({
   onToDateChange,
   dataLoading = false,
 }: RatingsScreenProps) {
-  const { isMobile } = useBreakpoint();
   const [currentPage, setCurrentPage] = useState(1);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const toast = useAdminToast();
 
   if (dataLoading) {
-    return (
-      <div className="exact-admin-screen">
-        <SkeletonKPI count={4} />
-        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 340px", gap: 18 }}>
-          <SkeletonTable rows={5} cols={5} />
-          <SkeletonDonut />
-        </div>
-      </div>
-    );
+    return <AdminPageSkeleton variant="split" kpis={4} rows={5} cols={5} />;
   }
 
   const maxRatingCount = Math.max(1, ...riderRatingDistribution.map((d) => d.count));

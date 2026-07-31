@@ -173,7 +173,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
   const ridersData = ridersResp?.data;
   const ridersTotal = ridersResp?.total ?? ridersData?.length ?? 0;
 
-  const { data: passengersResp } = useQuery<{ data: PassengerRecord[]; total: number }>({
+  const { data: passengersResp, isPending: passengersPending } = useQuery<{ data: PassengerRecord[]; total: number }>({
     queryKey: QK.passengers(token),
     queryFn: () => requestJson("/bootstrap/passengers?limit=200", { token }),
     enabled: isAdmin,
@@ -183,7 +183,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
   const passengersData = passengersResp?.data;
   const passengersTotal = passengersResp?.total ?? passengersData?.length ?? 0;
 
-  const { data: userStats } = useQuery<AdminUserStats>({
+  const { data: userStats, isPending: userStatsPending } = useQuery<AdminUserStats>({
     queryKey: QK.userStats(token),
     queryFn: () => requestJson("/admin/user-stats", { token }),
     enabled: isAdmin,
@@ -223,7 +223,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     staleTime: 40000
   });
 
-  const { data: adminAccountsData } = useQuery<AdminAccountRecord[]>({
+  const { data: adminAccountsData, isPending: adminAccountsPending } = useQuery<AdminAccountRecord[]>({
     queryKey: QK.adminAccounts(token),
     queryFn: () => requestJson("/admin/accounts", { token }),
     enabled: isAdmin,
@@ -244,14 +244,14 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     staleTime: 300000
   });
 
-  const { data: zonesData } = useQuery<ServiceZoneRecord[]>({
+  const { data: zonesData, isPending: zonesPending } = useQuery<ServiceZoneRecord[]>({
     queryKey: QK.zones(token),
     queryFn: () => requestJson("/bootstrap/service-zones?limit=100", { token }),
     enabled: isAdmin,
     staleTime: 120000
   });
 
-  const { data: auditLogsData } = useQuery<AuditLogRecord[]>({
+  const { data: auditLogsData, isPending: auditLogsPending } = useQuery<AuditLogRecord[]>({
     queryKey: QK.auditLogs(token),
     queryFn: async () => {
       try {
@@ -291,7 +291,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     staleTime: 60000
   });
 
-  const { data: supportTicketsData } = useQuery<AdminSupportTicketRecord[]>({
+  const { data: supportTicketsData, isPending: supportTicketsPending } = useQuery<AdminSupportTicketRecord[]>({
     queryKey: QK.supportTickets(token),
     queryFn: () => requestJson("/admin/support/tickets?limit=200", { token }),
     enabled: isAdmin,
@@ -299,14 +299,14 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     staleTime: 25000
   });
 
-  const { data: escalationRulesData } = useQuery<EscalationRuleRecord[]>({
+  const { data: escalationRulesData, isPending: escalationRulesPending } = useQuery<EscalationRuleRecord[]>({
     queryKey: QK.escalationRules(token),
     queryFn: () => requestJson("/admin/escalation-rules", { token }),
     enabled: isAdmin,
     staleTime: 30000
   });
 
-  const { data: scheduledBroadcastsData } = useQuery<ScheduledBroadcastRecord[]>({
+  const { data: scheduledBroadcastsData, isPending: scheduledBroadcastsPending } = useQuery<ScheduledBroadcastRecord[]>({
     queryKey: QK.scheduledBroadcasts(token),
     queryFn: async () => {
       const rows = await requestJson<Array<{
@@ -1846,6 +1846,15 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
   return {
     // UI state
     dataLoading,
+    passengersPending,
+    userStatsPending,
+    adminAccountsPending,
+    zonesPending,
+    auditLogsPending,
+    supportTicketsPending,
+    escalationRulesPending,
+    scheduledBroadcastsPending,
+    platformSettingsPending,
     requestTab, setRequestTab,
     requestStatusView, setRequestStatusView,
     adminSearchTerm, setAdminSearchTerm,
@@ -1867,7 +1876,7 @@ export function useAdminData(token: string | null | undefined, isAdmin: boolean)
     walletTransactions, payoutRequests, ratings, incidents,
     adminAccounts, adminRoleEntries, adminModules, zones, auditLogs,
     supportTickets, escalationRules, scheduledBroadcasts, opsJobStatus,
-    platformSettings, platformSettingsPending,
+    platformSettings,
     liveSos, liveOpsConnected: Boolean(liveSnapshot), liveOpsTimestamp: liveSnapshot?.timestamp ?? null,
 
     // Derived data

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { OperationsMap } from "@/components/maps/operations-map";
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { RideRecord } from "./types";
 import { parseNumber, formatDateTime, statusTone, ACCRA_MAP_CENTER, ACCRA_MAP_ZOOM_CITY, ACCRA_MAP_ZOOM_METRO } from "./utils";
@@ -67,6 +68,7 @@ export type DashboardScreenProps = {
   vehicleCount: number;
   dashboardDateRange: { from: string; to: string };
   onDateRangeChange: (range: { from: string; to: string }) => void;
+  dataLoading?: boolean;
 };
 
 export function DashboardScreen({
@@ -86,8 +88,13 @@ export function DashboardScreen({
   liveActivityItems,
   vehicleCount,
   dashboardDateRange,
-  onDateRangeChange
+  onDateRangeChange,
+  dataLoading = false
 }: DashboardScreenProps) {
+  if (dataLoading) {
+    return <AdminPageSkeleton variant="dashboard" kpis={4} />;
+  }
+
   const activeRequests = [
     ...recentRideRequests.slice(0, 4).map((ride) => ({
       id: ride.id,

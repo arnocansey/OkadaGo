@@ -1,13 +1,8 @@
 "use client";
 
 import { CreditCard, Smartphone, Shield } from "lucide-react";
-import { EmptyCard } from "./EmptyCard";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
-
-export type PaymentMethodsScreenProps = {
-  dataLoading?: boolean;
-};
 
 const PLATFORM_METHODS = [
   {
@@ -36,11 +31,7 @@ const PLATFORM_METHODS = [
   }
 ];
 
-export function PaymentMethodsScreen({ dataLoading = false }: PaymentMethodsScreenProps) {
-  if (dataLoading) {
-    return <div className="exact-admin-screen"><EmptyCard title="Payment Rails" body="" /></div>;
-  }
-
+export function PaymentMethodsScreen() {
   const configuredCount = PLATFORM_METHODS.filter((m) => m.configured).length;
 
   return (

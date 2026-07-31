@@ -1,5 +1,6 @@
 import { ShieldAlert, UserPlus, CheckCircle } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import type { AdminAccountRecord, PassengerRecord } from "./types";
@@ -34,6 +35,7 @@ export type AdminsScreenProps = {
   onPromotePassenger: () => void;
   isCreating: boolean;
   isPromoting: boolean;
+  dataLoading?: boolean;
 };
 
 export function AdminsScreen({
@@ -48,8 +50,12 @@ export function AdminsScreen({
   onCreateAdmin,
   onPromotePassenger,
   isCreating,
-  isPromoting
+  isPromoting,
+  dataLoading = false
 }: AdminsScreenProps) {
+  if (dataLoading) {
+    return <AdminPageSkeleton variant="form" kpis={3} rows={6} />;
+  }
   return (
     <div className="exact-admin-screen">
       <AdminPageHeader

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ClipboardList, CheckCircle, AlertTriangle, XCircle, Search } from "lucide-react";
 import { useAdminToast } from "./AdminToast";
 import { EmptyCard } from "./EmptyCard";
-import { SkeletonKPI, SkeletonTable } from "./AdminSkeleton";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 
@@ -68,12 +68,7 @@ export function RiderDocumentsScreen({
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
   if (dataLoading) {
-    return (
-      <div className="exact-admin-screen">
-        <SkeletonKPI count={5} />
-        <SkeletonTable rows={5} cols={5} />
-      </div>
-    );
+    return <AdminPageSkeleton variant="table" kpis={5} rows={5} cols={5} />;
   }
 
   const filtered = riderDocumentRows.filter((row) => {

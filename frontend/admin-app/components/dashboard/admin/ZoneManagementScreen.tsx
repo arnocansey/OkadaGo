@@ -1,6 +1,7 @@
 import { Globe, MapPin } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { ServiceZoneRecord } from "./types";
 import { parseNumber } from "./utils";
@@ -15,6 +16,7 @@ export type ZoneManagementScreenProps = {
     updates: Partial<Pick<ServiceZoneRecord, "isActive" | "ridesEnabled" | "deliveriesEnabled">>
   ) => void;
   isMutating?: boolean;
+  dataLoading?: boolean;
 };
 
 function ZoneToggle({
@@ -51,8 +53,13 @@ export function ZoneManagementScreen({
   ridesPerZone,
   adminCurrency,
   onZoneUpdate,
-  isMutating
+  isMutating,
+  dataLoading = false
 }: ZoneManagementScreenProps) {
+  if (dataLoading) {
+    return <AdminPageSkeleton variant="cards" kpis={3} rows={6} />;
+  }
+
   const activeZones = zones.filter((z) => z.isActive);
   const inactiveZones = zones.filter((z) => !z.isActive);
 

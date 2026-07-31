@@ -6,11 +6,7 @@ import { hasGoogleMapsKey } from "@/lib/maps";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 
-export type IntegrationsScreenProps = {
-  dataLoading?: boolean;
-};
-
-export function IntegrationsScreen({ dataLoading = false }: IntegrationsScreenProps) {
+export function IntegrationsScreen() {
   const integrations = [
     {
       name: "OkadaGo API",
@@ -39,10 +35,6 @@ export function IntegrationsScreen({ dataLoading = false }: IntegrationsScreenPr
   ];
 
   const connectedCount = integrations.filter((i) => i.connected).length;
-
-  if (dataLoading) {
-    return <div className="exact-admin-screen"><p className="admin-page-header-copy">Loading integrations…</p></div>;
-  }
 
   return (
     <div className="exact-admin-screen">

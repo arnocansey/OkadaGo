@@ -29,7 +29,7 @@ import {
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { useAdminToast } from "./AdminToast";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
-import { SkeletonForm } from "./AdminSkeleton";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { requestJson } from "@/lib/api";
 import type { ServiceZoneRecord, AdminAccountRecord, AuditLogRecord } from "./types";
 
@@ -347,11 +347,7 @@ export function SettingsScreen({
   );
 
   if (dataLoading) {
-    return (
-      <div className="exact-admin-screen">
-        <SkeletonForm fields={8} />
-      </div>
-    );
+    return <AdminPageSkeleton variant="form" kpis={0} rows={8} />;
   }
 
   const renderGeneral = () => (

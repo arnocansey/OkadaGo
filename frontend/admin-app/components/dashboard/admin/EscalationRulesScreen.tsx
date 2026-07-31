@@ -2,6 +2,7 @@
 
 import { useState, type FC } from "react";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 
@@ -23,6 +24,7 @@ export type EscalationRulesScreenProps = {
   onToggleRule: (id: string, enabled: boolean) => void;
   onCreateRule: (rule: Omit<EscalationRule, "id">) => void;
   isMutating?: boolean;
+  dataLoading?: boolean;
 };
 
 const TIMELINE_STEPS = [
@@ -46,10 +48,16 @@ const EscalationRulesScreen: FC<EscalationRulesScreenProps> = ({
   rules,
   onToggleRule,
   onCreateRule,
-  isMutating = false
+  isMutating = false,
+  dataLoading = false
 }) => {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
+
+  if (dataLoading) {
+    return <AdminPageSkeleton variant="split" kpis={3} rows={4} cols={4} />;
+  }
+
   const activeRules = rules.filter((r) => r.enabled).length;
 
   function submit() {

@@ -2,6 +2,7 @@
 
 import { AlertTriangle, CheckCircle, Clock, ShieldAlert } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { AdminIncidentRecord } from "./types";
@@ -14,6 +15,7 @@ export type SosIncidentsScreenProps = {
     status: "UNDER_REVIEW" | "ACTIONED" | "RESOLVED" | "CLOSED"
   ) => void;
   isMutating: boolean;
+  dataLoading?: boolean;
 };
 
 function isSosIncident(incident: AdminIncidentRecord) {
@@ -48,8 +50,12 @@ function resolveMinutes(incident: AdminIncidentRecord) {
 export function SosIncidentsScreen({
   incidents,
   onIncidentAction,
-  isMutating
+  isMutating,
+  dataLoading = false
 }: SosIncidentsScreenProps) {
+  if (dataLoading) {
+    return <AdminPageSkeleton variant="table" kpis={4} rows={5} cols={5} />;
+  }
   const sosIncidents = incidents.filter(isSosIncident);
   const openSos = sosIncidents
     .filter((i) => isOpenStatus(i.status))

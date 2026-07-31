@@ -8,7 +8,7 @@ import { AdminPagination, usePagination } from "./ui/AdminPagination";
 import type { WalletTransactionRecord, PayoutRequestRecord } from "./types";
 import { parseNumber, formatDateTime, statusTone, formatEnumLabel } from "./utils";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
-import { SkeletonKPI, SkeletonTable } from "./AdminSkeleton";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 
 const PAGE_SIZE = 10;
 
@@ -117,12 +117,7 @@ export function FinanceScreen({
   }, [payoutStatusFilter, setPayoutPage]);
 
   if (dataLoading) {
-    return (
-      <div className="exact-admin-screen" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-        <SkeletonKPI count={4} />
-        <SkeletonTable rows={5} cols={7} />
-      </div>
-    );
+    return <AdminPageSkeleton variant="table" kpis={4} rows={5} cols={7} />;
   }
   return (
     <div className="exact-admin-screen">

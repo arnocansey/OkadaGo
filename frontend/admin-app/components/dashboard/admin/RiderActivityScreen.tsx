@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { OperationsMap } from "@/components/maps/operations-map";
 import { EmptyCard } from "./EmptyCard";
-import { SkeletonKPI, SkeletonCard, SkeletonTable } from "./AdminSkeleton";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import type { RiderFinancialRow } from "./types";
@@ -162,16 +162,7 @@ export function RiderActivityScreen({
   }, [activityRows]);
 
   if (dataLoading) {
-    return (
-      <div className="exact-admin-screen">
-        <SkeletonKPI count={4} />
-        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr", gap: 16 }}>
-          <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 14, height: 300 }} />
-          <SkeletonCard lines={5} />
-        </div>
-        <SkeletonTable rows={5} cols={5} />
-      </div>
-    );
+    return <AdminPageSkeleton variant="split" kpis={4} rows={5} cols={5} />;
   }
 
   const mapMarkers = ridersWithCoords.map((rider) => ({

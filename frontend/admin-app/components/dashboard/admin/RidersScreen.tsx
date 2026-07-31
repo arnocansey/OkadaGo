@@ -3,6 +3,7 @@ import { MapPin, Download } from "lucide-react";
 import { downloadCsv } from "@/lib/export-csv";
 import { OperationsMap } from "@/components/maps/operations-map";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminPagination, usePagination } from "./ui/AdminPagination";
 import type { RiderRecord } from "./types";
@@ -31,6 +32,7 @@ export type RidersScreenProps = {
   };
   onBulkApprove?: (ids: string[]) => void;
   onBulkSuspend?: (ids: string[]) => void;
+  dataLoading?: boolean;
 };
 
 export function RidersScreen({
@@ -44,14 +46,21 @@ export function RidersScreen({
   vehicleCount,
   onboardingPipeline,
   onBulkApprove,
-  onBulkSuspend
+  onBulkSuspend,
+  dataLoading = false
 }: RidersScreenProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
   const sortedRiders = useMemo(
     () => riders.slice().sort((a, b) => Number(b.onlineStatus) - Number(a.onlineStatus)),
     [riders]
   );
   const { page, setPage, paginated: pagedRiders } = usePagination(sortedRiders, PAGE_SIZE);
+
+  if (dataLoading) {
+    return <AdminPageSkeleton variant="split" kpis={4} rows={6} cols={5} />;
+  }
+
   const allVisibleIds = pagedRiders.map((r) => r.id);
   const allSelected = allVisibleIds.length > 0 && allVisibleIds.every((id) => selectedIds.has(id));
 

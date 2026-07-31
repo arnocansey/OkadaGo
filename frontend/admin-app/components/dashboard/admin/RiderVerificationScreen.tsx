@@ -31,7 +31,7 @@ import { useAdminToast } from "./AdminToast";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
-import { SkeletonKPI, SkeletonTable } from "./AdminSkeleton";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 
 export type RiderVerificationScreenProps = {
   riderVerificationRows: {
@@ -102,12 +102,7 @@ export function RiderVerificationScreen({
   const [requestInfoMessage, setRequestInfoMessage] = useState("");
 
   if (dataLoading) {
-    return (
-      <div className="exact-admin-screen" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-        <SkeletonKPI count={4} />
-        <SkeletonTable rows={6} cols={5} />
-      </div>
-    );
+    return <AdminPageSkeleton variant="table" kpis={4} rows={6} cols={5} />;
   }
 
   /* ── derived ── */

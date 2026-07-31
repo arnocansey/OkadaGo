@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Package, Truck, CheckCircle, XCircle, Search } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { AdminPagination, usePagination } from "./ui/AdminPagination";
@@ -20,6 +21,7 @@ export type DeliveriesScreenProps = {
   deliveryRevenue: number;
   deliveryCommission: number;
   adminCurrency: string;
+  dataLoading?: boolean;
 };
 
 function isLiveStatus(status: string) {
@@ -34,7 +36,8 @@ export function DeliveriesScreen({
   activeDeliveries,
   deliveryRevenue,
   deliveryCommission,
-  adminCurrency
+  adminCurrency,
+  dataLoading = false
 }: DeliveriesScreenProps) {
   const [query, setQuery] = useState("");
 
@@ -65,14 +68,13 @@ export function DeliveriesScreen({
     return sorted.filter((d) => {
       const hay = [
         d.id,
-        d.passenger.user.fullName,
+        d.passenger?.user?.fullName ?? "",
+        d.rider?.user?.fullName ?? "",
         d.pickupAddress,
         d.dropoffAddress,
-        d.recipientName,
-        d.packageType,
-        d.rider?.user.fullName ?? "",
+        d.packageDescription,
         d.status,
-        d.serviceZone?.name ?? ""
+        d.packageType ?? ""
       ]
         .join(" ")
         .toLowerCase();
@@ -85,6 +87,10 @@ export function DeliveriesScreen({
   useEffect(() => {
     setPage(1);
   }, [query, setPage]);
+
+  if (dataLoading) {
+    return <AdminPageSkeleton variant="table" kpis={4} rows={6} cols={6} />;
+  }
 
   const completionRate =
     deliveries.length > 0 ? Math.round((completedDeliveries.length / deliveries.length) * 100) : 0;

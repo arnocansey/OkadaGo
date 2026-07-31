@@ -1,6 +1,7 @@
 import { Tag, TrendingDown, Map, Percent, PiggyBank } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { RideRecord } from "./types";
 import { parseNumber, formatDateTime } from "./utils";
@@ -12,6 +13,7 @@ export type PromotionsScreenProps = {
   promoSpend: number;
   referralSpend: number;
   adminCurrency: string;
+  dataLoading?: boolean;
 };
 
 export function PromotionsScreen({
@@ -20,8 +22,13 @@ export function PromotionsScreen({
   promotionZoneSnapshot,
   promoSpend,
   referralSpend,
-  adminCurrency
+  adminCurrency,
+  dataLoading = false
 }: PromotionsScreenProps) {
+  if (dataLoading) {
+    return <AdminPageSkeleton variant="table" kpis={4} rows={5} cols={5} />;
+  }
+
   const totalDiscount = promoSpend + referralSpend;
   const discountedRideCount = promoAdjustedTrips.length;
   const avgDiscountPerRide =

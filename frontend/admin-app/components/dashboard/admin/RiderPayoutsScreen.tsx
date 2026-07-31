@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAdminToast } from "./AdminToast";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
-import { SkeletonKPI, SkeletonTable, SkeletonCard } from "./AdminSkeleton";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { formatMoney } from "@/lib/currency";
@@ -112,15 +112,7 @@ export function RiderPayoutsScreen({
   const [selectedPayoutIds, setSelectedPayoutIds] = useState<Set<string>>(new Set());
 
   if (dataLoading) {
-    return (
-      <div className="exact-admin-screen">
-        <SkeletonKPI count={5} />
-        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr", gap: 16 }}>
-          <SkeletonTable rows={5} cols={6} />
-          <SkeletonCard lines={6} />
-        </div>
-      </div>
-    );
+    return <AdminPageSkeleton variant="split" kpis={5} rows={5} cols={6} />;
   }
 
   const processingCount = riderPayoutRequests.filter(

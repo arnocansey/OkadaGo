@@ -102,6 +102,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             vehicleCount={data.vehicleCount}
             dashboardDateRange={data.dashboardDateRange}
             onDateRangeChange={data.setDashboardDateRange}
+            dataLoading={data.dataLoading}
           />
         );
 
@@ -123,6 +124,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             onRideAction={(rideId, action) => data.rideRequestActionMutation.mutate({ rideId, action })}
             onDeliveryAction={(deliveryId, action) => data.deliveryRequestActionMutation.mutate({ deliveryId, action })}
             isMutating={data.rideRequestActionMutation.isPending || data.deliveryRequestActionMutation.isPending}
+            dataLoading={data.dataLoading}
           />
         );
 
@@ -136,6 +138,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             deliveryRevenue={data.deliveryRevenue}
             deliveryCommission={data.completedDeliveries.reduce((sum, d) => sum + parseNumber(d.platformCommission), 0)}
             adminCurrency={data.adminCurrency}
+            dataLoading={data.dataLoading}
           />
         );
 
@@ -168,6 +171,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
                 const rider = data.riders.find((r) => r.id === id);
                 if (rider) setSelectedRider(rider);
               })}
+              dataLoading={data.dataLoading}
             />
             {selectedRider && (
               <RiderProfileModal
@@ -334,6 +338,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             riderPendingCount={data.userStats?.riders.pending}
             riderVerifiedCount={data.userStats?.riders.verified}
             totalUsersCount={data.userStats?.totals.users}
+            dataLoading={data.dataLoading || data.passengersPending || data.userStatsPending}
           />
         );
 
@@ -412,11 +417,13 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
               promoSpend={data.promoSpend}
               referralSpend={data.referralSpend}
               adminCurrency={data.adminCurrency}
+              dataLoading={data.dataLoading}
             />
             <div style={{ marginTop: 24 }}>
               <PromoPerformanceScreen
                 rides={data.rides}
                 adminCurrency={data.adminCurrency}
+                dataLoading={data.dataLoading}
               />
             </div>
           </div>
@@ -431,6 +438,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             adminCurrency={data.adminCurrency}
             onZoneUpdate={(zoneId, updates) => data.zoneUpdateMutation.mutate({ zoneId, updates })}
             isMutating={data.zoneUpdateMutation.isPending}
+            dataLoading={data.zonesPending}
           />
         );
 
@@ -447,6 +455,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             resolvedSupportTickets={data.resolvedSupportTicketRows}
             onIncidentAction={(id, status) => data.incidentReviewMutation.mutate({ incidentId: id, status })}
             isMutating={data.incidentReviewMutation.isPending}
+            dataLoading={data.dataLoading || data.supportTicketsPending}
           />
         );
 
@@ -456,6 +465,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             incidents={data.incidents}
             onIncidentAction={(id, status) => data.incidentReviewMutation.mutate({ incidentId: id, status })}
             isMutating={data.incidentReviewMutation.isPending}
+            dataLoading={data.dataLoading}
           />
         );
 
@@ -468,6 +478,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             isMutating={
               data.createEscalationRuleMutation.isPending || data.toggleEscalationRuleMutation.isPending
             }
+            dataLoading={data.escalationRulesPending}
           />
         );
 
@@ -486,6 +497,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
               data.cancelBroadcastMutation.isPending ||
               data.retryBroadcastMutation.isPending
             }
+            dataLoading={data.scheduledBroadcastsPending}
           />
         );
 
@@ -504,6 +516,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             passengerPendingCount={data.userStats?.passengers.pending}
             passengerVerifiedCount={data.userStats?.passengers.verified}
             onServerExport={(entity) => void data.downloadServerCsv(entity)}
+            dataLoading={data.dataLoading}
           />
         );
 
@@ -513,6 +526,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             auditLogs={data.auditLogs}
             totalAdmins={data.adminAccounts.length}
             onServerExport={() => void data.downloadServerCsv("audit-logs")}
+            dataLoading={data.auditLogsPending}
           />
         );
 
@@ -525,7 +539,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             adminModules={data.adminModules}
             adminCurrency={data.adminCurrency}
             auditLogs={data.auditLogs}
-            dataLoading={data.dataLoading}
+            dataLoading={data.platformSettingsPending || data.zonesPending || data.adminAccountsPending}
             token={token}
             platformSettings={data.platformSettings}
             onSaveSettings={(settings) => data.saveSettingsMutation.mutate(settings)}
@@ -534,15 +548,15 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
         );
 
       case "paymentMethods":
-        return <PaymentMethodsScreen dataLoading={data.dataLoading} />;
+        return <PaymentMethodsScreen />;
 
       case "integrations":
-        return <IntegrationsScreen dataLoading={data.dataLoading} />;
+        return <IntegrationsScreen />;
 
       case "taxesCompliance":
         return (
           <TaxesComplianceScreen
-            dataLoading={data.dataLoading}
+            dataLoading={data.platformSettingsPending}
             platformSettings={data.platformSettings}
             onSaveSettings={(settings) => data.saveSettingsMutation.mutate(settings)}
             settingsSaving={data.saveSettingsMutation.isPending}
@@ -552,7 +566,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
       case "settingsNotifications":
         return (
           <SettingsNotificationsScreen
-            dataLoading={data.dataLoading}
+            dataLoading={data.scheduledBroadcastsPending || data.dataLoading}
             broadcasts={data.scheduledBroadcasts}
             openSosCount={data.openSosCount}
             recentIncidents={data.incidents.slice(0, 10)}
@@ -574,6 +588,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             onPromotePassenger={() => data.promotePassengerMutation.mutate()}
             isCreating={data.createAdminMutation.isPending}
             isPromoting={data.promotePassengerMutation.isPending}
+            dataLoading={data.adminAccountsPending || data.passengersPending}
           />
         );
 

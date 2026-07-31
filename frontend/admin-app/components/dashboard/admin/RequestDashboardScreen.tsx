@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Bike, Package, CheckCircle, XCircle, Clock, Filter, Search } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminPagination } from "./ui/AdminPagination";
 import type { RideRecord, DeliveryRecord } from "./types";
@@ -33,6 +34,7 @@ export type RequestDashboardScreenProps = {
   onRideAction: (rideId: string, action: "accept" | "decline") => void;
   onDeliveryAction: (deliveryId: string, action: "accept" | "decline") => void;
   isMutating: boolean;
+  dataLoading?: boolean;
 };
 
 const statusFilters: { key: RequestStatusView; label: string }[] = [
@@ -71,7 +73,8 @@ export function RequestDashboardScreen({
   requestPeakMax,
   onRideAction,
   onDeliveryAction,
-  isMutating
+  isMutating,
+  dataLoading = false
 }: RequestDashboardScreenProps) {
   const [selectedRideIds, setSelectedRideIds] = useState<Set<string>>(new Set());
   const [selectedDeliveryIds, setSelectedDeliveryIds] = useState<Set<string>>(new Set());
@@ -198,6 +201,10 @@ export function RequestDashboardScreen({
     if (key === "completed") return activeRequestCounts.completed;
     return activeRequestCounts.cancelled;
   };
+
+  if (dataLoading) {
+    return <AdminPageSkeleton variant="table" kpis={4} rows={6} cols={6} />;
+  }
 
   return (
     <div className="exact-admin-screen">

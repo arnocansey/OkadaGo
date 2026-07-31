@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { Tag, TrendingUp, Users, Percent } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import type { RideRecord } from "./types";
@@ -12,9 +13,10 @@ import { formatMoney } from "@/lib/currency";
 export type PromoPerformanceScreenProps = {
   rides: RideRecord[];
   adminCurrency: string;
+  dataLoading?: boolean;
 };
 
-export function PromoPerformanceScreen({ rides, adminCurrency }: PromoPerformanceScreenProps) {
+export function PromoPerformanceScreen({ rides, adminCurrency, dataLoading = false }: PromoPerformanceScreenProps) {
   const promoRides = useMemo(() => rides.filter((r) => parseNumber(r.promoDiscount) > 0), [rides]);
   const referralRides = useMemo(() => rides.filter((r) => parseNumber(r.referralDiscount) > 0), [rides]);
 
@@ -84,6 +86,10 @@ export function PromoPerformanceScreen({ rides, adminCurrency }: PromoPerformanc
       )
       .slice(0, 10);
   }, [rides]);
+
+  if (dataLoading) {
+    return <AdminPageSkeleton variant="table" kpis={4} rows={5} cols={5} />;
+  }
 
   return (
     <div className="exact-admin-screen">

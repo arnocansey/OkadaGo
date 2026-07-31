@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { useAdminToast } from "./AdminToast";
-import { useBreakpoint } from "../../../hooks/use-breakpoint";
-import { SkeletonKPI, SkeletonTable, SkeletonCard, SkeletonDonut } from "./AdminSkeleton";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { formatMoney } from "@/lib/currency";
@@ -50,7 +49,6 @@ export function RiderWalletScreen({
   dataLoading = false
 }: RiderWalletScreenProps) {
   const { addToast } = useAdminToast();
-  const { isMobile } = useBreakpoint();
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -86,17 +84,7 @@ export function RiderWalletScreen({
   }, [riderWalletTransactions]);
 
   if (dataLoading) {
-    return (
-      <div className="exact-admin-screen">
-        <SkeletonKPI count={5} />
-        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr", gap: 16 }}>
-          <SkeletonCard lines={4} />
-          <SkeletonDonut />
-          <SkeletonCard lines={3} />
-        </div>
-        <SkeletonTable rows={5} cols={7} />
-      </div>
-    );
+    return <AdminPageSkeleton variant="split" kpis={5} rows={5} cols={7} />;
   }
 
   const pendingBalance = riderWalletMovementTotal - riderWalletAvailableBalance - riderWalletLockedBalance;

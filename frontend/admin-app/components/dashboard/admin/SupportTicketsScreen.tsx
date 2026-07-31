@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Headphones, CheckCircle, Clock, AlertTriangle, Search } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminPagination, usePagination } from "./ui/AdminPagination";
@@ -25,6 +26,7 @@ export type SupportTicketsScreenProps = {
     status: "UNDER_REVIEW" | "ACTIONED" | "RESOLVED" | "CLOSED"
   ) => void;
   isMutating: boolean;
+  dataLoading?: boolean;
 };
 
 function isHighPriority(priority: string) {
@@ -47,7 +49,8 @@ export function SupportTicketsScreen({
   inProgressSupportTickets,
   resolvedSupportTickets,
   onIncidentAction,
-  isMutating
+  isMutating,
+  dataLoading = false
 }: SupportTicketsScreenProps) {
   const [tab, setTab] = useState<"tickets" | "incidents">("tickets");
   const [query, setQuery] = useState("");
@@ -102,6 +105,10 @@ export function SupportTicketsScreen({
         .slice(0, 6),
     [supportTickets]
   );
+
+  if (dataLoading) {
+    return <AdminPageSkeleton variant="table" kpis={4} rows={6} cols={5} />;
+  }
 
   return (
     <div className="exact-admin-screen">

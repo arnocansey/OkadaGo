@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useAdminToast } from "./AdminToast";
 import { formatMoney } from "@/lib/currency";
-import { useBreakpoint } from "../../../hooks/use-breakpoint";
-import { SkeletonKPI, SkeletonTable, SkeletonChart, SkeletonDonut } from "./AdminSkeleton";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import type { RiderFinancialRow } from "./types";
@@ -48,23 +47,13 @@ export function RiderEarningsScreen({
   dataLoading = false,
 }: RiderEarningsScreenProps) {
   const { addToast } = useAdminToast();
-  const { isMobile } = useBreakpoint();
   const [activeTab, setActiveTab] = useState<"Daily" | "Weekly" | "Monthly">("Daily");
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 5;
 
   if (dataLoading) {
-    return (
-      <div className="exact-admin-screen">
-        <SkeletonKPI count={5} />
-        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr", gap: 14 }}>
-          <SkeletonChart />
-          <SkeletonDonut />
-        </div>
-        <SkeletonTable rows={5} cols={6} />
-      </div>
-    );
+    return <AdminPageSkeleton variant="dashboard" kpis={5} />;
   }
 
   const tabs: Array<"Daily" | "Weekly" | "Monthly"> = ["Daily", "Weekly", "Monthly"];

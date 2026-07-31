@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { TrendingUp, Bike, Package, Users, CreditCard, Download, FileSpreadsheet, Map as MapIcon } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
 import { downloadCsv } from "@/lib/export-csv";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import type { RideRecord, DeliveryRecord, RiderRecord, PassengerRecord } from "./types";
@@ -20,6 +21,7 @@ export type ReportsScreenProps = {
   passengerPendingCount?: number;
   passengerVerifiedCount?: number;
   onServerExport?: (entity: "rides" | "deliveries" | "riders") => void;
+  dataLoading?: boolean;
 };
 
 type DailyBucket = {
@@ -68,7 +70,8 @@ export function ReportsScreen({
   riderVerifiedCount = 0,
   passengerPendingCount = 0,
   passengerVerifiedCount = 0,
-  onServerExport
+  onServerExport,
+  dataLoading = false
 }: ReportsScreenProps) {
   const [rangeDays, setRangeDays] = useState<7 | 30 | 90>(30);
   const riderCount = ridersTotal ?? riders.length;
@@ -154,6 +157,10 @@ export function ReportsScreen({
       ["Date", "Rides", "Deliveries", "Commission (GHS)"],
       dailyBuckets7.map((b) => [b.label, b.rides, b.deliveries, formatMoney(adminCurrency, b.revenue)])
     );
+
+  if (dataLoading) {
+    return <AdminPageSkeleton variant="dashboard" kpis={4} />;
+  }
 
   return (
     <div className="exact-admin-screen">

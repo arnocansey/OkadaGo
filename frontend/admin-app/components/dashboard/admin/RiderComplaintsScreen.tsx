@@ -14,7 +14,7 @@ import {
   ThumbsUp,
 } from "lucide-react";
 import { useAdminToast } from "./AdminToast";
-import { SkeletonKPI, SkeletonCard } from "./AdminSkeleton";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { useAdminNotes } from "./useAdminNotes";
@@ -131,14 +131,7 @@ export function RiderComplaintsScreen({
   }, [tabFiltered, statusFilter, searchQuery]);
 
   if (dataLoading) {
-    return (
-      <div className="exact-admin-screen">
-        <SkeletonKPI count={4} />
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} lines={3} />)}
-        </div>
-      </div>
-    );
+    return <AdminPageSkeleton variant="cards" kpis={4} rows={4} />;
   }
 
   const totalResolved = riderComplaintResolved.length;

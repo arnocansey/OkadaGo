@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { FileText, Scale, Percent, Building2 } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { useAdminToast } from "./AdminToast";
@@ -71,11 +72,7 @@ export function TaxesComplianceScreen({
   }, [platformSettings]);
 
   if (dataLoading) {
-    return (
-      <div className="exact-admin-screen">
-        <EmptyCard title="Taxes & Compliance" body="" />
-      </div>
-    );
+    return <AdminPageSkeleton variant="form" kpis={3} rows={5} />;
   }
 
   const saveProfile = () => {

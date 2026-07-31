@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Bell, Send, Clock, XCircle, RefreshCw } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { AdminPagination, usePagination } from "./ui/AdminPagination";
@@ -22,6 +23,7 @@ export type ScheduledNotificationsScreenProps = {
   onCancel: (id: string) => void;
   onRetry: (id: string) => void;
   isMutating: boolean;
+  dataLoading?: boolean;
 };
 
 export function ScheduledNotificationsScreen({
@@ -32,7 +34,8 @@ export function ScheduledNotificationsScreen({
   onSchedule,
   onCancel,
   onRetry,
-  isMutating
+  isMutating,
+  dataLoading = false
 }: ScheduledNotificationsScreenProps) {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -53,6 +56,10 @@ export function ScheduledNotificationsScreen({
     sortedNotifications,
     PAGE_SIZE
   );
+
+  if (dataLoading) {
+    return <AdminPageSkeleton variant="split" kpis={4} rows={5} cols={5} />;
+  }
 
   const pendingCount = notifications.filter((n) => n.status === "pending").length;
   const sentCount = notifications.filter((n) => n.status === "sent").length;

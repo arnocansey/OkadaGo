@@ -1,67 +1,62 @@
-import React from 'react';
+"use client";
 
-const shimmerBase: React.CSSProperties = {
-  borderRadius: 6,
-  background: 'linear-gradient(90deg, var(--bg-elevated) 25%, #2a2a2a 50%, var(--bg-elevated) 75%)',
-  backgroundSize: '200% 100%',
-  animation: 'skeleton-shimmer 1.5s infinite',
+import React from "react";
+
+type SkeletonProps = {
+  className?: string;
+  style?: React.CSSProperties;
 };
 
-const keyframes = `
-@keyframes skeleton-shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}`;
-
-if (typeof document !== 'undefined') {
-  const style = document.getElementById('skeleton-keyframes');
-  if (!style) {
-    const el = document.createElement('style');
-    el.id = 'skeleton-keyframes';
-    el.textContent = keyframes;
-    document.head.appendChild(el);
-  }
+/** Single shimmer bone — theme-aware via `.admin-skeleton` in admin.css. */
+export function Skeleton({ className = "", style }: SkeletonProps) {
+  return <div className={`admin-skeleton ${className}`.trim()} style={style} aria-hidden />;
 }
 
-export function SkeletonKPI({ count }: { count?: number } = {}) {
-  const card = (
-    <div style={{ background: 'var(--bg-card)', padding: 15, borderRadius: 8, border: '1px solid var(--border)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-        <div style={{ ...shimmerBase, width: 32, height: 32, borderRadius: 6 }} />
-        <div style={{ ...shimmerBase, width: 40, height: 12 }} />
-      </div>
-      <div style={{ ...shimmerBase, width: '60%', height: 10, marginBottom: 6 }} />
-      <div style={{ ...shimmerBase, width: '40%', height: 18 }} />
-    </div>
-  );
-
-  if (!count) return card;
+export function SkeletonKPI({ count = 4 }: { count?: number }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(count, 4)}, 1fr)`, gap: 14 }}>
-      {Array.from({ length: count }).map((_, i) => <React.Fragment key={i}>{card}</React.Fragment>)}
+    <div
+      className="admin-skeleton-kpi-grid"
+      style={{
+        gridTemplateColumns: `repeat(auto-fit, minmax(160px, 1fr))`
+      }}
+    >
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="admin-skeleton-card admin-skeleton-kpi">
+          <div className="admin-skeleton-kpi-top">
+            <Skeleton className="admin-skeleton-icon" />
+            <Skeleton style={{ width: 48, height: 10 }} />
+          </div>
+          <Skeleton style={{ width: "55%", height: 11, marginBottom: 8 }} />
+          <Skeleton style={{ width: "38%", height: 20 }} />
+        </div>
+      ))}
     </div>
   );
 }
 
-export function SkeletonTable({ rows = 5, cols }: { rows?: number; cols?: number }) {
-  const colWidths = cols
-    ? Array.from({ length: cols }, (_, i) => 80 + (i % 3) * 40)
-    : [80, 100, 120, 60, 100];
-  const cellWidths = cols
-    ? Array.from({ length: cols }, (_, i) => 100 + (i % 3) * 20)
-    : [100, 120, 140, 60, 100];
-
+export function SkeletonTable({ rows = 5, cols = 5 }: { rows?: number; cols?: number }) {
+  const colCount = Math.max(2, cols);
   return (
-    <div style={{ background: 'var(--bg-card)', borderRadius: 8, border: '1px solid var(--border)', overflow: 'hidden' }}>
-      <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border)', display: 'flex', gap: 24 }}>
-        {colWidths.map((w, i) => (
-          <div key={i} style={{ ...shimmerBase, width: w, height: 10 }} />
+    <div className="admin-skeleton-card admin-skeleton-table">
+      <div className="admin-skeleton-table-head">
+        {Array.from({ length: colCount }).map((_, i) => (
+          <Skeleton
+            key={i}
+            style={{ width: `${18 + (i % 3) * 8}%`, maxWidth: 120, height: 10 }}
+          />
         ))}
       </div>
-      {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} style={{ padding: '10px 16px', borderBottom: '1px solid var(--border)', display: 'flex', gap: 24, alignItems: 'center' }}>
-          {cellWidths.map((w, j) => (
-            <div key={j} style={{ ...shimmerBase, width: w, height: 12 }} />
+      {Array.from({ length: rows }).map((_, row) => (
+        <div key={row} className="admin-skeleton-table-row">
+          {Array.from({ length: colCount }).map((_, col) => (
+            <Skeleton
+              key={col}
+              style={{
+                width: col === 0 ? "70%" : `${40 + ((row + col) % 4) * 12}%`,
+                maxWidth: col === 0 ? 180 : 140,
+                height: 12
+              }}
+            />
           ))}
         </div>
       ))}
@@ -69,19 +64,26 @@ export function SkeletonTable({ rows = 5, cols }: { rows?: number; cols?: number
   );
 }
 
-export function SkeletonCard({ lines }: { lines?: number } = {}) {
-  const lineCount = lines ?? 2;
+export function SkeletonCard({ lines = 2 }: { lines?: number }) {
+  const lineCount = Math.max(1, lines);
   return (
-    <div style={{ background: 'var(--bg-card)', padding: 16, borderRadius: 8, border: '1px solid var(--border)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-        <div style={{ ...shimmerBase, width: 36, height: 36, borderRadius: '50%' }} />
-        <div style={{ flex: 1 }}>
-          <div style={{ ...shimmerBase, width: '70%', height: 12, marginBottom: 4 }} />
-          <div style={{ ...shimmerBase, width: '50%', height: 10 }} />
+    <div className="admin-skeleton-card">
+      <div className="admin-skeleton-card-head">
+        <Skeleton className="admin-skeleton-avatar" />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Skeleton style={{ width: "65%", height: 12, marginBottom: 6 }} />
+          <Skeleton style={{ width: "45%", height: 10 }} />
         </div>
       </div>
       {Array.from({ length: lineCount }).map((_, i) => (
-        <div key={i} style={{ ...shimmerBase, width: i === lineCount - 1 ? '60%' : '90%', height: 10, marginBottom: i < lineCount - 1 ? 6 : 0 }} />
+        <Skeleton
+          key={i}
+          style={{
+            width: i === lineCount - 1 ? "58%" : "92%",
+            height: 10,
+            marginBottom: i < lineCount - 1 ? 8 : 0
+          }}
+        />
       ))}
     </div>
   );
@@ -89,41 +91,105 @@ export function SkeletonCard({ lines }: { lines?: number } = {}) {
 
 export function SkeletonDonut() {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-      <div style={{
-        width: 120, height: 120, borderRadius: '50%',
-        border: '10px solid var(--border)',
-        background: 'transparent',
-        position: 'relative',
-      }}>
-        <div style={{ ...shimmerBase, width: '100%', height: '100%', borderRadius: '50%', position: 'absolute', top: -10, left: -10, opacity: 0.3 }} />
+    <div className="admin-skeleton-card admin-skeleton-donut-wrap">
+      <div className="admin-skeleton-donut" aria-hidden />
+      <div className="admin-skeleton-donut-legend">
+        <Skeleton style={{ width: "70%", height: 10 }} />
+        <Skeleton style={{ width: "55%", height: 10 }} />
+        <Skeleton style={{ width: "62%", height: 10 }} />
       </div>
     </div>
   );
 }
 
+const CHART_HEIGHTS = [42, 68, 54, 78, 46, 62, 70];
+
 export function SkeletonChart() {
   return (
-    <div style={{ background: 'var(--bg-card)', padding: 16, borderRadius: 8, border: '1px solid var(--border)' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 120, paddingTop: 10 }}>
-        {Array.from({ length: 7 }).map((_, i) => (
-          <div key={i} style={{ ...shimmerBase, flex: 1, height: `${30 + Math.random() * 60}%`, borderRadius: '4px 4px 0 0' }} />
+    <div className="admin-skeleton-card">
+      <Skeleton style={{ width: 120, height: 12, marginBottom: 14 }} />
+      <div className="admin-skeleton-chart">
+        {CHART_HEIGHTS.map((height, i) => (
+          <Skeleton key={i} className="admin-skeleton-chart-bar" style={{ height: `${height}%` }} />
         ))}
       </div>
     </div>
   );
 }
 
-export function SkeletonForm({ fields }: { fields?: number } = {}) {
-  const count = fields ?? 4;
+export function SkeletonForm({ fields = 4 }: { fields?: number }) {
   return (
-    <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 8, border: '1px solid var(--border)' }}>
-      {Array.from({ length: count }).map((_, i) => (
-        <div key={i} style={{ marginBottom: 16 }}>
-          <div style={{ ...shimmerBase, width: 100, height: 10, marginBottom: 6 }} />
-          <div style={{ ...shimmerBase, width: '100%', height: 36, borderRadius: 6 }} />
+    <div className="admin-skeleton-card">
+      {Array.from({ length: fields }).map((_, i) => (
+        <div key={i} className="admin-skeleton-form-field">
+          <Skeleton style={{ width: 96, height: 10, marginBottom: 8 }} />
+          <Skeleton style={{ width: "100%", height: 38, borderRadius: 10 }} />
         </div>
       ))}
+    </div>
+  );
+}
+
+/** Full-page placeholder matching typical admin layout: KPIs + main panel. */
+export function AdminPageSkeleton({
+  kpis = 4,
+  rows = 6,
+  cols = 5,
+  variant = "table"
+}: {
+  kpis?: number;
+  rows?: number;
+  cols?: number;
+  variant?: "table" | "cards" | "form" | "dashboard" | "split";
+}) {
+  return (
+    <div className="exact-admin-screen admin-skeleton-page" aria-busy="true" aria-live="polite">
+      <div className="admin-skeleton-header">
+        <div>
+          <Skeleton style={{ width: 180, height: 22, marginBottom: 10 }} />
+          <Skeleton style={{ width: 260, height: 12 }} />
+        </div>
+        <Skeleton style={{ width: 110, height: 36, borderRadius: 10 }} />
+      </div>
+
+      {kpis > 0 ? <SkeletonKPI count={kpis} /> : null}
+
+      {variant === "table" ? <SkeletonTable rows={rows} cols={cols} /> : null}
+
+      {variant === "cards" ? (
+        <div className="admin-skeleton-card-grid">
+          {Array.from({ length: Math.max(3, rows) }).map((_, i) => (
+            <SkeletonCard key={i} lines={3} />
+          ))}
+        </div>
+      ) : null}
+
+      {variant === "form" ? <SkeletonForm fields={rows} /> : null}
+
+      {variant === "dashboard" ? (
+        <div className="admin-skeleton-dashboard">
+          <div className="admin-skeleton-dashboard-main">
+            <SkeletonChart />
+            <SkeletonTable rows={4} cols={4} />
+          </div>
+          <div className="admin-skeleton-dashboard-side">
+            <SkeletonCard lines={4} />
+            <SkeletonCard lines={3} />
+          </div>
+        </div>
+      ) : null}
+
+      {variant === "split" ? (
+        <div className="admin-skeleton-dashboard">
+          <div className="admin-skeleton-dashboard-main">
+            <SkeletonTable rows={rows} cols={cols} />
+          </div>
+          <div className="admin-skeleton-dashboard-side">
+            <SkeletonCard lines={4} />
+            <SkeletonCard lines={3} />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

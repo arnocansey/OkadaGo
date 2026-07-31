@@ -10,7 +10,7 @@ import {
   ClipboardList,
 } from "lucide-react";
 import { useAdminToast } from "./AdminToast";
-import { SkeletonKPI, SkeletonTable } from "./AdminSkeleton";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
@@ -237,12 +237,7 @@ export function RiderSuspensionsScreen({
   }, [selectedRider, auditLogs]);
 
   if (dataLoading) {
-    return (
-      <div className="exact-admin-screen">
-        <SkeletonKPI count={4} />
-        <SkeletonTable rows={5} cols={5} />
-      </div>
-    );
+    return <AdminPageSkeleton variant="table" kpis={4} rows={5} cols={5} />;
   }
 
   const activeCount = suspendedRiders.filter((r) => suspensionLifecycle(r) === "Active").length;
