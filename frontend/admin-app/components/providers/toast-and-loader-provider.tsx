@@ -61,21 +61,17 @@ export function ToastAndLoaderProvider({ children }: { children: React.ReactNode
         <AnimatePresence>
           {toasts.map((toast) => {
             let Icon = Info;
-            let bgColor = "bg-white text-slate-800 border-slate-200";
-            let iconColor = "text-[#f7c600]";
+            let toneClass = "app-toast app-toast--info";
 
             if (toast.type === "success") {
               Icon = CheckCircle;
-              bgColor = "bg-emerald-50 text-emerald-900 border-emerald-100";
-              iconColor = "text-emerald-500";
+              toneClass = "app-toast app-toast--success";
             } else if (toast.type === "error") {
               Icon = AlertCircle;
-              bgColor = "bg-red-50 text-red-900 border-red-100";
-              iconColor = "text-red-500";
+              toneClass = "app-toast app-toast--error";
             } else if (toast.type === "warning") {
               Icon = AlertCircle;
-              bgColor = "bg-amber-50 text-amber-900 border-amber-100";
-              iconColor = "text-amber-500";
+              toneClass = "app-toast app-toast--warning";
             }
 
             return (
@@ -84,14 +80,15 @@ export function ToastAndLoaderProvider({ children }: { children: React.ReactNode
                 initial={{ opacity: 0, y: 20, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                className={`flex items-start gap-3 p-4 rounded-xl border shadow-lg pointer-events-auto ${bgColor}`}
+                className={`flex items-start gap-3 p-4 rounded-xl border shadow-lg pointer-events-auto ${toneClass}`}
               >
-                <Icon className={`w-5 h-5 mt-0.5 shrink-0 ${iconColor}`} />
-                <div className="flex-1 text-sm font-semibold">{toast.message}</div>
+                <Icon className="app-toast__icon w-5 h-5 mt-0.5 shrink-0" />
+                <div className="app-toast__message flex-1 text-sm font-semibold">{toast.message}</div>
                 <button
                   type="button"
                   onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
-                  className="text-slate-400 hover:text-slate-600 transition-colors shrink-0"
+                  className="app-toast__dismiss shrink-0 transition-colors"
+                  aria-label="Dismiss notification"
                 >
                   <X className="w-4 h-4" />
                 </button>

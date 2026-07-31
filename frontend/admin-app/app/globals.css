@@ -1892,3 +1892,100 @@ body {
   to { transform: translateX(0); opacity: 1; }
 }
 
+/* Global auth/app toasts — readable in light and dark */
+.app-toast--info {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  color: #0f172a;
+}
+
+.app-toast--info .app-toast__icon {
+  color: #ca8a04;
+}
+
+.app-toast--success {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+
+.app-toast--success .app-toast__icon {
+  color: #059669;
+}
+
+.app-toast--error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+.app-toast--error .app-toast__icon {
+  color: #dc2626;
+}
+
+.app-toast--warning {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.app-toast--warning .app-toast__icon {
+  color: #d97706;
+}
+
+.app-toast__dismiss {
+  color: color-mix(in srgb, currentColor 55%, transparent);
+}
+
+.app-toast__dismiss:hover {
+  color: currentColor;
+}
+
+.dark .app-toast--info,
+html[data-theme="dark"] .app-toast--info {
+  background: #1a2234;
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #f8fafc;
+}
+
+.dark .app-toast--info .app-toast__icon,
+html[data-theme="dark"] .app-toast--info .app-toast__icon {
+  color: #facc15;
+}
+
+.dark .app-toast--success,
+html[data-theme="dark"] .app-toast--success {
+  background: #0f291a;
+  border-color: rgba(34, 197, 94, 0.45);
+  color: #bbf7d0;
+}
+
+.dark .app-toast--success .app-toast__icon,
+html[data-theme="dark"] .app-toast--success .app-toast__icon {
+  color: #4ade80;
+}
+
+.dark .app-toast--error,
+html[data-theme="dark"] .app-toast--error {
+  background: #2a1215;
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #fecaca;
+}
+
+.dark .app-toast--error .app-toast__icon,
+html[data-theme="dark"] .app-toast--error .app-toast__icon {
+  color: #f87171;
+}
+
+.dark .app-toast--warning,
+html[data-theme="dark"] .app-toast--warning {
+  background: #2a2110;
+  border-color: rgba(250, 204, 21, 0.4);
+  color: #fde68a;
+}
+
+.dark .app-toast--warning .app-toast__icon,
+html[data-theme="dark"] .app-toast--warning .app-toast__icon {
+  color: #facc15;
+}
+

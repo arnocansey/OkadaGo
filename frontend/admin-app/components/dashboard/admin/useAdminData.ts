@@ -8,6 +8,9 @@ import { apiUrl, requestJson } from "@/lib/api";
 import { parseNumber, shortDate } from "./utils";
 import { useAdminToast } from "./AdminToast";
 import { needsForScreen } from "./adminQueryNeeds";
+import { QK } from "./adminQueryKeys";
+import { useAdminLiveOps } from "./useAdminLiveOps";
+import { useAdminOpsSummary } from "./useAdminOpsSummary";
 import { listPageSize, requestPagedJson, type PagedResult } from "./paged";
 import type {
   AdminConsoleScreen,
@@ -31,6 +34,10 @@ import type {
   RiderDocumentRecord
 } from "./types";
 
+export { QK } from "./adminQueryKeys";
+export type { LiveOpsSnapshot } from "./useAdminLiveOps";
+export type { AdminOpsSummary } from "./useAdminOpsSummary";
+
 function useDocumentVisible() {
   const [visible, setVisible] = useState(true);
   useEffect(() => {
@@ -42,51 +49,6 @@ function useDocumentVisible() {
   }, []);
   return visible;
 }
-
-// ─── query key constants ──────────────────────────────────────────────────────
-export const QK = {
-  rides: (token?: string | null) => ["rides", token],
-  deliveries: (token?: string | null) => ["deliveries", token],
-  riders: (token?: string | null) => ["riders", token],
-  passengers: (token?: string | null) => ["passengers", token],
-  userStats: (token?: string | null) => ["admin-user-stats", token],
-  walletTx: (token?: string | null) => ["admin-wallet-transactions", token],
-  payoutRequests: (token?: string | null) => ["admin-payout-requests", token],
-  ratings: (token?: string | null) => ["admin-ratings", token],
-  incidents: (token?: string | null) => ["admin-incidents", token],
-  adminAccounts: (token?: string | null) => ["admin-accounts", token],
-  adminPermissions: (token?: string | null) => ["admin-permissions", token],
-  adminModules: (token?: string | null) => ["admin-modules", token],
-  zones: (token?: string | null) => ["service-zones", token],
-  auditLogs: (token?: string | null) => ["admin-audit-logs", token],
-  supportTickets: (token?: string | null) => ["admin-support-tickets", token],
-  escalationRules: (token?: string | null) => ["admin-escalation-rules", token],
-  scheduledBroadcasts: (token?: string | null) => ["admin-scheduled-broadcasts", token],
-  opsJobStatus: (token?: string | null) => ["admin-ops-jobs-status", token],
-  riderDocuments: (token?: string | null) => ["admin-rider-documents", token],
-  platformSettings: (token?: string | null) => ["admin-platform-settings", token]
-} as const;
-
-// ─── live ops stream types ────────────────────────────────────────────────────
-export type LiveOpsSnapshot = {
-  timestamp: string;
-  riders: Array<{
-    id: string;
-    displayCode: string;
-    name: string;
-    latitude: number;
-    longitude: number;
-  }>;
-  sos: Array<{
-    id: string;
-    severity: string;
-    status: string;
-    category: string;
-    description: string;
-    createdAt: string;
-    reporter: { fullName: string; phoneE164: string };
-  }>;
-};
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 function sum(values: (string | number | null | undefined)[]): number {
@@ -172,8 +134,8 @@ export function useAdminData(
     passengerUserId: "", email: "", password: "", title: "", permissions: ""
   });
 
-  // Server list paging — heavier screens pull a wider first page for charts.
-  const heavySample = screen === "dashboard" || screen === "reports" || screen === "promotions";
+  // Server list paging — sample size for charts on list-heavy screens.
+  const heavySample = screen === "reports" || screen === "promotions" || screen === "payments";
   const ridesPageSize = listPageSize(heavySample);
   const deliveriesPageSize = listPageSize(heavySample);
   const [ridesPage, setRidesPage] = useState(1);
@@ -216,8 +178,19 @@ export function useAdminData(
   }, [ratingRiderFilter, ratingRideFilter, ratingFromDateFilter, ratingToDateFilter]);
 
   // ── queries (screen-scoped + server-paged + visibility-aware polling) ───────
+  const {
+    data: opsSummary,
+    isPending: opsSummaryPending
+  } = useAdminOpsSummary({
+    enabled: want("opsSummary"),
+    token,
+    from: dashboardDateRange.from,
+    to: dashboardDateRange.to,
+    refetchInterval: poll(30000, "opsSummary")
+  });
+
   const { data: ridesPaged, isPending: ridesPending } = useQuery<PagedResult<RideRecord>>({
-    queryKey: [...QK.rides(token), ridesPage, ridesPageSize],
+    queryKey: [...QK.rides, ridesPage, ridesPageSize],
     queryFn: () => requestPagedJson<RideRecord>("/rides", { token, page: ridesPage, limit: ridesPageSize }),
     enabled: want("rides"),
     refetchInterval: poll(30000, "rides"),
@@ -225,7 +198,7 @@ export function useAdminData(
   });
 
   const { data: deliveriesPaged, isPending: deliveriesPending } = useQuery<PagedResult<DeliveryRecord>>({
-    queryKey: [...QK.deliveries(token), deliveriesPage, deliveriesPageSize],
+    queryKey: [...QK.deliveries, deliveriesPage, deliveriesPageSize],
     queryFn: () =>
       requestPagedJson<DeliveryRecord>("/deliveries", {
         token,
@@ -238,7 +211,7 @@ export function useAdminData(
   });
 
   const { data: ridersResp, isPending: ridersPending } = useQuery<PagedResult<RiderRecord>>({
-    queryKey: [...QK.riders(token), ridersPage, LIST_PAGE],
+    queryKey: [...QK.riders, ridersPage, LIST_PAGE],
     queryFn: () =>
       requestPagedJson<RiderRecord>("/bootstrap/riders", { token, page: ridersPage, limit: LIST_PAGE }),
     enabled: want("riders"),
@@ -246,10 +219,9 @@ export function useAdminData(
     staleTime: 40000
   });
   const ridersData = ridersResp?.data;
-  const ridersTotal = ridersResp?.total ?? ridersData?.length ?? 0;
 
   const { data: passengersResp, isPending: passengersPending } = useQuery<PagedResult<PassengerRecord>>({
-    queryKey: [...QK.passengers(token), passengersPage, LIST_PAGE],
+    queryKey: [...QK.passengers, passengersPage, LIST_PAGE],
     queryFn: () =>
       requestPagedJson<PassengerRecord>("/bootstrap/passengers", {
         token,
@@ -261,10 +233,9 @@ export function useAdminData(
     staleTime: 55000
   });
   const passengersData = passengersResp?.data;
-  const passengersTotal = passengersResp?.total ?? passengersData?.length ?? 0;
 
   const { data: userStats, isPending: userStatsPending } = useQuery<AdminUserStats>({
-    queryKey: QK.userStats(token),
+    queryKey: QK.userStats,
     queryFn: () => requestJson("/admin/user-stats", { token }),
     enabled: want("userStats"),
     refetchInterval: poll(60000, "userStats"),
@@ -291,7 +262,7 @@ export function useAdminData(
     .join("&");
 
   const { data: walletPaged, isPending: walletTxPending } = useQuery<PagedResult<WalletTransactionRecord>>({
-    queryKey: [...QK.walletTx(token), walletPage, LIST_PAGE, transactionStatusFilter, transactionTypeFilter],
+    queryKey: [...QK.walletTx, walletPage, LIST_PAGE, transactionStatusFilter, transactionTypeFilter],
     queryFn: () =>
       requestPagedJson<WalletTransactionRecord>("/admin/payments/wallet-transactions", {
         token,
@@ -309,7 +280,7 @@ export function useAdminData(
     : undefined;
 
   const { data: payoutPaged, isPending: payoutPending } = useQuery<PagedResult<PayoutRequestRecord>>({
-    queryKey: [...QK.payoutRequests(token), payoutPage, LIST_PAGE, payoutStatusFilter],
+    queryKey: [...QK.payoutRequests, payoutPage, LIST_PAGE, payoutStatusFilter],
     queryFn: () =>
       requestPagedJson<PayoutRequestRecord>("/admin/payments/payout-requests", {
         token,
@@ -333,7 +304,7 @@ export function useAdminData(
 
   const { data: ratingsPaged, isPending: ratingsPending } = useQuery<PagedResult<AdminRatingRecord>>({
     queryKey: [
-      ...QK.ratings(token),
+      ...QK.ratings,
       ratingsPage,
       LIST_PAGE,
       ratingRiderFilter,
@@ -354,7 +325,7 @@ export function useAdminData(
   });
 
   const { data: incidentsPaged, isPending: incidentsPending } = useQuery<PagedResult<AdminIncidentRecord>>({
-    queryKey: [...QK.incidents(token), incidentsPage, LIST_PAGE],
+    queryKey: [...QK.incidents, incidentsPage, LIST_PAGE],
     queryFn: () =>
       requestPagedJson<AdminIncidentRecord>("/admin/incidents", {
         token,
@@ -367,35 +338,35 @@ export function useAdminData(
   });
 
   const { data: adminAccountsData, isPending: adminAccountsPending } = useQuery<AdminAccountRecord[]>({
-    queryKey: QK.adminAccounts(token),
+    queryKey: QK.adminAccounts,
     queryFn: () => requestJson("/admin/accounts", { token }),
     enabled: want("adminAccounts"),
     staleTime: 120000
   });
 
   const { data: adminPermissionsData } = useQuery<{ roles: Record<string, string[]> }>({
-    queryKey: QK.adminPermissions(token),
+    queryKey: QK.adminPermissions,
     queryFn: () => requestJson("/admin/permissions", { token }),
     enabled: want("adminPermissions"),
     staleTime: 300000
   });
 
   const { data: adminModulesData } = useQuery<{ modules: string[] }>({
-    queryKey: QK.adminModules(token),
+    queryKey: QK.adminModules,
     queryFn: () => requestJson("/admin/modules", { token }),
     enabled: want("adminModules"),
     staleTime: 300000
   });
 
   const { data: zonesData, isPending: zonesPending } = useQuery<ServiceZoneRecord[]>({
-    queryKey: QK.zones(token),
+    queryKey: QK.zones,
     queryFn: () => requestJson("/bootstrap/service-zones?limit=100", { token }),
     enabled: want("zones"),
     staleTime: 120000
   });
 
   const { data: auditLogsPaged, isPending: auditLogsPending } = useQuery<PagedResult<AuditLogRecord>>({
-    queryKey: [...QK.auditLogs(token), auditPage, LIST_PAGE],
+    queryKey: [...QK.auditLogs, auditPage, LIST_PAGE],
     queryFn: async () => {
       try {
         const paged = await requestPagedJson<{
@@ -440,7 +411,7 @@ export function useAdminData(
   const { data: supportTicketsPaged, isPending: supportTicketsPending } = useQuery<
     PagedResult<AdminSupportTicketRecord>
   >({
-    queryKey: [...QK.supportTickets(token), ticketsPage, LIST_PAGE],
+    queryKey: [...QK.supportTickets, ticketsPage, LIST_PAGE],
     queryFn: () =>
       requestPagedJson<AdminSupportTicketRecord>("/admin/support/tickets", {
         token,
@@ -453,14 +424,14 @@ export function useAdminData(
   });
 
   const { data: escalationRulesData, isPending: escalationRulesPending } = useQuery<EscalationRuleRecord[]>({
-    queryKey: QK.escalationRules(token),
+    queryKey: QK.escalationRules,
     queryFn: () => requestJson("/admin/escalation-rules", { token }),
     enabled: want("escalationRules"),
     staleTime: 30000
   });
 
   const { data: scheduledBroadcastsData, isPending: scheduledBroadcastsPending } = useQuery<ScheduledBroadcastRecord[]>({
-    queryKey: QK.scheduledBroadcasts(token),
+    queryKey: QK.scheduledBroadcasts,
     queryFn: async () => {
       const rows = await requestJson<Array<{
         id: string;
@@ -497,7 +468,7 @@ export function useAdminData(
   });
 
   const { data: opsJobStatusData } = useQuery<OpsJobStatus>({
-    queryKey: QK.opsJobStatus(token),
+    queryKey: QK.opsJobStatus,
     queryFn: () => requestJson<OpsJobStatus>("/admin/ops-jobs/status", { token }),
     enabled: want("opsJobStatus"),
     staleTime: 15000,
@@ -507,7 +478,7 @@ export function useAdminData(
   const { data: riderDocumentsPaged, isPending: riderDocumentsPending } = useQuery<
     PagedResult<RiderDocumentRecord>
   >({
-    queryKey: [...QK.riderDocuments(token), documentsPage, LIST_PAGE],
+    queryKey: [...QK.riderDocuments, documentsPage, LIST_PAGE],
     queryFn: () =>
       requestPagedJson<RiderDocumentRecord>("/admin/documents", {
         token,
@@ -521,7 +492,7 @@ export function useAdminData(
   const { data: platformSettingsData, isPending: platformSettingsPending } = useQuery<{
     settings: Record<string, unknown>;
   }>({
-    queryKey: QK.platformSettings(token),
+    queryKey: QK.platformSettings,
     queryFn: () => requestJson("/admin/settings", { token }),
     enabled: want("platformSettings"),
     staleTime: 30000
@@ -532,32 +503,18 @@ export function useAdminData(
   );
 
   // ── live ops stream (SSE) — map / SOS screens only ──────────────────────────
-  const [liveSnapshot, setLiveSnapshot] = useState<LiveOpsSnapshot | null>(null);
-  const liveStreamEnabled = want("liveStream") && tabVisible;
-
-  useEffect(() => {
-    if (!liveStreamEnabled || !token || typeof window === "undefined") {
-      setLiveSnapshot(null);
-      return;
-    }
-    const source = new EventSource(apiUrl(`/admin/stream?token=${encodeURIComponent(token)}`));
-    source.onmessage = (event) => {
-      try {
-        setLiveSnapshot(JSON.parse(event.data) as LiveOpsSnapshot);
-      } catch {
-        // Malformed frame — keep the previous snapshot.
-      }
-    };
-    return () => {
-      source.close();
-    };
-  }, [liveStreamEnabled, token]);
+  const { liveSnapshot, liveSos, liveOpsConnected, liveOpsTimestamp } = useAdminLiveOps({
+    enabled: want("liveStream") && tabVisible,
+    token,
+    invalidateIncidents: want("incidents")
+  });
 
   // ── raw data ────────────────────────────────────────────────────────────────
   const rides = useMemo(() => ridesPaged?.data ?? [], [ridesPaged]);
-  const ridesTotal = ridesPaged?.total ?? rides.length;
+  const ridesTotal = opsSummary?.rides.totalInRange ?? ridesPaged?.total ?? rides.length;
   const deliveries = useMemo(() => deliveriesPaged?.data ?? [], [deliveriesPaged]);
-  const deliveriesTotal = deliveriesPaged?.total ?? deliveries.length;
+  const deliveriesTotal =
+    opsSummary?.deliveries.totalInRange ?? deliveriesPaged?.total ?? deliveries.length;
   /** Stable rider rows from the API — GPS overlays must not invalidate finance memos. */
   const ridersBase = useMemo(() => ridersData ?? [], [ridersData]);
   const riders = useMemo(() => {
@@ -575,12 +532,15 @@ export function useAdminData(
     });
   }, [ridersBase, liveSnapshot]);
   const passengers = useMemo(() => passengersData ?? [], [passengersData]);
+  const passengersTotal =
+    opsSummary?.passengers.total ?? passengersResp?.total ?? passengersData?.length ?? 0;
+  const ridersTotal = opsSummary?.riders.total ?? ridersResp?.total ?? ridersData?.length ?? 0;
   const walletTransactions = useMemo(() => walletPaged?.data ?? [], [walletPaged]);
   const walletTxTotal = walletPaged?.total ?? walletTransactions.length;
   const payoutRequests = useMemo(() => payoutPaged?.data ?? [], [payoutPaged]);
   const payoutRequestsTotal = payoutPaged?.total ?? payoutRequests.length;
   const ratings = useMemo(() => ratingsPaged?.data ?? [], [ratingsPaged]);
-  const ratingsTotal = ratingsPaged?.total ?? ratings.length;
+  const ratingsTotal = opsSummary?.ratings.total ?? ratingsPaged?.total ?? ratings.length;
   const incidents = useMemo(() => incidentsPaged?.data ?? [], [incidentsPaged]);
   const incidentsTotal = incidentsPaged?.total ?? incidents.length;
   const adminAccounts = useMemo(() => adminAccountsData ?? [], [adminAccountsData]);
@@ -600,18 +560,10 @@ export function useAdminData(
   );
   const adminModules = useMemo(() => adminModulesData?.modules ?? [], [adminModulesData]);
 
-  // New SOS pushed over the live stream → refresh the incidents feed immediately.
-  const liveSos = useMemo(() => liveSnapshot?.sos ?? [], [liveSnapshot]);
-  useEffect(() => {
-    if (!want("incidents") || liveSos.length === 0) return;
-    const known = new Set(incidents.map((i) => i.id));
-    if (liveSos.some((s) => !known.has(s.id))) {
-      void queryClient.invalidateQueries({ queryKey: QK.incidents(token) });
-    }
-  }, [liveSos, incidents, queryClient, token, want]);
-
   // ── derived rider data ──────────────────────────────────────────────────────
   const activeRiders = useMemo(() => riders.filter((r) => r.onlineStatus), [riders]);
+  const liveOnlineCount =
+    liveSnapshot?.riders?.length ?? opsSummary?.riders.online ?? activeRiders.length;
   const ridersWithCoords = useMemo(
     () =>
       riders.filter((r) => {
@@ -651,17 +603,26 @@ export function useAdminData(
     [deliveries]
   );
 
-  // ── map markers ─────────────────────────────────────────────────────────────
-  const mapMarkers = useMemo(
-    () =>
-      ridersWithCoords.map((rider) => ({
-        id: rider.id,
-        position: [parseNumber(rider.currentLatitude), parseNumber(rider.currentLongitude)] as [number, number],
-        label: rider.user.fullName,
-        variant: "driver" as const
-      })),
-    [ridersWithCoords]
-  );
+  // ── map markers (prefer full live fleet; fall back to paged rider coords) ───
+  const mapMarkers = useMemo(() => {
+    if (liveSnapshot?.riders?.length) {
+      return liveSnapshot.riders
+        .filter((r) => Number.isFinite(r.latitude) && Number.isFinite(r.longitude))
+        .slice(0, 250)
+        .map((rider) => ({
+          id: rider.id,
+          position: [rider.latitude, rider.longitude] as [number, number],
+          label: rider.name || rider.displayCode,
+          variant: "driver" as const
+        }));
+    }
+    return ridersWithCoords.map((rider) => ({
+      id: rider.id,
+      position: [parseNumber(rider.currentLatitude), parseNumber(rider.currentLongitude)] as [number, number],
+      label: rider.user.fullName,
+      variant: "driver" as const
+    }));
+  }, [liveSnapshot, ridersWithCoords]);
 
   // ── currency ────────────────────────────────────────────────────────────────
   const adminCurrency = useMemo(() => {
@@ -673,6 +634,13 @@ export function useAdminData(
 
   // ── weekly ride buckets ─────────────────────────────────────────────────────
   const weeklyRideBuckets = useMemo(() => {
+    if (opsSummary?.weeklyRides?.length) {
+      return opsSummary.weeklyRides.map((bucket) => {
+        const date = new Date(bucket.key);
+        const label = new Intl.DateTimeFormat("en-GH", { weekday: "short" }).format(date);
+        return { ...bucket, label };
+      });
+    }
     const dayKeys = getDateKeys(dashboardDateRange.from, dashboardDateRange.to, 7);
     return dayKeys.map((key) => {
       const dayRides = rides.filter((r) => r.createdAt.slice(0, 10) === key);
@@ -685,7 +653,7 @@ export function useAdminData(
         completed: dayRides.filter((r) => r.status.toLowerCase() === "completed").length
       };
     });
-  }, [rides, dashboardDateRange]);
+  }, [opsSummary, rides, dashboardDateRange]);
 
   const weeklyRideMax = useMemo(
     () => Math.max(1, ...weeklyRideBuckets.map((b) => b.rides)),
@@ -694,12 +662,18 @@ export function useAdminData(
 
   // ── revenue calculations ────────────────────────────────────────────────────
   const rideRevenue = useMemo(
-    () => sum(completedRides.map((r) => r.platformCommission)),
-    [completedRides]
+    () =>
+      opsSummary != null
+        ? opsSummary.rides.commissionInRange
+        : sum(completedRides.map((r) => r.platformCommission)),
+    [opsSummary, completedRides]
   );
   const deliveryRevenue = useMemo(
-    () => sum(completedDeliveries.map((d) => d.platformCommission)),
-    [completedDeliveries]
+    () =>
+      opsSummary != null
+        ? opsSummary.deliveries.commissionInRange
+        : sum(completedDeliveries.map((d) => d.platformCommission)),
+    [opsSummary, completedDeliveries]
   );
   const totalDashboardRevenue = rideRevenue + deliveryRevenue;
   const rideRevenuePercent = useMemo(
@@ -1388,24 +1362,32 @@ export function useAdminData(
 
   // ── dashboard metrics ───────────────────────────────────────────────────────
   const dashboardMetrics = useMemo(() => {
-    const passengerTotal = userStats?.passengers.total ?? passengersTotal;
-    const passengerPending = userStats?.passengers.pending ?? 0;
-    const passengerVerified = userStats?.passengers.verified ?? 0;
-    const riderTotal = userStats?.riders.total ?? ridersTotal;
-    const riderPending = userStats?.riders.pending ?? 0;
-    const riderVerified = userStats?.riders.verified ?? 0;
+    const passengerTotal =
+      opsSummary?.passengers.total ?? userStats?.passengers.total ?? passengersTotal;
+    const passengerPending =
+      opsSummary?.passengers.pending ?? userStats?.passengers.pending ?? 0;
+    const passengerVerified =
+      opsSummary?.passengers.verified ?? userStats?.passengers.verified ?? 0;
+    const riderTotal = opsSummary?.riders.total ?? userStats?.riders.total ?? ridersTotal;
+    const riderPending = opsSummary?.riders.pending ?? userStats?.riders.pending ?? 0;
+    const riderVerified = opsSummary?.riders.verified ?? userStats?.riders.verified ?? 0;
+    const activeTrips = opsSummary?.rides.active ?? activeRides.length;
+    const completedTrips = opsSummary?.rides.completedInRange ?? completedRides.length;
+    const onlineRiders = liveOnlineCount;
+    const deliveryOrders = opsSummary?.deliveries.totalInRange ?? deliveries.length;
+    const deliveredOrders = opsSummary?.deliveries.completedInRange ?? completedDeliveries.length;
 
     return [
       {
         label: "Active Trips",
-        value: `${activeRides.length}`,
-        trend: `${completedRides.length} completed`,
+        value: `${activeTrips}`,
+        trend: `${completedTrips} completed`,
         icon: Bike,
         tone: "yellow"
       },
       {
         label: "Online Riders",
-        value: `${activeRiders.length}`,
+        value: `${onlineRiders}`,
         trend: `${riderTotal} registered`,
         icon: Users,
         tone: "green"
@@ -1426,8 +1408,8 @@ export function useAdminData(
       },
       {
         label: "Delivery Orders",
-        value: `${deliveries.length}`,
-        trend: `${completedDeliveries.length} delivered`,
+        value: `${deliveryOrders}`,
+        trend: `${deliveredOrders} delivered`,
         icon: Package,
         tone: "yellow"
       },
@@ -1440,9 +1422,10 @@ export function useAdminData(
       }
     ];
   }, [
+    opsSummary,
     activeRides,
     completedRides,
-    activeRiders,
+    liveOnlineCount,
     userStats,
     passengersTotal,
     ridersTotal,
@@ -1454,6 +1437,27 @@ export function useAdminData(
 
   // ── live activity feed ──────────────────────────────────────────────────────
   const liveActivityItems = useMemo(() => {
+    const fromSummary = opsSummary?.recentActivity;
+    if (fromSummary) {
+      return [
+        ...fromSummary.rides.map((r) => ({
+          id: `ride-${r.id}`,
+          icon: Bike,
+          title: `Ride completed`,
+          body: `${r.passengerName} → ${r.riderName ?? "Unassigned"}`,
+          meta: r.createdAt.slice(11, 16),
+          tone: "success" as const
+        })),
+        ...fromSummary.deliveries.map((d) => ({
+          id: `delivery-${d.id}`,
+          icon: Package,
+          title: `Delivery completed`,
+          body: `${d.passengerName} → ${d.recipientName}`,
+          meta: d.createdAt.slice(11, 16),
+          tone: "success" as const
+        }))
+      ].slice(0, 8);
+    }
     const items = [
       ...completedRides.slice(-5).map((r) => ({
         id: `ride-${r.id}`,
@@ -1481,7 +1485,7 @@ export function useAdminData(
       }))
     ];
     return items.slice(0, 10);
-  }, [completedRides, completedDeliveries, activeRiders]);
+  }, [opsSummary, completedRides, completedDeliveries, activeRiders]);
 
   // ── admin form handlers ─────────────────────────────────────────────────────
   const eligiblePassengers = useMemo(
@@ -1502,6 +1506,9 @@ export function useAdminData(
   }, []);
 
   // ── mutations ───────────────────────────────────────────────────────────────
+  const invalidateOpsSummary = () =>
+    queryClient.invalidateQueries({ queryKey: QK.opsSummary });
+
   const incidentReviewMutation = useMutation({
     mutationFn: async ({ incidentId, status }: { incidentId: string; status: string }) =>
       requestJson(`/admin/incidents/${incidentId}`, {
@@ -1510,7 +1517,10 @@ export function useAdminData(
         body: JSON.stringify({ status })
       }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: QK.incidents(token) });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: QK.incidents }),
+        invalidateOpsSummary()
+      ]);
       addToast("Incident updated successfully", "success");
     }
   });
@@ -1529,8 +1539,9 @@ export function useAdminData(
         setPayoutRejectionReasons((prev) => ({ ...prev, [variables.payoutRequestId]: "" }));
       }
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: QK.payoutRequests(token) }),
-        queryClient.invalidateQueries({ queryKey: QK.walletTx(token) })
+        queryClient.invalidateQueries({ queryKey: QK.payoutRequests }),
+        queryClient.invalidateQueries({ queryKey: QK.walletTx }),
+        invalidateOpsSummary()
       ]);
       addToast("Payout request processed", "success");
     },
@@ -1549,7 +1560,10 @@ export function useAdminData(
         })
       }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: QK.rides(token) });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: QK.rides }),
+        invalidateOpsSummary()
+      ]);
       addToast("Ride action completed", "success");
     }
   });
@@ -1566,7 +1580,10 @@ export function useAdminData(
         })
       }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: QK.deliveries(token) });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: QK.deliveries }),
+        invalidateOpsSummary()
+      ]);
       addToast("Delivery action completed", "success");
     }
   });
@@ -1583,7 +1600,10 @@ export function useAdminData(
       }),
     onSuccess: async () => {
       setAdminForm({ fullName: "", email: "", phoneCountryCode: "+233", phoneLocal: "", phoneE164: "", preferredCurrency: "GHS", password: "", title: "", permissions: "" });
-      await queryClient.invalidateQueries({ queryKey: QK.adminAccounts(token) });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: QK.adminAccounts }),
+        invalidateOpsSummary()
+      ]);
       addToast("Admin account created", "success");
     }
   });
@@ -1601,9 +1621,10 @@ export function useAdminData(
     onSuccess: async () => {
       setPromoteForm({ passengerUserId: "", email: "", password: "", title: "", permissions: "" });
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: QK.adminAccounts(token) }),
-        queryClient.invalidateQueries({ queryKey: QK.passengers(token) }),
-        queryClient.invalidateQueries({ queryKey: QK.userStats(token) })
+        queryClient.invalidateQueries({ queryKey: QK.adminAccounts }),
+        queryClient.invalidateQueries({ queryKey: QK.passengers }),
+        queryClient.invalidateQueries({ queryKey: QK.userStats }),
+        invalidateOpsSummary()
       ]);
       addToast("Passenger promoted to admin", "success");
     }
@@ -1618,8 +1639,9 @@ export function useAdminData(
       }),
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: QK.riders(token) }),
-        queryClient.invalidateQueries({ queryKey: QK.userStats(token) })
+        queryClient.invalidateQueries({ queryKey: QK.riders }),
+        queryClient.invalidateQueries({ queryKey: QK.userStats }),
+        invalidateOpsSummary()
       ]);
       addToast("Rider approval status updated", "success");
     },
@@ -1635,9 +1657,10 @@ export function useAdminData(
       }),
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: QK.riders(token) }),
-        queryClient.invalidateQueries({ queryKey: QK.userStats(token) }),
-        queryClient.invalidateQueries({ queryKey: QK.auditLogs(token) })
+        queryClient.invalidateQueries({ queryKey: QK.riders }),
+        queryClient.invalidateQueries({ queryKey: QK.userStats }),
+        queryClient.invalidateQueries({ queryKey: QK.auditLogs }),
+        invalidateOpsSummary()
       ]);
       addToast("Rider suspension updated", "success");
     },
@@ -1660,7 +1683,10 @@ export function useAdminData(
         body: JSON.stringify({ status, notes })
       }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: QK.riderDocuments(token) });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: QK.riderDocuments }),
+        invalidateOpsSummary()
+      ]);
       addToast("Document review saved", "success");
     },
     onError: (error) => addToast((error as Error).message || "Could not review document", "error")
@@ -1680,7 +1706,10 @@ export function useAdminData(
         body: JSON.stringify(updates)
       }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: QK.zones(token) });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: QK.zones }),
+        invalidateOpsSummary()
+      ]);
       addToast("Zone settings updated", "success");
     }
   });
@@ -1693,7 +1722,7 @@ export function useAdminData(
         body: JSON.stringify(input)
       }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: QK.escalationRules(token) });
+      await queryClient.invalidateQueries({ queryKey: QK.escalationRules });
       addToast("Escalation rule created", "success");
     },
     onError: (error) => addToast((error as Error).message || "Could not create rule", "error")
@@ -1707,7 +1736,7 @@ export function useAdminData(
         body: JSON.stringify({ enabled })
       }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: QK.escalationRules(token) });
+      await queryClient.invalidateQueries({ queryKey: QK.escalationRules });
       addToast("Escalation rule updated", "success");
     },
     onError: (error) => addToast((error as Error).message || "Could not update rule", "error")
@@ -1744,7 +1773,7 @@ export function useAdminData(
       });
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: QK.scheduledBroadcasts(token) });
+      await queryClient.invalidateQueries({ queryKey: QK.scheduledBroadcasts });
       addToast("Broadcast scheduled", "success");
     },
     onError: (error) => addToast((error as Error).message || "Could not schedule broadcast", "error")
@@ -1758,7 +1787,7 @@ export function useAdminData(
         body: JSON.stringify({})
       }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: QK.scheduledBroadcasts(token) });
+      await queryClient.invalidateQueries({ queryKey: QK.scheduledBroadcasts });
       addToast("Broadcast cancelled", "success");
     },
     onError: (error) => addToast((error as Error).message || "Could not cancel broadcast", "error")
@@ -1773,66 +1802,76 @@ export function useAdminData(
       }),
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: QK.scheduledBroadcasts(token) }),
-        queryClient.invalidateQueries({ queryKey: QK.opsJobStatus(token) })
+        queryClient.invalidateQueries({ queryKey: QK.scheduledBroadcasts }),
+        queryClient.invalidateQueries({ queryKey: QK.opsJobStatus })
       ]);
       addToast("Broadcast retry started", "success");
     },
     onError: (error) => addToast((error as Error).message || "Could not retry broadcast", "error")
   });
 
-  // ── badge data ──────────────────────────────────────────────────────────────
+  // ── badge data (prefer ops-summary aggregates over sample list lengths) ─────
   const badgeData = useMemo(() => ({
-    activeTripsCount: activeRides.length,
-    completedTripsCount: completedRides.length,
-    activeRidersCount: activeRiders.length,
-    ridersCount: ridersTotal,
-    riderVerificationPending: riderVerificationStats.pending,
-    riderVerificationUnderReview: riderVerificationStats.underReview,
-    riderDocumentMissing: riderDocumentStats.missing,
-    topRiderPerformanceEarningsCount: riderFinancialRows.filter((r) => r.earnings > 0).length,
-    riderWalletTransactionsCount: riderWalletTransactions.length,
-    riderPayoutRequestedCount: requestedRiderPayouts.length,
-    riderIncidentsCount: riderIncidents.length,
-    ridersWithCoordsCount: ridersWithCoords.length,
-    suspendedRidersCount: suspendedRiders.length,
-    passengersCount: passengersTotal,
-    pendingPayoutRequestsCount: pendingPayoutRequests.length,
-    promoAdjustedTripsCount: promoAdjustedTrips.length,
-    zonesActiveCount: zones.filter((z) => z.isActive).length,
-    adminAccountsCount: adminAccounts.length,
-    ratingsCount: ratingsTotal,
-    openSupportTicketsCount: openSupportTicketRows.length || openTickets.length,
-    openSosCount,
-    deliveriesCount: deliveriesTotal,
-    completedDeliveriesCount: completedDeliveries.length
+    activeTripsCount: opsSummary?.rides.active ?? activeRides.length,
+    completedTripsCount: opsSummary?.rides.completedInRange ?? completedRides.length,
+    activeRidersCount: liveOnlineCount,
+    ridersCount: opsSummary?.riders.total ?? ridersTotal,
+    riderVerificationPending: opsSummary?.riders.pending ?? riderVerificationStats.pending,
+    riderVerificationUnderReview:
+      opsSummary?.riders.underReview ?? riderVerificationStats.underReview,
+    riderDocumentMissing: opsSummary?.documents.pendingOrMissing ?? riderDocumentStats.missing,
+    topRiderPerformanceEarningsCount:
+      opsSummary?.riders.withEarnings ??
+      riderFinancialRows.filter((r) => r.earnings > 0).length,
+    riderWalletTransactionsCount:
+      opsSummary?.finance.riderWalletTxCount ?? riderWalletTransactions.length,
+    riderPayoutRequestedCount:
+      opsSummary?.finance.requestedRiderPayouts ?? requestedRiderPayouts.length,
+    riderIncidentsCount: opsSummary?.incidents.riderRelated ?? riderIncidents.length,
+    ridersWithCoordsCount: liveSnapshot?.riders?.length ?? opsSummary?.riders.withCoords ?? mapMarkers.length,
+    suspendedRidersCount: opsSummary?.riders.suspended ?? suspendedRiders.length,
+    passengersCount: opsSummary?.passengers.total ?? passengersTotal,
+    pendingPayoutRequestsCount:
+      opsSummary?.finance.pendingPayoutRequests ?? pendingPayoutRequests.length,
+    promoAdjustedTripsCount:
+      opsSummary?.rides.promoAdjustedInRange ?? promoAdjustedTrips.length,
+    zonesActiveCount: opsSummary?.zones.active ?? zones.filter((z) => z.isActive).length,
+    adminAccountsCount: opsSummary?.adminAccounts.total ?? adminAccounts.length,
+    ratingsCount: opsSummary?.ratings.total ?? ratingsTotal,
+    openSupportTicketsCount:
+      opsSummary?.support.openTickets ??
+      (openSupportTicketRows.length || openTickets.length),
+    openSosCount: opsSummary?.sos.open ?? openSosCount,
+    deliveriesCount: opsSummary?.deliveries.totalInRange ?? deliveriesTotal,
+    completedDeliveriesCount:
+      opsSummary?.deliveries.completedInRange ?? completedDeliveries.length
   }), [
-    activeRides, completedRides, activeRiders, ridersTotal, riderVerificationStats,
+    opsSummary, activeRides, completedRides, liveOnlineCount, ridersTotal, riderVerificationStats,
     riderDocumentStats, riderFinancialRows, riderWalletTransactions, requestedRiderPayouts,
-    riderIncidents, ridersWithCoords, suspendedRiders, passengersTotal, pendingPayoutRequests,
+    riderIncidents, liveSnapshot, mapMarkers, suspendedRiders, passengersTotal, pendingPayoutRequests,
     promoAdjustedTrips, zones, adminAccounts, ratingsTotal, openTickets, openSupportTicketRows, openSosCount, deliveriesTotal, completedDeliveries
   ]);
 
   // ── screen highlights ───────────────────────────────────────────────────────
   const screenHighlights: Record<AdminConsoleScreen, Array<{ label: string; value: string }>> = useMemo(() => ({
     dashboard: [
-      { label: "Active trips", value: `${activeRides.length}` },
-      { label: "Riders online", value: `${activeRiders.length}` },
+      { label: "Active trips", value: `${opsSummary?.rides.active ?? activeRides.length}` },
+      { label: "Riders online", value: `${liveOnlineCount}` },
       { label: "Revenue", value: `${adminCurrency} ${totalDashboardRevenue.toFixed(0)}` }
     ],
     rides: [
-      { label: "Total rides", value: `${rides.length}` },
-      { label: "Completed", value: `${completedRides.length}` },
-      { label: "Active", value: `${activeRides.length}` }
+      { label: "Total rides", value: `${opsSummary?.rides.totalInRange ?? ridesTotal}` },
+      { label: "Completed", value: `${opsSummary?.rides.completedInRange ?? completedRides.length}` },
+      { label: "Active", value: `${opsSummary?.rides.active ?? activeRides.length}` }
     ],
     deliveries: [
-      { label: "Total", value: `${deliveries.length}` },
-      { label: "Delivered", value: `${completedDeliveries.length}` },
-      { label: "Active", value: `${activeDeliveries.length}` }
+      { label: "Total", value: `${opsSummary?.deliveries.totalInRange ?? deliveriesTotal}` },
+      { label: "Delivered", value: `${opsSummary?.deliveries.completedInRange ?? completedDeliveries.length}` },
+      { label: "Active", value: `${opsSummary?.deliveries.active ?? activeDeliveries.length}` }
     ],
     riders: [
-      { label: "Total riders", value: `${riders.length}` },
-      { label: "Online", value: `${activeRiders.length}` },
+      { label: "Total riders", value: `${opsSummary?.riders.total ?? ridersTotal}` },
+      { label: "Online", value: `${liveOnlineCount}` },
       { label: "With vehicle", value: `${vehicleCount}` }
     ],
     riderVerification: [
@@ -1937,8 +1976,9 @@ export function useAdminData(
       { label: "Active", value: `${escalationRules.filter((r) => r.enabled).length}` }
     ]
   }), [
-    activeRides, activeRiders, adminCurrency, totalDashboardRevenue, rides, completedRides,
-    deliveries, completedDeliveries, activeDeliveries, riders, vehicleCount, riderVerificationStats,
+    opsSummary, liveOnlineCount, activeRides, activeRiders, adminCurrency, totalDashboardRevenue,
+    rides, ridesTotal, completedRides, deliveries, deliveriesTotal, completedDeliveries, activeDeliveries,
+    riders, ridersTotal, vehicleCount, riderVerificationStats,
     riderDocumentStats, riderRatingAverage, totalRiderEarnings, totalRiderCommission,
     riderWalletTransactions, riderWalletCredits, requestedRiderPayouts, paidPayoutRequests,
     riderComplaintOpen, riderComplaintResolved, ridersWithCoords, suspendedRiders, passengers,
@@ -1956,7 +1996,7 @@ export function useAdminData(
         body: JSON.stringify({ settings })
       }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: QK.platformSettings(token) });
+      await queryClient.invalidateQueries({ queryKey: QK.platformSettings });
       addToast("Platform settings saved", "success");
     },
     onError: (error) => addToast((error as Error).message || "Could not save settings", "error")
@@ -1971,7 +2011,7 @@ export function useAdminData(
         body: JSON.stringify({ message })
       }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: QK.auditLogs(token) });
+      await queryClient.invalidateQueries({ queryKey: QK.auditLogs });
       addToast("Info request sent to rider", "success");
     },
     onError: (error) => addToast((error as Error).message || "Could not send info request", "error")
@@ -1986,7 +2026,7 @@ export function useAdminData(
         body: JSON.stringify({ assignedToId })
       }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: QK.incidents(token) });
+      await queryClient.invalidateQueries({ queryKey: QK.incidents });
       addToast("Incident assigned", "success");
     },
     onError: (error) => addToast((error as Error).message || "Could not assign incident", "error")
@@ -2026,6 +2066,7 @@ export function useAdminData(
   );
 
   const dataLoading =
+    (want("opsSummary") && opsSummaryPending) ||
     (want("rides") && ridesPending) ||
     (want("deliveries") && deliveriesPending) ||
     (want("riders") && ridersPending) ||
@@ -2071,7 +2112,8 @@ export function useAdminData(
     adminAccounts, adminRoleEntries, adminModules, zones, auditLogs,
     supportTickets, escalationRules, scheduledBroadcasts, opsJobStatus,
     platformSettings,
-    liveSos, liveOpsConnected: Boolean(liveSnapshot), liveOpsTimestamp: liveSnapshot?.timestamp ?? null,
+    liveSos, liveOpsConnected, liveOpsTimestamp,
+    opsSummary,
 
     // Server list paging controls
     listPageSize: LIST_PAGE,

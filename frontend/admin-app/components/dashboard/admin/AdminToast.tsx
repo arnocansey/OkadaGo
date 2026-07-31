@@ -19,6 +19,13 @@ type AdminToastContextValue = {
 
 const AdminToastContext = createContext<AdminToastContextValue | null>(null);
 
+const VARIANT_ICON: Record<ToastVariant, string> = {
+  success: "\u2713",
+  error: "\u2715",
+  warning: "\u26a0",
+  info: "\u2139"
+};
+
 export function AdminToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
@@ -39,31 +46,19 @@ export function AdminToastProvider({ children }: { children: ReactNode }) {
   return (
     <AdminToastContext.Provider value={value}>
       {children}
-      <div style={{ position: "fixed", top: 16, right: 16, zIndex: 9999, display: "flex", flexDirection: "column", gap: 8, maxWidth: 380 }}>
+      <div className="admin-toast-stack" role="region" aria-live="polite" aria-label="Notifications">
         {toasts.map((toast) => (
-          <div
+          <button
             key={toast.id}
+            type="button"
+            className={`admin-toast admin-toast--${toast.variant}`}
             onClick={() => dismissToast(toast.id)}
-            style={{
-              padding: "12px 16px",
-              borderRadius: 12,
-              border: "1px solid var(--border, #2a2b2e)",
-              background: toast.variant === "success" ? "#0f3d1a" : toast.variant === "error" ? "#3d0f0f" : toast.variant === "warning" ? "#3d2e0f" : "#1a1b1e",
-              color: "var(--text-primary, #f0f0f0)",
-              cursor: "pointer",
-              fontSize: 13,
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-              animation: "toast-slide-in 0.3s ease-out"
-            }}
           >
-            <span style={{ fontSize: 16 }}>
-              {toast.variant === "success" ? "\u2713" : toast.variant === "error" ? "\u2715" : toast.variant === "warning" ? "\u26a0" : "\u2139"}
+            <span className="admin-toast__icon" aria-hidden="true">
+              {VARIANT_ICON[toast.variant]}
             </span>
-            <span>{toast.message}</span>
-          </div>
+            <span className="admin-toast__message">{toast.message}</span>
+          </button>
         ))}
       </div>
     </AdminToastContext.Provider>

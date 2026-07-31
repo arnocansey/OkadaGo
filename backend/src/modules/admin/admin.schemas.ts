@@ -93,3 +93,8 @@ export const adminAuditLogsQuerySchema = z.object({
   offset: z.coerce.number().int().min(0).optional(),
   page: z.coerce.number().int().min(1).optional()
 });
+
+export const adminOpsSummaryQuerySchema = z.object({
+  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional()
+});

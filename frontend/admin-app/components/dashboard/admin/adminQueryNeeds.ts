@@ -2,6 +2,7 @@ import type { AdminConsoleScreen } from "./types";
 
 /** Data domains the admin console can fetch. */
 export type AdminQueryNeed =
+  | "opsSummary"
   | "rides"
   | "deliveries"
   | "riders"
@@ -24,38 +25,32 @@ export type AdminQueryNeed =
   | "platformSettings"
   | "liveStream";
 
-/** Always fetched so shell badges stay roughly honest without loading every domain. */
-const SHELL_NEEDS: AdminQueryNeed[] = [
-  "rides",
-  "deliveries",
-  "riders",
-  "userStats",
-  "incidents"
-];
+/** Shell badges + dashboard KPIs — one aggregate, not sample list pages. */
+const SHELL_NEEDS: AdminQueryNeed[] = ["opsSummary"];
 
 const SCREEN_EXTRA: Record<AdminConsoleScreen, AdminQueryNeed[]> = {
   dashboard: ["liveStream", "zones"],
-  rides: [],
-  deliveries: [],
-  riders: ["liveStream", "zones"],
-  riderVerification: ["riderDocuments"],
+  rides: ["rides"],
+  deliveries: ["deliveries"],
+  riders: ["riders", "liveStream", "zones"],
+  riderVerification: ["riders", "userStats", "riderDocuments"],
   riderDocuments: ["riderDocuments"],
-  riderPerformance: ["ratings", "walletTx", "payout"],
-  riderEarnings: ["walletTx", "payout", "ratings"],
+  riderPerformance: ["riders", "rides", "ratings", "walletTx", "payout"],
+  riderEarnings: ["riders", "rides", "deliveries", "walletTx", "payout", "ratings"],
   riderWallet: ["walletTx", "payout"],
   riderPayouts: ["walletTx", "payout"],
-  riderComplaints: ["adminAccounts"],
-  riderActivity: ["liveStream", "walletTx", "payout", "ratings"],
-  riderSuspensions: ["auditLogs"],
-  passengers: ["passengers"],
-  payments: ["walletTx", "payout"],
+  riderComplaints: ["incidents", "adminAccounts"],
+  riderActivity: ["riders", "liveStream", "walletTx", "payout", "ratings"],
+  riderSuspensions: ["riders", "auditLogs"],
+  passengers: ["passengers", "userStats"],
+  payments: ["rides", "deliveries", "walletTx", "payout"],
   ratings: ["ratings"],
-  promotions: ["zones"],
-  zones: ["zones"],
+  promotions: ["rides", "zones"],
+  zones: ["zones", "riders", "rides"],
   supportTickets: ["supportTickets"],
-  sosIncidents: ["liveStream"],
+  sosIncidents: ["incidents", "liveStream"],
   notifications: ["scheduledBroadcasts", "opsJobStatus"],
-  reports: ["passengers", "ratings", "walletTx"],
+  reports: ["rides", "deliveries", "passengers", "ratings", "walletTx"],
   auditLogs: ["auditLogs", "adminAccounts"],
   settings: [
     "zones",

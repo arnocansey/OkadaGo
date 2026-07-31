@@ -1,0 +1,24 @@
+/** Stable React Query keys — auth lives in the fetcher, not the key. */
+export const QK = {
+  rides: ["rides"] as const,
+  deliveries: ["deliveries"] as const,
+  riders: ["riders"] as const,
+  passengers: ["passengers"] as const,
+  userStats: ["admin-user-stats"] as const,
+  opsSummary: ["admin-ops-summary"] as const,
+  walletTx: ["admin-wallet-transactions"] as const,
+  payoutRequests: ["admin-payout-requests"] as const,
+  ratings: ["admin-ratings"] as const,
+  incidents: ["admin-incidents"] as const,
+  adminAccounts: ["admin-accounts"] as const,
+  adminPermissions: ["admin-permissions"] as const,
+  adminModules: ["admin-modules"] as const,
+  zones: ["service-zones"] as const,
+  auditLogs: ["admin-audit-logs"] as const,
+  supportTickets: ["admin-support-tickets"] as const,
+  escalationRules: ["admin-escalation-rules"] as const,
+  scheduledBroadcasts: ["admin-scheduled-broadcasts"] as const,
+  opsJobStatus: ["admin-ops-jobs-status"] as const,
+  riderDocuments: ["admin-rider-documents"] as const,
+  platformSettings: ["admin-platform-settings"] as const
+} as const;

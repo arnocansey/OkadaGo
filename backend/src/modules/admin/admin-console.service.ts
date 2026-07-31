@@ -417,6 +417,310 @@ export class AdminConsoleService {
     throw new AppError("Unknown export entity", 400, "EXPORT_ENTITY_UNKNOWN");
   }
 
+  // ── Ops summary (dashboard KPIs + nav badges) ───────────────────────────
+
+  async getOpsSummary(token: string, query?: { from?: string; to?: string }) {
+    await this.verifyAdmin(token);
+
+    const dayMs = 86_400_000;
+    const toKey =
+      query?.to ?? new Date().toISOString().slice(0, 10);
+    const fromKey =
+      query?.from ??
+      new Date(Date.parse(`${toKey}T00:00:00Z`) - 6 * dayMs).toISOString().slice(0, 10);
+
+    const rangeStart = new Date(`${fromKey}T00:00:00.000Z`);
+    const rangeEnd = new Date(`${toKey}T23:59:59.999Z`);
+    const createdInRange = { createdAt: { gte: rangeStart, lte: rangeEnd } };
+
+    const activeRideStatuses = [
+      "SCHEDULED",
+      "SEARCHING",
+      "ASSIGNED",
+      "ARRIVING",
+      "ARRIVED",
+      "STARTED"
+    ] as const;
+    const activeDeliveryStatuses = ["SEARCHING", "ASSIGNED", "PICKED_UP", "IN_TRANSIT"] as const;
+    const openSosStatuses = ["OPEN", "UNDER_REVIEW", "ACTIONED"] as const;
+    const openTicketStatuses = ["OPEN", "PENDING_PASSENGER", "PENDING_RIDER", "ESCALATED"] as const;
+    const pendingPayoutStatuses = ["REQUESTED", "REVIEWING", "APPROVED", "PROCESSING"] as const;
+    const requestedPayoutStatuses = ["REQUESTED", "REVIEWING"] as const;
+
+    const dayKeys: string[] = [];
+    for (
+      let t = rangeStart.getTime();
+      t <= Date.parse(`${toKey}T00:00:00.000Z`);
+      t += dayMs
+    ) {
+      dayKeys.push(new Date(t).toISOString().slice(0, 10));
+    }
+    // Cap chart buckets so a huge custom range stays cheap.
+    const chartKeys = dayKeys.length > 14 ? dayKeys.slice(-14) : dayKeys;
+
+    const passengerUser = { role: "PASSENGER" as const, deletedAt: null };
+    const riderUser = { deletedAt: null };
+
+    const [
+      ridesActive,
+      ridesCompletedInRange,
+      ridesTotalInRange,
+      ridesPromoAdjusted,
+      rideCommissionAgg,
+      deliveriesActive,
+      deliveriesCompletedInRange,
+      deliveriesTotalInRange,
+      deliveryCommissionAgg,
+      ridersTotal,
+      ridersOnline,
+      ridersWithCoords,
+      ridersSuspended,
+      riderApprovalGroups,
+      passengersTotal,
+      passengersVerified,
+      passengersPending,
+      pendingPayoutRequests,
+      requestedRiderPayouts,
+      riderWalletTxCount,
+      ratingsTotal,
+      zonesActive,
+      openSupportTickets,
+      openSos,
+      riderIncidents,
+      pendingDocuments,
+      adminAccounts,
+      ridersWithEarnings,
+      recentCompletedRides,
+      recentDeliveries
+    ] = await Promise.all([
+      prisma.ride.count({ where: { status: { in: [...activeRideStatuses] } } }),
+      prisma.ride.count({ where: { status: "COMPLETED", ...createdInRange } }),
+      prisma.ride.count({ where: createdInRange }),
+      prisma.ride.count({
+        where: {
+          ...createdInRange,
+          OR: [{ promoDiscount: { gt: 0 } }, { referralDiscount: { gt: 0 } }]
+        }
+      }),
+      prisma.ride.aggregate({
+        where: { status: "COMPLETED", ...createdInRange },
+        _sum: { platformCommission: true }
+      }),
+      prisma.deliveryRequest.count({
+        where: { status: { in: [...activeDeliveryStatuses] } }
+      }),
+      prisma.deliveryRequest.count({
+        where: { status: "DELIVERED", ...createdInRange }
+      }),
+      prisma.deliveryRequest.count({ where: createdInRange }),
+      prisma.deliveryRequest.aggregate({
+        where: { status: "DELIVERED", ...createdInRange },
+        _sum: { platformCommission: true }
+      }),
+      prisma.riderProfile.count({ where: { user: riderUser } }),
+      prisma.riderProfile.count({
+        where: { deletedAt: null, onlineStatus: true, user: riderUser }
+      }),
+      prisma.riderProfile.count({
+        where: {
+          deletedAt: null,
+          onlineStatus: true,
+          currentLatitude: { not: null },
+          currentLongitude: { not: null },
+          user: riderUser
+        }
+      }),
+      prisma.riderProfile.count({
+        where: {
+          OR: [
+            { approvalStatus: "SUSPENDED" },
+            { suspendedAt: { not: null } },
+            { user: { accountStatus: { in: ["SUSPENDED", "BANNED"] } } }
+          ]
+        }
+      }),
+      prisma.riderProfile.groupBy({
+        by: ["approvalStatus"],
+        where: { user: riderUser },
+        _count: { _all: true }
+      }),
+      prisma.passengerProfile.count({ where: { user: passengerUser } }),
+      prisma.passengerProfile.count({
+        where: { user: { ...passengerUser, isPhoneVerified: true } }
+      }),
+      prisma.passengerProfile.count({
+        where: { user: { ...passengerUser, isPhoneVerified: false } }
+      }),
+      prisma.payoutRequest.count({
+        where: { status: { in: [...pendingPayoutStatuses] } }
+      }),
+      prisma.payoutRequest.count({
+        where: { status: { in: [...requestedPayoutStatuses] } }
+      }),
+      prisma.walletTransaction.count({
+        where: { wallet: { type: { in: ["RIDER_SETTLEMENT", "RIDER_BONUS"] } } }
+      }),
+      prisma.rating.count(),
+      prisma.serviceZone.count({ where: { isActive: true } }),
+      prisma.supportTicket.count({
+        where: { deletedAt: null, status: { in: [...openTicketStatuses] } }
+      }),
+      prisma.incident.count({
+        where: {
+          deletedAt: null,
+          status: { in: [...openSosStatuses] },
+          OR: [{ severity: "CRITICAL" }, { category: { contains: "SOS", mode: "insensitive" } }]
+        }
+      }),
+      prisma.incident.count({
+        where: { deletedAt: null, riderId: { not: null } }
+      }),
+      prisma.riderDocument.count({
+        where: { status: { in: ["PENDING", "REJECTED", "EXPIRED"] } }
+      }),
+      prisma.adminProfile.count(),
+      prisma.ride
+        .groupBy({
+          by: ["riderId"],
+          where: {
+            status: "COMPLETED",
+            riderId: { not: null },
+            riderEarnings: { gt: 0 }
+          },
+          _count: { _all: true }
+        })
+        .then((rows) => rows.length),
+      prisma.ride.findMany({
+        where: { status: "COMPLETED" },
+        orderBy: { completedAt: "desc" },
+        take: 5,
+        select: {
+          id: true,
+          createdAt: true,
+          completedAt: true,
+          passenger: { select: { user: { select: { fullName: true } } } },
+          rider: { select: { user: { select: { fullName: true } } } }
+        }
+      }),
+      prisma.deliveryRequest.findMany({
+        where: { status: "DELIVERED" },
+        orderBy: { deliveredAt: "desc" },
+        take: 3,
+        select: {
+          id: true,
+          createdAt: true,
+          deliveredAt: true,
+          recipientName: true,
+          passenger: { select: { user: { select: { fullName: true } } } }
+        }
+      })
+    ]);
+
+    const dailyRideCounts = await Promise.all(
+      chartKeys.map(async (key) => {
+        const dayStart = new Date(`${key}T00:00:00.000Z`);
+        const dayEnd = new Date(`${key}T23:59:59.999Z`);
+        const [rides, completed] = await Promise.all([
+          prisma.ride.count({
+            where: { createdAt: { gte: dayStart, lte: dayEnd } }
+          }),
+          prisma.ride.count({
+            where: {
+              status: "COMPLETED",
+              createdAt: { gte: dayStart, lte: dayEnd }
+            }
+          })
+        ]);
+        return { key, rides, completed };
+      })
+    );
+
+    const ridersByStatus = {
+      PENDING: 0,
+      APPROVED: 0,
+      REJECTED: 0,
+      SUSPENDED: 0
+    };
+    for (const row of riderApprovalGroups) {
+      const key = row.approvalStatus as keyof typeof ridersByStatus;
+      if (key in ridersByStatus) {
+        ridersByStatus[key] = row._count._all;
+      }
+    }
+
+    const rideCommission = Number(rideCommissionAgg._sum.platformCommission ?? 0);
+    const deliveryCommission = Number(deliveryCommissionAgg._sum.platformCommission ?? 0);
+
+    return {
+      generatedAt: new Date().toISOString(),
+      range: { from: fromKey, to: toKey },
+      rides: {
+        active: ridesActive,
+        completedInRange: ridesCompletedInRange,
+        totalInRange: ridesTotalInRange,
+        promoAdjustedInRange: ridesPromoAdjusted,
+        commissionInRange: rideCommission
+      },
+      deliveries: {
+        active: deliveriesActive,
+        completedInRange: deliveriesCompletedInRange,
+        totalInRange: deliveriesTotalInRange,
+        commissionInRange: deliveryCommission
+      },
+      riders: {
+        total: ridersTotal,
+        online: ridersOnline,
+        withCoords: ridersWithCoords,
+        suspended: ridersSuspended,
+        pending: ridersByStatus.PENDING,
+        verified: ridersByStatus.APPROVED,
+        rejected: ridersByStatus.REJECTED,
+        underReview: Math.max(
+          0,
+          ridersTotal -
+            ridersByStatus.PENDING -
+            ridersByStatus.APPROVED -
+            ridersByStatus.REJECTED -
+            ridersByStatus.SUSPENDED
+        ),
+        withEarnings: ridersWithEarnings
+      },
+      passengers: {
+        total: passengersTotal,
+        pending: passengersPending,
+        verified: passengersVerified
+      },
+      finance: {
+        pendingPayoutRequests,
+        requestedRiderPayouts,
+        riderWalletTxCount,
+        commissionInRange: rideCommission + deliveryCommission
+      },
+      ratings: { total: ratingsTotal },
+      zones: { active: zonesActive },
+      support: { openTickets: openSupportTickets },
+      sos: { open: openSos },
+      incidents: { riderRelated: riderIncidents },
+      documents: { pendingOrMissing: pendingDocuments },
+      adminAccounts: { total: adminAccounts },
+      weeklyRides: dailyRideCounts,
+      recentActivity: {
+        rides: recentCompletedRides.map((r) => ({
+          id: r.id,
+          createdAt: (r.completedAt ?? r.createdAt).toISOString(),
+          passengerName: r.passenger.user.fullName,
+          riderName: r.rider?.user.fullName ?? null
+        })),
+        deliveries: recentDeliveries.map((d) => ({
+          id: d.id,
+          createdAt: (d.deliveredAt ?? d.createdAt).toISOString(),
+          passengerName: d.passenger.user.fullName,
+          recipientName: d.recipientName
+        }))
+      }
+    };
+  }
+
   // ── Live snapshot (SSE) ────────────────────────────────────────────────
 
   async getLiveSnapshot(token: string) {

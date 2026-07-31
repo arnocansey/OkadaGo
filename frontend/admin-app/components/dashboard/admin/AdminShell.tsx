@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Bell,
   Bike,
@@ -161,6 +161,15 @@ export function AdminShell({
     const stored = window.localStorage.getItem("okadago.admin-theme");
     return stored === "light" || stored === "dark" ? stored : "dark";
   });
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    window.localStorage.setItem("okadago.admin-theme", theme);
+    return () => {
+      delete document.documentElement.dataset.theme;
+    };
+  }, [theme]);
+
   const toggleSidebar = useCallback(() => {
     if (typeof window !== "undefined" && window.innerWidth > 1024) {
       setDesktopOpen((prev) => !prev);
@@ -170,13 +179,7 @@ export function AdminShell({
   }, []);
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
   const toggleTheme = useCallback(() => {
-    setTheme((prev) => {
-      const next = prev === "light" ? "dark" : "light";
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("okadago.admin-theme", next);
-      }
-      return next;
-    });
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
   }, []);
 
   const permittedScreens = useMemo(() => {
