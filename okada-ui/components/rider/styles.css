@@ -872,19 +872,15 @@
   }
 }
 
+/* Prefer <OkadaLoader />. Legacy class kept as a tiny pin mark for inline slots. */
 .rdr-spinner {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 9999px;
-  border: 3px solid var(--rdr-border);
-  border-top-color: var(--rdr-primary);
-  animation: pax-spin 0.7s linear infinite;
-}
-
-@keyframes pax-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: linear-gradient(145deg, #f7c600 10%, #ff6b00 90%);
+  animation: okada-loader-bounce 1.2s ease-in-out infinite;
+  border: 0;
 }
 
 /* ── Book page ── */
