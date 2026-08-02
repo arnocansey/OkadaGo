@@ -117,6 +117,18 @@ const SettingsScreen = dynamic(
   () => import("./admin/SettingsScreen").then((m) => m.SettingsScreen),
   { loading: screenFallback }
 );
+const CompanyProfileScreen = dynamic(
+  () => import("./admin/CompanyProfileScreen").then((m) => m.CompanyProfileScreen),
+  { loading: screenFallback }
+);
+const AccountSecurityScreen = dynamic(
+  () => import("./admin/AccountSecurityScreen").then((m) => m.AccountSecurityScreen),
+  { loading: screenFallback }
+);
+const NotificationSettingsScreen = dynamic(
+  () => import("./admin/NotificationSettingsScreen").then((m) => m.NotificationSettingsScreen),
+  { loading: screenFallback }
+);
 const PaymentMethodsScreen = dynamic(
   () => import("./admin/PaymentMethodsScreen").then((m) => m.PaymentMethodsScreen),
   { loading: screenFallback }
@@ -719,14 +731,37 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
       case "settings":
         return (
           <SettingsScreen
-            zones={data.zones}
-            adminAccounts={data.adminAccounts}
-            adminRoleEntries={data.adminRoleEntries}
-            adminModules={data.adminModules}
             adminCurrency={data.adminCurrency}
-            auditLogs={data.auditLogs}
-            dataLoading={data.platformSettingsPending || data.zonesPending || data.adminAccountsPending}
+            dataLoading={data.platformSettingsPending}
+            platformSettings={data.platformSettings}
+            onSaveSettings={(settings) => data.saveSettingsMutation.mutate(settings)}
+            settingsSaving={data.saveSettingsMutation.isPending}
+          />
+        );
+
+      case "companyProfile":
+        return (
+          <CompanyProfileScreen
+            dataLoading={data.platformSettingsPending}
+            platformSettings={data.platformSettings}
+            onSaveSettings={(settings) => data.saveSettingsMutation.mutate(settings)}
+            settingsSaving={data.saveSettingsMutation.isPending}
+          />
+        );
+
+      case "accountSecurity":
+        return (
+          <AccountSecurityScreen
+            dataLoading={data.platformSettingsPending}
             token={token}
+            platformSettings={data.platformSettings}
+          />
+        );
+
+      case "notificationSettings":
+        return (
+          <NotificationSettingsScreen
+            dataLoading={data.platformSettingsPending}
             platformSettings={data.platformSettings}
             onSaveSettings={(settings) => data.saveSettingsMutation.mutate(settings)}
             settingsSaving={data.saveSettingsMutation.isPending}
@@ -734,7 +769,13 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
         );
 
       case "paymentMethods":
-        return <PaymentMethodsScreen />;
+        return (
+          <PaymentMethodsScreen
+            dataLoading={data.walletTxPending}
+            adminCurrency={data.adminCurrency}
+            walletTransactions={data.walletTransactions}
+          />
+        );
 
       case "integrations":
         return <IntegrationsScreen />;

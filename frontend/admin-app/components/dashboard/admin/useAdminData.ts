@@ -2078,10 +2078,22 @@ export function useAdminData(
       { label: "Admins", value: `${adminAccounts.length}` }
     ],
     settings: [
-      { label: "Active zones", value: `${zones.filter((z) => z.isActive).length}` },
-      { label: "Admins", value: `${adminAccounts.length}` }
+      { label: "Currency", value: adminCurrency },
+      { label: "Timezone", value: "Africa/Accra" }
+    ],
+    companyProfile: [
+      { label: "Company", value: "OkadaGo" },
+      { label: "Region", value: "Accra" }
+    ],
+    accountSecurity: [
+      { label: "Security", value: "2FA + sessions" }
+    ],
+    notificationSettings: [
+      { label: "Channels", value: "4" },
+      { label: "Categories", value: "6" }
     ],
     paymentMethods: [
+      { label: "Wallet txns", value: `${walletTransactions.length}` },
       { label: "Finance", value: `${adminCurrency} ${totalRevenue.toFixed(0)}` }
     ],
     integrations: [
@@ -2111,7 +2123,8 @@ export function useAdminData(
     riderComplaintOpen, riderComplaintResolved, ridersWithCoords, suspendedRiders, passengers,
     blockedUsers, totalRevenue, pendingPayoutRequests, ratings, promoAdjustedTrips, promoSpend,
     zones, openTickets, resolvedTickets, auditLogs, adminAccounts, eligiblePassengers,
-    supportTickets, openSosCount, incidents, scheduledBroadcasts, escalationRules
+    supportTickets, openSosCount, incidents, scheduledBroadcasts, escalationRules,
+    walletTransactions
   ]);
 
   // ── platform settings persistence ───────────────────────────────────────────
@@ -2216,6 +2229,7 @@ export function useAdminData(
     escalationRulesPending,
     scheduledBroadcastsPending,
     platformSettingsPending,
+    walletTxPending,
     requestTab, setRequestTab,
     requestStatusView, setRequestStatusView,
     adminSearchTerm, setAdminSearchTerm,

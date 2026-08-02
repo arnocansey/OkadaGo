@@ -100,6 +100,9 @@ const screenPermissions: Partial<Record<AdminConsoleScreen, string>> = {
   reports: "reports.view",
   auditLogs: "audit.view",
   settings: "settings.view",
+  companyProfile: "settings.view",
+  accountSecurity: "settings.view",
+  notificationSettings: "settings.view",
   paymentMethods: "settings.view",
   integrations: "settings.view",
   taxesCompliance: "settings.view",
@@ -133,7 +136,10 @@ const screenMeta: Record<AdminConsoleScreen, AdminScreenMeta> = {
   reports: { eyebrow: "", title: "Reports", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
   auditLogs: { eyebrow: "", title: "Audit", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/admins", quickActionNote: "" },
   settings: { eyebrow: "", title: "Settings", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/admins", quickActionNote: "" },
-  paymentMethods: { eyebrow: "", title: "Payments", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
+  companyProfile: { eyebrow: "", title: "Company Profile", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
+  accountSecurity: { eyebrow: "", title: "Account & Security", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
+  notificationSettings: { eyebrow: "", title: "Notifications", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/notifications", quickActionNote: "" },
+  paymentMethods: { eyebrow: "", title: "Payment Methods", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
   integrations: { eyebrow: "", title: "Integrations", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
   taxesCompliance: { eyebrow: "", title: "Taxes & Compliance", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
   settingsNotifications: { eyebrow: "", title: "Alert Settings", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
@@ -366,10 +372,12 @@ export function AdminShell({
         badge: "",
         children: [
           { label: "General", href: "/settings", screen: "settings" },
-          { label: "Payments", href: "/payment-methods", screen: "paymentMethods" },
+          { label: "Company Profile", href: "/settings/company", screen: "companyProfile" },
+          { label: "Account & Security", href: "/settings/security", screen: "accountSecurity" },
+          { label: "Notifications", href: "/settings/notifications", screen: "notificationSettings" },
+          { label: "Payment Methods", href: "/payment-methods", screen: "paymentMethods" },
           { label: "Taxes", href: "/taxes-compliance", screen: "taxesCompliance" },
-          { label: "Integrations", href: "/integrations", screen: "integrations" },
-          { label: "Alerts", href: "/settings-notifications", screen: "settingsNotifications" }
+          { label: "Integrations", href: "/integrations", screen: "integrations" }
         ]
       },
       {
