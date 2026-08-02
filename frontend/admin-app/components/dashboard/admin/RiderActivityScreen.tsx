@@ -37,9 +37,8 @@ export type RiderActivityMapMarker = {
     | "driverTrip"
     | "driverIdle"
     | "passenger"
-    | "incident"
     | "pickup"
-    | "dropoff";
+    | "destination";
 };
 
 export type RiderActivityScreenProps = {
@@ -178,54 +177,51 @@ export function RiderActivityScreen({
     return rows;
   }, [activityRows, searchQuery, quickFilter, onTripNames]);
 
-  const mapMarkers = useMemo(() => {
+  const mapMarkers = useMemo((): RiderActivityMapMarker[] => {
     const fromLive = Boolean(liveMapMarkers && liveMapMarkers.length > 0);
     const base: RiderActivityMapMarker[] = fromLive
       ? liveMapMarkers!
-      : ridersWithCoords
-          .map((rider) => {
-            const lat = parseNumber(rider.currentLatitude);
-            const lng = parseNumber(rider.currentLongitude);
-            if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) {
-              return null;
-            }
-            return {
+      : ridersWithCoords.flatMap((rider) => {
+          const lat = parseNumber(rider.currentLatitude);
+          const lng = parseNumber(rider.currentLongitude);
+          if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) {
+            return [];
+          }
+          return [
+            {
               id: rider.id,
               position: [lat, lng] as [number, number],
               label: rider.user.fullName,
-              variant: "driver" as const,
-            };
-          })
-          .filter((marker): marker is RiderActivityMapMarker => marker != null);
+              variant: "driver" as const
+            }
+          ];
+        });
 
-    return base
-      .map((marker) => {
-        const row = activityById.get(marker.id);
-        const onTrip =
-          (row?.activeCount ?? 0) > 0 || onTripNames.has(marker.label);
-        const online = fromLive
-          ? true
-          : Boolean(row?.rider.onlineStatus ?? ridersWithCoords.find((r) => r.id === marker.id)?.onlineStatus);
+    return base.flatMap((marker) => {
+      const row = activityById.get(marker.id);
+      const onTrip = (row?.activeCount ?? 0) > 0 || onTripNames.has(marker.label);
+      const online = fromLive
+        ? true
+        : Boolean(row?.rider.onlineStatus ?? ridersWithCoords.find((r) => r.id === marker.id)?.onlineStatus);
 
-        if (quickFilter === "Online" && !online && !onTrip) return null;
-        if (quickFilter === "On Trip" && !onTrip) return null;
-        if (quickFilter === "Idle" && !(online && !onTrip)) return null;
+      if (quickFilter === "Online" && !online && !onTrip) return [];
+      if (quickFilter === "On Trip" && !onTrip) return [];
+      if (quickFilter === "Idle" && !(online && !onTrip)) return [];
 
-        const variant = onTrip
-          ? ("driverTrip" as const)
-          : online
-            ? ("driverOnline" as const)
-            : ("driverIdle" as const);
+      const variant = onTrip
+        ? ("driverTrip" as const)
+        : online
+          ? ("driverOnline" as const)
+          : ("driverIdle" as const);
 
-        return { ...marker, variant };
-      })
-      .filter((marker): marker is RiderActivityMapMarker => marker != null);
+      return [{ ...marker, variant }];
+    });
   }, [
     liveMapMarkers,
     ridersWithCoords,
     activityById,
     onTripNames,
-    quickFilter,
+    quickFilter
   ]);
 
   const timelineEvents = useMemo(() => {

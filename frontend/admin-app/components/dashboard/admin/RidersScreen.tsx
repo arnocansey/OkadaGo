@@ -16,7 +16,14 @@ export type RiderMapMarker = {
   id: string;
   position: [number, number];
   label: string;
-  variant?: "driver" | "passenger" | "incident" | "pickup" | "dropoff";
+  variant?:
+    | "driver"
+    | "driverOnline"
+    | "driverTrip"
+    | "driverIdle"
+    | "passenger"
+    | "pickup"
+    | "destination";
 };
 
 export type RidersScreenProps = {
@@ -105,24 +112,24 @@ export function RidersScreen({
     });
   };
 
-  const mapMarkers =
+  const mapMarkers: RiderMapMarker[] =
     liveMapMarkers && liveMapMarkers.length > 0
       ? liveMapMarkers
-      : ridersWithCoords
-          .map((rider) => {
-            const lat = parseNumber(rider.currentLatitude);
-            const lng = parseNumber(rider.currentLongitude);
-            if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) {
-              return null;
-            }
-            return {
+      : ridersWithCoords.flatMap((rider) => {
+          const lat = parseNumber(rider.currentLatitude);
+          const lng = parseNumber(rider.currentLongitude);
+          if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) {
+            return [];
+          }
+          return [
+            {
               id: rider.id,
               position: [lat, lng] as [number, number],
               label: rider.user.fullName,
               variant: "driver" as const
-            };
-          })
-          .filter((marker): marker is RiderMapMarker => marker != null);
+            }
+          ];
+        });
 
   const pendingCount = onboardingPipeline.pending ?? Math.max(0, onboardingPipeline.signedUp - onboardingPipeline.verified);
   const verifiedCount = onboardingPipeline.verified;
