@@ -107,6 +107,7 @@ export function AuthPages({
   const [showPassword, setShowPassword] = useState(false);
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [totpCode, setTotpCode] = useState("");
+  const [backupCode, setBackupCode] = useState("");
   const [needsTotp, setNeedsTotp] = useState(false);
   const passwordStrength = useMemo(() => getPasswordStrength(password), [password]);
 
@@ -236,7 +237,8 @@ export function AuthPages({
               email: email.trim(),
               password,
               device,
-              totpCode: totpCode.trim() || undefined
+              totpCode: totpCode.trim() || undefined,
+              backupCode: backupCode.trim() || undefined
             })
           : audience === "rider"
             ? await riderLogin({
@@ -257,10 +259,10 @@ export function AuthPages({
       navigateAfterAuth(resolvePostAuthTarget());
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Unable to sign in right now.";
-      if (audience === "admin" && /two-factor/i.test(msg)) {
+      if (audience === "admin" && /two-factor|backup code/i.test(msg)) {
         setNeedsTotp(true);
-        if (!totpCode.trim()) {
-          setInfoMessage("Enter the 6-digit code from your authenticator app to finish signing in.");
+        if (!totpCode.trim() && !backupCode.trim()) {
+          setInfoMessage("Enter your authenticator code or a one-time backup code to finish signing in.");
           setErrorMessage(null);
           showToast("Two-factor code required", "info");
           return;
@@ -499,22 +501,33 @@ export function AuthPages({
                   </div>
 
                   {audience === "admin" && needsTotp && (
-                    <div className="space-y-2">
-                      <Label htmlFor="totp">Two-Factor Code</Label>
-                      <Input
-                        id="totp"
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={6}
-                        placeholder="123456"
-                        value={totpCode}
-                        onChange={(event) => setTotpCode(event.target.value.replace(/\D/g, ""))}
-                        autoFocus
-                        required
-                      />
-                      <p className="text-xs text-slate-500">
-                        Open your authenticator app and enter the current 6-digit code.
-                      </p>
+                    <div className="space-y-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="totp">Authenticator code</Label>
+                        <Input
+                          id="totp"
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={6}
+                          placeholder="123456"
+                          value={totpCode}
+                          onChange={(event) => setTotpCode(event.target.value.replace(/\D/g, ""))}
+                          autoFocus
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="backup">Or backup code</Label>
+                        <Input
+                          id="backup"
+                          type="text"
+                          placeholder="XXXX-XXXX"
+                          value={backupCode}
+                          onChange={(event) => setBackupCode(event.target.value.toUpperCase())}
+                        />
+                        <p className="text-xs text-slate-500">
+                          Use either your authenticator app code or a one-time backup code.
+                        </p>
+                      </div>
                     </div>
                   )}
 

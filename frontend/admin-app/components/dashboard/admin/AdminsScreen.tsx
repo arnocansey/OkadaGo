@@ -1,4 +1,4 @@
-import { ShieldAlert, UserPlus, CheckCircle } from "lucide-react";
+import { ShieldAlert, UserPlus, CheckCircle, Trash2 } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
@@ -33,8 +33,10 @@ export type AdminsScreenProps = {
   onPromoteFormChange: (field: string, value: string) => void;
   onCreateAdmin: () => void;
   onPromotePassenger: () => void;
+  onDeleteAdmin?: (userId: string) => void;
   isCreating: boolean;
   isPromoting: boolean;
+  isDeleting?: boolean;
   dataLoading?: boolean;
 };
 
@@ -49,8 +51,10 @@ export function AdminsScreen({
   onPromoteFormChange,
   onCreateAdmin,
   onPromotePassenger,
+  onDeleteAdmin,
   isCreating,
   isPromoting,
+  isDeleting = false,
   dataLoading = false
 }: AdminsScreenProps) {
   if (dataLoading) {
@@ -120,6 +124,7 @@ export function AdminsScreen({
                       <th>Status</th>
                       <th>Permissions</th>
                       <th>Created</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -149,6 +154,23 @@ export function AdminsScreen({
                           </div>
                         </td>
                         <td><small>{formatDateTime(admin.createdAt)}</small></td>
+                        <td>
+                          {onDeleteAdmin ? (
+                            <button
+                              type="button"
+                              className="settings-btn settings-btn--ghost"
+                              disabled={isDeleting}
+                              title="Soft-delete admin"
+                              onClick={() => {
+                                if (window.confirm(`Delete admin ${admin.user.fullName}? This revokes their sessions.`)) {
+                                  onDeleteAdmin(admin.user.id);
+                                }
+                              }}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          ) : null}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

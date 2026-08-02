@@ -76,6 +76,11 @@ export const updatePlatformSettingsSchema = z.object({
   settings: z.record(z.string().min(1).max(80), z.unknown())
 });
 
+export const settingImageUploadSchema = z.object({
+  imageBase64: z.string().min(1),
+  kind: z.enum(["company_logo", "company_document"]).default("company_logo")
+});
+
 export type UpdatePlatformSettingsInput = z.infer<typeof updatePlatformSettingsSchema>;
 
 export const riderRequestInfoSchema = z.object({

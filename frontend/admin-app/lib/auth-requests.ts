@@ -61,6 +61,7 @@ export async function adminLogin(input: {
   password: string;
   device: { deviceId: string; platform: string; userAgent: string };
   totpCode?: string;
+  backupCode?: string;
 }) {
   return postJson<SessionPayload, typeof input>("/auth/admin/login", input);
 }

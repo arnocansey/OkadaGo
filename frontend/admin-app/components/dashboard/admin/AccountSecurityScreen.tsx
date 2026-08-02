@@ -28,9 +28,32 @@ export type AccountSecurityScreenProps = {
   dataLoading?: boolean;
   token?: string | null;
   platformSettings?: Record<string, unknown>;
+  onSaveSettings?: (settings: Record<string, unknown>) => void;
 };
 
 type SecurityTab = "overview" | "password" | "2fa" | "sessions" | "activity";
+
+type SessionRow = {
+  id: string;
+  device: string;
+  detail: string;
+  location: string;
+  network: string;
+  lastActive: string;
+  createdAt: string;
+  isCurrent: boolean;
+};
+
+type ActivityRow = {
+  id: string;
+  time: string;
+  action: string;
+  status: string;
+  method: string;
+  location: string;
+  device: string;
+  createdAt: string;
+};
 
 const TABS: Array<{ id: SecurityTab; label: string }> = [
   { id: "overview", label: "Overview" },
@@ -38,87 +61,6 @@ const TABS: Array<{ id: SecurityTab; label: string }> = [
   { id: "2fa", label: "Two-Factor Authentication" },
   { id: "sessions", label: "Sessions" },
   { id: "activity", label: "Login Activity" }
-];
-
-const DEMO_SESSIONS = [
-  {
-    id: "current",
-    device: "Chrome on Windows",
-    detail: "Windows 11 · Chrome 125",
-    location: "Accra, Ghana",
-    network: "This device",
-    lastActive: "Just now",
-    ip: "154.160.22.14",
-    current: true
-  },
-  {
-    id: "phone",
-    device: "Safari on iPhone",
-    detail: "iOS 17 · Safari",
-    location: "Accra, Ghana",
-    network: "MTN Ghana",
-    lastActive: "15 minutes ago",
-    ip: "41.66.210.88",
-    current: false
-  },
-  {
-    id: "kumasi",
-    device: "Chrome on Android",
-    detail: "Android 14 · Chrome 124",
-    location: "Kumasi, Ghana",
-    network: "Vodafone Ghana",
-    lastActive: "Yesterday, 8:12 PM",
-    ip: "197.251.44.19",
-    current: false
-  }
-];
-
-const DEMO_ACTIVITY = [
-  {
-    id: "1",
-    at: "May 31, 2024 10:45 AM",
-    location: "Accra, Ghana",
-    network: "This device",
-    ip: "154.160.22.14",
-    device: "Chrome on Windows",
-    status: "Success" as const
-  },
-  {
-    id: "2",
-    at: "May 30, 2024 7:18 PM",
-    location: "Accra, Ghana",
-    network: "MTN Ghana",
-    ip: "41.66.210.88",
-    device: "Safari on iPhone",
-    status: "Success" as const
-  },
-  {
-    id: "3",
-    at: "May 29, 2024 11:02 AM",
-    location: "Kumasi, Ghana",
-    network: "Vodafone Ghana",
-    ip: "197.251.44.19",
-    device: "Chrome on Android",
-    status: "Success" as const
-  },
-  {
-    id: "4",
-    at: "May 28, 2024 9:41 PM",
-    location: "Lagos, Nigeria",
-    network: "Unusual location",
-    ip: "105.112.48.22",
-    device: "Firefox on Windows",
-    status: "Suspicious" as const
-  },
-  {
-    id: "5",
-    at: "May 27, 2024 4:05 PM",
-    location: "Accra, Ghana",
-    network: "AirtelTigo",
-    ip: "154.160.18.40",
-    device: "Chrome on Windows",
-    status: "Failed" as const
-  }
 ];
 
 function passwordStrength(password: string) {
@@ -136,9 +78,11 @@ function passwordStrength(password: string) {
 
 export function AccountSecurityScreen({
   dataLoading = false,
-  token
+  token,
+  platformSettings,
+  onSaveSettings
 }: AccountSecurityScreenProps) {
-  const { session, signOut } = useAuth();
+  const { session, setSession } = useAuth();
   const { addToast } = useAdminToast();
   const [tab, setTab] = useState<SecurityTab>("overview");
   const user = session?.user;
@@ -147,6 +91,7 @@ export function AccountSecurityScreen({
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordBusy, setPasswordBusy] = useState(false);
   const [loginAlerts, setLoginAlerts] = useState(true);
   const [suspiciousProtection, setSuspiciousProtection] = useState(true);
 
@@ -156,15 +101,181 @@ export function AccountSecurityScreen({
   const [totpBusy, setTotpBusy] = useState(false);
   const [twoFaMethod, setTwoFaMethod] = useState<"app" | "sms" | "email" | "key">("app");
 
+  const [sessions, setSessions] = useState<SessionRow[]>([]);
+  const [activity, setActivity] = useState<ActivityRow[]>([]);
+  const [sessionsBusy, setSessionsBusy] = useState(false);
+  const [editField, setEditField] = useState<"fullName" | "email" | "phone" | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const [profileBusy, setProfileBusy] = useState(false);
+  const [backupRemaining, setBackupRemaining] = useState(0);
+  const [freshBackupCodes, setFreshBackupCodes] = useState<string[]>([]);
+
   const strength = useMemo(() => passwordStrength(newPassword), [newPassword]);
   const passwordsMatch = newPassword.length > 0 && newPassword === confirmPassword;
+  const joinedLabel = user?.createdAt
+    ? new Date(user.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })
+    : "—";
+
+  useEffect(() => {
+    if (!platformSettings) return;
+    if (typeof platformSettings.securityLoginAlerts === "boolean") {
+      setLoginAlerts(platformSettings.securityLoginAlerts);
+    }
+    if (typeof platformSettings.securitySuspiciousProtection === "boolean") {
+      setSuspiciousProtection(platformSettings.securitySuspiciousProtection);
+    }
+  }, [platformSettings]);
 
   useEffect(() => {
     if (!token) return;
-    requestJson<{ totpEnabled: boolean }>("/auth/admin/2fa", { token })
-      .then((res) => setTotpEnabled(res.totpEnabled))
+    requestJson<{ totpEnabled: boolean; backupCodesRemaining?: number }>("/auth/admin/2fa", { token })
+      .then((res) => {
+        setTotpEnabled(res.totpEnabled);
+        setBackupRemaining(res.backupCodesRemaining ?? 0);
+      })
       .catch(() => setTotpEnabled(false));
   }, [token]);
+
+  async function handleGenerateBackupCodes() {
+    if (!token || totpCode.length !== 6) {
+      addToast("Enter a valid authenticator code first", "warning");
+      return;
+    }
+    setTotpBusy(true);
+    try {
+      const res = await requestJson<{ codes: string[]; remaining: number }>(
+        "/auth/admin/2fa/backup-codes/generate",
+        { method: "POST", token, body: JSON.stringify({ code: totpCode }) }
+      );
+      setFreshBackupCodes(res.codes ?? []);
+      setBackupRemaining(res.remaining ?? res.codes?.length ?? 0);
+      setTotpCode("");
+      addToast("Backup codes generated — copy them now", "success");
+    } catch (error) {
+      addToast(error instanceof Error ? error.message : "Could not generate backup codes", "error");
+    } finally {
+      setTotpBusy(false);
+    }
+  }
+
+  async function loadSessions() {
+    if (!token) return;
+    setSessionsBusy(true);
+    try {
+      const res = await requestJson<{ sessions: SessionRow[] }>("/auth/admin/sessions", { token });
+      setSessions(res.sessions ?? []);
+    } catch (error) {
+      addToast(error instanceof Error ? error.message : "Could not load sessions", "error");
+    } finally {
+      setSessionsBusy(false);
+    }
+  }
+
+  async function loadActivity() {
+    if (!token) return;
+    try {
+      const res = await requestJson<{ activity: ActivityRow[] }>("/auth/admin/login-activity", { token });
+      setActivity(res.activity ?? []);
+    } catch (error) {
+      addToast(error instanceof Error ? error.message : "Could not load login activity", "error");
+    }
+  }
+
+  useEffect(() => {
+    if (!token) return;
+    void loadSessions();
+    void loadActivity();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
+
+  function persistSecurityPref(key: "securityLoginAlerts" | "securitySuspiciousProtection", value: boolean) {
+    if (!onSaveSettings) {
+      addToast("Settings persistence is unavailable", "error");
+      return;
+    }
+    onSaveSettings({ ...platformSettings, [key]: value });
+  }
+
+  async function handlePasswordUpdate() {
+    if (!token) return;
+    if (!strength.checks.length || !strength.checks.upper || !strength.checks.lower || !strength.checks.number || !strength.checks.special || !passwordsMatch) {
+      addToast("Meet all password requirements before updating", "warning");
+      return;
+    }
+    setPasswordBusy(true);
+    try {
+      await requestJson("/auth/admin/change-password", {
+        method: "POST",
+        token,
+        body: JSON.stringify({ currentPassword, newPassword })
+      });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      addToast("Password updated", "success");
+      void loadActivity();
+    } catch (error) {
+      addToast(error instanceof Error ? error.message : "Could not update password", "error");
+    } finally {
+      setPasswordBusy(false);
+    }
+  }
+
+  async function handleProfileSave() {
+    if (!token || !editField) return;
+    setProfileBusy(true);
+    try {
+      const body: Record<string, string> = {};
+      if (editField === "fullName") body.fullName = editValue.trim();
+      if (editField === "email") body.email = editValue.trim();
+      if (editField === "phone") {
+        body.phoneE164 = editValue.trim();
+        const digits = editValue.replace(/\D/g, "");
+        body.phoneLocal = digits.slice(-9) || digits;
+        body.phoneCountryCode = editValue.trim().startsWith("+233") ? "+233" : user?.phoneCountryCode || "+233";
+      }
+      const refreshed = await requestJson<{ token: string; expiresAt: string; user: NonNullable<typeof user> }>(
+        "/auth/admin/profile",
+        { method: "PATCH", token, body: JSON.stringify(body) }
+      );
+      setSession(refreshed);
+      setEditField(null);
+      addToast("Profile updated", "success");
+      void loadActivity();
+    } catch (error) {
+      addToast(error instanceof Error ? error.message : "Could not update profile", "error");
+    } finally {
+      setProfileBusy(false);
+    }
+  }
+
+  async function handleRevokeSession(sessionId: string) {
+    if (!token) return;
+    try {
+      await requestJson(`/auth/admin/sessions/${sessionId}/revoke`, { method: "POST", token, body: "{}" });
+      addToast("Session revoked", "success");
+      void loadSessions();
+      void loadActivity();
+    } catch (error) {
+      addToast(error instanceof Error ? error.message : "Could not revoke session", "error");
+    }
+  }
+
+  async function handleLogoutOthers() {
+    if (!token) return;
+    try {
+      const res = await requestJson<{ revokedCount: number }>("/auth/admin/sessions/logout-others", {
+        method: "POST",
+        token,
+        body: "{}"
+      });
+      addToast(`Logged out ${res.revokedCount} other session${res.revokedCount === 1 ? "" : "s"}`, "success");
+      void loadSessions();
+      void loadActivity();
+    } catch (error) {
+      addToast(error instanceof Error ? error.message : "Could not log out other sessions", "error");
+    }
+  }
 
   async function handleTotpSetup() {
     if (!token) return;
@@ -237,37 +348,56 @@ export function AccountSecurityScreen({
     <div className="settings-layout">
       <div className="settings-stack">
         <SettingsCard title="Account Information" subtitle="Your OkadaGo admin profile details.">
-          {[
-            { label: "Full Name", value: user?.fullName ?? "Admin" },
-            {
-              label: "Email Address",
-              value: user?.email ?? "—",
-              badge: user?.email ? "Verified" : undefined
-            },
-            {
-              label: "Phone Number",
-              value: user?.phoneE164 ?? "—",
-              badge: user?.phoneE164 ? "Verified" : undefined
-            },
-            { label: "Role", value: "Super Admin" },
-            { label: "Admin ID", value: user?.adminProfileId?.slice(0, 12) ?? "ADM-LOCAL" },
-            { label: "Date Joined", value: "May 10, 2023" }
-          ].map((row) => (
+          {(
+            [
+              { label: "Full Name", value: user?.fullName ?? "Admin", field: "fullName" as const, badge: undefined },
+              {
+                label: "Email Address",
+                value: user?.email ?? "—",
+                field: "email" as const,
+                badge: user?.isEmailVerified ? "Verified" : user?.email ? "Unverified" : undefined
+              },
+              {
+                label: "Phone Number",
+                value: user?.phoneE164 ?? "—",
+                field: "phone" as const,
+                badge: user?.isPhoneVerified ? "Verified" : user?.phoneE164 ? "Unverified" : undefined
+              },
+              { label: "Role", value: user?.adminTitle || "Admin", field: null, badge: undefined },
+              { label: "Admin ID", value: user?.adminProfileId?.slice(0, 12) ?? "—", field: null, badge: undefined },
+              { label: "Date Joined", value: joinedLabel, field: null, badge: undefined }
+            ] as const
+          ).map((row) => (
             <div key={row.label} className="settings-row">
               <div>
                 <div className="settings-row-meta">{row.label}</div>
                 <div className="settings-row-label" style={{ display: "flex", gap: 8, alignItems: "center" }}>
                   {row.value}
-                  {row.badge ? <span className="settings-badge settings-badge--success">{row.badge}</span> : null}
+                  {row.badge ? (
+                    <span className={`settings-badge ${row.badge === "Verified" ? "settings-badge--success" : "settings-badge--warn"}`}>
+                      {row.badge}
+                    </span>
+                  ) : null}
                 </div>
               </div>
-              <button
-                type="button"
-                className="settings-btn settings-btn--ghost"
-                onClick={() => addToast("Inline profile editor is not connected yet", "info")}
-              >
-                Edit
-              </button>
+              {row.field ? (
+                <button
+                  type="button"
+                  className="settings-btn settings-btn--ghost"
+                  onClick={() => {
+                    setEditField(row.field);
+                    setEditValue(
+                      row.field === "fullName"
+                        ? user?.fullName ?? ""
+                        : row.field === "email"
+                          ? user?.email ?? ""
+                          : user?.phoneE164 ?? ""
+                    );
+                  }}
+                >
+                  Edit
+                </button>
+              ) : null}
             </div>
           ))}
         </SettingsCard>
@@ -276,7 +406,7 @@ export function AccountSecurityScreen({
           <div className="settings-row">
             <div>
               <div className="settings-row-label">Password</div>
-              <div className="settings-row-meta">Last changed 45 days ago</div>
+              <div className="settings-row-meta">Use a strong unique password</div>
             </div>
             <button type="button" className="settings-btn settings-btn--ghost" onClick={() => setTab("password")}>
               Change Password
@@ -297,10 +427,24 @@ export function AccountSecurityScreen({
               <div className="settings-row-meta">Keep recovery channels current</div>
             </div>
             <div style={{ display: "flex", gap: 8 }}>
-              <button type="button" className="settings-btn settings-btn--ghost" onClick={() => addToast("Update email is not connected yet", "info")}>
+              <button
+                type="button"
+                className="settings-btn settings-btn--ghost"
+                onClick={() => {
+                  setEditField("email");
+                  setEditValue(user?.email ?? "");
+                }}
+              >
                 <Mail size={14} /> Update Email
               </button>
-              <button type="button" className="settings-btn settings-btn--ghost" onClick={() => addToast("Update phone is not connected yet", "info")}>
+              <button
+                type="button"
+                className="settings-btn settings-btn--ghost"
+                onClick={() => {
+                  setEditField("phone");
+                  setEditValue(user?.phoneE164 ?? "");
+                }}
+              >
                 <Phone size={14} /> Update Phone
               </button>
             </div>
@@ -313,15 +457,8 @@ export function AccountSecurityScreen({
               <div className="settings-row-label">Logout from all devices</div>
               <div className="settings-row-meta">Ends every active admin session</div>
             </div>
-            <button
-              type="button"
-              className="settings-btn settings-btn--ghost"
-              onClick={() => {
-                addToast("Signing out this device…", "info");
-                void signOut();
-              }}
-            >
-              <LogOut size={14} /> Logout All
+            <button type="button" className="settings-btn settings-btn--ghost" onClick={() => void handleLogoutOthers()}>
+              <LogOut size={14} /> Logout Others
             </button>
           </div>
           <div className="settings-row">
@@ -348,8 +485,8 @@ export function AccountSecurityScreen({
           {[
             ["Password", "Strong"],
             ["2FA", totpEnabled ? "Enabled" : "Disabled"],
-            ["Active Sessions", `${DEMO_SESSIONS.length} Active`],
-            ["Login Activity", "No suspicious activity"],
+            ["Active Sessions", `${sessions.length} Active`],
+            ["Login Activity", `${activity.length} recent events`],
             ["API Access", "Restricted"]
           ].map(([label, value]) => (
             <div key={label} className="settings-row">
@@ -369,15 +506,19 @@ export function AccountSecurityScreen({
             </button>
           }
         >
-          {DEMO_ACTIVITY.slice(0, 3).map((row) => (
-            <div key={row.id} className="settings-row">
-              <div>
-                <div className="settings-row-label">{row.location}</div>
-                <div className="settings-row-meta">{row.device}</div>
+          {activity.length === 0 ? (
+            <p className="settings-row-meta" style={{ margin: 0 }}>No login activity recorded yet.</p>
+          ) : (
+            activity.slice(0, 3).map((row) => (
+              <div key={row.id} className="settings-row">
+                <div>
+                  <div className="settings-row-label">{row.action}</div>
+                  <div className="settings-row-meta">{row.device} · {row.location}</div>
+                </div>
+                <span className="settings-row-meta">{row.time}</span>
               </div>
-              <span className="settings-row-meta">{row.at.includes("10:45") ? "Just now" : row.at}</span>
-            </div>
-          ))}
+            ))
+          )}
         </SettingsCard>
 
         <SettingsCard title="Need Help?">
@@ -459,15 +600,10 @@ export function AccountSecurityScreen({
               type="button"
               className="settings-btn settings-btn--primary"
               style={{ alignSelf: "flex-start" }}
-              onClick={() => {
-                if (!strength.checks.length || !passwordsMatch) {
-                  addToast("Meet all password requirements before updating", "warning");
-                  return;
-                }
-                addToast("Password change API is not connected yet", "info");
-              }}
+              disabled={passwordBusy}
+              onClick={() => void handlePasswordUpdate()}
             >
-              Update Password
+              {passwordBusy ? "Updating…" : "Update Password"}
             </button>
           </div>
         </SettingsCard>
@@ -478,14 +614,18 @@ export function AccountSecurityScreen({
               <div className="settings-row-label">Email Verification</div>
               <div className="settings-row-meta">{user?.email ?? "No email on file"}</div>
             </div>
-            <span className="settings-badge settings-badge--success">Verified</span>
+            <span className={`settings-badge ${user?.isEmailVerified ? "settings-badge--success" : "settings-badge--warn"}`}>
+              {user?.isEmailVerified ? "Verified" : "Unverified"}
+            </span>
           </div>
           <div className="settings-row">
             <div>
               <div className="settings-row-label">Phone Verification</div>
               <div className="settings-row-meta">{user?.phoneE164 ?? "No phone on file"}</div>
             </div>
-            <span className="settings-badge settings-badge--success">Verified</span>
+            <span className={`settings-badge ${user?.isPhoneVerified ? "settings-badge--success" : "settings-badge--warn"}`}>
+              {user?.isPhoneVerified ? "Verified" : "Unverified"}
+            </span>
           </div>
         </SettingsCard>
 
@@ -495,7 +635,14 @@ export function AccountSecurityScreen({
               <div className="settings-row-label">Login Alerts</div>
               <div className="settings-row-meta">Email me about new sign-ins</div>
             </div>
-            <SettingsToggle checked={loginAlerts} onChange={setLoginAlerts} label="Login Alerts" />
+            <SettingsToggle
+              checked={loginAlerts}
+              onChange={(next) => {
+                setLoginAlerts(next);
+                persistSecurityPref("securityLoginAlerts", next);
+              }}
+              label="Login Alerts"
+            />
           </div>
           <div className="settings-row">
             <div>
@@ -504,7 +651,10 @@ export function AccountSecurityScreen({
             </div>
             <SettingsToggle
               checked={suspiciousProtection}
-              onChange={setSuspiciousProtection}
+              onChange={(next) => {
+                setSuspiciousProtection(next);
+                persistSecurityPref("securitySuspiciousProtection", next);
+              }}
               label="Suspicious Activity Protection"
             />
           </div>
@@ -691,22 +841,39 @@ export function AccountSecurityScreen({
           </div>
           <div className="settings-row">
             <span className="settings-row-meta">Added On</span>
-            <span className="settings-row-label">{totpEnabled ? "May 10, 2023" : "—"}</span>
+            <span className="settings-row-label">{totpEnabled ? "Enabled on this account" : "—"}</span>
           </div>
         </SettingsCard>
 
         <SettingsCard title="Backup Codes">
-          <p style={{ margin: "0 0 12px", color: "var(--color-success)", fontWeight: 600, fontSize: 13 }}>
-            10 unused backup codes
+          <p className="settings-row-meta" style={{ margin: "0 0 12px" }}>
+            {backupRemaining > 0
+              ? `${backupRemaining} unused backup code${backupRemaining === 1 ? "" : "s"} remaining.`
+              : "Generate one-time backup codes after enabling authenticator 2FA."}
           </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <button type="button" className="settings-btn settings-btn--ghost" onClick={() => addToast("Backup codes UI coming soon", "info")}>
-              View Backup Codes
-            </button>
-            <button type="button" className="settings-btn settings-btn--ghost" onClick={() => addToast("Regenerate backup codes coming soon", "info")}>
-              <RefreshCw size={14} /> Regenerate Backup Codes
-            </button>
-          </div>
+          {freshBackupCodes.length > 0 ? (
+            <div style={{ marginBottom: 12 }}>
+              <p style={{ margin: "0 0 8px", fontSize: 12, color: "var(--color-success)", fontWeight: 600 }}>
+                Copy these now — they will not be shown again.
+              </p>
+              <div className="settings-stack" style={{ gap: 6 }}>
+                {freshBackupCodes.map((code) => (
+                  <code key={code} style={{ fontSize: 13, letterSpacing: 1 }}>{code}</code>
+                ))}
+              </div>
+            </div>
+          ) : null}
+          <button
+            type="button"
+            className="settings-btn settings-btn--primary"
+            disabled={!totpEnabled || totpBusy || totpCode.length !== 6}
+            onClick={() => void handleGenerateBackupCodes()}
+          >
+            <RefreshCw size={14} /> {backupRemaining > 0 ? "Regenerate backup codes" : "Generate backup codes"}
+          </button>
+          <p className="settings-row-meta" style={{ marginTop: 8 }}>
+            Enter a current authenticator code above, then generate.
+          </p>
         </SettingsCard>
 
         <SettingsCard title="Need Help?">
@@ -729,9 +896,9 @@ export function AccountSecurityScreen({
         </div>
 
         <SettingsCard
-          title={`Active Sessions (${DEMO_SESSIONS.length})`}
+          title={`Active Sessions (${sessions.length})`}
           actions={
-            <button type="button" className="settings-btn settings-btn--ghost" onClick={() => addToast("Session list refreshed", "info")}>
+            <button type="button" className="settings-btn settings-btn--ghost" disabled={sessionsBusy} onClick={() => void loadSessions()}>
               <RefreshCw size={14} /> Refresh Sessions
             </button>
           }
@@ -743,47 +910,50 @@ export function AccountSecurityScreen({
                   <th>Device / Browser</th>
                   <th>Location</th>
                   <th>Last Active</th>
-                  <th>IP Address</th>
+                  <th>Network</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {DEMO_SESSIONS.map((row) => (
-                  <tr key={row.id}>
-                    <td>
-                      <strong style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
-                        {row.device.includes("iPhone") || row.device.includes("Android") ? (
-                          <Smartphone size={14} />
-                        ) : (
-                          <Laptop size={14} />
-                        )}
-                        {row.device}
-                      </strong>
-                      <div><small>{row.detail}</small></div>
-                    </td>
-                    <td>
-                      {row.location}
-                      <div><small>{row.network}</small></div>
-                    </td>
-                    <td>{row.lastActive}</td>
-                    <td>{row.ip}</td>
-                    <td><span className="settings-badge settings-badge--success">Active</span></td>
-                    <td>
-                      {row.current ? (
-                        <span className="settings-badge settings-badge--success">Current Session</span>
-                      ) : (
-                        <button
-                          type="button"
-                          className="settings-btn settings-btn--ghost"
-                          onClick={() => addToast("Revoke-other-sessions API is not connected yet", "info")}
-                        >
-                          Log out
-                        </button>
-                      )}
-                    </td>
+                {sessions.length === 0 ? (
+                  <tr>
+                    <td colSpan={6}>No active sessions found.</td>
                   </tr>
-                ))}
+                ) : (
+                  sessions.map((row) => (
+                    <tr key={row.id}>
+                      <td>
+                        <strong style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
+                          {row.device.includes("iPhone") || row.device.includes("Android") ? (
+                            <Smartphone size={14} />
+                          ) : (
+                            <Laptop size={14} />
+                          )}
+                          {row.device}
+                        </strong>
+                        <div><small>{row.detail}</small></div>
+                      </td>
+                      <td>{row.location}</td>
+                      <td>{row.lastActive}</td>
+                      <td>{row.network}</td>
+                      <td><span className="settings-badge settings-badge--success">Active</span></td>
+                      <td>
+                        {row.isCurrent ? (
+                          <span className="settings-badge settings-badge--success">Current Session</span>
+                        ) : (
+                          <button
+                            type="button"
+                            className="settings-btn settings-btn--ghost"
+                            onClick={() => void handleRevokeSession(row.id)}
+                          >
+                            Log out
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -796,14 +966,7 @@ export function AccountSecurityScreen({
 
         <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
           <span className="settings-row-meta">Unrecognized sessions? End them immediately.</span>
-          <button
-            type="button"
-            className="settings-btn settings-btn--danger"
-            onClick={() => {
-              addToast("Signing out this device…", "info");
-              void signOut();
-            }}
-          >
+          <button type="button" className="settings-btn settings-btn--danger" onClick={() => void handleLogoutOthers()}>
             Log out all other sessions
           </button>
         </div>
@@ -811,10 +974,10 @@ export function AccountSecurityScreen({
 
       <div className="settings-stack">
         <SettingsCard title="Session Summary">
-          <div className="settings-row"><span className="settings-row-meta">Total Active Sessions</span><strong>{DEMO_SESSIONS.length}</strong></div>
+          <div className="settings-row"><span className="settings-row-meta">Total Active Sessions</span><strong>{sessions.length}</strong></div>
           <div className="settings-row"><span className="settings-row-meta">Current Device</span><span className="settings-badge settings-badge--success">This device</span></div>
-          <div className="settings-row"><span className="settings-row-meta">Last Sign-in</span><strong>Just now</strong></div>
-          <div className="settings-row"><span className="settings-row-meta">Device Type</span><strong>Windows · Chrome</strong></div>
+          <div className="settings-row"><span className="settings-row-meta">Last Sign-in</span><strong>{sessions.find((s) => s.isCurrent)?.lastActive ?? "—"}</strong></div>
+          <div className="settings-row"><span className="settings-row-meta">Device Type</span><strong>{sessions.find((s) => s.isCurrent)?.device ?? "—"}</strong></div>
         </SettingsCard>
         <SettingsCard title="Security Recommendation">
           <p style={{ margin: "0 0 12px", fontSize: 13, color: "var(--text-secondary)" }}>
@@ -835,7 +998,7 @@ export function AccountSecurityScreen({
           title="Monitor your account activity"
           subtitle="Review successful, failed, and suspicious sign-in attempts."
           actions={
-            <button type="button" className="settings-btn settings-btn--ghost" onClick={() => addToast("Activity refreshed", "info")}>
+            <button type="button" className="settings-btn settings-btn--ghost" onClick={() => void loadActivity()}>
               <RefreshCw size={14} /> Refresh Activity
             </button>
           }
@@ -845,41 +1008,30 @@ export function AccountSecurityScreen({
               <thead>
                 <tr>
                   <th>Date & Time</th>
+                  <th>Action</th>
                   <th>Location</th>
-                  <th>IP Address</th>
                   <th>Device / Browser</th>
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
-                {DEMO_ACTIVITY.map((row) => (
-                  <tr key={row.id}>
-                    <td>{row.at}</td>
-                    <td>
-                      {row.location}
-                      <div><small>{row.network}</small></div>
-                    </td>
-                    <td>{row.ip}</td>
-                    <td>{row.device}</td>
-                    <td>
-                      <span
-                        className={`settings-badge ${
-                          row.status === "Success"
-                            ? "settings-badge--success"
-                            : row.status === "Suspicious"
-                              ? "settings-badge--warn"
-                              : "settings-badge--danger"
-                        }`}
-                      >
-                        {row.status === "Suspicious"
-                          ? "Suspicious - Unusual location"
-                          : row.status === "Failed"
-                            ? "Failed - Incorrect password"
-                            : "Success"}
-                      </span>
-                    </td>
+                {activity.length === 0 ? (
+                  <tr>
+                    <td colSpan={5}>No login activity yet. New admin logins will appear here.</td>
                   </tr>
-                ))}
+                ) : (
+                  activity.map((row) => (
+                    <tr key={row.id}>
+                      <td>{row.createdAt.replace("T", " ").slice(0, 16)}</td>
+                      <td>{row.action}</td>
+                      <td>{row.location}</td>
+                      <td>{row.device}</td>
+                      <td>
+                        <span className="settings-badge settings-badge--success">{row.status}</span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -888,23 +1040,33 @@ export function AccountSecurityScreen({
 
       <div className="settings-stack">
         <SettingsCard title="Login Summary">
-          <div className="settings-row"><span className="settings-row-meta">Total Logins</span><strong>32</strong></div>
-          <div className="settings-row"><span className="settings-row-meta">Successful Logins</span><strong>28</strong></div>
-          <div className="settings-row"><span className="settings-row-meta">Failed Attempts</span><strong>3</strong></div>
-          <div className="settings-row"><span className="settings-row-meta">Suspicious Logins</span><strong>1</strong></div>
+          <div className="settings-row"><span className="settings-row-meta">Total Events</span><strong>{activity.length}</strong></div>
+          <div className="settings-row">
+            <span className="settings-row-meta">Logins</span>
+            <strong>{activity.filter((a) => a.action === "ADMIN_LOGIN").length}</strong>
+          </div>
+          <div className="settings-row">
+            <span className="settings-row-meta">Password Changes</span>
+            <strong>{activity.filter((a) => a.action === "ADMIN_PASSWORD_CHANGE").length}</strong>
+          </div>
+          <div className="settings-row">
+            <span className="settings-row-meta">Session Revokes</span>
+            <strong>{activity.filter((a) => a.action.includes("SESSION_REVOKE")).length}</strong>
+          </div>
         </SettingsCard>
-        <SettingsCard title="Login Locations">
-          {[
-            ["Accra, Ghana", "24"],
-            ["Kumasi, Ghana", "3"],
-            ["Lagos, Nigeria", "2"],
-            ["Other Locations", "3"]
-          ].map(([city, count]) => (
-            <div key={city} className="settings-row">
-              <span className="settings-row-label">{city}</span>
-              <span className="settings-row-meta">{count} logins</span>
-            </div>
-          ))}
+        <SettingsCard title="Recent Locations">
+          {activity.length === 0 ? (
+            <p className="settings-row-meta" style={{ margin: 0 }}>Locations appear after sign-in events are logged.</p>
+          ) : (
+            Array.from(new Map(activity.map((a) => [a.location, a])).values())
+              .slice(0, 5)
+              .map((row) => (
+                <div key={row.id} className="settings-row">
+                  <span className="settings-row-label">{row.location}</span>
+                  <span className="settings-row-meta">{row.time}</span>
+                </div>
+              ))
+          )}
         </SettingsCard>
         <SettingsCard title="Security Recommendations">
           <ul className="settings-help-list">
@@ -957,6 +1119,48 @@ export function AccountSecurityScreen({
       {tab === "2fa" && twoFaTab}
       {tab === "sessions" && sessionsTab}
       {tab === "activity" && activityTab}
+
+      {editField ? (
+        <div className="settings-dialog-overlay" role="dialog" aria-modal="true" aria-label="Edit profile">
+          <div className="settings-card">
+            <div className="settings-card-head">
+              <div>
+                <h3>
+                  {editField === "fullName" ? "Edit full name" : editField === "email" ? "Update email" : "Update phone"}
+                </h3>
+                <p>Changes save to your admin account immediately.</p>
+              </div>
+              <button type="button" className="settings-btn settings-btn--ghost" onClick={() => setEditField(null)} aria-label="Close">
+                <X size={16} />
+              </button>
+            </div>
+            <div className="settings-card-body settings-stack" style={{ gap: 14 }}>
+              <label className="settings-field">
+                {editField === "fullName" ? "Full name" : editField === "email" ? "Email" : "Phone (E.164)"}
+                <input
+                  className="settings-input"
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  placeholder={editField === "phone" ? "+233241234567" : undefined}
+                />
+              </label>
+              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+                <button type="button" className="settings-btn settings-btn--ghost" onClick={() => setEditField(null)}>
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="settings-btn settings-btn--primary"
+                  disabled={profileBusy || !editValue.trim()}
+                  onClick={() => void handleProfileSave()}
+                >
+                  {profileBusy ? "Saving…" : "Save"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </SettingsChrome>
   );
 }

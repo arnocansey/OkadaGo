@@ -83,11 +83,17 @@ export const adminLoginSchema = z.object({
   password: passwordSchema,
   device: deviceSchema.optional(),
   /// 6-digit authenticator code, required only when the admin has 2FA enabled.
-  totpCode: z.string().trim().min(6).max(8).optional()
+  totpCode: z.string().trim().min(6).max(8).optional(),
+  /// One-time backup code (XXXX-XXXX) accepted in place of totpCode.
+  backupCode: z.string().trim().min(8).max(20).optional()
 });
 
 export const adminTotpCodeSchema = z.object({
   code: z.string().trim().min(6).max(8)
+});
+
+export const adminUserParamsSchema = z.object({
+  userId: z.string().cuid()
 });
 
 export const passengerSettingsUpdateSchema = z.object({
@@ -124,4 +130,34 @@ export const otpVerifySchema = z.object({
 
 export const avatarUploadSchema = z.object({
   imageBase64: z.string().min(1)
+});
+
+export const adminChangePasswordSchema = z.object({
+  currentPassword: passwordSchema,
+  newPassword: passwordSchema
+}).refine((value) => value.currentPassword !== value.newPassword, {
+  message: "New password must be different from the current password",
+  path: ["newPassword"]
+});
+
+export const adminProfileUpdateSchema = z.object({
+  fullName: z.string().min(2).max(160).optional(),
+  email: z.string().email().optional(),
+  phoneCountryCode: z.string().min(1).max(6).optional(),
+  phoneLocal: z.string().min(4).max(20).optional(),
+  phoneE164: z.string().min(8).max(24).optional(),
+  title: z.string().max(120).nullable().optional()
+}).refine(
+  (value) =>
+    value.fullName !== undefined ||
+    value.email !== undefined ||
+    value.phoneE164 !== undefined ||
+    value.phoneLocal !== undefined ||
+    value.phoneCountryCode !== undefined ||
+    value.title !== undefined,
+  { message: "Provide at least one field to update" }
+);
+
+export const adminSessionParamsSchema = z.object({
+  sessionId: z.string().cuid()
 });

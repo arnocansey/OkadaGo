@@ -30,6 +30,7 @@ export type AdminProfileMinAggregateOutputType = {
   title: string | null
   totpSecret: string | null
   totpEnabled: boolean | null
+  totpBackupCodesGeneratedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -40,6 +41,7 @@ export type AdminProfileMaxAggregateOutputType = {
   title: string | null
   totpSecret: string | null
   totpEnabled: boolean | null
+  totpBackupCodesGeneratedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -51,6 +53,8 @@ export type AdminProfileCountAggregateOutputType = {
   permissions: number
   totpSecret: number
   totpEnabled: number
+  totpBackupCodeHashes: number
+  totpBackupCodesGeneratedAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -63,6 +67,7 @@ export type AdminProfileMinAggregateInputType = {
   title?: true
   totpSecret?: true
   totpEnabled?: true
+  totpBackupCodesGeneratedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -73,6 +78,7 @@ export type AdminProfileMaxAggregateInputType = {
   title?: true
   totpSecret?: true
   totpEnabled?: true
+  totpBackupCodesGeneratedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -84,6 +90,8 @@ export type AdminProfileCountAggregateInputType = {
   permissions?: true
   totpSecret?: true
   totpEnabled?: true
+  totpBackupCodeHashes?: true
+  totpBackupCodesGeneratedAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -168,6 +176,8 @@ export type AdminProfileGroupByOutputType = {
   permissions: runtime.JsonValue | null
   totpSecret: string | null
   totpEnabled: boolean
+  totpBackupCodeHashes: runtime.JsonValue | null
+  totpBackupCodesGeneratedAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: AdminProfileCountAggregateOutputType | null
@@ -200,6 +210,8 @@ export type AdminProfileWhereInput = {
   permissions?: Prisma.JsonNullableFilter<"AdminProfile">
   totpSecret?: Prisma.StringNullableFilter<"AdminProfile"> | string | null
   totpEnabled?: Prisma.BoolFilter<"AdminProfile"> | boolean
+  totpBackupCodeHashes?: Prisma.JsonNullableFilter<"AdminProfile">
+  totpBackupCodesGeneratedAt?: Prisma.DateTimeNullableFilter<"AdminProfile"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"AdminProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"AdminProfile"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -212,6 +224,8 @@ export type AdminProfileOrderByWithRelationInput = {
   permissions?: Prisma.SortOrderInput | Prisma.SortOrder
   totpSecret?: Prisma.SortOrderInput | Prisma.SortOrder
   totpEnabled?: Prisma.SortOrder
+  totpBackupCodeHashes?: Prisma.SortOrderInput | Prisma.SortOrder
+  totpBackupCodesGeneratedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
@@ -227,6 +241,8 @@ export type AdminProfileWhereUniqueInput = Prisma.AtLeast<{
   permissions?: Prisma.JsonNullableFilter<"AdminProfile">
   totpSecret?: Prisma.StringNullableFilter<"AdminProfile"> | string | null
   totpEnabled?: Prisma.BoolFilter<"AdminProfile"> | boolean
+  totpBackupCodeHashes?: Prisma.JsonNullableFilter<"AdminProfile">
+  totpBackupCodesGeneratedAt?: Prisma.DateTimeNullableFilter<"AdminProfile"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"AdminProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"AdminProfile"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -239,6 +255,8 @@ export type AdminProfileOrderByWithAggregationInput = {
   permissions?: Prisma.SortOrderInput | Prisma.SortOrder
   totpSecret?: Prisma.SortOrderInput | Prisma.SortOrder
   totpEnabled?: Prisma.SortOrder
+  totpBackupCodeHashes?: Prisma.SortOrderInput | Prisma.SortOrder
+  totpBackupCodesGeneratedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.AdminProfileCountOrderByAggregateInput
@@ -256,6 +274,8 @@ export type AdminProfileScalarWhereWithAggregatesInput = {
   permissions?: Prisma.JsonNullableWithAggregatesFilter<"AdminProfile">
   totpSecret?: Prisma.StringNullableWithAggregatesFilter<"AdminProfile"> | string | null
   totpEnabled?: Prisma.BoolWithAggregatesFilter<"AdminProfile"> | boolean
+  totpBackupCodeHashes?: Prisma.JsonNullableWithAggregatesFilter<"AdminProfile">
+  totpBackupCodesGeneratedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"AdminProfile"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"AdminProfile"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"AdminProfile"> | Date | string
 }
@@ -266,6 +286,8 @@ export type AdminProfileCreateInput = {
   permissions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totpSecret?: string | null
   totpEnabled?: boolean
+  totpBackupCodeHashes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  totpBackupCodesGeneratedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutAdminProfileInput
@@ -278,6 +300,8 @@ export type AdminProfileUncheckedCreateInput = {
   permissions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totpSecret?: string | null
   totpEnabled?: boolean
+  totpBackupCodeHashes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  totpBackupCodesGeneratedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -288,6 +312,8 @@ export type AdminProfileUpdateInput = {
   permissions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpBackupCodeHashes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  totpBackupCodesGeneratedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutAdminProfileNestedInput
@@ -300,6 +326,8 @@ export type AdminProfileUncheckedUpdateInput = {
   permissions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpBackupCodeHashes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  totpBackupCodesGeneratedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -311,6 +339,8 @@ export type AdminProfileCreateManyInput = {
   permissions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totpSecret?: string | null
   totpEnabled?: boolean
+  totpBackupCodeHashes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  totpBackupCodesGeneratedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -321,6 +351,8 @@ export type AdminProfileUpdateManyMutationInput = {
   permissions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpBackupCodeHashes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  totpBackupCodesGeneratedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -332,6 +364,8 @@ export type AdminProfileUncheckedUpdateManyInput = {
   permissions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpBackupCodeHashes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  totpBackupCodesGeneratedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -348,6 +382,8 @@ export type AdminProfileCountOrderByAggregateInput = {
   permissions?: Prisma.SortOrder
   totpSecret?: Prisma.SortOrder
   totpEnabled?: Prisma.SortOrder
+  totpBackupCodeHashes?: Prisma.SortOrder
+  totpBackupCodesGeneratedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -358,6 +394,7 @@ export type AdminProfileMaxOrderByAggregateInput = {
   title?: Prisma.SortOrder
   totpSecret?: Prisma.SortOrder
   totpEnabled?: Prisma.SortOrder
+  totpBackupCodesGeneratedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -368,6 +405,7 @@ export type AdminProfileMinOrderByAggregateInput = {
   title?: Prisma.SortOrder
   totpSecret?: Prisma.SortOrder
   totpEnabled?: Prisma.SortOrder
+  totpBackupCodesGeneratedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -410,6 +448,8 @@ export type AdminProfileCreateWithoutUserInput = {
   permissions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totpSecret?: string | null
   totpEnabled?: boolean
+  totpBackupCodeHashes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  totpBackupCodesGeneratedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -420,6 +460,8 @@ export type AdminProfileUncheckedCreateWithoutUserInput = {
   permissions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totpSecret?: string | null
   totpEnabled?: boolean
+  totpBackupCodeHashes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  totpBackupCodesGeneratedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -446,6 +488,8 @@ export type AdminProfileUpdateWithoutUserInput = {
   permissions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpBackupCodeHashes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  totpBackupCodesGeneratedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -456,6 +500,8 @@ export type AdminProfileUncheckedUpdateWithoutUserInput = {
   permissions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   totpSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   totpEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totpBackupCodeHashes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  totpBackupCodesGeneratedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -469,6 +515,8 @@ export type AdminProfileSelect<ExtArgs extends runtime.Types.Extensions.Internal
   permissions?: boolean
   totpSecret?: boolean
   totpEnabled?: boolean
+  totpBackupCodeHashes?: boolean
+  totpBackupCodesGeneratedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -481,6 +529,8 @@ export type AdminProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   permissions?: boolean
   totpSecret?: boolean
   totpEnabled?: boolean
+  totpBackupCodeHashes?: boolean
+  totpBackupCodesGeneratedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -493,6 +543,8 @@ export type AdminProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   permissions?: boolean
   totpSecret?: boolean
   totpEnabled?: boolean
+  totpBackupCodeHashes?: boolean
+  totpBackupCodesGeneratedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -505,11 +557,13 @@ export type AdminProfileSelectScalar = {
   permissions?: boolean
   totpSecret?: boolean
   totpEnabled?: boolean
+  totpBackupCodeHashes?: boolean
+  totpBackupCodesGeneratedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type AdminProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "title" | "permissions" | "totpSecret" | "totpEnabled" | "createdAt" | "updatedAt", ExtArgs["result"]["adminProfile"]>
+export type AdminProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "title" | "permissions" | "totpSecret" | "totpEnabled" | "totpBackupCodeHashes" | "totpBackupCodesGeneratedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["adminProfile"]>
 export type AdminProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -535,6 +589,11 @@ export type $AdminProfilePayload<ExtArgs extends runtime.Types.Extensions.Intern
      */
     totpSecret: string | null
     totpEnabled: boolean
+    /**
+     * Bcrypt hashes of one-time backup codes. Plaintext is shown only at generation.
+     */
+    totpBackupCodeHashes: runtime.JsonValue | null
+    totpBackupCodesGeneratedAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["adminProfile"]>
@@ -967,6 +1026,8 @@ export interface AdminProfileFieldRefs {
   readonly permissions: Prisma.FieldRef<"AdminProfile", 'Json'>
   readonly totpSecret: Prisma.FieldRef<"AdminProfile", 'String'>
   readonly totpEnabled: Prisma.FieldRef<"AdminProfile", 'Boolean'>
+  readonly totpBackupCodeHashes: Prisma.FieldRef<"AdminProfile", 'Json'>
+  readonly totpBackupCodesGeneratedAt: Prisma.FieldRef<"AdminProfile", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"AdminProfile", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"AdminProfile", 'DateTime'>
 }

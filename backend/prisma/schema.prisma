@@ -253,6 +253,7 @@ model User {
   approvedDocuments RiderDocument[]    @relation("DocumentReviewer")
   approvedPayouts   PayoutRequest[]    @relation("PayoutReviewer")
   adminNotes        AdminNote[]        @relation("AdminNoteAuthor")
+  savedPaymentMethods SavedPaymentMethod[]
 
   @@index([role, accountStatus])
   @@index([createdAt])
@@ -364,9 +365,57 @@ model AdminProfile {
   /// TOTP two-factor auth. Secret is base32; login requires a code once enabled.
   totpSecret  String?  @db.VarChar(64)
   totpEnabled Boolean  @default(false)
+  /// Bcrypt hashes of one-time backup codes. Plaintext is shown only at generation.
+  totpBackupCodeHashes Json?
+  totpBackupCodesGeneratedAt DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   user        User     @relation(fields: [userId], references: [id])
+}
+
+enum SavedPaymentChannel {
+  CARD
+  MOBILE_MONEY
+  PAYPAL
+}
+
+enum SavedPaymentStatus {
+  PENDING
+  ACTIVE
+  REVOKED
+}
+
+/// Vaulted billing instruments. Cards with Paystack authorization_code are chargeable;
+/// MoMo/PayPal rows are display/ops destinations unless reusable auth exists.
+model SavedPaymentMethod {
+  id                   String              @id @default(cuid())
+  userId               String
+  channel              SavedPaymentChannel
+  status               SavedPaymentStatus  @default(PENDING)
+  provider             String              @default("paystack") @db.VarChar(40)
+  label                String?             @db.VarChar(80)
+  emailUsed            String?             @db.VarChar(190)
+  /// Paystack initialize reference used while linking a card.
+  linkReference        String?             @unique @db.VarChar(64)
+  paystackAuthCode     String?             @db.VarChar(120)
+  paystackCustomerCode String?             @db.VarChar(120)
+  cardLast4            String?             @db.VarChar(4)
+  cardBrand            String?             @db.VarChar(40)
+  cardExpMonth         String?             @db.VarChar(2)
+  cardExpYear          String?             @db.VarChar(4)
+  cardSignature        String?             @db.VarChar(120)
+  momoPhone            String?             @db.VarChar(24)
+  momoProvider         String?             @db.VarChar(40)
+  paypalEmail          String?             @db.VarChar(190)
+  isDefault            Boolean             @default(false)
+  reusable             Boolean             @default(false)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  revokedAt            DateTime?
+  user                 User                @relation(fields: [userId], references: [id])
+
+  @@index([userId, status, revokedAt])
+  @@index([userId, isDefault])
 }
 
 /// Free-form ops note pinned to any admin-managed entity (rider, incident, payout, …).

@@ -390,6 +390,7 @@ export const ModelName = {
   PassengerProfile: 'PassengerProfile',
   RiderProfile: 'RiderProfile',
   AdminProfile: 'AdminProfile',
+  SavedPaymentMethod: 'SavedPaymentMethod',
   AdminNote: 'AdminNote',
   PlatformSetting: 'PlatformSetting',
   DispatcherProfile: 'DispatcherProfile',
@@ -436,7 +437,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "adminProfile" | "adminNote" | "platformSetting" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "deliveryRequest" | "deliveryStop" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog" | "escalationRule" | "scheduledBroadcast" | "opsJobHeartbeat"
+    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "adminProfile" | "savedPaymentMethod" | "adminNote" | "platformSetting" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "deliveryRequest" | "deliveryStop" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog" | "escalationRule" | "scheduledBroadcast" | "opsJobHeartbeat"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -881,6 +882,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.AdminProfileCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.AdminProfileCountAggregateOutputType> | number
+        }
+      }
+    }
+    SavedPaymentMethod: {
+      payload: Prisma.$SavedPaymentMethodPayload<ExtArgs>
+      fields: Prisma.SavedPaymentMethodFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SavedPaymentMethodFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedPaymentMethodPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SavedPaymentMethodFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedPaymentMethodPayload>
+        }
+        findFirst: {
+          args: Prisma.SavedPaymentMethodFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedPaymentMethodPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SavedPaymentMethodFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedPaymentMethodPayload>
+        }
+        findMany: {
+          args: Prisma.SavedPaymentMethodFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedPaymentMethodPayload>[]
+        }
+        create: {
+          args: Prisma.SavedPaymentMethodCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedPaymentMethodPayload>
+        }
+        createMany: {
+          args: Prisma.SavedPaymentMethodCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SavedPaymentMethodCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedPaymentMethodPayload>[]
+        }
+        delete: {
+          args: Prisma.SavedPaymentMethodDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedPaymentMethodPayload>
+        }
+        update: {
+          args: Prisma.SavedPaymentMethodUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedPaymentMethodPayload>
+        }
+        deleteMany: {
+          args: Prisma.SavedPaymentMethodDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SavedPaymentMethodUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SavedPaymentMethodUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedPaymentMethodPayload>[]
+        }
+        upsert: {
+          args: Prisma.SavedPaymentMethodUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedPaymentMethodPayload>
+        }
+        aggregate: {
+          args: Prisma.SavedPaymentMethodAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSavedPaymentMethod>
+        }
+        groupBy: {
+          args: Prisma.SavedPaymentMethodGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SavedPaymentMethodGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SavedPaymentMethodCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SavedPaymentMethodCountAggregateOutputType> | number
         }
       }
     }
@@ -3325,11 +3400,42 @@ export const AdminProfileScalarFieldEnum = {
   permissions: 'permissions',
   totpSecret: 'totpSecret',
   totpEnabled: 'totpEnabled',
+  totpBackupCodeHashes: 'totpBackupCodeHashes',
+  totpBackupCodesGeneratedAt: 'totpBackupCodesGeneratedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type AdminProfileScalarFieldEnum = (typeof AdminProfileScalarFieldEnum)[keyof typeof AdminProfileScalarFieldEnum]
+
+
+export const SavedPaymentMethodScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  channel: 'channel',
+  status: 'status',
+  provider: 'provider',
+  label: 'label',
+  emailUsed: 'emailUsed',
+  linkReference: 'linkReference',
+  paystackAuthCode: 'paystackAuthCode',
+  paystackCustomerCode: 'paystackCustomerCode',
+  cardLast4: 'cardLast4',
+  cardBrand: 'cardBrand',
+  cardExpMonth: 'cardExpMonth',
+  cardExpYear: 'cardExpYear',
+  cardSignature: 'cardSignature',
+  momoPhone: 'momoPhone',
+  momoProvider: 'momoProvider',
+  paypalEmail: 'paypalEmail',
+  isDefault: 'isDefault',
+  reusable: 'reusable',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  revokedAt: 'revokedAt'
+} as const
+
+export type SavedPaymentMethodScalarFieldEnum = (typeof SavedPaymentMethodScalarFieldEnum)[keyof typeof SavedPaymentMethodScalarFieldEnum]
 
 
 export const AdminNoteScalarFieldEnum = {
@@ -4120,6 +4226,34 @@ export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$Prisma
 
 
 /**
+ * Reference to a field of type 'SavedPaymentChannel'
+ */
+export type EnumSavedPaymentChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SavedPaymentChannel'>
+    
+
+
+/**
+ * Reference to a field of type 'SavedPaymentChannel[]'
+ */
+export type ListEnumSavedPaymentChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SavedPaymentChannel[]'>
+    
+
+
+/**
+ * Reference to a field of type 'SavedPaymentStatus'
+ */
+export type EnumSavedPaymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SavedPaymentStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'SavedPaymentStatus[]'
+ */
+export type ListEnumSavedPaymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SavedPaymentStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'VehicleType'
  */
 export type EnumVehicleTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VehicleType'>
@@ -4612,6 +4746,7 @@ export type GlobalOmitConfig = {
   passengerProfile?: Prisma.PassengerProfileOmit
   riderProfile?: Prisma.RiderProfileOmit
   adminProfile?: Prisma.AdminProfileOmit
+  savedPaymentMethod?: Prisma.SavedPaymentMethodOmit
   adminNote?: Prisma.AdminNoteOmit
   platformSetting?: Prisma.PlatformSettingOmit
   dispatcherProfile?: Prisma.DispatcherProfileOmit

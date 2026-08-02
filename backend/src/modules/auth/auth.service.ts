@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { AppError } from "../../common/errors.js";
 import { hashPassword, makeSessionToken, verifyPassword } from "../../common/auth.js";
 import { buildOtpAuthUrl, generateTotpSecret, verifyTotpCode } from "../../common/totp.js";
@@ -15,7 +16,9 @@ import {
   WalletType
 } from "../../generated/prisma/enums.js";
 import type {
+  adminChangePasswordSchema,
   adminLoginSchema,
+  adminProfileUpdateSchema,
   adminPromoteSchema,
   adminRegisterSchema,
   otpRequestSchema,
@@ -47,6 +50,8 @@ type RiderVehicleUpdateInput = z.infer<typeof riderVehicleUpdateSchema>;
 type AvatarUploadInput = z.infer<typeof avatarUploadSchema>;
 type OtpRequestInput = z.infer<typeof otpRequestSchema>;
 type OtpVerifyInput = z.infer<typeof otpVerifySchema>;
+type AdminChangePasswordInput = z.infer<typeof adminChangePasswordSchema>;
+type AdminProfileUpdateInput = z.infer<typeof adminProfileUpdateSchema>;
 type UserWithProfiles = {
   id: string;
   role: { toLowerCase(): string };
@@ -58,11 +63,52 @@ type UserWithProfiles = {
   phoneE164: string;
   preferredCurrency: string;
   avatarUrl?: string | null;
+  createdAt?: Date;
+  isPhoneVerified?: boolean;
+  isEmailVerified?: boolean;
   passengerProfile?: { id: string } | null;
   riderProfile?: { id: string; approvalStatus: { toLowerCase(): string } } | null;
   adminProfile?: { id: string; title?: string | null; permissions?: unknown } | null;
   dispatcherProfile?: { id: string } | null;
 };
+
+function describeUserAgent(userAgent?: string | null) {
+  if (!userAgent) return "Unknown device";
+  const ua = userAgent.toLowerCase();
+  const browser = ua.includes("edg/")
+    ? "Edge"
+    : ua.includes("chrome")
+      ? "Chrome"
+      : ua.includes("firefox")
+        ? "Firefox"
+        : ua.includes("safari")
+          ? "Safari"
+          : "Browser";
+  const os = ua.includes("windows")
+    ? "Windows"
+    : ua.includes("mac os") || ua.includes("macintosh")
+      ? "macOS"
+      : ua.includes("android")
+        ? "Android"
+        : ua.includes("iphone") || ua.includes("ipad")
+          ? "iOS"
+          : ua.includes("linux")
+            ? "Linux"
+            : "Device";
+  return `${browser} on ${os}`;
+}
+
+function formatRelativeTime(date: Date) {
+  const deltaMs = Date.now() - date.getTime();
+  const minutes = Math.floor(deltaMs / 60_000);
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  return date.toISOString().slice(0, 10);
+}
 type PassengerSettingsUser = UserWithProfiles & {
   passengerProfile?: {
     id: string;
@@ -245,6 +291,7 @@ export class AuthService {
     await this.requireAdminSession(token);
 
     const admins = await prisma.adminProfile.findMany({
+      where: { user: { deletedAt: null } },
       orderBy: {
         createdAt: "desc"
       },
@@ -437,19 +484,172 @@ export class AuthService {
     }
 
     if (user.adminProfile?.totpEnabled && user.adminProfile.totpSecret) {
-      if (!input.totpCode) {
-        throw new AppError(
-          "A two-factor authentication code is required",
-          401,
-          "TOTP_REQUIRED"
-        );
-      }
-      if (!verifyTotpCode(user.adminProfile.totpSecret, input.totpCode)) {
-        throw new AppError("Invalid two-factor authentication code", 401, "TOTP_INVALID");
+      const usedBackup = input.backupCode
+        ? await this.consumeBackupCode(user.adminProfile.id, input.backupCode)
+        : false;
+
+      if (!usedBackup) {
+        if (!input.totpCode) {
+          throw new AppError(
+            "A two-factor authentication code or backup code is required",
+            401,
+            "TOTP_REQUIRED"
+          );
+        }
+        if (!verifyTotpCode(user.adminProfile.totpSecret, input.totpCode)) {
+          throw new AppError("Invalid two-factor authentication code", 401, "TOTP_INVALID");
+        }
       }
     }
 
-    return this.createSession(user.id, input.device);
+    const created = await this.createSession(user.id, input.device);
+
+    await prisma.auditLog.create({
+      data: {
+        actorUserId: user.id,
+        actorRole: "ADMIN",
+        action: "ADMIN_LOGIN",
+        entityType: "UserSession",
+        entityId: user.id,
+        userAgent: input.device?.userAgent ?? null,
+        changes: {
+          email: user.email,
+          usedBackupCode: Boolean(input.backupCode)
+        }
+      }
+    });
+
+    return created;
+  }
+
+  private normalizeBackupCode(code: string) {
+    return code.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+  }
+
+  private makeBackupCode() {
+    return randomBytes(4).toString("hex").toUpperCase().replace(/(.{4})(.{4})/, "$1-$2");
+  }
+
+  private async consumeBackupCode(adminProfileId: string, rawCode: string) {
+    const profile = await prisma.adminProfile.findUnique({ where: { id: adminProfileId } });
+    const hashes = Array.isArray(profile?.totpBackupCodeHashes)
+      ? (profile?.totpBackupCodeHashes as string[])
+      : [];
+    if (hashes.length === 0) return false;
+
+    const normalized = this.normalizeBackupCode(rawCode);
+    for (let i = 0; i < hashes.length; i += 1) {
+      const hash = hashes[i];
+      if (typeof hash !== "string") continue;
+      if (await verifyPassword(normalized, hash)) {
+        const next = hashes.filter((_, idx) => idx !== i);
+        await prisma.adminProfile.update({
+          where: { id: adminProfileId },
+          data: { totpBackupCodeHashes: next }
+        });
+        return true;
+      }
+    }
+    return false;
+  }
+
+  async generateAdminBackupCodes(token: string, code: string) {
+    const session = await this.requireAdminSession(token);
+    const profile = session.user.adminProfile;
+    if (!profile?.totpEnabled || !profile.totpSecret) {
+      throw new AppError("Enable authenticator 2FA before generating backup codes", 400, "TOTP_REQUIRED");
+    }
+    if (!verifyTotpCode(profile.totpSecret, code)) {
+      throw new AppError("Invalid two-factor authentication code", 401, "TOTP_INVALID");
+    }
+
+    const codes = Array.from({ length: 10 }, () => this.makeBackupCode());
+    const hashes = await Promise.all(
+      codes.map((value) => hashPassword(this.normalizeBackupCode(value)))
+    );
+
+    await prisma.adminProfile.update({
+      where: { id: profile.id },
+      data: {
+        totpBackupCodeHashes: hashes,
+        totpBackupCodesGeneratedAt: new Date()
+      }
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        actorUserId: session.userId,
+        actorRole: "ADMIN",
+        action: "ADMIN_2FA_BACKUP_CODES_GENERATED",
+        entityType: "AdminProfile",
+        entityId: profile.id,
+        changes: { count: codes.length }
+      }
+    });
+
+    return {
+      codes,
+      generatedAt: new Date().toISOString(),
+      remaining: codes.length
+    };
+  }
+
+  async getAdminBackupCodeStatus(token: string) {
+    const session = await this.requireAdminSession(token);
+    const hashes = Array.isArray(session.user.adminProfile?.totpBackupCodeHashes)
+      ? (session.user.adminProfile?.totpBackupCodeHashes as string[])
+      : [];
+    return {
+      remaining: hashes.length,
+      generatedAt:
+        (session.user.adminProfile as { totpBackupCodesGeneratedAt?: Date | null } | null)
+          ?.totpBackupCodesGeneratedAt?.toISOString?.() ?? null
+    };
+  }
+
+  async softDeleteAdmin(token: string, userId: string) {
+    const session = await this.requireAdminSession(token);
+    if (session.userId === userId) {
+      throw new AppError("You cannot delete your own admin account", 400, "CANNOT_DELETE_SELF");
+    }
+
+    const target = await prisma.user.findFirst({
+      where: { id: userId, role: UserRole.ADMIN, deletedAt: null },
+      include: { adminProfile: true }
+    });
+    if (!target?.adminProfile) {
+      throw new AppError("Admin account not found", 404, "ADMIN_NOT_FOUND");
+    }
+
+    const remaining = await prisma.user.count({
+      where: { role: UserRole.ADMIN, deletedAt: null, NOT: { id: userId } }
+    });
+    if (remaining < 1) {
+      throw new AppError("Cannot delete the last admin account", 400, "LAST_ADMIN");
+    }
+
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: userId },
+        data: { deletedAt: new Date(), accountStatus: AccountStatus.SUSPENDED }
+      }),
+      prisma.userSession.updateMany({
+        where: { userId, revokedAt: null },
+        data: { revokedAt: new Date() }
+      })
+    ]);
+
+    await prisma.auditLog.create({
+      data: {
+        actorUserId: session.userId,
+        actorRole: "ADMIN",
+        action: "ADMIN_SOFT_DELETE",
+        entityType: "User",
+        entityId: userId
+      }
+    });
+
+    return { deleted: true, userId };
   }
 
   /** Generates (or regenerates) a TOTP secret; 2FA only activates after enableAdminTotp verifies a code. */
@@ -507,7 +707,12 @@ export class AuthService {
 
     await prisma.adminProfile.update({
       where: { id: profile.id },
-      data: { totpEnabled: false, totpSecret: null }
+      data: {
+        totpEnabled: false,
+        totpSecret: null,
+        totpBackupCodeHashes: [],
+        totpBackupCodesGeneratedAt: null
+      }
     });
 
     return { totpEnabled: false };
@@ -518,7 +723,13 @@ export class AuthService {
     if (!session.user.adminProfile) {
       throw new AppError("Admin access is required", 403, "ADMIN_ACCESS_REQUIRED");
     }
-    return { totpEnabled: session.user.adminProfile.totpEnabled };
+    const hashes = Array.isArray(session.user.adminProfile.totpBackupCodeHashes)
+      ? (session.user.adminProfile.totpBackupCodeHashes as string[])
+      : [];
+    return {
+      totpEnabled: session.user.adminProfile.totpEnabled,
+      backupCodesRemaining: hashes.length
+    };
   }
 
   async getSessionByToken(token: string) {
@@ -711,6 +922,249 @@ export class AuthService {
 
     return {
       revoked: true
+    };
+  }
+
+  async changeAdminPassword(token: string, input: AdminChangePasswordInput) {
+    const session = await this.requireAdminSession(token);
+    const user = await prisma.user.findUnique({ where: { id: session.userId } });
+    if (!user?.passwordHash) {
+      throw new AppError("Invalid credentials", 401, "INVALID_CREDENTIALS");
+    }
+
+    const valid = await verifyPassword(input.currentPassword, user.passwordHash);
+    if (!valid) {
+      throw new AppError("Current password is incorrect", 401, "INVALID_CREDENTIALS");
+    }
+
+    if (input.newPassword.length < 8) {
+      throw new AppError("Password must be at least 8 characters", 400, "PASSWORD_TOO_SHORT");
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash: await hashPassword(input.newPassword) }
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        actorUserId: user.id,
+        actorRole: "ADMIN",
+        action: "ADMIN_PASSWORD_CHANGE",
+        entityType: "User",
+        entityId: user.id
+      }
+    });
+
+    return { changed: true };
+  }
+
+  async updateAdminProfile(token: string, input: AdminProfileUpdateInput) {
+    const session = await this.requireAdminSession(token);
+
+    if (input.email && input.email !== session.user.email) {
+      const taken = await prisma.user.findFirst({
+        where: { email: input.email, deletedAt: null, NOT: { id: session.userId } },
+        select: { id: true }
+      });
+      if (taken) {
+        throw new AppError("Email is already in use", 409, "EMAIL_TAKEN");
+      }
+    }
+
+    const nextPhoneE164 = input.phoneE164 ?? session.user.phoneE164;
+    if (input.phoneE164 && input.phoneE164 !== session.user.phoneE164) {
+      const taken = await prisma.user.findFirst({
+        where: { phoneE164: input.phoneE164, deletedAt: null, NOT: { id: session.userId } },
+        select: { id: true }
+      });
+      if (taken) {
+        throw new AppError("Phone number is already in use", 409, "PHONE_TAKEN");
+      }
+    }
+
+    const user = await prisma.user.update({
+      where: { id: session.userId },
+      data: {
+        fullName: input.fullName ?? undefined,
+        email: input.email ?? undefined,
+        phoneCountryCode: input.phoneCountryCode ?? undefined,
+        phoneLocal: input.phoneLocal ?? undefined,
+        phoneE164: nextPhoneE164,
+        ...(input.phoneE164 && input.phoneE164 !== session.user.phoneE164
+          ? { isPhoneVerified: false }
+          : {})
+      },
+      include: {
+        passengerProfile: true,
+        riderProfile: true,
+        adminProfile: true,
+        dispatcherProfile: true
+      }
+    });
+
+    if (input.title !== undefined && user.adminProfile) {
+      await prisma.adminProfile.update({
+        where: { id: user.adminProfile.id },
+        data: { title: input.title }
+      });
+    }
+
+    const refreshed = await prisma.user.findUniqueOrThrow({
+      where: { id: session.userId },
+      include: {
+        passengerProfile: true,
+        riderProfile: true,
+        adminProfile: true,
+        dispatcherProfile: true
+      }
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        actorUserId: refreshed.id,
+        actorRole: "ADMIN",
+        action: "ADMIN_PROFILE_UPDATE",
+        entityType: "User",
+        entityId: refreshed.id,
+        changes: {
+          fullName: input.fullName,
+          email: input.email,
+          phoneE164: input.phoneE164,
+          title: input.title
+        }
+      }
+    });
+
+    await this.touchSession(session.id);
+
+    return {
+      token,
+      expiresAt: session.expiresAt.toISOString(),
+      user: this.serializeUser(refreshed)
+    };
+  }
+
+  async listAdminSessions(token: string) {
+    const current = await this.requireAdminSession(token);
+    const sessions = await prisma.userSession.findMany({
+      where: {
+        userId: current.userId,
+        revokedAt: null,
+        expiresAt: { gt: new Date() }
+      },
+      orderBy: { lastUsedAt: "desc" },
+      select: {
+        id: true,
+        userAgent: true,
+        ipAddress: true,
+        lastUsedAt: true,
+        createdAt: true,
+        expiresAt: true,
+        refreshTokenId: true
+      }
+    });
+
+    return {
+      sessions: sessions.map((row) => ({
+        id: row.id,
+        device: describeUserAgent(row.userAgent),
+        detail: row.userAgent ?? "Unknown client",
+        location: row.ipAddress ? `IP ${row.ipAddress}` : "Location unavailable",
+        network: row.id === current.id ? "This device" : "Other session",
+        lastActive: formatRelativeTime(row.lastUsedAt ?? row.createdAt),
+        createdAt: row.createdAt.toISOString(),
+        isCurrent: row.id === current.id
+      }))
+    };
+  }
+
+  async revokeAdminSession(token: string, sessionId: string) {
+    const current = await this.requireAdminSession(token);
+    if (sessionId === current.id) {
+      throw new AppError("Use logout for the current session", 400, "CANNOT_REVOKE_CURRENT");
+    }
+
+    const target = await prisma.userSession.findFirst({
+      where: { id: sessionId, userId: current.userId, revokedAt: null }
+    });
+    if (!target) {
+      throw new AppError("Session not found", 404, "SESSION_NOT_FOUND");
+    }
+
+    await prisma.userSession.update({
+      where: { id: target.id },
+      data: { revokedAt: new Date() }
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        actorUserId: current.userId,
+        actorRole: "ADMIN",
+        action: "ADMIN_SESSION_REVOKE",
+        entityType: "UserSession",
+        entityId: target.id
+      }
+    });
+
+    return { revoked: true, sessionId };
+  }
+
+  async logoutOtherAdminSessions(token: string) {
+    const current = await this.requireAdminSession(token);
+    const result = await prisma.userSession.updateMany({
+      where: {
+        userId: current.userId,
+        revokedAt: null,
+        NOT: { id: current.id }
+      },
+      data: { revokedAt: new Date() }
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        actorUserId: current.userId,
+        actorRole: "ADMIN",
+        action: "ADMIN_SESSION_REVOKE_OTHERS",
+        entityType: "User",
+        entityId: current.userId,
+        changes: { count: result.count }
+      }
+    });
+
+    return { revokedCount: result.count };
+  }
+
+  async listAdminLoginActivity(token: string) {
+    const current = await this.requireAdminSession(token);
+    const rows = await prisma.auditLog.findMany({
+      where: {
+        actorUserId: current.userId,
+        action: {
+          in: [
+            "ADMIN_LOGIN",
+            "ADMIN_PASSWORD_CHANGE",
+            "ADMIN_SESSION_REVOKE",
+            "ADMIN_SESSION_REVOKE_OTHERS",
+            "ADMIN_PROFILE_UPDATE"
+          ]
+        }
+      },
+      orderBy: { createdAt: "desc" },
+      take: 50
+    });
+
+    return {
+      activity: rows.map((row) => ({
+        id: row.id,
+        action: row.action,
+        status: "Success",
+        method: row.action.includes("PASSWORD") ? "Password" : "Session",
+        location: row.ipAddress ? `IP ${row.ipAddress}` : "Ghana",
+        device: describeUserAgent(row.userAgent),
+        createdAt: row.createdAt.toISOString(),
+        time: formatRelativeTime(row.createdAt)
+      }))
     };
   }
 
@@ -978,6 +1432,9 @@ export class AuthService {
       preferredCurrency: user.preferredCurrency,
       avatarUrl: user.avatarUrl ?? null,
       isPhoneVerified: (user as { isPhoneVerified?: boolean }).isPhoneVerified ?? false,
+      isEmailVerified: (user as { isEmailVerified?: boolean }).isEmailVerified ?? false,
+      createdAt: (user as { createdAt?: Date }).createdAt?.toISOString?.() ?? null,
+      adminTitle: user.adminProfile?.title ?? null,
       passengerProfileId: user.passengerProfile?.id ?? null,
       riderProfileId: user.riderProfile?.id ?? null,
       riderApprovalStatus: user.riderProfile?.approvalStatus.toLowerCase() ?? null,

@@ -2,8 +2,12 @@ import type { FastifyPluginAsync } from "fastify";
 import { AppError } from "../../common/errors.js";
 import { parseBody } from "../../common/validation.js";
 import {
+  adminChangePasswordSchema,
   adminLoginSchema,
+  adminProfileUpdateSchema,
+  adminSessionParamsSchema,
   adminTotpCodeSchema,
+  adminUserParamsSchema,
   avatarUploadSchema,
   otpRequestSchema,
   otpVerifySchema,
@@ -16,6 +20,7 @@ import {
   riderVehicleUpdateSchema
 } from "./auth.schemas.js";
 import { AuthService } from "./auth.service.js";
+import { parseParams } from "../../common/validation.js";
 
 const authService = new AuthService();
 
@@ -75,6 +80,50 @@ export const authRoutes: FastifyPluginAsync = async (server) => {
     const token = extractBearerToken(request.headers.authorization);
     const input = parseBody(request, adminTotpCodeSchema);
     return authService.disableAdminTotp(token, input.code);
+  });
+
+  server.get("/auth/admin/2fa/backup-codes", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return authService.getAdminBackupCodeStatus(token);
+  });
+
+  server.post("/auth/admin/2fa/backup-codes/generate", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const input = parseBody(request, adminTotpCodeSchema);
+    return authService.generateAdminBackupCodes(token, input.code);
+  });
+
+  server.post("/auth/admin/change-password", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const input = parseBody(request, adminChangePasswordSchema);
+    return authService.changeAdminPassword(token, input);
+  });
+
+  server.patch("/auth/admin/profile", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const input = parseBody(request, adminProfileUpdateSchema);
+    return authService.updateAdminProfile(token, input);
+  });
+
+  server.get("/auth/admin/sessions", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return authService.listAdminSessions(token);
+  });
+
+  server.post("/auth/admin/sessions/logout-others", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return authService.logoutOtherAdminSessions(token);
+  });
+
+  server.post("/auth/admin/sessions/:sessionId/revoke", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, adminSessionParamsSchema);
+    return authService.revokeAdminSession(token, params.sessionId);
+  });
+
+  server.get("/auth/admin/login-activity", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return authService.listAdminLoginActivity(token);
   });
 
   server.get("/auth/session", async (request) => {

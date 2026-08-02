@@ -295,6 +295,24 @@ export const PricingRuleScope = {
 export type PricingRuleScope = (typeof PricingRuleScope)[keyof typeof PricingRuleScope]
 
 
+export const SavedPaymentChannel = {
+  CARD: 'CARD',
+  MOBILE_MONEY: 'MOBILE_MONEY',
+  PAYPAL: 'PAYPAL'
+} as const
+
+export type SavedPaymentChannel = (typeof SavedPaymentChannel)[keyof typeof SavedPaymentChannel]
+
+
+export const SavedPaymentStatus = {
+  PENDING: 'PENDING',
+  ACTIVE: 'ACTIVE',
+  REVOKED: 'REVOKED'
+} as const
+
+export type SavedPaymentStatus = (typeof SavedPaymentStatus)[keyof typeof SavedPaymentStatus]
+
+
 export const DeliveryStopType = {
   PICKUP: 'PICKUP',
   DROPOFF: 'DROPOFF'

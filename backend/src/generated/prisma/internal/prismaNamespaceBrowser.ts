@@ -57,6 +57,7 @@ export const ModelName = {
   PassengerProfile: 'PassengerProfile',
   RiderProfile: 'RiderProfile',
   AdminProfile: 'AdminProfile',
+  SavedPaymentMethod: 'SavedPaymentMethod',
   AdminNote: 'AdminNote',
   PlatformSetting: 'PlatformSetting',
   DispatcherProfile: 'DispatcherProfile',
@@ -214,11 +215,42 @@ export const AdminProfileScalarFieldEnum = {
   permissions: 'permissions',
   totpSecret: 'totpSecret',
   totpEnabled: 'totpEnabled',
+  totpBackupCodeHashes: 'totpBackupCodeHashes',
+  totpBackupCodesGeneratedAt: 'totpBackupCodesGeneratedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type AdminProfileScalarFieldEnum = (typeof AdminProfileScalarFieldEnum)[keyof typeof AdminProfileScalarFieldEnum]
+
+
+export const SavedPaymentMethodScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  channel: 'channel',
+  status: 'status',
+  provider: 'provider',
+  label: 'label',
+  emailUsed: 'emailUsed',
+  linkReference: 'linkReference',
+  paystackAuthCode: 'paystackAuthCode',
+  paystackCustomerCode: 'paystackCustomerCode',
+  cardLast4: 'cardLast4',
+  cardBrand: 'cardBrand',
+  cardExpMonth: 'cardExpMonth',
+  cardExpYear: 'cardExpYear',
+  cardSignature: 'cardSignature',
+  momoPhone: 'momoPhone',
+  momoProvider: 'momoProvider',
+  paypalEmail: 'paypalEmail',
+  isDefault: 'isDefault',
+  reusable: 'reusable',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  revokedAt: 'revokedAt'
+} as const
+
+export type SavedPaymentMethodScalarFieldEnum = (typeof SavedPaymentMethodScalarFieldEnum)[keyof typeof SavedPaymentMethodScalarFieldEnum]
 
 
 export const AdminNoteScalarFieldEnum = {

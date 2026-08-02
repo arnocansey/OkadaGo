@@ -84,6 +84,22 @@ export function NotificationSettingsScreen({
     if (typeof platformSettings.quietHoursEnd === "string") {
       setQuietEnd(platformSettings.quietHoursEnd);
     }
+    const savedMatrix = platformSettings.notificationMatrix;
+    if (savedMatrix && typeof savedMatrix === "object") {
+      setMatrix((prev) => {
+        const next = { ...prev };
+        for (const category of CATEGORIES) {
+          const row = (savedMatrix as Record<string, unknown>)[category.id];
+          if (row && typeof row === "object") {
+            next[category.id] = {
+              ...next[category.id],
+              ...(row as Record<ChannelId, boolean>)
+            };
+          }
+        }
+        return next;
+      });
+    }
     hydratedRef.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [platformSettings]);
@@ -105,7 +121,8 @@ export function NotificationSettingsScreen({
       ...platformSettings,
       quietHoursEnabled: quietHours,
       quietHoursStart: quietStart,
-      quietHoursEnd: quietEnd
+      quietHoursEnd: quietEnd,
+      notificationMatrix: matrix
     };
     for (const channel of CHANNELS) {
       payload[`notify_${channel.id}`] = channels[channel.id];
@@ -258,7 +275,9 @@ export function NotificationSettingsScreen({
               </div>
               <div className="settings-row">
                 <span className="settings-row-meta">Timezone</span>
-                <strong>(GMT+00:00) Accra, Ghana</strong>
+                <strong>
+                  {typeof platformSettings?.timezone === "string" ? platformSettings.timezone : "Africa/Accra"}
+                </strong>
               </div>
             </SettingsCard>
 
@@ -299,20 +318,6 @@ export function NotificationSettingsScreen({
               </p>
             </SettingsCard>
 
-            <SettingsCard title="Recent Notification Activity">
-              {[
-                ["Email notifications enabled", "May 31, 2024 10:45 AM"],
-                ["Quiet hours updated", "May 30, 2024 6:12 PM"],
-                ["Push notifications enabled", "May 28, 2024 9:04 AM"]
-              ].map(([label, at]) => (
-                <div key={label} className="settings-row">
-                  <div>
-                    <div className="settings-row-label">{label}</div>
-                    <div className="settings-row-meta">{at}</div>
-                  </div>
-                </div>
-              ))}
-            </SettingsCard>
           </div>
         </div>
       )}

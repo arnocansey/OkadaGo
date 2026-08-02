@@ -1754,6 +1754,22 @@ export function useAdminData(
     }
   });
 
+  const deleteAdminMutation = useMutation({
+    mutationFn: async (userId: string) =>
+      requestJson(`/admin/accounts/${userId}`, {
+        method: "DELETE",
+        token
+      }),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: QK.adminAccounts }),
+        invalidateOpsSummary()
+      ]);
+      addToast("Admin account deleted", "success");
+    },
+    onError: (error) => addToast((error as Error).message || "Could not delete admin", "error")
+  });
+
   const riderApprovalMutation = useMutation({
     mutationFn: async ({ riderProfileId, action, reason }: { riderProfileId: string; action: "approve" | "reject"; reason?: string }) =>
       requestJson(`/admin/riders/${riderProfileId}/approval`, {
@@ -2321,6 +2337,7 @@ export function useAdminData(
     deliveryRequestActionMutation,
     createAdminMutation,
     promotePassengerMutation,
+    deleteAdminMutation,
     riderApprovalMutation,
     riderSuspensionMutation,
     documentReviewMutation,

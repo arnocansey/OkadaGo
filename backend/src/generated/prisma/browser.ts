@@ -48,6 +48,12 @@ export type RiderProfile = Prisma.RiderProfileModel
  */
 export type AdminProfile = Prisma.AdminProfileModel
 /**
+ * Model SavedPaymentMethod
+ * Vaulted billing instruments. Cards with Paystack authorization_code are chargeable;
+ * MoMo/PayPal rows are display/ops destinations unless reusable auth exists.
+ */
+export type SavedPaymentMethod = Prisma.SavedPaymentMethodModel
+/**
  * Model AdminNote
  * Free-form ops note pinned to any admin-managed entity (rider, incident, payout, …).
  */

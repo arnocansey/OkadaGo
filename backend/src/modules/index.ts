@@ -9,6 +9,7 @@ import { promotionRoutes } from "./promotions/promotion.routes.js";
 import { referralRoutes } from "./referrals/referral.routes.js";
 import { rideRoutes } from "./rides/ride.routes.js";
 import { walletRoutes } from "./wallets/wallet.routes.js";
+import { paymentMethodRoutes } from "./payments/payment-method.routes.js";
 import { adminRoutes } from "./admin/admin.routes.js";
 import { bootstrapRoutes } from "./bootstrap/bootstrap.routes.js";
 import { ratingRoutes } from "./ratings/rating.routes.js";
@@ -23,6 +24,7 @@ export const registerRoutes: FastifyPluginAsync = async (server) => {
   await server.register(rideRoutes);
   await server.register(deliveryRoutes);
   await server.register(walletRoutes);
+  await server.register(paymentMethodRoutes);
   await server.register(ratingRoutes);
   await server.register(safetyRoutes);
   await server.register(notificationRoutes);

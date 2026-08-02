@@ -1,3 +1,5 @@
+import { v2 as cloudinary } from "cloudinary";
+import { appConfig } from "../../common/config.js";
 import { prisma } from "../../common/prisma.js";
 import { AppError } from "../../common/errors.js";
 import type {
@@ -5,6 +7,18 @@ import type {
   RiderRequestInfoInput,
   UpdatePlatformSettingsInput
 } from "./admin.schemas.js";
+import type { z } from "zod";
+import type { settingImageUploadSchema } from "./admin.schemas.js";
+
+type SettingImageUploadInput = z.infer<typeof settingImageUploadSchema>;
+
+if (appConfig.cloudinaryCloudName && appConfig.cloudinaryApiKey && appConfig.cloudinaryApiSecret) {
+  cloudinary.config({
+    cloud_name: appConfig.cloudinaryCloudName,
+    api_key: appConfig.cloudinaryApiKey,
+    api_secret: appConfig.cloudinaryApiSecret
+  });
+}
 
 const EXPORT_ROW_CAP = 10_000;
 
@@ -148,6 +162,41 @@ export class AdminConsoleService {
     });
 
     return this.getSettings(token);
+  }
+
+  async uploadSettingImage(token: string, input: SettingImageUploadInput) {
+    const session = await this.verifyAdmin(token);
+
+    if (!appConfig.cloudinaryCloudName || !appConfig.cloudinaryApiKey || !appConfig.cloudinaryApiSecret) {
+      throw new AppError("Image uploads are not configured", 503, "CLOUDINARY_NOT_CONFIGURED");
+    }
+
+    const dataUri = input.imageBase64.startsWith("data:")
+      ? input.imageBase64
+      : `data:image/jpeg;base64,${input.imageBase64}`;
+
+    const folder = input.kind === "company_document" ? "okadago/company/documents" : "okadago/company";
+    const result = await cloudinary.uploader.upload(dataUri, {
+      folder,
+      overwrite: true,
+      transformation:
+        input.kind === "company_logo"
+          ? [{ width: 512, height: 512, crop: "limit" }, { quality: "auto", fetch_format: "auto" }]
+          : [{ quality: "auto", fetch_format: "auto" }]
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        actorUserId: session.user.id,
+        actorRole: "ADMIN",
+        action: "PLATFORM_SETTINGS_IMAGE_UPLOAD",
+        entityType: "PlatformSetting",
+        entityId: input.kind,
+        changes: { url: result.secure_url, kind: input.kind }
+      }
+    });
+
+    return { url: result.secure_url, kind: input.kind };
   }
 
   // ── Rider info requests ────────────────────────────────────────────────

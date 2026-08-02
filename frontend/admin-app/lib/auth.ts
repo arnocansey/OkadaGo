@@ -23,6 +23,10 @@ export type SessionUser = {
   phoneE164: string;
   preferredCurrency: string;
   avatarUrl: string | null;
+  isPhoneVerified?: boolean;
+  isEmailVerified?: boolean;
+  createdAt?: string | null;
+  adminTitle?: string | null;
   passengerProfileId: string | null;
   riderProfileId: string | null;
   riderApprovalStatus: string | null;

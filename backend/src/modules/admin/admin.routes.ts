@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync } from "fastify";
 import { AppError } from "../../common/errors.js";
 import { parseBody, parseParams, parseQuery } from "../../common/validation.js";
-import { adminPromoteSchema, adminRegisterSchema } from "../auth/auth.schemas.js";
+import { adminPromoteSchema, adminRegisterSchema, adminUserParamsSchema } from "../auth/auth.schemas.js";
 import { AuthService } from "../auth/auth.service.js";
 import { adminRatingsQuerySchema } from "../ratings/rating.schemas.js";
 import { RatingService } from "../ratings/rating.service.js";
@@ -28,6 +28,7 @@ import {
   adminNotesQuerySchema,
   createAdminNoteSchema,
   updatePlatformSettingsSchema,
+  settingImageUploadSchema,
   riderRequestInfoSchema,
   adminExportParamsSchema,
   adminAuditLogsQuerySchema,
@@ -72,6 +73,12 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
     const input = parseBody(request, adminPromoteSchema);
     const promoted = await authService.promotePassengerToAdminByAdmin(token, input);
     return reply.status(201).send(promoted);
+  });
+
+  server.delete("/admin/accounts/:userId", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, adminUserParamsSchema);
+    return authService.softDeleteAdmin(token, params.userId);
   });
 
   server.get("/admin/permissions", async (request) => {
@@ -278,6 +285,12 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
     const token = extractBearerToken(request.headers.authorization);
     const input = parseBody(request, updatePlatformSettingsSchema);
     return adminConsoleService.updateSettings(token, input);
+  });
+
+  server.post("/admin/settings/upload-image", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const input = parseBody(request, settingImageUploadSchema);
+    return adminConsoleService.uploadSettingImage(token, input);
   });
 
   // ── Rider info request ─────────────────────────────────────────────────

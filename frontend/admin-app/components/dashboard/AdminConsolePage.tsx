@@ -742,10 +742,14 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
       case "companyProfile":
         return (
           <CompanyProfileScreen
-            dataLoading={data.platformSettingsPending}
+            dataLoading={data.platformSettingsPending || data.userStatsPending || data.adminAccountsPending}
             platformSettings={data.platformSettings}
             onSaveSettings={(settings) => data.saveSettingsMutation.mutate(settings)}
             settingsSaving={data.saveSettingsMutation.isPending}
+            token={token}
+            adminCount={data.adminAccounts.length}
+            riderCount={data.userStats?.riders.total ?? data.ridersTotal}
+            passengerCount={data.userStats?.passengers.total ?? data.passengersTotal}
           />
         );
 
@@ -755,6 +759,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             dataLoading={data.platformSettingsPending}
             token={token}
             platformSettings={data.platformSettings}
+            onSaveSettings={(settings) => data.saveSettingsMutation.mutate(settings)}
           />
         );
 
@@ -771,9 +776,13 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
       case "paymentMethods":
         return (
           <PaymentMethodsScreen
-            dataLoading={data.walletTxPending}
+            dataLoading={data.walletTxPending || data.platformSettingsPending}
             adminCurrency={data.adminCurrency}
             walletTransactions={data.walletTransactions}
+            platformSettings={data.platformSettings}
+            onSaveSettings={(settings) => data.saveSettingsMutation.mutate(settings)}
+            settingsSaving={data.saveSettingsMutation.isPending}
+            token={token}
           />
         );
 
@@ -813,8 +822,10 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             onPromoteFormChange={data.handlePromoteFormChange}
             onCreateAdmin={() => data.createAdminMutation.mutate()}
             onPromotePassenger={() => data.promotePassengerMutation.mutate()}
+            onDeleteAdmin={(userId) => data.deleteAdminMutation.mutate(userId)}
             isCreating={data.createAdminMutation.isPending}
             isPromoting={data.promotePassengerMutation.isPending}
+            isDeleting={data.deleteAdminMutation.isPending}
             dataLoading={data.adminAccountsPending || data.passengersPending}
           />
         );
