@@ -49,6 +49,18 @@ export type PayoutRequest = {
   rejectionReason?: string | null;
 };
 
+export type PayoutAccount = {
+  id: string;
+  method: string;
+  destinationLabel: string;
+  label: string | null;
+  provider: string | null;
+  isDefault: boolean;
+  lastUsedAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export type RoutePreview = {
   distanceKm: number;
   durationMinutes: number;

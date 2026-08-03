@@ -407,6 +407,7 @@ export const ModelName = {
   Wallet: 'Wallet',
   WalletTransaction: 'WalletTransaction',
   PayoutRequest: 'PayoutRequest',
+  RiderPayoutAccount: 'RiderPayoutAccount',
   Rating: 'Rating',
   Review: 'Review',
   PromoCode: 'PromoCode',
@@ -437,7 +438,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "adminProfile" | "savedPaymentMethod" | "adminNote" | "platformSetting" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "deliveryRequest" | "deliveryStop" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog" | "escalationRule" | "scheduledBroadcast" | "opsJobHeartbeat"
+    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "adminProfile" | "savedPaymentMethod" | "adminNote" | "platformSetting" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "deliveryRequest" | "deliveryStop" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "riderPayoutAccount" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog" | "escalationRule" | "scheduledBroadcast" | "opsJobHeartbeat"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2143,6 +2144,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    RiderPayoutAccount: {
+      payload: Prisma.$RiderPayoutAccountPayload<ExtArgs>
+      fields: Prisma.RiderPayoutAccountFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.RiderPayoutAccountFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderPayoutAccountPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.RiderPayoutAccountFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderPayoutAccountPayload>
+        }
+        findFirst: {
+          args: Prisma.RiderPayoutAccountFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderPayoutAccountPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.RiderPayoutAccountFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderPayoutAccountPayload>
+        }
+        findMany: {
+          args: Prisma.RiderPayoutAccountFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderPayoutAccountPayload>[]
+        }
+        create: {
+          args: Prisma.RiderPayoutAccountCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderPayoutAccountPayload>
+        }
+        createMany: {
+          args: Prisma.RiderPayoutAccountCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.RiderPayoutAccountCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderPayoutAccountPayload>[]
+        }
+        delete: {
+          args: Prisma.RiderPayoutAccountDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderPayoutAccountPayload>
+        }
+        update: {
+          args: Prisma.RiderPayoutAccountUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderPayoutAccountPayload>
+        }
+        deleteMany: {
+          args: Prisma.RiderPayoutAccountDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.RiderPayoutAccountUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.RiderPayoutAccountUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderPayoutAccountPayload>[]
+        }
+        upsert: {
+          args: Prisma.RiderPayoutAccountUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderPayoutAccountPayload>
+        }
+        aggregate: {
+          args: Prisma.RiderPayoutAccountAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateRiderPayoutAccount>
+        }
+        groupBy: {
+          args: Prisma.RiderPayoutAccountGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RiderPayoutAccountGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.RiderPayoutAccountCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RiderPayoutAccountCountAggregateOutputType> | number
+        }
+      }
+    }
     Rating: {
       payload: Prisma.$RatingPayload<ExtArgs>
       fields: Prisma.RatingFieldRefs
@@ -3784,6 +3859,23 @@ export const PayoutRequestScalarFieldEnum = {
 export type PayoutRequestScalarFieldEnum = (typeof PayoutRequestScalarFieldEnum)[keyof typeof PayoutRequestScalarFieldEnum]
 
 
+export const RiderPayoutAccountScalarFieldEnum = {
+  id: 'id',
+  riderId: 'riderId',
+  method: 'method',
+  destinationLabel: 'destinationLabel',
+  label: 'label',
+  provider: 'provider',
+  isDefault: 'isDefault',
+  lastUsedAt: 'lastUsedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  revokedAt: 'revokedAt'
+} as const
+
+export type RiderPayoutAccountScalarFieldEnum = (typeof RiderPayoutAccountScalarFieldEnum)[keyof typeof RiderPayoutAccountScalarFieldEnum]
+
+
 export const RatingScalarFieldEnum = {
   id: 'id',
   rideId: 'rideId',
@@ -4763,6 +4855,7 @@ export type GlobalOmitConfig = {
   wallet?: Prisma.WalletOmit
   walletTransaction?: Prisma.WalletTransactionOmit
   payoutRequest?: Prisma.PayoutRequestOmit
+  riderPayoutAccount?: Prisma.RiderPayoutAccountOmit
   rating?: Prisma.RatingOmit
   review?: Prisma.ReviewOmit
   promoCode?: Prisma.PromoCodeOmit

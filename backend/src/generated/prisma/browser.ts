@@ -134,6 +134,12 @@ export type WalletTransaction = Prisma.WalletTransactionModel
  */
 export type PayoutRequest = Prisma.PayoutRequestModel
 /**
+ * Model RiderPayoutAccount
+ * Saved rider disbursement destinations (MoMo/bank). Created when a rider saves
+ * a payout account or first requests a payout to a destination; visible to admin.
+ */
+export type RiderPayoutAccount = Prisma.RiderPayoutAccountModel
+/**
  * Model Rating
  * 
  */

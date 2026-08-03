@@ -74,6 +74,7 @@ export const ModelName = {
   Wallet: 'Wallet',
   WalletTransaction: 'WalletTransaction',
   PayoutRequest: 'PayoutRequest',
+  RiderPayoutAccount: 'RiderPayoutAccount',
   Rating: 'Rating',
   Review: 'Review',
   PromoCode: 'PromoCode',
@@ -597,6 +598,23 @@ export const PayoutRequestScalarFieldEnum = {
 } as const
 
 export type PayoutRequestScalarFieldEnum = (typeof PayoutRequestScalarFieldEnum)[keyof typeof PayoutRequestScalarFieldEnum]
+
+
+export const RiderPayoutAccountScalarFieldEnum = {
+  id: 'id',
+  riderId: 'riderId',
+  method: 'method',
+  destinationLabel: 'destinationLabel',
+  label: 'label',
+  provider: 'provider',
+  isDefault: 'isDefault',
+  lastUsedAt: 'lastUsedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  revokedAt: 'revokedAt'
+} as const
+
+export type RiderPayoutAccountScalarFieldEnum = (typeof RiderPayoutAccountScalarFieldEnum)[keyof typeof RiderPayoutAccountScalarFieldEnum]
 
 
 export const RatingScalarFieldEnum = {

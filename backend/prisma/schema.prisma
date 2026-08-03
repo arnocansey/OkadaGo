@@ -350,6 +350,7 @@ model RiderProfile {
   rides             Ride[]              @relation("RiderRides")
   deliveries        DeliveryRequest[]   @relation("RiderDeliveries")
   payoutRequests    PayoutRequest[]
+  payoutAccounts    RiderPayoutAccount[]
   incidents         Incident[]
 
   @@index([approvalStatus, onlineStatus])
@@ -817,6 +818,28 @@ model PayoutRequest {
 
   @@index([status, requestedAt])
   @@index([riderId, status])
+}
+
+/// Saved rider disbursement destinations (MoMo/bank). Created when a rider saves
+/// a payout account or first requests a payout to a destination; visible to admin.
+model RiderPayoutAccount {
+  id                String       @id @default(cuid())
+  riderId           String
+  method            PayoutMethod
+  destinationLabel  String       @db.VarChar(191)
+  label             String?      @db.VarChar(80)
+  /// Inferred telco/bank code for MoMo (MTN, VOD, ATL, …).
+  provider          String?      @db.VarChar(40)
+  isDefault         Boolean      @default(false)
+  lastUsedAt        DateTime?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  revokedAt         DateTime?
+  rider             RiderProfile @relation(fields: [riderId], references: [id])
+
+  @@unique([riderId, method, destinationLabel])
+  @@index([riderId, revokedAt])
+  @@index([updatedAt])
 }
 
 model Rating {

@@ -18,16 +18,29 @@ export const payoutEligibilitySchema = z.object({
   hasPendingPayout: z.boolean().default(false)
 });
 
+const payoutMethodSchema = z.preprocess((value) => {
+  if (typeof value !== "string") return value;
+  const normalized = value.trim().toUpperCase().replace(/[\s-]+/g, "_");
+  if (normalized === "MOBILE_MONEY" || normalized === "MOMO") return "MOBILE_MONEY";
+  if (normalized === "BANK_ACCOUNT" || normalized === "BANK") return "BANK_ACCOUNT";
+  return normalized;
+}, z.enum(["BANK_ACCOUNT", "MOBILE_MONEY"]).default("MOBILE_MONEY"));
+
 export const riderPayoutRequestSchema = z.object({
   amount: z.number().positive(),
-  method: z.preprocess((value) => {
-    if (typeof value !== "string") return value;
-    const normalized = value.trim().toUpperCase().replace(/[\s-]+/g, "_");
-    if (normalized === "MOBILE_MONEY" || normalized === "MOMO") return "MOBILE_MONEY";
-    if (normalized === "BANK_ACCOUNT" || normalized === "BANK") return "BANK_ACCOUNT";
-    return normalized;
-  }, z.enum(["BANK_ACCOUNT", "MOBILE_MONEY"]).default("MOBILE_MONEY")),
+  method: payoutMethodSchema,
   destinationLabel: z.string().trim().min(3).max(191)
+});
+
+export const riderPayoutAccountSchema = z.object({
+  method: payoutMethodSchema,
+  destinationLabel: z.string().trim().min(3).max(191),
+  label: z.string().trim().min(1).max(80).optional(),
+  makeDefault: z.boolean().optional()
+});
+
+export const riderPayoutAccountParamsSchema = z.object({
+  payoutAccountId: z.string().cuid()
 });
 
 export const walletTopUpSchema = z.object({
@@ -78,9 +91,17 @@ export const adminPayoutRequestsQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(500).optional()
 });
 
+export const adminRiderPayoutAccountsQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).optional(),
+  limit: z.coerce.number().int().min(1).max(500).optional(),
+  riderId: z.string().cuid().optional()
+});
+
 export const adminPayoutReviewParamsSchema = z.object({
   payoutRequestId: z.string().cuid()
 });
+
+export type RiderPayoutAccountInput = z.infer<typeof riderPayoutAccountSchema>;
 
 export const adminPayoutReviewSchema = z
   .object({

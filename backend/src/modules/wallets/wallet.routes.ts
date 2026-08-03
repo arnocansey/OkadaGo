@@ -2,6 +2,8 @@ import type { FastifyPluginAsync } from "fastify";
 import { AppError } from "../../common/errors.js";
 import { parseBody, parseParams, parseQuery } from "../../common/validation.js";
 import {
+  riderPayoutAccountParamsSchema,
+  riderPayoutAccountSchema,
   riderPayoutRequestSchema,
   walletUserParamsSchema,
   payoutEligibilitySchema,
@@ -53,6 +55,30 @@ export const walletRoutes: FastifyPluginAsync = async (server) => {
     const input = parseBody(request, riderPayoutRequestSchema);
     const result = await walletService.createCurrentRiderPayoutRequest(token, input);
     return reply.status(201).send(result);
+  });
+
+  server.get("/wallets/rider/payout-accounts", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return walletService.listCurrentRiderPayoutAccounts(token);
+  });
+
+  server.post("/wallets/rider/payout-accounts", async (request, reply) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const input = parseBody(request, riderPayoutAccountSchema);
+    const result = await walletService.createCurrentRiderPayoutAccount(token, input);
+    return reply.status(201).send(result);
+  });
+
+  server.post("/wallets/rider/payout-accounts/:payoutAccountId/default", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, riderPayoutAccountParamsSchema);
+    return walletService.setCurrentRiderPayoutAccountDefault(token, params.payoutAccountId);
+  });
+
+  server.delete("/wallets/rider/payout-accounts/:payoutAccountId", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, riderPayoutAccountParamsSchema);
+    return walletService.revokeCurrentRiderPayoutAccount(token, params.payoutAccountId);
   });
 
   server.post("/wallets/top-up", async (request, reply) => {

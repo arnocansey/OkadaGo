@@ -10,6 +10,7 @@ import {
   adminPayoutRequestsQuerySchema,
   adminPayoutReviewParamsSchema,
   adminPayoutReviewSchema,
+  adminRiderPayoutAccountsQuerySchema,
   adminWalletTransactionsQuerySchema
 } from "../wallets/wallet.schemas.js";
 import { AdminRiderService } from "./admin.service.js";
@@ -159,6 +160,12 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
     const token = extractBearerToken(request.headers.authorization);
     const query = parseQuery(request, adminPayoutRequestsQuerySchema);
     return walletService.listAdminPayoutRequests(token, query);
+  });
+
+  server.get("/admin/payments/rider-payout-accounts", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const query = parseQuery(request, adminRiderPayoutAccountsQuerySchema);
+    return walletService.listAdminRiderPayoutAccounts(token, query);
   });
 
   server.patch("/admin/payments/payout-requests/:payoutRequestId", async (request) => {

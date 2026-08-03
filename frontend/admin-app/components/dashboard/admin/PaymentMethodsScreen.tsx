@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Building2,
   CreditCard,
@@ -30,7 +30,6 @@ export type PaymentMethodsScreenProps = {
 
 type PayTab = "methods" | "payouts" | "history";
 type MethodKind = "card" | "momo" | "paypal";
-type PayoutKind = "bank" | "momo";
 
 type ApiMethod = {
   id: string;
@@ -45,39 +44,28 @@ type ApiMethod = {
   chargeable: boolean;
 };
 
-type PayoutAccount = {
+type RiderPayoutAccountRow = {
   id: string;
-  kind: PayoutKind;
-  label: string;
-  detail: string;
+  method: string;
+  destinationLabel: string;
+  label: string | null;
+  provider: string | null;
   isDefault: boolean;
-  status: "Verified" | "Active";
+  lastUsedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  rider: {
+    id: string;
+    displayCode: string;
+    approvalStatus: string;
+    fullName: string;
+    phoneE164: string;
+    preferredCurrency: string;
+    userId: string;
+  };
 };
 
-const SETTINGS_KEY_PAYOUTS = "payoutAccounts";
 const PAYSTACK_CONFIGURED = Boolean(process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY);
-
-function isPayoutAccount(value: unknown): value is PayoutAccount {
-  if (!value || typeof value !== "object") return false;
-  const row = value as Record<string, unknown>;
-  return (
-    typeof row.id === "string" &&
-    typeof row.label === "string" &&
-    typeof row.detail === "string" &&
-    typeof row.kind === "string" &&
-    typeof row.isDefault === "boolean"
-  );
-}
-
-function parsePayouts(settings?: Record<string, unknown>): PayoutAccount[] {
-  const raw = settings?.[SETTINGS_KEY_PAYOUTS];
-  if (!Array.isArray(raw)) return [];
-  return raw.filter(isPayoutAccount).map((row) => ({
-    ...row,
-    kind: row.kind === "momo" ? "momo" : "bank",
-    status: row.status === "Active" ? "Active" : "Verified"
-  }));
-}
 
 function MethodIcon({ kind }: { kind: string }) {
   if (kind === "momo" || kind === "mobile_money") return <Smartphone size={18} color="var(--accent-yellow)" />;
@@ -94,28 +82,21 @@ export function PaymentMethodsScreen({
   dataLoading = false,
   adminCurrency = "GHS",
   walletTransactions = [],
-  platformSettings,
-  onSaveSettings,
-  settingsSaving = false,
   token
 }: PaymentMethodsScreenProps) {
   const { addToast } = useAdminToast();
   const [tab, setTab] = useState<PayTab>("methods");
   const [methods, setMethods] = useState<ApiMethod[]>([]);
   const [methodsLoading, setMethodsLoading] = useState(true);
-  const [payouts, setPayouts] = useState<PayoutAccount[]>([]);
+  const [riderPayoutAccounts, setRiderPayoutAccounts] = useState<RiderPayoutAccountRow[]>([]);
+  const [payoutsLoading, setPayoutsLoading] = useState(true);
   const [addKind, setAddKind] = useState<MethodKind | null>(null);
-  const [addingPayout, setAddingPayout] = useState(false);
   const [busy, setBusy] = useState(false);
-  const hydratedPayouts = useRef(false);
 
   const [momoNetwork, setMomoNetwork] = useState("MTN MoMo");
   const [momoPhone, setMomoPhone] = useState("");
   const [momoLabel, setMomoLabel] = useState("");
   const [paypalEmail, setPaypalEmail] = useState("");
-  const [payoutKind, setPayoutKind] = useState<PayoutKind>("bank");
-  const [payoutLabel, setPayoutLabel] = useState("");
-  const [payoutDetail, setPayoutDetail] = useState("");
 
   async function loadMethods() {
     if (!token) {
@@ -133,8 +114,28 @@ export function PaymentMethodsScreen({
     }
   }
 
+  async function loadRiderPayoutAccounts() {
+    if (!token) {
+      setPayoutsLoading(false);
+      return;
+    }
+    setPayoutsLoading(true);
+    try {
+      const res = await requestJson<{ accounts: RiderPayoutAccountRow[] }>(
+        "/admin/payments/rider-payout-accounts",
+        { token }
+      );
+      setRiderPayoutAccounts(res.accounts ?? []);
+    } catch (error) {
+      addToast(error instanceof Error ? error.message : "Could not load rider payout accounts", "error");
+    } finally {
+      setPayoutsLoading(false);
+    }
+  }
+
   useEffect(() => {
     void loadMethods();
+    void loadRiderPayoutAccounts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
@@ -153,12 +154,6 @@ export function PaymentMethodsScreen({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (hydratedPayouts.current || !platformSettings) return;
-    setPayouts(parsePayouts(platformSettings));
-    hydratedPayouts.current = true;
-  }, [platformSettings]);
-
   const txnRows = useMemo(() => {
     return walletTransactions.slice(0, 12).map((tx) => {
       const amount = Number(tx.amount);
@@ -175,15 +170,6 @@ export function PaymentMethodsScreen({
       };
     });
   }, [walletTransactions, adminCurrency]);
-
-  function persistPayouts(nextPayouts: PayoutAccount[]) {
-    if (!onSaveSettings) {
-      addToast("Settings persistence is unavailable", "error");
-      return false;
-    }
-    onSaveSettings({ ...platformSettings, [SETTINGS_KEY_PAYOUTS]: nextPayouts });
-    return true;
-  }
 
   async function startCardLink() {
     if (!token) return;
@@ -267,37 +253,7 @@ export function PaymentMethodsScreen({
     }
   }
 
-  function submitPayout() {
-    if (!payoutLabel.trim() || !payoutDetail.trim()) {
-      addToast("Enter a label and account details", "error");
-      return;
-    }
-    const next: PayoutAccount = {
-      id: newId("payout"),
-      kind: payoutKind,
-      label: payoutLabel.trim(),
-      detail: payoutDetail.trim(),
-      isDefault: payouts.length === 0,
-      status: payoutKind === "bank" ? "Verified" : "Active"
-    };
-    const nextPayouts = [...payouts, next];
-    if (!persistPayouts(nextPayouts)) return;
-    setPayouts(nextPayouts);
-    setAddingPayout(false);
-    setPayoutLabel("");
-    setPayoutDetail("");
-  }
-
-  function removePayout(id: string) {
-    let nextPayouts = payouts.filter((p) => p.id !== id);
-    if (nextPayouts.length && !nextPayouts.some((p) => p.isDefault)) {
-      nextPayouts = [{ ...nextPayouts[0], isDefault: true }, ...nextPayouts.slice(1)];
-    }
-    if (!persistPayouts(nextPayouts)) return;
-    setPayouts(nextPayouts);
-  }
-
-  if (dataLoading || methodsLoading) {
+  if (dataLoading || methodsLoading || (tab === "payouts" && payoutsLoading)) {
     return <AdminPageSkeleton variant="split" kpis={0} rows={6} cols={3} />;
   }
 
@@ -321,10 +277,6 @@ export function PaymentMethodsScreen({
         tab === "methods" ? (
           <button type="button" className="settings-btn settings-btn--primary" disabled={busy} onClick={() => setAddKind("card")}>
             <Plus size={14} /> Add Method
-          </button>
-        ) : tab === "payouts" ? (
-          <button type="button" className="settings-btn settings-btn--primary" onClick={() => setAddingPayout(true)}>
-            <Plus size={14} /> Add payout account
           </button>
         ) : null
       }
@@ -495,37 +447,48 @@ export function PaymentMethodsScreen({
 
       {tab === "payouts" ? (
         <div className="settings-layout">
-          <SettingsCard title="Payout Accounts">
-            {payouts.length === 0 ? (
-              <p className="settings-row-meta" style={{ margin: 0 }}>No payout accounts yet.</p>
+          <SettingsCard
+            title="Rider Payout Accounts"
+            subtitle="Saved when riders add a payout destination or request their first payout."
+          >
+            {riderPayoutAccounts.length === 0 ? (
+              <p className="settings-row-meta" style={{ margin: 0 }}>
+                No rider payout accounts yet. They appear here when a rider saves a MoMo or bank destination.
+              </p>
             ) : (
               <div className="settings-stack" style={{ gap: 12 }}>
-                {payouts.map((account) => (
+                {riderPayoutAccounts.map((account) => (
                   <div key={account.id} className="settings-row" style={{ border: "1px solid var(--border-color)", borderRadius: 12, padding: 14 }}>
-                    <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                      <MethodIcon kind={account.kind} />
+                    <div style={{ display: "flex", gap: 12, alignItems: "center", flex: 1 }}>
+                      <MethodIcon kind={account.method === "MOBILE_MONEY" ? "momo" : "bank"} />
                       <div>
-                        <div className="settings-row-label">{account.label}</div>
-                        <div className="settings-row-meta">{account.detail}</div>
+                        <div className="settings-row-label">
+                          {account.rider.fullName}{" "}
+                          <span className="settings-row-meta">({account.rider.displayCode})</span>
+                        </div>
+                        <div className="settings-row-meta">
+                          {account.label || account.destinationLabel}
+                          {account.provider ? ` · ${account.provider}` : ""}
+                        </div>
+                        <div className="settings-row-meta">{account.destinationLabel}</div>
                       </div>
                     </div>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                      <span className="settings-badge settings-badge--success">{account.status}</span>
-                      <button type="button" className="settings-btn settings-btn--ghost" onClick={() => removePayout(account.id)}>
-                        <Trash2 size={14} />
-                      </button>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
+                      {account.isDefault ? (
+                        <span className="settings-badge settings-badge--success">Default</span>
+                      ) : null}
+                      <span className="settings-badge settings-badge--success">
+                        {account.rider.approvalStatus.replace(/_/g, " ")}
+                      </span>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-            <button type="button" className="settings-btn settings-btn--primary" style={{ marginTop: 16 }} onClick={() => setAddingPayout(true)}>
-              <Plus size={14} /> Add payout account
-            </button>
           </SettingsCard>
           <SettingsCard title="Disbursement notes">
             <p className="settings-row-meta" style={{ margin: 0 }}>
-              Rider payouts run through Finance. These accounts are settlement records for ops.
+              Rider payout requests are reviewed in Finance. Saved accounts here are the destinations riders use for withdrawals.
             </p>
             <a href="/finance" className="settings-btn settings-btn--link" style={{ marginTop: 12, display: "inline-flex" }}>
               Open Finance
@@ -629,45 +592,6 @@ export function PaymentMethodsScreen({
                   </button>
                 </div>
               ) : null}
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {addingPayout ? (
-        <div className="settings-dialog-overlay" role="dialog" aria-modal="true" aria-label="Add payout account">
-          <div className="settings-card">
-            <div className="settings-card-head">
-              <div>
-                <h3>Add payout account</h3>
-                <p>Settlement destination for ops records.</p>
-              </div>
-              <button type="button" className="settings-btn settings-btn--ghost" onClick={() => setAddingPayout(false)} aria-label="Close">
-                <X size={16} />
-              </button>
-            </div>
-            <div className="settings-card-body settings-stack" style={{ gap: 14 }}>
-              <label className="settings-field">
-                Type
-                <select className="settings-select" value={payoutKind} onChange={(e) => setPayoutKind(e.target.value as PayoutKind)}>
-                  <option value="bank">Bank account</option>
-                  <option value="momo">Mobile Money</option>
-                </select>
-              </label>
-              <label className="settings-field">
-                Label
-                <input className="settings-input" value={payoutLabel} onChange={(e) => setPayoutLabel(e.target.value)} />
-              </label>
-              <label className="settings-field">
-                Details
-                <input className="settings-input" value={payoutDetail} onChange={(e) => setPayoutDetail(e.target.value)} />
-              </label>
-              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-                <button type="button" className="settings-btn settings-btn--ghost" onClick={() => setAddingPayout(false)}>Cancel</button>
-                <button type="button" className="settings-btn settings-btn--primary" disabled={settingsSaving} onClick={submitPayout}>
-                  Save account
-                </button>
-              </div>
             </div>
           </div>
         </div>

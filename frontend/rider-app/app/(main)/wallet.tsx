@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/Input";
 import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { spacing } from "@/theme/tokens";
+import type { PayoutAccount } from "@/types";
 
 const RIDER_DEFICIT_WARNING_THRESHOLD = 100;
 const RIDER_DEFICIT_OFFLINE_THRESHOLD = 200;
@@ -33,6 +34,8 @@ export default function WalletScreen() {
   const [topUpAmount, setTopUpAmount] = useState(String(RIDER_MIN_ONLINE_BALANCE));
   const [payoutAmount, setPayoutAmount] = useState("");
   const [destination, setDestination] = useState("");
+  const [payoutAccounts, setPayoutAccounts] = useState<PayoutAccount[]>([]);
+  const [savePayoutLoading, setSavePayoutLoading] = useState(false);
   const [topUpLoading, setTopUpLoading] = useState(false);
   const [payoutLoading, setPayoutLoading] = useState(false);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
@@ -41,6 +44,25 @@ export default function WalletScreen() {
   const availableBalance = Number(wallet?.availableBalance ?? 0);
   const deficit = availableBalance < 0 ? Math.abs(availableBalance) : 0;
   const needsFloat = availableBalance < RIDER_MIN_ONLINE_BALANCE;
+
+  useEffect(() => {
+    if (!session?.token) return;
+    void (async () => {
+      try {
+        const res = await api<{ accounts: PayoutAccount[] }>("/wallets/rider/payout-accounts", {
+          token: session.token,
+        });
+        const accounts = Array.isArray(res.accounts) ? res.accounts : [];
+        setPayoutAccounts(accounts);
+        const defaultAccount = accounts.find((a) => a.isDefault) ?? accounts[0];
+        if (defaultAccount && !destination) {
+          setDestination(defaultAccount.destinationLabel);
+        }
+      } catch {
+        // Non-blocking; rider can still enter a number manually.
+      }
+    })();
+  }, [session?.token]);
 
   const styles = useMemo(
     () =>
@@ -61,6 +83,7 @@ export default function WalletScreen() {
         bannerBody: { ...typography.caption, color: colors.textOnPrimary, marginTop: spacing.xs, opacity: 0.9 },
         form: { gap: spacing.md, marginBottom: spacing.xxl },
         section: { ...typography.h3, marginBottom: spacing.lg, color: colors.text },
+        savedHint: { ...typography.caption, color: colors.textMuted, marginTop: -spacing.xs },
         tx: {
           flexDirection: "row",
           justifyContent: "space-between",
@@ -125,6 +148,34 @@ export default function WalletScreen() {
     setCheckoutUrl(null);
   }
 
+  async function savePayoutAccount() {
+    if (!destination.trim()) {
+      Alert.alert("Destination needed", "Enter the mobile money number to save.");
+      return;
+    }
+    setSavePayoutLoading(true);
+    try {
+      await api("/wallets/rider/payout-accounts", {
+        method: "POST",
+        token: session!.token,
+        body: {
+          method: "MOBILE_MONEY",
+          destinationLabel: destination.trim(),
+          makeDefault: true,
+        },
+      });
+      const res = await api<{ accounts: PayoutAccount[] }>("/wallets/rider/payout-accounts", {
+        token: session!.token,
+      });
+      setPayoutAccounts(Array.isArray(res.accounts) ? res.accounts : []);
+      Alert.alert("Payout account saved", "This destination is ready for withdrawals.");
+    } catch (e) {
+      Alert.alert("Could not save", e instanceof Error ? e.message : "Save failed.");
+    } finally {
+      setSavePayoutLoading(false);
+    }
+  }
+
   async function requestPayout() {
     const amount = Number(payoutAmount);
     if (!Number.isFinite(amount) || amount <= 0) {
@@ -143,7 +194,10 @@ export default function WalletScreen() {
         body: { amount, method: "MOBILE_MONEY", destinationLabel: destination.trim() },
       });
       setPayoutAmount("");
-      setDestination("");
+      const res = await api<{ accounts: PayoutAccount[] }>("/wallets/rider/payout-accounts", {
+        token: session!.token,
+      });
+      setPayoutAccounts(Array.isArray(res.accounts) ? res.accounts : []);
       await refresh();
       Alert.alert("Payout requested", "We'll review this and pay out to your MoMo number.");
     } catch (e) {
@@ -226,6 +280,18 @@ export default function WalletScreen() {
               value={destination}
               onChangeText={setDestination}
               keyboardType="phone-pad"
+            />
+            {payoutAccounts.length > 0 ? (
+              <Text style={styles.savedHint}>
+                Saved: {payoutAccounts.find((a) => a.isDefault)?.destinationLabel ?? payoutAccounts[0].destinationLabel}
+              </Text>
+            ) : null}
+            <Button
+              label="Save payout account"
+              variant="secondary"
+              loading={savePayoutLoading}
+              onPress={() => void savePayoutAccount()}
+              fullWidth
             />
             <Button
               label="Request payout"

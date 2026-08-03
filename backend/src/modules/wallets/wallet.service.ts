@@ -15,6 +15,8 @@ import type { z } from "zod";
 import {
   adminPayoutRequestsQuerySchema,
   adminPayoutReviewSchema,
+  adminRiderPayoutAccountsQuerySchema,
+  riderPayoutAccountSchema,
   riderPayoutRequestSchema,
   adminWalletTransactionsQuerySchema,
   payoutEligibilitySchema,
@@ -32,8 +34,10 @@ import {
 type SettlementPreviewInput = z.infer<typeof settlementPreviewSchema>;
 type PayoutEligibilityInput = z.infer<typeof payoutEligibilitySchema>;
 type RiderPayoutRequestInput = z.infer<typeof riderPayoutRequestSchema>;
+type RiderPayoutAccountInput = z.infer<typeof riderPayoutAccountSchema>;
 type AdminWalletTransactionsQueryInput = z.infer<typeof adminWalletTransactionsQuerySchema>;
 type AdminPayoutRequestsQueryInput = z.infer<typeof adminPayoutRequestsQuerySchema>;
+type AdminRiderPayoutAccountsQueryInput = z.infer<typeof adminRiderPayoutAccountsQuerySchema>;
 type AdminPayoutReviewInput = z.infer<typeof adminPayoutReviewSchema>;
 type WalletTopUpInput = z.infer<typeof walletTopUpSchema>;
 type WalletPaystackInitializeInput = z.infer<typeof walletPaystackInitializeSchema>;
@@ -1021,6 +1025,260 @@ export class WalletService {
     });
   }
 
+  private mapRiderPayoutAccount(account: {
+    id: string;
+    method: PayoutMethod;
+    destinationLabel: string;
+    label: string | null;
+    provider: string | null;
+    isDefault: boolean;
+    lastUsedAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }) {
+    return {
+      id: account.id,
+      method: account.method,
+      destinationLabel: account.destinationLabel,
+      label: account.label,
+      provider: account.provider,
+      isDefault: account.isDefault,
+      lastUsedAt: account.lastUsedAt,
+      createdAt: account.createdAt,
+      updatedAt: account.updatedAt
+    };
+  }
+
+  /** Upsert a rider payout destination so it appears in admin Payout Accounts. */
+  private async upsertRiderPayoutAccount(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tx: any,
+    riderId: string,
+    method: PayoutMethod,
+    destinationLabel: string,
+    options?: { label?: string; makeDefault?: boolean; touchLastUsed?: boolean }
+  ) {
+    const provider =
+      method === PayoutMethod.MOBILE_MONEY
+        ? this.inferGhanaMomoBankCode(destinationLabel)
+        : null;
+    const existing = await tx.riderPayoutAccount.findUnique({
+      where: {
+        riderId_method_destinationLabel: {
+          riderId,
+          method,
+          destinationLabel
+        }
+      }
+    });
+
+    if (existing) {
+      const makeDefault = options?.makeDefault === true;
+      if (makeDefault) {
+        await tx.riderPayoutAccount.updateMany({
+          where: { riderId, revokedAt: null, NOT: { id: existing.id } },
+          data: { isDefault: false }
+        });
+      }
+      return tx.riderPayoutAccount.update({
+        where: { id: existing.id },
+        data: {
+          revokedAt: null,
+          provider: provider ?? existing.provider,
+          label: options?.label?.trim() || existing.label,
+          isDefault: makeDefault ? true : existing.isDefault,
+          ...(options?.touchLastUsed !== false ? { lastUsedAt: new Date() } : {})
+        }
+      });
+    }
+
+    const activeCount = await tx.riderPayoutAccount.count({
+      where: { riderId, revokedAt: null }
+    });
+    const isDefault = options?.makeDefault === true || activeCount === 0;
+    if (isDefault) {
+      await tx.riderPayoutAccount.updateMany({
+        where: { riderId, revokedAt: null },
+        data: { isDefault: false }
+      });
+    }
+
+    const defaultLabel =
+      options?.label?.trim() ||
+      (method === PayoutMethod.MOBILE_MONEY
+        ? `${provider ?? "MoMo"} payout`
+        : "Bank payout");
+
+    return tx.riderPayoutAccount.create({
+      data: {
+        riderId,
+        method,
+        destinationLabel,
+        provider,
+        label: defaultLabel,
+        isDefault,
+        lastUsedAt: options?.touchLastUsed === false ? null : new Date()
+      }
+    });
+  }
+
+  /** Backfill accounts from historical payout requests (idempotent). */
+  private async syncRiderPayoutAccountsFromRequests() {
+    const rows = await prisma.payoutRequest.findMany({
+      distinct: ["riderId", "method", "destinationLabel"],
+      select: {
+        riderId: true,
+        method: true,
+        destinationLabel: true,
+        requestedAt: true
+      },
+      orderBy: { requestedAt: "desc" }
+    });
+
+    for (const row of rows) {
+      await prisma.$transaction(async (tx) => {
+        await this.upsertRiderPayoutAccount(tx, row.riderId, row.method, row.destinationLabel, {
+          touchLastUsed: true
+        });
+      });
+    }
+  }
+
+  async listCurrentRiderPayoutAccounts(token: string) {
+    const session = await this.getCurrentRiderSession(token);
+    const riderId = session.user.riderProfile!.id;
+    const accounts = await prisma.riderPayoutAccount.findMany({
+      where: { riderId, revokedAt: null },
+      orderBy: [{ isDefault: "desc" }, { updatedAt: "desc" }]
+    });
+    return { accounts: accounts.map((a) => this.mapRiderPayoutAccount(a)) };
+  }
+
+  async createCurrentRiderPayoutAccount(token: string, input: RiderPayoutAccountInput) {
+    const session = await this.getCurrentRiderSession(token);
+    const riderId = session.user.riderProfile!.id;
+    const method =
+      input.method === "BANK_ACCOUNT" ? PayoutMethod.BANK_ACCOUNT : PayoutMethod.MOBILE_MONEY;
+
+    const account = await prisma.$transaction(async (tx) =>
+      this.upsertRiderPayoutAccount(tx, riderId, method, input.destinationLabel, {
+        label: input.label,
+        makeDefault: input.makeDefault,
+        touchLastUsed: false
+      })
+    );
+
+    return this.mapRiderPayoutAccount(account);
+  }
+
+  async setCurrentRiderPayoutAccountDefault(token: string, payoutAccountId: string) {
+    const session = await this.getCurrentRiderSession(token);
+    const riderId = session.user.riderProfile!.id;
+    const account = await prisma.riderPayoutAccount.findFirst({
+      where: { id: payoutAccountId, riderId, revokedAt: null }
+    });
+    if (!account) {
+      throw new AppError("Payout account not found", 404, "PAYOUT_ACCOUNT_NOT_FOUND");
+    }
+
+    await prisma.$transaction([
+      prisma.riderPayoutAccount.updateMany({
+        where: { riderId, revokedAt: null },
+        data: { isDefault: false }
+      }),
+      prisma.riderPayoutAccount.update({
+        where: { id: account.id },
+        data: { isDefault: true }
+      })
+    ]);
+
+    return this.mapRiderPayoutAccount({ ...account, isDefault: true });
+  }
+
+  async revokeCurrentRiderPayoutAccount(token: string, payoutAccountId: string) {
+    const session = await this.getCurrentRiderSession(token);
+    const riderId = session.user.riderProfile!.id;
+    const account = await prisma.riderPayoutAccount.findFirst({
+      where: { id: payoutAccountId, riderId, revokedAt: null }
+    });
+    if (!account) {
+      throw new AppError("Payout account not found", 404, "PAYOUT_ACCOUNT_NOT_FOUND");
+    }
+
+    await prisma.riderPayoutAccount.update({
+      where: { id: account.id },
+      data: { revokedAt: new Date(), isDefault: false }
+    });
+
+    if (account.isDefault) {
+      const next = await prisma.riderPayoutAccount.findFirst({
+        where: { riderId, revokedAt: null },
+        orderBy: { updatedAt: "desc" }
+      });
+      if (next) {
+        await prisma.riderPayoutAccount.update({
+          where: { id: next.id },
+          data: { isDefault: true }
+        });
+      }
+    }
+
+    return { ok: true };
+  }
+
+  async listAdminRiderPayoutAccounts(token: string, filters: AdminRiderPayoutAccountsQueryInput) {
+    await this.getCurrentAdminSession(token);
+    await this.syncRiderPayoutAccountsFromRequests();
+
+    const where = {
+      revokedAt: null,
+      ...(filters.riderId ? { riderId: filters.riderId } : {})
+    };
+    const limit = filters.limit ?? 100;
+    const page = filters.page;
+
+    const data = await prisma.riderPayoutAccount.findMany({
+      where,
+      orderBy: [{ updatedAt: "desc" }],
+      take: limit,
+      ...(page ? { skip: (page - 1) * limit } : {}),
+      include: {
+        rider: {
+          select: {
+            id: true,
+            displayCode: true,
+            approvalStatus: true,
+            user: {
+              select: {
+                id: true,
+                fullName: true,
+                phoneE164: true,
+                preferredCurrency: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    const mapped = data.map((row) => ({
+      ...this.mapRiderPayoutAccount(row),
+      rider: {
+        id: row.rider.id,
+        displayCode: row.rider.displayCode,
+        approvalStatus: row.rider.approvalStatus,
+        fullName: row.rider.user.fullName,
+        phoneE164: row.rider.user.phoneE164,
+        preferredCurrency: row.rider.user.preferredCurrency,
+        userId: row.rider.user.id
+      }
+    }));
+
+    if (!page) return { accounts: mapped };
+    const total = await prisma.riderPayoutAccount.count({ where });
+    return { accounts: mapped, total, page, limit };
+  }
+
   async createCurrentRiderPayoutRequest(token: string, input: RiderPayoutRequestInput) {
     const session = await this.getCurrentRiderSession(token);
     const riderProfile = session.user.riderProfile!;
@@ -1068,6 +1326,14 @@ export class WalletService {
     });
 
     const result = await prisma.$transaction(async (tx) => {
+      await this.upsertRiderPayoutAccount(
+        tx,
+        riderProfile.id,
+        input.method === "BANK_ACCOUNT" ? PayoutMethod.BANK_ACCOUNT : PayoutMethod.MOBILE_MONEY,
+        input.destinationLabel,
+        { touchLastUsed: true }
+      );
+
       const wallet = await tx.wallet.findUnique({
         where: {
           id: settlementWallet.id
