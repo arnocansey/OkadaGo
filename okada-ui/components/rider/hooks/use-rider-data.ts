@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchJson } from "@/lib/api";
+import { fetchJson, fetchListJson } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import {
   parseNumber,
@@ -30,7 +30,7 @@ export function useRiderData() {
 
   const ridersQuery = useQuery({
     queryKey: ["riders"],
-    queryFn: () => fetchJson<RiderRecord[]>("/bootstrap/riders?limit=100"),
+    queryFn: () => fetchListJson<RiderRecord>("/bootstrap/riders?limit=100"),
     enabled,
     refetchInterval: 10_000
   });

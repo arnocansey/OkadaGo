@@ -19,8 +19,6 @@ function isImmersivePath(pathname: string | null) {
     pathname === "/login" ||
     pathname === "/signup" ||
     pathname === "/forgot-password" ||
-    pathname === "/admin" ||
-    pathname.startsWith("/admin/") ||
     pathname === "/passenger" ||
     pathname.startsWith("/passenger/") ||
     pathname === "/rider" ||

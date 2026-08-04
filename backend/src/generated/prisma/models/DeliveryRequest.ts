@@ -70,13 +70,17 @@ export type DeliveryRequestMinAggregateOutputType = {
   pickupAddress: string | null
   pickupLatitude: runtime.Decimal | null
   pickupLongitude: runtime.Decimal | null
+  pickupLandmark: string | null
   dropoffAddress: string | null
   dropoffLatitude: runtime.Decimal | null
   dropoffLongitude: runtime.Decimal | null
+  dropoffLandmark: string | null
   recipientName: string | null
   recipientPhoneE164: string | null
   packageType: string | null
   packageDescription: string | null
+  proofPhotoUrl: string | null
+  pickupLocationMocked: boolean | null
   estimatedDistanceKm: runtime.Decimal | null
   estimatedDurationMinutes: number | null
   estimatedFee: runtime.Decimal | null
@@ -107,13 +111,17 @@ export type DeliveryRequestMaxAggregateOutputType = {
   pickupAddress: string | null
   pickupLatitude: runtime.Decimal | null
   pickupLongitude: runtime.Decimal | null
+  pickupLandmark: string | null
   dropoffAddress: string | null
   dropoffLatitude: runtime.Decimal | null
   dropoffLongitude: runtime.Decimal | null
+  dropoffLandmark: string | null
   recipientName: string | null
   recipientPhoneE164: string | null
   packageType: string | null
   packageDescription: string | null
+  proofPhotoUrl: string | null
+  pickupLocationMocked: boolean | null
   estimatedDistanceKm: runtime.Decimal | null
   estimatedDurationMinutes: number | null
   estimatedFee: runtime.Decimal | null
@@ -144,13 +152,17 @@ export type DeliveryRequestCountAggregateOutputType = {
   pickupAddress: number
   pickupLatitude: number
   pickupLongitude: number
+  pickupLandmark: number
   dropoffAddress: number
   dropoffLatitude: number
   dropoffLongitude: number
+  dropoffLandmark: number
   recipientName: number
   recipientPhoneE164: number
   packageType: number
   packageDescription: number
+  proofPhotoUrl: number
+  pickupLocationMocked: number
   estimatedDistanceKm: number
   estimatedDurationMinutes: number
   estimatedFee: number
@@ -209,13 +221,17 @@ export type DeliveryRequestMinAggregateInputType = {
   pickupAddress?: true
   pickupLatitude?: true
   pickupLongitude?: true
+  pickupLandmark?: true
   dropoffAddress?: true
   dropoffLatitude?: true
   dropoffLongitude?: true
+  dropoffLandmark?: true
   recipientName?: true
   recipientPhoneE164?: true
   packageType?: true
   packageDescription?: true
+  proofPhotoUrl?: true
+  pickupLocationMocked?: true
   estimatedDistanceKm?: true
   estimatedDurationMinutes?: true
   estimatedFee?: true
@@ -246,13 +262,17 @@ export type DeliveryRequestMaxAggregateInputType = {
   pickupAddress?: true
   pickupLatitude?: true
   pickupLongitude?: true
+  pickupLandmark?: true
   dropoffAddress?: true
   dropoffLatitude?: true
   dropoffLongitude?: true
+  dropoffLandmark?: true
   recipientName?: true
   recipientPhoneE164?: true
   packageType?: true
   packageDescription?: true
+  proofPhotoUrl?: true
+  pickupLocationMocked?: true
   estimatedDistanceKm?: true
   estimatedDurationMinutes?: true
   estimatedFee?: true
@@ -283,13 +303,17 @@ export type DeliveryRequestCountAggregateInputType = {
   pickupAddress?: true
   pickupLatitude?: true
   pickupLongitude?: true
+  pickupLandmark?: true
   dropoffAddress?: true
   dropoffLatitude?: true
   dropoffLongitude?: true
+  dropoffLandmark?: true
   recipientName?: true
   recipientPhoneE164?: true
   packageType?: true
   packageDescription?: true
+  proofPhotoUrl?: true
+  pickupLocationMocked?: true
   estimatedDistanceKm?: true
   estimatedDurationMinutes?: true
   estimatedFee?: true
@@ -407,13 +431,17 @@ export type DeliveryRequestGroupByOutputType = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal
   pickupLongitude: runtime.Decimal
+  pickupLandmark: string | null
   dropoffAddress: string
   dropoffLatitude: runtime.Decimal
   dropoffLongitude: runtime.Decimal
+  dropoffLandmark: string | null
   recipientName: string
   recipientPhoneE164: string
   packageType: string
   packageDescription: string
+  proofPhotoUrl: string | null
+  pickupLocationMocked: boolean
   estimatedDistanceKm: runtime.Decimal | null
   estimatedDurationMinutes: number | null
   estimatedFee: runtime.Decimal | null
@@ -467,13 +495,17 @@ export type DeliveryRequestWhereInput = {
   pickupAddress?: Prisma.StringFilter<"DeliveryRequest"> | string
   pickupLatitude?: Prisma.DecimalFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.StringNullableFilter<"DeliveryRequest"> | string | null
   dropoffAddress?: Prisma.StringFilter<"DeliveryRequest"> | string
   dropoffLatitude?: Prisma.DecimalFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude?: Prisma.DecimalFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.StringNullableFilter<"DeliveryRequest"> | string | null
   recipientName?: Prisma.StringFilter<"DeliveryRequest"> | string
   recipientPhoneE164?: Prisma.StringFilter<"DeliveryRequest"> | string
   packageType?: Prisma.StringFilter<"DeliveryRequest"> | string
   packageDescription?: Prisma.StringFilter<"DeliveryRequest"> | string
+  proofPhotoUrl?: Prisma.StringNullableFilter<"DeliveryRequest"> | string | null
+  pickupLocationMocked?: Prisma.BoolFilter<"DeliveryRequest"> | boolean
   estimatedDistanceKm?: Prisma.DecimalNullableFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.IntNullableFilter<"DeliveryRequest"> | number | null
   estimatedFee?: Prisma.DecimalNullableFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -487,6 +519,9 @@ export type DeliveryRequestWhereInput = {
   passenger?: Prisma.XOR<Prisma.PassengerProfileScalarRelationFilter, Prisma.PassengerProfileWhereInput>
   rider?: Prisma.XOR<Prisma.RiderProfileNullableScalarRelationFilter, Prisma.RiderProfileWhereInput> | null
   serviceZone?: Prisma.XOR<Prisma.ServiceZoneNullableScalarRelationFilter, Prisma.ServiceZoneWhereInput> | null
+  ratings?: Prisma.RatingListRelationFilter
+  reviews?: Prisma.ReviewListRelationFilter
+  stops?: Prisma.DeliveryStopListRelationFilter
 }
 
 export type DeliveryRequestOrderByWithRelationInput = {
@@ -507,13 +542,17 @@ export type DeliveryRequestOrderByWithRelationInput = {
   pickupAddress?: Prisma.SortOrder
   pickupLatitude?: Prisma.SortOrder
   pickupLongitude?: Prisma.SortOrder
+  pickupLandmark?: Prisma.SortOrderInput | Prisma.SortOrder
   dropoffAddress?: Prisma.SortOrder
   dropoffLatitude?: Prisma.SortOrder
   dropoffLongitude?: Prisma.SortOrder
+  dropoffLandmark?: Prisma.SortOrderInput | Prisma.SortOrder
   recipientName?: Prisma.SortOrder
   recipientPhoneE164?: Prisma.SortOrder
   packageType?: Prisma.SortOrder
   packageDescription?: Prisma.SortOrder
+  proofPhotoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  pickupLocationMocked?: Prisma.SortOrder
   estimatedDistanceKm?: Prisma.SortOrderInput | Prisma.SortOrder
   estimatedDurationMinutes?: Prisma.SortOrderInput | Prisma.SortOrder
   estimatedFee?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -527,6 +566,9 @@ export type DeliveryRequestOrderByWithRelationInput = {
   passenger?: Prisma.PassengerProfileOrderByWithRelationInput
   rider?: Prisma.RiderProfileOrderByWithRelationInput
   serviceZone?: Prisma.ServiceZoneOrderByWithRelationInput
+  ratings?: Prisma.RatingOrderByRelationAggregateInput
+  reviews?: Prisma.ReviewOrderByRelationAggregateInput
+  stops?: Prisma.DeliveryStopOrderByRelationAggregateInput
 }
 
 export type DeliveryRequestWhereUniqueInput = Prisma.AtLeast<{
@@ -550,13 +592,17 @@ export type DeliveryRequestWhereUniqueInput = Prisma.AtLeast<{
   pickupAddress?: Prisma.StringFilter<"DeliveryRequest"> | string
   pickupLatitude?: Prisma.DecimalFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.StringNullableFilter<"DeliveryRequest"> | string | null
   dropoffAddress?: Prisma.StringFilter<"DeliveryRequest"> | string
   dropoffLatitude?: Prisma.DecimalFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude?: Prisma.DecimalFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.StringNullableFilter<"DeliveryRequest"> | string | null
   recipientName?: Prisma.StringFilter<"DeliveryRequest"> | string
   recipientPhoneE164?: Prisma.StringFilter<"DeliveryRequest"> | string
   packageType?: Prisma.StringFilter<"DeliveryRequest"> | string
   packageDescription?: Prisma.StringFilter<"DeliveryRequest"> | string
+  proofPhotoUrl?: Prisma.StringNullableFilter<"DeliveryRequest"> | string | null
+  pickupLocationMocked?: Prisma.BoolFilter<"DeliveryRequest"> | boolean
   estimatedDistanceKm?: Prisma.DecimalNullableFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.IntNullableFilter<"DeliveryRequest"> | number | null
   estimatedFee?: Prisma.DecimalNullableFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -570,6 +616,9 @@ export type DeliveryRequestWhereUniqueInput = Prisma.AtLeast<{
   passenger?: Prisma.XOR<Prisma.PassengerProfileScalarRelationFilter, Prisma.PassengerProfileWhereInput>
   rider?: Prisma.XOR<Prisma.RiderProfileNullableScalarRelationFilter, Prisma.RiderProfileWhereInput> | null
   serviceZone?: Prisma.XOR<Prisma.ServiceZoneNullableScalarRelationFilter, Prisma.ServiceZoneWhereInput> | null
+  ratings?: Prisma.RatingListRelationFilter
+  reviews?: Prisma.ReviewListRelationFilter
+  stops?: Prisma.DeliveryStopListRelationFilter
 }, "id">
 
 export type DeliveryRequestOrderByWithAggregationInput = {
@@ -590,13 +639,17 @@ export type DeliveryRequestOrderByWithAggregationInput = {
   pickupAddress?: Prisma.SortOrder
   pickupLatitude?: Prisma.SortOrder
   pickupLongitude?: Prisma.SortOrder
+  pickupLandmark?: Prisma.SortOrderInput | Prisma.SortOrder
   dropoffAddress?: Prisma.SortOrder
   dropoffLatitude?: Prisma.SortOrder
   dropoffLongitude?: Prisma.SortOrder
+  dropoffLandmark?: Prisma.SortOrderInput | Prisma.SortOrder
   recipientName?: Prisma.SortOrder
   recipientPhoneE164?: Prisma.SortOrder
   packageType?: Prisma.SortOrder
   packageDescription?: Prisma.SortOrder
+  proofPhotoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  pickupLocationMocked?: Prisma.SortOrder
   estimatedDistanceKm?: Prisma.SortOrderInput | Prisma.SortOrder
   estimatedDurationMinutes?: Prisma.SortOrderInput | Prisma.SortOrder
   estimatedFee?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -635,13 +688,17 @@ export type DeliveryRequestScalarWhereWithAggregatesInput = {
   pickupAddress?: Prisma.StringWithAggregatesFilter<"DeliveryRequest"> | string
   pickupLatitude?: Prisma.DecimalWithAggregatesFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalWithAggregatesFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.StringNullableWithAggregatesFilter<"DeliveryRequest"> | string | null
   dropoffAddress?: Prisma.StringWithAggregatesFilter<"DeliveryRequest"> | string
   dropoffLatitude?: Prisma.DecimalWithAggregatesFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude?: Prisma.DecimalWithAggregatesFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.StringNullableWithAggregatesFilter<"DeliveryRequest"> | string | null
   recipientName?: Prisma.StringWithAggregatesFilter<"DeliveryRequest"> | string
   recipientPhoneE164?: Prisma.StringWithAggregatesFilter<"DeliveryRequest"> | string
   packageType?: Prisma.StringWithAggregatesFilter<"DeliveryRequest"> | string
   packageDescription?: Prisma.StringWithAggregatesFilter<"DeliveryRequest"> | string
+  proofPhotoUrl?: Prisma.StringNullableWithAggregatesFilter<"DeliveryRequest"> | string | null
+  pickupLocationMocked?: Prisma.BoolWithAggregatesFilter<"DeliveryRequest"> | boolean
   estimatedDistanceKm?: Prisma.DecimalNullableWithAggregatesFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.IntNullableWithAggregatesFilter<"DeliveryRequest"> | number | null
   estimatedFee?: Prisma.DecimalNullableWithAggregatesFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -669,13 +726,17 @@ export type DeliveryRequestCreateInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   dropoffAddress: string
   dropoffLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: string | null
   recipientName: string
   recipientPhoneE164: string
   packageType?: string
   packageDescription: string
+  proofPhotoUrl?: string | null
+  pickupLocationMocked?: boolean
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
   estimatedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -689,6 +750,9 @@ export type DeliveryRequestCreateInput = {
   passenger: Prisma.PassengerProfileCreateNestedOneWithoutDeliveriesInput
   rider?: Prisma.RiderProfileCreateNestedOneWithoutDeliveriesInput
   serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutDeliveriesInput
+  ratings?: Prisma.RatingCreateNestedManyWithoutDeliveryInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutDeliveryInput
+  stops?: Prisma.DeliveryStopCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestUncheckedCreateInput = {
@@ -709,13 +773,17 @@ export type DeliveryRequestUncheckedCreateInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   dropoffAddress: string
   dropoffLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: string | null
   recipientName: string
   recipientPhoneE164: string
   packageType?: string
   packageDescription: string
+  proofPhotoUrl?: string | null
+  pickupLocationMocked?: boolean
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
   estimatedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -726,6 +794,9 @@ export type DeliveryRequestUncheckedCreateInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutDeliveryInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutDeliveryInput
+  stops?: Prisma.DeliveryStopUncheckedCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestUpdateInput = {
@@ -743,13 +814,17 @@ export type DeliveryRequestUpdateInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dropoffAddress?: Prisma.StringFieldUpdateOperationsInput | string
   dropoffLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientName?: Prisma.StringFieldUpdateOperationsInput | string
   recipientPhoneE164?: Prisma.StringFieldUpdateOperationsInput | string
   packageType?: Prisma.StringFieldUpdateOperationsInput | string
   packageDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   estimatedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -763,6 +838,9 @@ export type DeliveryRequestUpdateInput = {
   passenger?: Prisma.PassengerProfileUpdateOneRequiredWithoutDeliveriesNestedInput
   rider?: Prisma.RiderProfileUpdateOneWithoutDeliveriesNestedInput
   serviceZone?: Prisma.ServiceZoneUpdateOneWithoutDeliveriesNestedInput
+  ratings?: Prisma.RatingUpdateManyWithoutDeliveryNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutDeliveryNestedInput
+  stops?: Prisma.DeliveryStopUpdateManyWithoutDeliveryNestedInput
 }
 
 export type DeliveryRequestUncheckedUpdateInput = {
@@ -783,13 +861,17 @@ export type DeliveryRequestUncheckedUpdateInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dropoffAddress?: Prisma.StringFieldUpdateOperationsInput | string
   dropoffLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientName?: Prisma.StringFieldUpdateOperationsInput | string
   recipientPhoneE164?: Prisma.StringFieldUpdateOperationsInput | string
   packageType?: Prisma.StringFieldUpdateOperationsInput | string
   packageDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   estimatedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -800,6 +882,9 @@ export type DeliveryRequestUncheckedUpdateInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ratings?: Prisma.RatingUncheckedUpdateManyWithoutDeliveryNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutDeliveryNestedInput
+  stops?: Prisma.DeliveryStopUncheckedUpdateManyWithoutDeliveryNestedInput
 }
 
 export type DeliveryRequestCreateManyInput = {
@@ -820,13 +905,17 @@ export type DeliveryRequestCreateManyInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   dropoffAddress: string
   dropoffLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: string | null
   recipientName: string
   recipientPhoneE164: string
   packageType?: string
   packageDescription: string
+  proofPhotoUrl?: string | null
+  pickupLocationMocked?: boolean
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
   estimatedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -854,13 +943,17 @@ export type DeliveryRequestUpdateManyMutationInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dropoffAddress?: Prisma.StringFieldUpdateOperationsInput | string
   dropoffLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientName?: Prisma.StringFieldUpdateOperationsInput | string
   recipientPhoneE164?: Prisma.StringFieldUpdateOperationsInput | string
   packageType?: Prisma.StringFieldUpdateOperationsInput | string
   packageDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   estimatedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -891,13 +984,17 @@ export type DeliveryRequestUncheckedUpdateManyInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dropoffAddress?: Prisma.StringFieldUpdateOperationsInput | string
   dropoffLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientName?: Prisma.StringFieldUpdateOperationsInput | string
   recipientPhoneE164?: Prisma.StringFieldUpdateOperationsInput | string
   packageType?: Prisma.StringFieldUpdateOperationsInput | string
   packageDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   estimatedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -938,13 +1035,17 @@ export type DeliveryRequestCountOrderByAggregateInput = {
   pickupAddress?: Prisma.SortOrder
   pickupLatitude?: Prisma.SortOrder
   pickupLongitude?: Prisma.SortOrder
+  pickupLandmark?: Prisma.SortOrder
   dropoffAddress?: Prisma.SortOrder
   dropoffLatitude?: Prisma.SortOrder
   dropoffLongitude?: Prisma.SortOrder
+  dropoffLandmark?: Prisma.SortOrder
   recipientName?: Prisma.SortOrder
   recipientPhoneE164?: Prisma.SortOrder
   packageType?: Prisma.SortOrder
   packageDescription?: Prisma.SortOrder
+  proofPhotoUrl?: Prisma.SortOrder
+  pickupLocationMocked?: Prisma.SortOrder
   estimatedDistanceKm?: Prisma.SortOrder
   estimatedDurationMinutes?: Prisma.SortOrder
   estimatedFee?: Prisma.SortOrder
@@ -988,13 +1089,17 @@ export type DeliveryRequestMaxOrderByAggregateInput = {
   pickupAddress?: Prisma.SortOrder
   pickupLatitude?: Prisma.SortOrder
   pickupLongitude?: Prisma.SortOrder
+  pickupLandmark?: Prisma.SortOrder
   dropoffAddress?: Prisma.SortOrder
   dropoffLatitude?: Prisma.SortOrder
   dropoffLongitude?: Prisma.SortOrder
+  dropoffLandmark?: Prisma.SortOrder
   recipientName?: Prisma.SortOrder
   recipientPhoneE164?: Prisma.SortOrder
   packageType?: Prisma.SortOrder
   packageDescription?: Prisma.SortOrder
+  proofPhotoUrl?: Prisma.SortOrder
+  pickupLocationMocked?: Prisma.SortOrder
   estimatedDistanceKm?: Prisma.SortOrder
   estimatedDurationMinutes?: Prisma.SortOrder
   estimatedFee?: Prisma.SortOrder
@@ -1025,13 +1130,17 @@ export type DeliveryRequestMinOrderByAggregateInput = {
   pickupAddress?: Prisma.SortOrder
   pickupLatitude?: Prisma.SortOrder
   pickupLongitude?: Prisma.SortOrder
+  pickupLandmark?: Prisma.SortOrder
   dropoffAddress?: Prisma.SortOrder
   dropoffLatitude?: Prisma.SortOrder
   dropoffLongitude?: Prisma.SortOrder
+  dropoffLandmark?: Prisma.SortOrder
   recipientName?: Prisma.SortOrder
   recipientPhoneE164?: Prisma.SortOrder
   packageType?: Prisma.SortOrder
   packageDescription?: Prisma.SortOrder
+  proofPhotoUrl?: Prisma.SortOrder
+  pickupLocationMocked?: Prisma.SortOrder
   estimatedDistanceKm?: Prisma.SortOrder
   estimatedDurationMinutes?: Prisma.SortOrder
   estimatedFee?: Prisma.SortOrder
@@ -1055,6 +1164,16 @@ export type DeliveryRequestSumOrderByAggregateInput = {
   finalFee?: Prisma.SortOrder
   riderEarnings?: Prisma.SortOrder
   platformCommission?: Prisma.SortOrder
+}
+
+export type DeliveryRequestScalarRelationFilter = {
+  is?: Prisma.DeliveryRequestWhereInput
+  isNot?: Prisma.DeliveryRequestWhereInput
+}
+
+export type DeliveryRequestNullableScalarRelationFilter = {
+  is?: Prisma.DeliveryRequestWhereInput | null
+  isNot?: Prisma.DeliveryRequestWhereInput | null
 }
 
 export type DeliveryRequestCreateNestedManyWithoutPassengerInput = {
@@ -1187,6 +1306,52 @@ export type EnumDeliveryStatusFieldUpdateOperationsInput = {
   set?: $Enums.DeliveryStatus
 }
 
+export type DeliveryRequestCreateNestedOneWithoutStopsInput = {
+  create?: Prisma.XOR<Prisma.DeliveryRequestCreateWithoutStopsInput, Prisma.DeliveryRequestUncheckedCreateWithoutStopsInput>
+  connectOrCreate?: Prisma.DeliveryRequestCreateOrConnectWithoutStopsInput
+  connect?: Prisma.DeliveryRequestWhereUniqueInput
+}
+
+export type DeliveryRequestUpdateOneRequiredWithoutStopsNestedInput = {
+  create?: Prisma.XOR<Prisma.DeliveryRequestCreateWithoutStopsInput, Prisma.DeliveryRequestUncheckedCreateWithoutStopsInput>
+  connectOrCreate?: Prisma.DeliveryRequestCreateOrConnectWithoutStopsInput
+  upsert?: Prisma.DeliveryRequestUpsertWithoutStopsInput
+  connect?: Prisma.DeliveryRequestWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DeliveryRequestUpdateToOneWithWhereWithoutStopsInput, Prisma.DeliveryRequestUpdateWithoutStopsInput>, Prisma.DeliveryRequestUncheckedUpdateWithoutStopsInput>
+}
+
+export type DeliveryRequestCreateNestedOneWithoutRatingsInput = {
+  create?: Prisma.XOR<Prisma.DeliveryRequestCreateWithoutRatingsInput, Prisma.DeliveryRequestUncheckedCreateWithoutRatingsInput>
+  connectOrCreate?: Prisma.DeliveryRequestCreateOrConnectWithoutRatingsInput
+  connect?: Prisma.DeliveryRequestWhereUniqueInput
+}
+
+export type DeliveryRequestUpdateOneWithoutRatingsNestedInput = {
+  create?: Prisma.XOR<Prisma.DeliveryRequestCreateWithoutRatingsInput, Prisma.DeliveryRequestUncheckedCreateWithoutRatingsInput>
+  connectOrCreate?: Prisma.DeliveryRequestCreateOrConnectWithoutRatingsInput
+  upsert?: Prisma.DeliveryRequestUpsertWithoutRatingsInput
+  disconnect?: Prisma.DeliveryRequestWhereInput | boolean
+  delete?: Prisma.DeliveryRequestWhereInput | boolean
+  connect?: Prisma.DeliveryRequestWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DeliveryRequestUpdateToOneWithWhereWithoutRatingsInput, Prisma.DeliveryRequestUpdateWithoutRatingsInput>, Prisma.DeliveryRequestUncheckedUpdateWithoutRatingsInput>
+}
+
+export type DeliveryRequestCreateNestedOneWithoutReviewsInput = {
+  create?: Prisma.XOR<Prisma.DeliveryRequestCreateWithoutReviewsInput, Prisma.DeliveryRequestUncheckedCreateWithoutReviewsInput>
+  connectOrCreate?: Prisma.DeliveryRequestCreateOrConnectWithoutReviewsInput
+  connect?: Prisma.DeliveryRequestWhereUniqueInput
+}
+
+export type DeliveryRequestUpdateOneWithoutReviewsNestedInput = {
+  create?: Prisma.XOR<Prisma.DeliveryRequestCreateWithoutReviewsInput, Prisma.DeliveryRequestUncheckedCreateWithoutReviewsInput>
+  connectOrCreate?: Prisma.DeliveryRequestCreateOrConnectWithoutReviewsInput
+  upsert?: Prisma.DeliveryRequestUpsertWithoutReviewsInput
+  disconnect?: Prisma.DeliveryRequestWhereInput | boolean
+  delete?: Prisma.DeliveryRequestWhereInput | boolean
+  connect?: Prisma.DeliveryRequestWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DeliveryRequestUpdateToOneWithWhereWithoutReviewsInput, Prisma.DeliveryRequestUpdateWithoutReviewsInput>, Prisma.DeliveryRequestUncheckedUpdateWithoutReviewsInput>
+}
+
 export type DeliveryRequestCreateWithoutPassengerInput = {
   id?: string
   status?: $Enums.DeliveryStatus
@@ -1202,13 +1367,17 @@ export type DeliveryRequestCreateWithoutPassengerInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   dropoffAddress: string
   dropoffLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: string | null
   recipientName: string
   recipientPhoneE164: string
   packageType?: string
   packageDescription: string
+  proofPhotoUrl?: string | null
+  pickupLocationMocked?: boolean
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
   estimatedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1221,6 +1390,9 @@ export type DeliveryRequestCreateWithoutPassengerInput = {
   updatedAt?: Date | string
   rider?: Prisma.RiderProfileCreateNestedOneWithoutDeliveriesInput
   serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutDeliveriesInput
+  ratings?: Prisma.RatingCreateNestedManyWithoutDeliveryInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutDeliveryInput
+  stops?: Prisma.DeliveryStopCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestUncheckedCreateWithoutPassengerInput = {
@@ -1240,13 +1412,17 @@ export type DeliveryRequestUncheckedCreateWithoutPassengerInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   dropoffAddress: string
   dropoffLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: string | null
   recipientName: string
   recipientPhoneE164: string
   packageType?: string
   packageDescription: string
+  proofPhotoUrl?: string | null
+  pickupLocationMocked?: boolean
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
   estimatedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1257,6 +1433,9 @@ export type DeliveryRequestUncheckedCreateWithoutPassengerInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutDeliveryInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutDeliveryInput
+  stops?: Prisma.DeliveryStopUncheckedCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestCreateOrConnectWithoutPassengerInput = {
@@ -1306,13 +1485,17 @@ export type DeliveryRequestScalarWhereInput = {
   pickupAddress?: Prisma.StringFilter<"DeliveryRequest"> | string
   pickupLatitude?: Prisma.DecimalFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.StringNullableFilter<"DeliveryRequest"> | string | null
   dropoffAddress?: Prisma.StringFilter<"DeliveryRequest"> | string
   dropoffLatitude?: Prisma.DecimalFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude?: Prisma.DecimalFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.StringNullableFilter<"DeliveryRequest"> | string | null
   recipientName?: Prisma.StringFilter<"DeliveryRequest"> | string
   recipientPhoneE164?: Prisma.StringFilter<"DeliveryRequest"> | string
   packageType?: Prisma.StringFilter<"DeliveryRequest"> | string
   packageDescription?: Prisma.StringFilter<"DeliveryRequest"> | string
+  proofPhotoUrl?: Prisma.StringNullableFilter<"DeliveryRequest"> | string | null
+  pickupLocationMocked?: Prisma.BoolFilter<"DeliveryRequest"> | boolean
   estimatedDistanceKm?: Prisma.DecimalNullableFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.IntNullableFilter<"DeliveryRequest"> | number | null
   estimatedFee?: Prisma.DecimalNullableFilter<"DeliveryRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1340,13 +1523,17 @@ export type DeliveryRequestCreateWithoutRiderInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   dropoffAddress: string
   dropoffLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: string | null
   recipientName: string
   recipientPhoneE164: string
   packageType?: string
   packageDescription: string
+  proofPhotoUrl?: string | null
+  pickupLocationMocked?: boolean
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
   estimatedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1359,6 +1546,9 @@ export type DeliveryRequestCreateWithoutRiderInput = {
   updatedAt?: Date | string
   passenger: Prisma.PassengerProfileCreateNestedOneWithoutDeliveriesInput
   serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutDeliveriesInput
+  ratings?: Prisma.RatingCreateNestedManyWithoutDeliveryInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutDeliveryInput
+  stops?: Prisma.DeliveryStopCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestUncheckedCreateWithoutRiderInput = {
@@ -1378,13 +1568,17 @@ export type DeliveryRequestUncheckedCreateWithoutRiderInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   dropoffAddress: string
   dropoffLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: string | null
   recipientName: string
   recipientPhoneE164: string
   packageType?: string
   packageDescription: string
+  proofPhotoUrl?: string | null
+  pickupLocationMocked?: boolean
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
   estimatedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1395,6 +1589,9 @@ export type DeliveryRequestUncheckedCreateWithoutRiderInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutDeliveryInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutDeliveryInput
+  stops?: Prisma.DeliveryStopUncheckedCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestCreateOrConnectWithoutRiderInput = {
@@ -1438,13 +1635,17 @@ export type DeliveryRequestCreateWithoutServiceZoneInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   dropoffAddress: string
   dropoffLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: string | null
   recipientName: string
   recipientPhoneE164: string
   packageType?: string
   packageDescription: string
+  proofPhotoUrl?: string | null
+  pickupLocationMocked?: boolean
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
   estimatedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1457,6 +1658,9 @@ export type DeliveryRequestCreateWithoutServiceZoneInput = {
   updatedAt?: Date | string
   passenger: Prisma.PassengerProfileCreateNestedOneWithoutDeliveriesInput
   rider?: Prisma.RiderProfileCreateNestedOneWithoutDeliveriesInput
+  ratings?: Prisma.RatingCreateNestedManyWithoutDeliveryInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutDeliveryInput
+  stops?: Prisma.DeliveryStopCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestUncheckedCreateWithoutServiceZoneInput = {
@@ -1476,13 +1680,17 @@ export type DeliveryRequestUncheckedCreateWithoutServiceZoneInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   dropoffAddress: string
   dropoffLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: string | null
   recipientName: string
   recipientPhoneE164: string
   packageType?: string
   packageDescription: string
+  proofPhotoUrl?: string | null
+  pickupLocationMocked?: boolean
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
   estimatedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1493,6 +1701,9 @@ export type DeliveryRequestUncheckedCreateWithoutServiceZoneInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutDeliveryInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutDeliveryInput
+  stops?: Prisma.DeliveryStopUncheckedCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestCreateOrConnectWithoutServiceZoneInput = {
@@ -1521,6 +1732,570 @@ export type DeliveryRequestUpdateManyWithWhereWithoutServiceZoneInput = {
   data: Prisma.XOR<Prisma.DeliveryRequestUpdateManyMutationInput, Prisma.DeliveryRequestUncheckedUpdateManyWithoutServiceZoneInput>
 }
 
+export type DeliveryRequestCreateWithoutStopsInput = {
+  id?: string
+  status?: $Enums.DeliveryStatus
+  paymentMethod?: $Enums.PaymentMethod | null
+  cancellationParty?: $Enums.CancellationParty | null
+  cancellationReason?: string | null
+  requestedAt?: Date | string
+  assignedAt?: Date | string | null
+  pickedUpAt?: Date | string | null
+  inTransitAt?: Date | string | null
+  deliveredAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  pickupAddress: string
+  pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
+  dropoffAddress: string
+  dropoffLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: string | null
+  recipientName: string
+  recipientPhoneE164: string
+  packageType?: string
+  packageDescription: string
+  proofPhotoUrl?: string | null
+  pickupLocationMocked?: boolean
+  estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: number | null
+  estimatedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency: string
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  passenger: Prisma.PassengerProfileCreateNestedOneWithoutDeliveriesInput
+  rider?: Prisma.RiderProfileCreateNestedOneWithoutDeliveriesInput
+  serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutDeliveriesInput
+  ratings?: Prisma.RatingCreateNestedManyWithoutDeliveryInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutDeliveryInput
+}
+
+export type DeliveryRequestUncheckedCreateWithoutStopsInput = {
+  id?: string
+  passengerId: string
+  riderId?: string | null
+  serviceZoneId?: string | null
+  status?: $Enums.DeliveryStatus
+  paymentMethod?: $Enums.PaymentMethod | null
+  cancellationParty?: $Enums.CancellationParty | null
+  cancellationReason?: string | null
+  requestedAt?: Date | string
+  assignedAt?: Date | string | null
+  pickedUpAt?: Date | string | null
+  inTransitAt?: Date | string | null
+  deliveredAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  pickupAddress: string
+  pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
+  dropoffAddress: string
+  dropoffLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: string | null
+  recipientName: string
+  recipientPhoneE164: string
+  packageType?: string
+  packageDescription: string
+  proofPhotoUrl?: string | null
+  pickupLocationMocked?: boolean
+  estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: number | null
+  estimatedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency: string
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutDeliveryInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutDeliveryInput
+}
+
+export type DeliveryRequestCreateOrConnectWithoutStopsInput = {
+  where: Prisma.DeliveryRequestWhereUniqueInput
+  create: Prisma.XOR<Prisma.DeliveryRequestCreateWithoutStopsInput, Prisma.DeliveryRequestUncheckedCreateWithoutStopsInput>
+}
+
+export type DeliveryRequestUpsertWithoutStopsInput = {
+  update: Prisma.XOR<Prisma.DeliveryRequestUpdateWithoutStopsInput, Prisma.DeliveryRequestUncheckedUpdateWithoutStopsInput>
+  create: Prisma.XOR<Prisma.DeliveryRequestCreateWithoutStopsInput, Prisma.DeliveryRequestUncheckedCreateWithoutStopsInput>
+  where?: Prisma.DeliveryRequestWhereInput
+}
+
+export type DeliveryRequestUpdateToOneWithWhereWithoutStopsInput = {
+  where?: Prisma.DeliveryRequestWhereInput
+  data: Prisma.XOR<Prisma.DeliveryRequestUpdateWithoutStopsInput, Prisma.DeliveryRequestUncheckedUpdateWithoutStopsInput>
+}
+
+export type DeliveryRequestUpdateWithoutStopsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumDeliveryStatusFieldUpdateOperationsInput | $Enums.DeliveryStatus
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pickedUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inTransitAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dropoffAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  dropoffLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recipientName?: Prisma.StringFieldUpdateOperationsInput | string
+  recipientPhoneE164?: Prisma.StringFieldUpdateOperationsInput | string
+  packageType?: Prisma.StringFieldUpdateOperationsInput | string
+  packageDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  estimatedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passenger?: Prisma.PassengerProfileUpdateOneRequiredWithoutDeliveriesNestedInput
+  rider?: Prisma.RiderProfileUpdateOneWithoutDeliveriesNestedInput
+  serviceZone?: Prisma.ServiceZoneUpdateOneWithoutDeliveriesNestedInput
+  ratings?: Prisma.RatingUpdateManyWithoutDeliveryNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutDeliveryNestedInput
+}
+
+export type DeliveryRequestUncheckedUpdateWithoutStopsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  passengerId?: Prisma.StringFieldUpdateOperationsInput | string
+  riderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serviceZoneId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDeliveryStatusFieldUpdateOperationsInput | $Enums.DeliveryStatus
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pickedUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inTransitAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dropoffAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  dropoffLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recipientName?: Prisma.StringFieldUpdateOperationsInput | string
+  recipientPhoneE164?: Prisma.StringFieldUpdateOperationsInput | string
+  packageType?: Prisma.StringFieldUpdateOperationsInput | string
+  packageDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  estimatedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ratings?: Prisma.RatingUncheckedUpdateManyWithoutDeliveryNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutDeliveryNestedInput
+}
+
+export type DeliveryRequestCreateWithoutRatingsInput = {
+  id?: string
+  status?: $Enums.DeliveryStatus
+  paymentMethod?: $Enums.PaymentMethod | null
+  cancellationParty?: $Enums.CancellationParty | null
+  cancellationReason?: string | null
+  requestedAt?: Date | string
+  assignedAt?: Date | string | null
+  pickedUpAt?: Date | string | null
+  inTransitAt?: Date | string | null
+  deliveredAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  pickupAddress: string
+  pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
+  dropoffAddress: string
+  dropoffLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: string | null
+  recipientName: string
+  recipientPhoneE164: string
+  packageType?: string
+  packageDescription: string
+  proofPhotoUrl?: string | null
+  pickupLocationMocked?: boolean
+  estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: number | null
+  estimatedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency: string
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  passenger: Prisma.PassengerProfileCreateNestedOneWithoutDeliveriesInput
+  rider?: Prisma.RiderProfileCreateNestedOneWithoutDeliveriesInput
+  serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutDeliveriesInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutDeliveryInput
+  stops?: Prisma.DeliveryStopCreateNestedManyWithoutDeliveryInput
+}
+
+export type DeliveryRequestUncheckedCreateWithoutRatingsInput = {
+  id?: string
+  passengerId: string
+  riderId?: string | null
+  serviceZoneId?: string | null
+  status?: $Enums.DeliveryStatus
+  paymentMethod?: $Enums.PaymentMethod | null
+  cancellationParty?: $Enums.CancellationParty | null
+  cancellationReason?: string | null
+  requestedAt?: Date | string
+  assignedAt?: Date | string | null
+  pickedUpAt?: Date | string | null
+  inTransitAt?: Date | string | null
+  deliveredAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  pickupAddress: string
+  pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
+  dropoffAddress: string
+  dropoffLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: string | null
+  recipientName: string
+  recipientPhoneE164: string
+  packageType?: string
+  packageDescription: string
+  proofPhotoUrl?: string | null
+  pickupLocationMocked?: boolean
+  estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: number | null
+  estimatedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency: string
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutDeliveryInput
+  stops?: Prisma.DeliveryStopUncheckedCreateNestedManyWithoutDeliveryInput
+}
+
+export type DeliveryRequestCreateOrConnectWithoutRatingsInput = {
+  where: Prisma.DeliveryRequestWhereUniqueInput
+  create: Prisma.XOR<Prisma.DeliveryRequestCreateWithoutRatingsInput, Prisma.DeliveryRequestUncheckedCreateWithoutRatingsInput>
+}
+
+export type DeliveryRequestUpsertWithoutRatingsInput = {
+  update: Prisma.XOR<Prisma.DeliveryRequestUpdateWithoutRatingsInput, Prisma.DeliveryRequestUncheckedUpdateWithoutRatingsInput>
+  create: Prisma.XOR<Prisma.DeliveryRequestCreateWithoutRatingsInput, Prisma.DeliveryRequestUncheckedCreateWithoutRatingsInput>
+  where?: Prisma.DeliveryRequestWhereInput
+}
+
+export type DeliveryRequestUpdateToOneWithWhereWithoutRatingsInput = {
+  where?: Prisma.DeliveryRequestWhereInput
+  data: Prisma.XOR<Prisma.DeliveryRequestUpdateWithoutRatingsInput, Prisma.DeliveryRequestUncheckedUpdateWithoutRatingsInput>
+}
+
+export type DeliveryRequestUpdateWithoutRatingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumDeliveryStatusFieldUpdateOperationsInput | $Enums.DeliveryStatus
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pickedUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inTransitAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dropoffAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  dropoffLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recipientName?: Prisma.StringFieldUpdateOperationsInput | string
+  recipientPhoneE164?: Prisma.StringFieldUpdateOperationsInput | string
+  packageType?: Prisma.StringFieldUpdateOperationsInput | string
+  packageDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  estimatedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passenger?: Prisma.PassengerProfileUpdateOneRequiredWithoutDeliveriesNestedInput
+  rider?: Prisma.RiderProfileUpdateOneWithoutDeliveriesNestedInput
+  serviceZone?: Prisma.ServiceZoneUpdateOneWithoutDeliveriesNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutDeliveryNestedInput
+  stops?: Prisma.DeliveryStopUpdateManyWithoutDeliveryNestedInput
+}
+
+export type DeliveryRequestUncheckedUpdateWithoutRatingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  passengerId?: Prisma.StringFieldUpdateOperationsInput | string
+  riderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serviceZoneId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDeliveryStatusFieldUpdateOperationsInput | $Enums.DeliveryStatus
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pickedUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inTransitAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dropoffAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  dropoffLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recipientName?: Prisma.StringFieldUpdateOperationsInput | string
+  recipientPhoneE164?: Prisma.StringFieldUpdateOperationsInput | string
+  packageType?: Prisma.StringFieldUpdateOperationsInput | string
+  packageDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  estimatedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutDeliveryNestedInput
+  stops?: Prisma.DeliveryStopUncheckedUpdateManyWithoutDeliveryNestedInput
+}
+
+export type DeliveryRequestCreateWithoutReviewsInput = {
+  id?: string
+  status?: $Enums.DeliveryStatus
+  paymentMethod?: $Enums.PaymentMethod | null
+  cancellationParty?: $Enums.CancellationParty | null
+  cancellationReason?: string | null
+  requestedAt?: Date | string
+  assignedAt?: Date | string | null
+  pickedUpAt?: Date | string | null
+  inTransitAt?: Date | string | null
+  deliveredAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  pickupAddress: string
+  pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
+  dropoffAddress: string
+  dropoffLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: string | null
+  recipientName: string
+  recipientPhoneE164: string
+  packageType?: string
+  packageDescription: string
+  proofPhotoUrl?: string | null
+  pickupLocationMocked?: boolean
+  estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: number | null
+  estimatedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency: string
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  passenger: Prisma.PassengerProfileCreateNestedOneWithoutDeliveriesInput
+  rider?: Prisma.RiderProfileCreateNestedOneWithoutDeliveriesInput
+  serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutDeliveriesInput
+  ratings?: Prisma.RatingCreateNestedManyWithoutDeliveryInput
+  stops?: Prisma.DeliveryStopCreateNestedManyWithoutDeliveryInput
+}
+
+export type DeliveryRequestUncheckedCreateWithoutReviewsInput = {
+  id?: string
+  passengerId: string
+  riderId?: string | null
+  serviceZoneId?: string | null
+  status?: $Enums.DeliveryStatus
+  paymentMethod?: $Enums.PaymentMethod | null
+  cancellationParty?: $Enums.CancellationParty | null
+  cancellationReason?: string | null
+  requestedAt?: Date | string
+  assignedAt?: Date | string | null
+  pickedUpAt?: Date | string | null
+  inTransitAt?: Date | string | null
+  deliveredAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  pickupAddress: string
+  pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
+  dropoffAddress: string
+  dropoffLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: string | null
+  recipientName: string
+  recipientPhoneE164: string
+  packageType?: string
+  packageDescription: string
+  proofPhotoUrl?: string | null
+  pickupLocationMocked?: boolean
+  estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: number | null
+  estimatedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency: string
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutDeliveryInput
+  stops?: Prisma.DeliveryStopUncheckedCreateNestedManyWithoutDeliveryInput
+}
+
+export type DeliveryRequestCreateOrConnectWithoutReviewsInput = {
+  where: Prisma.DeliveryRequestWhereUniqueInput
+  create: Prisma.XOR<Prisma.DeliveryRequestCreateWithoutReviewsInput, Prisma.DeliveryRequestUncheckedCreateWithoutReviewsInput>
+}
+
+export type DeliveryRequestUpsertWithoutReviewsInput = {
+  update: Prisma.XOR<Prisma.DeliveryRequestUpdateWithoutReviewsInput, Prisma.DeliveryRequestUncheckedUpdateWithoutReviewsInput>
+  create: Prisma.XOR<Prisma.DeliveryRequestCreateWithoutReviewsInput, Prisma.DeliveryRequestUncheckedCreateWithoutReviewsInput>
+  where?: Prisma.DeliveryRequestWhereInput
+}
+
+export type DeliveryRequestUpdateToOneWithWhereWithoutReviewsInput = {
+  where?: Prisma.DeliveryRequestWhereInput
+  data: Prisma.XOR<Prisma.DeliveryRequestUpdateWithoutReviewsInput, Prisma.DeliveryRequestUncheckedUpdateWithoutReviewsInput>
+}
+
+export type DeliveryRequestUpdateWithoutReviewsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumDeliveryStatusFieldUpdateOperationsInput | $Enums.DeliveryStatus
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pickedUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inTransitAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dropoffAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  dropoffLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recipientName?: Prisma.StringFieldUpdateOperationsInput | string
+  recipientPhoneE164?: Prisma.StringFieldUpdateOperationsInput | string
+  packageType?: Prisma.StringFieldUpdateOperationsInput | string
+  packageDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  estimatedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passenger?: Prisma.PassengerProfileUpdateOneRequiredWithoutDeliveriesNestedInput
+  rider?: Prisma.RiderProfileUpdateOneWithoutDeliveriesNestedInput
+  serviceZone?: Prisma.ServiceZoneUpdateOneWithoutDeliveriesNestedInput
+  ratings?: Prisma.RatingUpdateManyWithoutDeliveryNestedInput
+  stops?: Prisma.DeliveryStopUpdateManyWithoutDeliveryNestedInput
+}
+
+export type DeliveryRequestUncheckedUpdateWithoutReviewsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  passengerId?: Prisma.StringFieldUpdateOperationsInput | string
+  riderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serviceZoneId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDeliveryStatusFieldUpdateOperationsInput | $Enums.DeliveryStatus
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pickedUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inTransitAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dropoffAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  dropoffLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recipientName?: Prisma.StringFieldUpdateOperationsInput | string
+  recipientPhoneE164?: Prisma.StringFieldUpdateOperationsInput | string
+  packageType?: Prisma.StringFieldUpdateOperationsInput | string
+  packageDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  estimatedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ratings?: Prisma.RatingUncheckedUpdateManyWithoutDeliveryNestedInput
+  stops?: Prisma.DeliveryStopUncheckedUpdateManyWithoutDeliveryNestedInput
+}
+
 export type DeliveryRequestCreateManyPassengerInput = {
   id?: string
   riderId?: string | null
@@ -1538,13 +2313,17 @@ export type DeliveryRequestCreateManyPassengerInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   dropoffAddress: string
   dropoffLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: string | null
   recipientName: string
   recipientPhoneE164: string
   packageType?: string
   packageDescription: string
+  proofPhotoUrl?: string | null
+  pickupLocationMocked?: boolean
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
   estimatedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1572,13 +2351,17 @@ export type DeliveryRequestUpdateWithoutPassengerInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dropoffAddress?: Prisma.StringFieldUpdateOperationsInput | string
   dropoffLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientName?: Prisma.StringFieldUpdateOperationsInput | string
   recipientPhoneE164?: Prisma.StringFieldUpdateOperationsInput | string
   packageType?: Prisma.StringFieldUpdateOperationsInput | string
   packageDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   estimatedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1591,6 +2374,9 @@ export type DeliveryRequestUpdateWithoutPassengerInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rider?: Prisma.RiderProfileUpdateOneWithoutDeliveriesNestedInput
   serviceZone?: Prisma.ServiceZoneUpdateOneWithoutDeliveriesNestedInput
+  ratings?: Prisma.RatingUpdateManyWithoutDeliveryNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutDeliveryNestedInput
+  stops?: Prisma.DeliveryStopUpdateManyWithoutDeliveryNestedInput
 }
 
 export type DeliveryRequestUncheckedUpdateWithoutPassengerInput = {
@@ -1610,13 +2396,17 @@ export type DeliveryRequestUncheckedUpdateWithoutPassengerInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dropoffAddress?: Prisma.StringFieldUpdateOperationsInput | string
   dropoffLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientName?: Prisma.StringFieldUpdateOperationsInput | string
   recipientPhoneE164?: Prisma.StringFieldUpdateOperationsInput | string
   packageType?: Prisma.StringFieldUpdateOperationsInput | string
   packageDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   estimatedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1627,6 +2417,9 @@ export type DeliveryRequestUncheckedUpdateWithoutPassengerInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ratings?: Prisma.RatingUncheckedUpdateManyWithoutDeliveryNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutDeliveryNestedInput
+  stops?: Prisma.DeliveryStopUncheckedUpdateManyWithoutDeliveryNestedInput
 }
 
 export type DeliveryRequestUncheckedUpdateManyWithoutPassengerInput = {
@@ -1646,13 +2439,17 @@ export type DeliveryRequestUncheckedUpdateManyWithoutPassengerInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dropoffAddress?: Prisma.StringFieldUpdateOperationsInput | string
   dropoffLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientName?: Prisma.StringFieldUpdateOperationsInput | string
   recipientPhoneE164?: Prisma.StringFieldUpdateOperationsInput | string
   packageType?: Prisma.StringFieldUpdateOperationsInput | string
   packageDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   estimatedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1682,13 +2479,17 @@ export type DeliveryRequestCreateManyRiderInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   dropoffAddress: string
   dropoffLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: string | null
   recipientName: string
   recipientPhoneE164: string
   packageType?: string
   packageDescription: string
+  proofPhotoUrl?: string | null
+  pickupLocationMocked?: boolean
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
   estimatedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1716,13 +2517,17 @@ export type DeliveryRequestUpdateWithoutRiderInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dropoffAddress?: Prisma.StringFieldUpdateOperationsInput | string
   dropoffLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientName?: Prisma.StringFieldUpdateOperationsInput | string
   recipientPhoneE164?: Prisma.StringFieldUpdateOperationsInput | string
   packageType?: Prisma.StringFieldUpdateOperationsInput | string
   packageDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   estimatedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1735,6 +2540,9 @@ export type DeliveryRequestUpdateWithoutRiderInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passenger?: Prisma.PassengerProfileUpdateOneRequiredWithoutDeliveriesNestedInput
   serviceZone?: Prisma.ServiceZoneUpdateOneWithoutDeliveriesNestedInput
+  ratings?: Prisma.RatingUpdateManyWithoutDeliveryNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutDeliveryNestedInput
+  stops?: Prisma.DeliveryStopUpdateManyWithoutDeliveryNestedInput
 }
 
 export type DeliveryRequestUncheckedUpdateWithoutRiderInput = {
@@ -1754,13 +2562,17 @@ export type DeliveryRequestUncheckedUpdateWithoutRiderInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dropoffAddress?: Prisma.StringFieldUpdateOperationsInput | string
   dropoffLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientName?: Prisma.StringFieldUpdateOperationsInput | string
   recipientPhoneE164?: Prisma.StringFieldUpdateOperationsInput | string
   packageType?: Prisma.StringFieldUpdateOperationsInput | string
   packageDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   estimatedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1771,6 +2583,9 @@ export type DeliveryRequestUncheckedUpdateWithoutRiderInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ratings?: Prisma.RatingUncheckedUpdateManyWithoutDeliveryNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutDeliveryNestedInput
+  stops?: Prisma.DeliveryStopUncheckedUpdateManyWithoutDeliveryNestedInput
 }
 
 export type DeliveryRequestUncheckedUpdateManyWithoutRiderInput = {
@@ -1790,13 +2605,17 @@ export type DeliveryRequestUncheckedUpdateManyWithoutRiderInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dropoffAddress?: Prisma.StringFieldUpdateOperationsInput | string
   dropoffLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientName?: Prisma.StringFieldUpdateOperationsInput | string
   recipientPhoneE164?: Prisma.StringFieldUpdateOperationsInput | string
   packageType?: Prisma.StringFieldUpdateOperationsInput | string
   packageDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   estimatedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1826,13 +2645,17 @@ export type DeliveryRequestCreateManyServiceZoneInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   dropoffAddress: string
   dropoffLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: string | null
   recipientName: string
   recipientPhoneE164: string
   packageType?: string
   packageDescription: string
+  proofPhotoUrl?: string | null
+  pickupLocationMocked?: boolean
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
   estimatedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1860,13 +2683,17 @@ export type DeliveryRequestUpdateWithoutServiceZoneInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dropoffAddress?: Prisma.StringFieldUpdateOperationsInput | string
   dropoffLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientName?: Prisma.StringFieldUpdateOperationsInput | string
   recipientPhoneE164?: Prisma.StringFieldUpdateOperationsInput | string
   packageType?: Prisma.StringFieldUpdateOperationsInput | string
   packageDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   estimatedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1879,6 +2706,9 @@ export type DeliveryRequestUpdateWithoutServiceZoneInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   passenger?: Prisma.PassengerProfileUpdateOneRequiredWithoutDeliveriesNestedInput
   rider?: Prisma.RiderProfileUpdateOneWithoutDeliveriesNestedInput
+  ratings?: Prisma.RatingUpdateManyWithoutDeliveryNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutDeliveryNestedInput
+  stops?: Prisma.DeliveryStopUpdateManyWithoutDeliveryNestedInput
 }
 
 export type DeliveryRequestUncheckedUpdateWithoutServiceZoneInput = {
@@ -1898,13 +2728,17 @@ export type DeliveryRequestUncheckedUpdateWithoutServiceZoneInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dropoffAddress?: Prisma.StringFieldUpdateOperationsInput | string
   dropoffLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientName?: Prisma.StringFieldUpdateOperationsInput | string
   recipientPhoneE164?: Prisma.StringFieldUpdateOperationsInput | string
   packageType?: Prisma.StringFieldUpdateOperationsInput | string
   packageDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   estimatedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1915,6 +2749,9 @@ export type DeliveryRequestUncheckedUpdateWithoutServiceZoneInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ratings?: Prisma.RatingUncheckedUpdateManyWithoutDeliveryNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutDeliveryNestedInput
+  stops?: Prisma.DeliveryStopUncheckedUpdateManyWithoutDeliveryNestedInput
 }
 
 export type DeliveryRequestUncheckedUpdateManyWithoutServiceZoneInput = {
@@ -1934,13 +2771,17 @@ export type DeliveryRequestUncheckedUpdateManyWithoutServiceZoneInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dropoffAddress?: Prisma.StringFieldUpdateOperationsInput | string
   dropoffLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dropoffLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipientName?: Prisma.StringFieldUpdateOperationsInput | string
   recipientPhoneE164?: Prisma.StringFieldUpdateOperationsInput | string
   packageType?: Prisma.StringFieldUpdateOperationsInput | string
   packageDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   estimatedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1953,6 +2794,53 @@ export type DeliveryRequestUncheckedUpdateManyWithoutServiceZoneInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+
+/**
+ * Count Type DeliveryRequestCountOutputType
+ */
+
+export type DeliveryRequestCountOutputType = {
+  ratings: number
+  reviews: number
+  stops: number
+}
+
+export type DeliveryRequestCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  ratings?: boolean | DeliveryRequestCountOutputTypeCountRatingsArgs
+  reviews?: boolean | DeliveryRequestCountOutputTypeCountReviewsArgs
+  stops?: boolean | DeliveryRequestCountOutputTypeCountStopsArgs
+}
+
+/**
+ * DeliveryRequestCountOutputType without action
+ */
+export type DeliveryRequestCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DeliveryRequestCountOutputType
+   */
+  select?: Prisma.DeliveryRequestCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * DeliveryRequestCountOutputType without action
+ */
+export type DeliveryRequestCountOutputTypeCountRatingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.RatingWhereInput
+}
+
+/**
+ * DeliveryRequestCountOutputType without action
+ */
+export type DeliveryRequestCountOutputTypeCountReviewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ReviewWhereInput
+}
+
+/**
+ * DeliveryRequestCountOutputType without action
+ */
+export type DeliveryRequestCountOutputTypeCountStopsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DeliveryStopWhereInput
+}
 
 
 export type DeliveryRequestSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1973,13 +2861,17 @@ export type DeliveryRequestSelect<ExtArgs extends runtime.Types.Extensions.Inter
   pickupAddress?: boolean
   pickupLatitude?: boolean
   pickupLongitude?: boolean
+  pickupLandmark?: boolean
   dropoffAddress?: boolean
   dropoffLatitude?: boolean
   dropoffLongitude?: boolean
+  dropoffLandmark?: boolean
   recipientName?: boolean
   recipientPhoneE164?: boolean
   packageType?: boolean
   packageDescription?: boolean
+  proofPhotoUrl?: boolean
+  pickupLocationMocked?: boolean
   estimatedDistanceKm?: boolean
   estimatedDurationMinutes?: boolean
   estimatedFee?: boolean
@@ -1993,6 +2885,10 @@ export type DeliveryRequestSelect<ExtArgs extends runtime.Types.Extensions.Inter
   passenger?: boolean | Prisma.PassengerProfileDefaultArgs<ExtArgs>
   rider?: boolean | Prisma.DeliveryRequest$riderArgs<ExtArgs>
   serviceZone?: boolean | Prisma.DeliveryRequest$serviceZoneArgs<ExtArgs>
+  ratings?: boolean | Prisma.DeliveryRequest$ratingsArgs<ExtArgs>
+  reviews?: boolean | Prisma.DeliveryRequest$reviewsArgs<ExtArgs>
+  stops?: boolean | Prisma.DeliveryRequest$stopsArgs<ExtArgs>
+  _count?: boolean | Prisma.DeliveryRequestCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["deliveryRequest"]>
 
 export type DeliveryRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -2013,13 +2909,17 @@ export type DeliveryRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   pickupAddress?: boolean
   pickupLatitude?: boolean
   pickupLongitude?: boolean
+  pickupLandmark?: boolean
   dropoffAddress?: boolean
   dropoffLatitude?: boolean
   dropoffLongitude?: boolean
+  dropoffLandmark?: boolean
   recipientName?: boolean
   recipientPhoneE164?: boolean
   packageType?: boolean
   packageDescription?: boolean
+  proofPhotoUrl?: boolean
+  pickupLocationMocked?: boolean
   estimatedDistanceKm?: boolean
   estimatedDurationMinutes?: boolean
   estimatedFee?: boolean
@@ -2053,13 +2953,17 @@ export type DeliveryRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   pickupAddress?: boolean
   pickupLatitude?: boolean
   pickupLongitude?: boolean
+  pickupLandmark?: boolean
   dropoffAddress?: boolean
   dropoffLatitude?: boolean
   dropoffLongitude?: boolean
+  dropoffLandmark?: boolean
   recipientName?: boolean
   recipientPhoneE164?: boolean
   packageType?: boolean
   packageDescription?: boolean
+  proofPhotoUrl?: boolean
+  pickupLocationMocked?: boolean
   estimatedDistanceKm?: boolean
   estimatedDurationMinutes?: boolean
   estimatedFee?: boolean
@@ -2093,13 +2997,17 @@ export type DeliveryRequestSelectScalar = {
   pickupAddress?: boolean
   pickupLatitude?: boolean
   pickupLongitude?: boolean
+  pickupLandmark?: boolean
   dropoffAddress?: boolean
   dropoffLatitude?: boolean
   dropoffLongitude?: boolean
+  dropoffLandmark?: boolean
   recipientName?: boolean
   recipientPhoneE164?: boolean
   packageType?: boolean
   packageDescription?: boolean
+  proofPhotoUrl?: boolean
+  pickupLocationMocked?: boolean
   estimatedDistanceKm?: boolean
   estimatedDurationMinutes?: boolean
   estimatedFee?: boolean
@@ -2112,11 +3020,15 @@ export type DeliveryRequestSelectScalar = {
   updatedAt?: boolean
 }
 
-export type DeliveryRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "passengerId" | "riderId" | "serviceZoneId" | "status" | "paymentMethod" | "cancellationParty" | "cancellationReason" | "requestedAt" | "assignedAt" | "pickedUpAt" | "inTransitAt" | "deliveredAt" | "cancelledAt" | "pickupAddress" | "pickupLatitude" | "pickupLongitude" | "dropoffAddress" | "dropoffLatitude" | "dropoffLongitude" | "recipientName" | "recipientPhoneE164" | "packageType" | "packageDescription" | "estimatedDistanceKm" | "estimatedDurationMinutes" | "estimatedFee" | "finalFee" | "riderEarnings" | "platformCommission" | "currency" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["deliveryRequest"]>
+export type DeliveryRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "passengerId" | "riderId" | "serviceZoneId" | "status" | "paymentMethod" | "cancellationParty" | "cancellationReason" | "requestedAt" | "assignedAt" | "pickedUpAt" | "inTransitAt" | "deliveredAt" | "cancelledAt" | "pickupAddress" | "pickupLatitude" | "pickupLongitude" | "pickupLandmark" | "dropoffAddress" | "dropoffLatitude" | "dropoffLongitude" | "dropoffLandmark" | "recipientName" | "recipientPhoneE164" | "packageType" | "packageDescription" | "proofPhotoUrl" | "pickupLocationMocked" | "estimatedDistanceKm" | "estimatedDurationMinutes" | "estimatedFee" | "finalFee" | "riderEarnings" | "platformCommission" | "currency" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["deliveryRequest"]>
 export type DeliveryRequestInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   passenger?: boolean | Prisma.PassengerProfileDefaultArgs<ExtArgs>
   rider?: boolean | Prisma.DeliveryRequest$riderArgs<ExtArgs>
   serviceZone?: boolean | Prisma.DeliveryRequest$serviceZoneArgs<ExtArgs>
+  ratings?: boolean | Prisma.DeliveryRequest$ratingsArgs<ExtArgs>
+  reviews?: boolean | Prisma.DeliveryRequest$reviewsArgs<ExtArgs>
+  stops?: boolean | Prisma.DeliveryRequest$stopsArgs<ExtArgs>
+  _count?: boolean | Prisma.DeliveryRequestCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type DeliveryRequestIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   passenger?: boolean | Prisma.PassengerProfileDefaultArgs<ExtArgs>
@@ -2135,6 +3047,9 @@ export type $DeliveryRequestPayload<ExtArgs extends runtime.Types.Extensions.Int
     passenger: Prisma.$PassengerProfilePayload<ExtArgs>
     rider: Prisma.$RiderProfilePayload<ExtArgs> | null
     serviceZone: Prisma.$ServiceZonePayload<ExtArgs> | null
+    ratings: Prisma.$RatingPayload<ExtArgs>[]
+    reviews: Prisma.$ReviewPayload<ExtArgs>[]
+    stops: Prisma.$DeliveryStopPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2154,13 +3069,17 @@ export type $DeliveryRequestPayload<ExtArgs extends runtime.Types.Extensions.Int
     pickupAddress: string
     pickupLatitude: runtime.Decimal
     pickupLongitude: runtime.Decimal
+    pickupLandmark: string | null
     dropoffAddress: string
     dropoffLatitude: runtime.Decimal
     dropoffLongitude: runtime.Decimal
+    dropoffLandmark: string | null
     recipientName: string
     recipientPhoneE164: string
     packageType: string
     packageDescription: string
+    proofPhotoUrl: string | null
+    pickupLocationMocked: boolean
     estimatedDistanceKm: runtime.Decimal | null
     estimatedDurationMinutes: number | null
     estimatedFee: runtime.Decimal | null
@@ -2568,6 +3487,9 @@ export interface Prisma__DeliveryRequestClient<T, Null = never, ExtArgs extends 
   passenger<T extends Prisma.PassengerProfileDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PassengerProfileDefaultArgs<ExtArgs>>): Prisma.Prisma__PassengerProfileClient<runtime.Types.Result.GetResult<Prisma.$PassengerProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   rider<T extends Prisma.DeliveryRequest$riderArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DeliveryRequest$riderArgs<ExtArgs>>): Prisma.Prisma__RiderProfileClient<runtime.Types.Result.GetResult<Prisma.$RiderProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   serviceZone<T extends Prisma.DeliveryRequest$serviceZoneArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DeliveryRequest$serviceZoneArgs<ExtArgs>>): Prisma.Prisma__ServiceZoneClient<runtime.Types.Result.GetResult<Prisma.$ServiceZonePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  ratings<T extends Prisma.DeliveryRequest$ratingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DeliveryRequest$ratingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RatingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  reviews<T extends Prisma.DeliveryRequest$reviewsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DeliveryRequest$reviewsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  stops<T extends Prisma.DeliveryRequest$stopsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DeliveryRequest$stopsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeliveryStopPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2614,13 +3536,17 @@ export interface DeliveryRequestFieldRefs {
   readonly pickupAddress: Prisma.FieldRef<"DeliveryRequest", 'String'>
   readonly pickupLatitude: Prisma.FieldRef<"DeliveryRequest", 'Decimal'>
   readonly pickupLongitude: Prisma.FieldRef<"DeliveryRequest", 'Decimal'>
+  readonly pickupLandmark: Prisma.FieldRef<"DeliveryRequest", 'String'>
   readonly dropoffAddress: Prisma.FieldRef<"DeliveryRequest", 'String'>
   readonly dropoffLatitude: Prisma.FieldRef<"DeliveryRequest", 'Decimal'>
   readonly dropoffLongitude: Prisma.FieldRef<"DeliveryRequest", 'Decimal'>
+  readonly dropoffLandmark: Prisma.FieldRef<"DeliveryRequest", 'String'>
   readonly recipientName: Prisma.FieldRef<"DeliveryRequest", 'String'>
   readonly recipientPhoneE164: Prisma.FieldRef<"DeliveryRequest", 'String'>
   readonly packageType: Prisma.FieldRef<"DeliveryRequest", 'String'>
   readonly packageDescription: Prisma.FieldRef<"DeliveryRequest", 'String'>
+  readonly proofPhotoUrl: Prisma.FieldRef<"DeliveryRequest", 'String'>
+  readonly pickupLocationMocked: Prisma.FieldRef<"DeliveryRequest", 'Boolean'>
   readonly estimatedDistanceKm: Prisma.FieldRef<"DeliveryRequest", 'Decimal'>
   readonly estimatedDurationMinutes: Prisma.FieldRef<"DeliveryRequest", 'Int'>
   readonly estimatedFee: Prisma.FieldRef<"DeliveryRequest", 'Decimal'>
@@ -3067,6 +3993,78 @@ export type DeliveryRequest$serviceZoneArgs<ExtArgs extends runtime.Types.Extens
    */
   include?: Prisma.ServiceZoneInclude<ExtArgs> | null
   where?: Prisma.ServiceZoneWhereInput
+}
+
+/**
+ * DeliveryRequest.ratings
+ */
+export type DeliveryRequest$ratingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Rating
+   */
+  select?: Prisma.RatingSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Rating
+   */
+  omit?: Prisma.RatingOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RatingInclude<ExtArgs> | null
+  where?: Prisma.RatingWhereInput
+  orderBy?: Prisma.RatingOrderByWithRelationInput | Prisma.RatingOrderByWithRelationInput[]
+  cursor?: Prisma.RatingWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.RatingScalarFieldEnum | Prisma.RatingScalarFieldEnum[]
+}
+
+/**
+ * DeliveryRequest.reviews
+ */
+export type DeliveryRequest$reviewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Review
+   */
+  select?: Prisma.ReviewSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Review
+   */
+  omit?: Prisma.ReviewOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReviewInclude<ExtArgs> | null
+  where?: Prisma.ReviewWhereInput
+  orderBy?: Prisma.ReviewOrderByWithRelationInput | Prisma.ReviewOrderByWithRelationInput[]
+  cursor?: Prisma.ReviewWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ReviewScalarFieldEnum | Prisma.ReviewScalarFieldEnum[]
+}
+
+/**
+ * DeliveryRequest.stops
+ */
+export type DeliveryRequest$stopsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DeliveryStop
+   */
+  select?: Prisma.DeliveryStopSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DeliveryStop
+   */
+  omit?: Prisma.DeliveryStopOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DeliveryStopInclude<ExtArgs> | null
+  where?: Prisma.DeliveryStopWhereInput
+  orderBy?: Prisma.DeliveryStopOrderByWithRelationInput | Prisma.DeliveryStopOrderByWithRelationInput[]
+  cursor?: Prisma.DeliveryStopWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DeliveryStopScalarFieldEnum | Prisma.DeliveryStopScalarFieldEnum[]
 }
 
 /**

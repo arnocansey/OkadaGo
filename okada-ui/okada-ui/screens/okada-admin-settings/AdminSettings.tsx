@@ -43,19 +43,19 @@ import { Textarea } from "@/components/ui/textarea";
 // MOCK DATA
 const emergencies = [
   { id: "SOS-092", user: "Kwame Mensah (Passenger)", location: "Ring Road Central, Accra", time: "2 mins ago", status: "Active" },
-  { id: "SOS-091", user: "Emeka Okafor (Rider)", location: "Third Mainland Bridge, Lagos", time: "15 mins ago", status: "Resolved" },
+  { id: "SOS-091", user: "Kojo Appiah (Rider)", location: "Ako Adjei Interchange, Accra", time: "15 mins ago", status: "Resolved" },
 ];
 
 const incidents = [
   { id: "INC-829", type: "Accident", reporter: "Yaw Boakye", against: "Self", severity: "High", status: "In Review", date: "Today, 14:30" },
   { id: "INC-828", type: "Harassment", reporter: "Ama Serwaa", against: "Rider (Kofi A.)", severity: "High", status: "Open", date: "Today, 11:15" },
-  { id: "INC-827", type: "Fraud", reporter: "Chidi Eze", against: "Passenger", severity: "Medium", status: "Resolved", date: "Yesterday" },
-  { id: "INC-826", type: "Safety Concern", reporter: "Fatima Ali", against: "Rider (Oluwaseun)", severity: "Medium", status: "Open", date: "Yesterday" },
-  { id: "INC-825", type: "Accident", reporter: "Ngozi Obi", against: "Self", severity: "Low", status: "Resolved", date: "Oct 23" },
+  { id: "INC-827", type: "Fraud", reporter: "Kwame Boateng", against: "Passenger", severity: "Medium", status: "Resolved", date: "Yesterday" },
+  { id: "INC-826", type: "Safety Concern", reporter: "Fatima Ali", against: "Rider (Kofi B.)", severity: "Medium", status: "Open", date: "Yesterday" },
+  { id: "INC-825", type: "Accident", reporter: "Ama Mensah", against: "Self", severity: "Low", status: "Resolved", date: "Oct 23" },
 ];
 
 const tickets = [
-  { id: "TK-1042", user: "Tunde Bakare", role: "Passenger", subject: "Wrong fare charged on trip to Ikeja", category: "Billing", priority: "High", status: "Open", assignee: "Unassigned", date: "1 hr ago" },
+  { id: "TK-1042", user: "Yaw Mensah", role: "Passenger", subject: "Wrong fare charged on trip to Madina", category: "Billing", priority: "High", status: "Open", assignee: "Unassigned", date: "1 hr ago" },
   { id: "TK-1041", user: "Emmanuel Kusi", role: "Rider", subject: "App freezing during ride acceptance", category: "Technical", priority: "Medium", status: "In Review", assignee: "Sarah J.", date: "3 hrs ago" },
   { id: "TK-1040", user: "Zainab Bello", role: "Passenger", subject: "Rider didn't show up but trip started", category: "Ride Issue", priority: "High", status: "Open", assignee: "Mike T.", date: "4 hrs ago" },
   { id: "TK-1039", user: "Samuel Osei", role: "Rider", subject: "Payment withdrawal delayed", category: "Payout", priority: "Medium", status: "Resolved", assignee: "Sarah J.", date: "Yesterday" },
@@ -64,8 +64,8 @@ const tickets = [
 const pricingBase = [
   { city: "Accra", base: "₵ 3.50", perKm: "₵ 1.20", perMin: "₵ 0.30", minFare: "₵ 5.00" },
   { city: "Kumasi", base: "₵ 3.00", perKm: "₵ 1.00", perMin: "₵ 0.25", minFare: "₵ 4.00" },
-  { city: "Lagos Island", base: "₦ 400", perKm: "₦ 150", perMin: "₦ 20", minFare: "₦ 600" },
-  { city: "Lagos Mainland", base: "₦ 350", perKm: "₦ 120", perMin: "₦ 15", minFare: "₦ 500" },
+  { city: "Tema", base: "₵ 3.20", perKm: "₵ 1.10", perMin: "₵ 0.28", minFare: "₵ 4.50" },
+  { city: "Takoradi", base: "₵ 3.00", perKm: "₵ 1.00", perMin: "₵ 0.25", minFare: "₵ 4.00" },
 ];
 
 const templates = [

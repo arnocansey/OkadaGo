@@ -3,6 +3,7 @@ import { api } from "@/lib/api";
 import { clearSavedSession, loadSavedSession, saveSession } from "@/lib/session-storage";
 import { riderWs } from "@/lib/websocket";
 import { usePushRegistration } from "@/hooks/usePushRegistration";
+import { useNotificationDeepLinks } from "@/hooks/useNotificationDeepLinks";
 import type { Delivery, PayoutRequest, Ride, ServiceZone, Session, Wallet, WalletTransaction } from "@/types";
 
 type AppState = {
@@ -23,10 +24,11 @@ type AppState = {
   refreshSession: () => Promise<void>;
   updateUser: (user: Session["user"]) => Promise<void>;
   setMessage: (message: string) => void;
-  toggleOnline: () => Promise<void>;
+  toggleOnline: (location?: { latitude: number; longitude: number; isMocked?: boolean }) => Promise<void>;
   setOnline: (value: boolean) => void;
   activeRide: Ride | undefined;
   activeDelivery: Delivery | undefined;
+  incomingRide: Ride | undefined;
   incomingDelivery: Delivery | undefined;
 };
 
@@ -113,6 +115,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [session?.token, refresh]);
 
   usePushRegistration(session?.token);
+  useNotificationDeepLinks(Boolean(session?.token));
 
   const refreshSession = useCallback(async () => {
     if (!session?.token) return;
@@ -142,19 +145,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await clearSavedSession();
   }
 
-  async function toggleOnline() {
+  async function toggleOnline(location?: { latitude: number; longitude: number; isMocked?: boolean }) {
     if (!session?.user.riderProfileId) return;
     const nextOnline = !online;
     try {
       await api(`/riders/${session.user.riderProfileId}/availability`, {
         method: "PATCH",
         token: session.token,
-        body: { onlineStatus: nextOnline, serviceZoneId: zones[0]?.id },
+        body: {
+          onlineStatus: nextOnline,
+          serviceZoneId: zones[0]?.id,
+          ...(location
+            ? {
+                latitude: location.latitude,
+                longitude: location.longitude,
+                isMocked: location.isMocked,
+              }
+            : {}),
+        },
       });
       setOnline(nextOnline);
     } catch (error) {
       setOnline(false);
       setMessage(error instanceof Error ? error.message : "Could not update availability.");
+      throw error;
     }
   }
 
@@ -164,6 +178,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       d.rider?.id === session?.user.riderProfileId &&
       !["delivered", "cancelled"].includes((d.status ?? "").toLowerCase()),
   );
+  // A ride sits at "assigned" until the rider explicitly accepts (-> arriving) or
+  // declines (-> cancelled), mirroring the "searching" pending-decision window for deliveries.
+  const incomingRide = rides.find((r) => (r.status ?? "").toLowerCase() === "assigned");
   const incomingDelivery = deliveries.find((d) => (d.status ?? "").toLowerCase() === "searching");
 
   const value = useMemo(
@@ -189,9 +206,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setOnline,
       activeRide,
       activeDelivery,
+      incomingRide,
       incomingDelivery,
     }),
-    [session, restoring, loading, message, online, wallets, transactions, rides, deliveries, zones, payouts, refresh, refreshSession, updateUser, activeRide, activeDelivery, incomingDelivery],
+    [session, restoring, loading, message, online, wallets, transactions, rides, deliveries, zones, payouts, refresh, refreshSession, updateUser, activeRide, activeDelivery, incomingRide, incomingDelivery],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

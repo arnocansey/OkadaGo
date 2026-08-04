@@ -5,11 +5,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ChevronRight } from "lucide-react-native";
 import { Badge, statusTone } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { compactDate, money } from "@/lib/api";
-import { spacing } from "@/theme/tokens";
+import { radius, spacing } from "@/theme/tokens";
 
 export default function TripsScreen() {
   const { rides, deliveries, loading } = useApp();
@@ -18,20 +19,19 @@ export default function TripsScreen() {
     () =>
       StyleSheet.create({
         screen: { flex: 1, backgroundColor: colors.background, padding: spacing.xl },
-        title: { ...typography.h1, marginBottom: spacing.xl, color: colors.text },
         list: { gap: spacing.md },
         row: {
           flexDirection: "row",
           alignItems: "center",
           backgroundColor: colors.surface,
-          borderRadius: 16,
+          borderRadius: radius.lg,
           padding: spacing.lg,
           borderWidth: 1,
           borderColor: colors.border,
         },
         rowBody: { flex: 1, gap: spacing.sm },
         rowTitle: { ...typography.bodySemibold, color: colors.text },
-        right: { alignItems: "flex-end", gap: 2 },
+        right: { alignItems: "flex-end", gap: spacing.xs },
         fare: { ...typography.captionMedium, color: colors.text },
         date: { ...typography.caption, color: colors.textMuted },
       }),
@@ -45,7 +45,7 @@ export default function TripsScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <Text style={styles.title}>Trip history</Text>
+      <ScreenHeader title="Trip history" />
       {loading && items.length === 0 ? (
         <SkeletonList count={4} />
       ) : items.length === 0 ? (

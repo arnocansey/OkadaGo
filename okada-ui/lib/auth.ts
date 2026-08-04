@@ -46,17 +46,7 @@ type AuthContextValue = {
 
 const authStorageKey = "okadago.session";
 const deviceStorageKey = "okadago.device-id";
-const adminSessionCookie = "okadago.admin-session";
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-function setAdminSessionCookie(token: string | null) {
-  if (typeof document === "undefined") return;
-  if (token) {
-    document.cookie = `${adminSessionCookie}=` + encodeURIComponent(token) + "; path=/admin; SameSite=Lax; Max-Age=86400";
-  } else {
-    document.cookie = `${adminSessionCookie}=; path=/admin; SameSite=Lax; Max-Age=0`;
-  }
-}
 
 function getStoredDeviceId() {
   if (typeof window === "undefined") {
@@ -86,13 +76,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (nextSession) {
       window.localStorage.setItem(authStorageKey, JSON.stringify(nextSession));
-      setAdminSessionCookie(nextSession.token);
       setStatus("authenticated");
       return;
     }
 
     window.localStorage.removeItem(authStorageKey);
-    setAdminSessionCookie(null);
     setStatus("anonymous");
   };
 

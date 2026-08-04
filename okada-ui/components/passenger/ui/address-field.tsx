@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { MapPin, Navigation, Search } from "lucide-react";
 import { useAddressSearch } from "@/components/passenger/hooks/use-address-search";
+import { OkadaLoader } from "@/components/ui/OkadaLoader";
 
 type AddressFieldProps = {
   label: string;
@@ -61,7 +62,7 @@ export function AddressField({
             void search(e.target.value);
           }}
         />
-        {loading ? <div className="pax-spinner" style={{ width: "1rem", height: "1rem", borderWidth: "2px" }} /> : (
+        {loading ? <OkadaLoader size="xs" /> : (
           <Search className="h-4 w-4 shrink-0 pax-text-muted" />
         )}
       </div>

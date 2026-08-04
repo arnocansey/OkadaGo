@@ -57,6 +57,9 @@ export const ModelName = {
   PassengerProfile: 'PassengerProfile',
   RiderProfile: 'RiderProfile',
   AdminProfile: 'AdminProfile',
+  SavedPaymentMethod: 'SavedPaymentMethod',
+  AdminNote: 'AdminNote',
+  PlatformSetting: 'PlatformSetting',
   DispatcherProfile: 'DispatcherProfile',
   Vehicle: 'Vehicle',
   RiderDocument: 'RiderDocument',
@@ -64,12 +67,14 @@ export const ModelName = {
   PricingRule: 'PricingRule',
   Ride: 'Ride',
   DeliveryRequest: 'DeliveryRequest',
+  DeliveryStop: 'DeliveryStop',
   RideLocation: 'RideLocation',
   RideEvent: 'RideEvent',
   Payment: 'Payment',
   Wallet: 'Wallet',
   WalletTransaction: 'WalletTransaction',
   PayoutRequest: 'PayoutRequest',
+  RiderPayoutAccount: 'RiderPayoutAccount',
   Rating: 'Rating',
   Review: 'Review',
   PromoCode: 'PromoCode',
@@ -81,7 +86,10 @@ export const ModelName = {
   Incident: 'Incident',
   EmergencyContact: 'EmergencyContact',
   SavedPlace: 'SavedPlace',
-  AuditLog: 'AuditLog'
+  AuditLog: 'AuditLog',
+  EscalationRule: 'EscalationRule',
+  ScheduledBroadcast: 'ScheduledBroadcast',
+  OpsJobHeartbeat: 'OpsJobHeartbeat'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -177,8 +185,11 @@ export const RiderProfileScalarFieldEnum = {
   city: 'city',
   serviceZoneId: 'serviceZoneId',
   onlineStatus: 'onlineStatus',
+  jobPreference: 'jobPreference',
   currentLatitude: 'currentLatitude',
   currentLongitude: 'currentLongitude',
+  lastLocationMocked: 'lastLocationMocked',
+  lastLocationMockedAt: 'lastLocationMockedAt',
   ratingAverage: 'ratingAverage',
   acceptanceRate: 'acceptanceRate',
   cancellationRate: 'cancellationRate',
@@ -187,6 +198,8 @@ export const RiderProfileScalarFieldEnum = {
   bio: 'bio',
   approvedAt: 'approvedAt',
   suspendedAt: 'suspendedAt',
+  suspensionReason: 'suspensionReason',
+  suspensionEndsAt: 'suspensionEndsAt',
   lastOnlineAt: 'lastOnlineAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -201,11 +214,67 @@ export const AdminProfileScalarFieldEnum = {
   userId: 'userId',
   title: 'title',
   permissions: 'permissions',
+  totpSecret: 'totpSecret',
+  totpEnabled: 'totpEnabled',
+  totpBackupCodeHashes: 'totpBackupCodeHashes',
+  totpBackupCodesGeneratedAt: 'totpBackupCodesGeneratedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type AdminProfileScalarFieldEnum = (typeof AdminProfileScalarFieldEnum)[keyof typeof AdminProfileScalarFieldEnum]
+
+
+export const SavedPaymentMethodScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  channel: 'channel',
+  status: 'status',
+  provider: 'provider',
+  label: 'label',
+  emailUsed: 'emailUsed',
+  linkReference: 'linkReference',
+  paystackAuthCode: 'paystackAuthCode',
+  paystackCustomerCode: 'paystackCustomerCode',
+  cardLast4: 'cardLast4',
+  cardBrand: 'cardBrand',
+  cardExpMonth: 'cardExpMonth',
+  cardExpYear: 'cardExpYear',
+  cardSignature: 'cardSignature',
+  momoPhone: 'momoPhone',
+  momoProvider: 'momoProvider',
+  paypalEmail: 'paypalEmail',
+  isDefault: 'isDefault',
+  reusable: 'reusable',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  revokedAt: 'revokedAt'
+} as const
+
+export type SavedPaymentMethodScalarFieldEnum = (typeof SavedPaymentMethodScalarFieldEnum)[keyof typeof SavedPaymentMethodScalarFieldEnum]
+
+
+export const AdminNoteScalarFieldEnum = {
+  id: 'id',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  authorId: 'authorId',
+  body: 'body',
+  createdAt: 'createdAt'
+} as const
+
+export type AdminNoteScalarFieldEnum = (typeof AdminNoteScalarFieldEnum)[keyof typeof AdminNoteScalarFieldEnum]
+
+
+export const PlatformSettingScalarFieldEnum = {
+  key: 'key',
+  value: 'value',
+  updatedById: 'updatedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PlatformSettingScalarFieldEnum = (typeof PlatformSettingScalarFieldEnum)[keyof typeof PlatformSettingScalarFieldEnum]
 
 
 export const DispatcherProfileScalarFieldEnum = {
@@ -230,6 +299,7 @@ export const VehicleScalarFieldEnum = {
   plateNumber: 'plateNumber',
   registrationNumber: 'registrationNumber',
   insuranceNumber: 'insuranceNumber',
+  vehicleType: 'vehicleType',
   status: 'status',
   metadata: 'metadata',
   createdAt: 'createdAt',
@@ -265,6 +335,8 @@ export const ServiceZoneScalarFieldEnum = {
   countryCode: 'countryCode',
   currency: 'currency',
   isActive: 'isActive',
+  ridesEnabled: 'ridesEnabled',
+  deliveriesEnabled: 'deliveriesEnabled',
   polygonGeoJson: 'polygonGeoJson',
   baseFare: 'baseFare',
   perKmFee: 'perKmFee',
@@ -325,9 +397,12 @@ export const RideScalarFieldEnum = {
   pickupAddress: 'pickupAddress',
   pickupLatitude: 'pickupLatitude',
   pickupLongitude: 'pickupLongitude',
+  pickupLandmark: 'pickupLandmark',
   destinationAddress: 'destinationAddress',
   destinationLatitude: 'destinationLatitude',
   destinationLongitude: 'destinationLongitude',
+  destinationLandmark: 'destinationLandmark',
+  pickupLocationMocked: 'pickupLocationMocked',
   routePolyline: 'routePolyline',
   estimatedDistanceKm: 'estimatedDistanceKm',
   estimatedDurationMinutes: 'estimatedDurationMinutes',
@@ -369,13 +444,17 @@ export const DeliveryRequestScalarFieldEnum = {
   pickupAddress: 'pickupAddress',
   pickupLatitude: 'pickupLatitude',
   pickupLongitude: 'pickupLongitude',
+  pickupLandmark: 'pickupLandmark',
   dropoffAddress: 'dropoffAddress',
   dropoffLatitude: 'dropoffLatitude',
   dropoffLongitude: 'dropoffLongitude',
+  dropoffLandmark: 'dropoffLandmark',
   recipientName: 'recipientName',
   recipientPhoneE164: 'recipientPhoneE164',
   packageType: 'packageType',
   packageDescription: 'packageDescription',
+  proofPhotoUrl: 'proofPhotoUrl',
+  pickupLocationMocked: 'pickupLocationMocked',
   estimatedDistanceKm: 'estimatedDistanceKm',
   estimatedDurationMinutes: 'estimatedDurationMinutes',
   estimatedFee: 'estimatedFee',
@@ -391,6 +470,29 @@ export const DeliveryRequestScalarFieldEnum = {
 export type DeliveryRequestScalarFieldEnum = (typeof DeliveryRequestScalarFieldEnum)[keyof typeof DeliveryRequestScalarFieldEnum]
 
 
+export const DeliveryStopScalarFieldEnum = {
+  id: 'id',
+  deliveryId: 'deliveryId',
+  sequence: 'sequence',
+  type: 'type',
+  status: 'status',
+  address: 'address',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  landmark: 'landmark',
+  recipientName: 'recipientName',
+  recipientPhoneE164: 'recipientPhoneE164',
+  instructions: 'instructions',
+  proofPhotoUrl: 'proofPhotoUrl',
+  arrivedAt: 'arrivedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DeliveryStopScalarFieldEnum = (typeof DeliveryStopScalarFieldEnum)[keyof typeof DeliveryStopScalarFieldEnum]
+
+
 export const RideLocationScalarFieldEnum = {
   id: 'id',
   rideId: 'rideId',
@@ -400,6 +502,7 @@ export const RideLocationScalarFieldEnum = {
   speedKph: 'speedKph',
   heading: 'heading',
   accuracyM: 'accuracyM',
+  isMocked: 'isMocked',
   recordedAt: 'recordedAt'
 } as const
 
@@ -497,9 +600,27 @@ export const PayoutRequestScalarFieldEnum = {
 export type PayoutRequestScalarFieldEnum = (typeof PayoutRequestScalarFieldEnum)[keyof typeof PayoutRequestScalarFieldEnum]
 
 
+export const RiderPayoutAccountScalarFieldEnum = {
+  id: 'id',
+  riderId: 'riderId',
+  method: 'method',
+  destinationLabel: 'destinationLabel',
+  label: 'label',
+  provider: 'provider',
+  isDefault: 'isDefault',
+  lastUsedAt: 'lastUsedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  revokedAt: 'revokedAt'
+} as const
+
+export type RiderPayoutAccountScalarFieldEnum = (typeof RiderPayoutAccountScalarFieldEnum)[keyof typeof RiderPayoutAccountScalarFieldEnum]
+
+
 export const RatingScalarFieldEnum = {
   id: 'id',
   rideId: 'rideId',
+  deliveryId: 'deliveryId',
   raterUserId: 'raterUserId',
   ratedUserId: 'ratedUserId',
   score: 'score',
@@ -514,6 +635,7 @@ export const ReviewScalarFieldEnum = {
   id: 'id',
   ratingId: 'ratingId',
   rideId: 'rideId',
+  deliveryId: 'deliveryId',
   authorId: 'authorId',
   body: 'body',
   isFlagged: 'isFlagged',
@@ -683,6 +805,56 @@ export const AuditLogScalarFieldEnum = {
 } as const
 
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const EscalationRuleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  triggerCondition: 'triggerCondition',
+  thresholdHours: 'thresholdHours',
+  action: 'action',
+  targetRole: 'targetRole',
+  enabled: 'enabled',
+  lastRunAt: 'lastRunAt',
+  lastActionCount: 'lastActionCount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EscalationRuleScalarFieldEnum = (typeof EscalationRuleScalarFieldEnum)[keyof typeof EscalationRuleScalarFieldEnum]
+
+
+export const ScheduledBroadcastScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  body: 'body',
+  targetAudience: 'targetAudience',
+  targetZoneId: 'targetZoneId',
+  scheduledAt: 'scheduledAt',
+  status: 'status',
+  sentCount: 'sentCount',
+  retryCount: 'retryCount',
+  lastRunAt: 'lastRunAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  cancelledAt: 'cancelledAt'
+} as const
+
+export type ScheduledBroadcastScalarFieldEnum = (typeof ScheduledBroadcastScalarFieldEnum)[keyof typeof ScheduledBroadcastScalarFieldEnum]
+
+
+export const OpsJobHeartbeatScalarFieldEnum = {
+  id: 'id',
+  lastStartedAt: 'lastStartedAt',
+  lastFinishedAt: 'lastFinishedAt',
+  lastError: 'lastError',
+  lastStats: 'lastStats',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OpsJobHeartbeatScalarFieldEnum = (typeof OpsJobHeartbeatScalarFieldEnum)[keyof typeof OpsJobHeartbeatScalarFieldEnum]
 
 
 export const SortOrder = {

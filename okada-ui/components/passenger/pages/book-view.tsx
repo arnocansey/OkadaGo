@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Bike, MessageCircle, Phone, Zap } from "lucide-react";
+import { ArrowLeft, Bike, MessageCircle, Phone, Truck, Zap } from "lucide-react";
 import { fetchJson, postJson } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { formatMoney } from "@/lib/currency";
@@ -32,6 +32,22 @@ function parseNumber(value: string | number | null | undefined) {
   if (typeof value === "number") return value;
   if (typeof value === "string" && value.trim()) return Number(value);
   return 0;
+}
+
+function toApiRideType(rideType: RideType): "standard_bike" | "express_bike" | "cargo_tricycle" {
+  if (rideType === "express") return "express_bike";
+  if (rideType === "cargo") return "cargo_tricycle";
+  return "standard_bike";
+}
+
+function toSurgeMultiplier(rideType: RideType) {
+  return rideType === "express" ? 1.2 : 1;
+}
+
+function rideTypeLabel(rideType: RideType) {
+  if (rideType === "express") return "OkadaX";
+  if (rideType === "cargo") return "Cargo";
+  return "OkadaGo";
 }
 
 function TrackingPanel({
@@ -205,6 +221,20 @@ function BookingForm({
             <PaxSkeleton className="mx-auto mt-2 h-5 w-16" />
           ) : null}
         </button>
+        <button
+          type="button"
+          className={`pax-ride-option${rideType === "cargo" ? " pax-ride-option--selected" : ""}`}
+          onClick={() => setRideType("cargo")}
+        >
+          <Truck className="mb-2" size={28} />
+          <div className="text-sm font-bold">Cargo</div>
+          <div className="text-xs pax-text-secondary">Tricycle</div>
+          {fare && rideType === "cargo" ? (
+            <div className="mt-1 text-base font-bold pax-text-primary">{formatMoney(currency, fare)}</div>
+          ) : fareLoading && rideType === "cargo" ? (
+            <PaxSkeleton className="mx-auto mt-2 h-5 w-16" />
+          ) : null}
+        </button>
       </div>
 
       <div className="pax-payment-row mb-5">
@@ -227,7 +257,7 @@ function BookingForm({
         disabled={!pickup || !dropoff || !fare || bookMutation.isPending}
         onClick={onBook}
       >
-        <span>{bookMutation.isPending ? "Booking…" : `Book ${rideType === "express" ? "OkadaX" : "OkadaGo"}`}</span>
+        <span>{bookMutation.isPending ? "Booking…" : `Book ${rideTypeLabel(rideType)}`}</span>
         <span>{fare ? formatMoney(currency, fare) : "—"}</span>
       </button>
     </div>
@@ -304,7 +334,7 @@ export function BookView() {
         pricing: {
           countryCode: selectedZone!.countryCode,
           currency: selectedZone!.currency,
-          rideType: rideType === "express" ? "express_bike" : "standard_bike",
+          rideType: toApiRideType(rideType),
           baseFare: parseNumber(selectedZone!.baseFare),
           perKmFee: parseNumber(selectedZone!.perKmFee),
           perMinuteFee: parseNumber(selectedZone!.perMinuteFee),
@@ -312,7 +342,7 @@ export function BookView() {
           cancellationFee: 0,
           waitingFeePerMinute: 0,
           commissionPercent: 12,
-          surgeMultiplier: rideType === "express" ? 1.2 : 1,
+          surgeMultiplier: toSurgeMultiplier(rideType),
           zoneFee: 0,
           promoDiscount: 0,
           referralDiscount: 0,
@@ -337,8 +367,8 @@ export function BookView() {
         destination: { address: dropoff.label, latitude: dropoff.lat, longitude: dropoff.lng },
         estimatedDistanceKm: routeQuery.data?.distanceKm ?? 0,
         estimatedDurationMinutes: routeQuery.data?.durationMinutes ?? 0,
-        rideType: rideType === "express" ? "express_bike" : "standard_bike",
-        surgeMultiplier: rideType === "express" ? 1.2 : 1
+        rideType: toApiRideType(rideType),
+        surgeMultiplier: toSurgeMultiplier(rideType)
       });
     },
     onSuccess: async (data) => {

@@ -1,9 +1,12 @@
 import { router } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Home, MapPin, Package, Search, UtensilsCrossed } from "lucide-react-native";
+import { useTranslation } from "react-i18next";
 import { AppMap } from "@/components/AppMap";
+import { Avatar } from "@/components/ui/Avatar";
+import { MapBottomSheet, MAP_SHEET_CENTER_INSET } from "@/components/ui/MapBottomSheet";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUserLocation } from "@/hooks/useUserLocation";
@@ -11,25 +14,19 @@ import { api } from "@/lib/api";
 import { radius, shadows, spacing } from "@/theme/tokens";
 import type { HomeService, SavedPlace } from "@/types";
 
-const SERVICES: Array<{ id: HomeService; label: string; icon: typeof Search }> = [
-  { id: "ride", label: "Ride", icon: MapPin },
-  { id: "food", label: "Food", icon: UtensilsCrossed },
-  { id: "send", label: "Send", icon: Package },
+const SERVICES: Array<{ id: HomeService; labelKey: string; icon: typeof Search }> = [
+  { id: "ride", labelKey: "home.serviceRide", icon: MapPin },
+  { id: "food", labelKey: "home.serviceFood", icon: UtensilsCrossed },
+  { id: "send", labelKey: "home.serviceSend", icon: Package },
 ];
 
-const AVATAR_COLORS = ["#FFC107", "#3B82F6", "#A855F7", "#EC4899", "#F59E0B", "#FF3B30"];
-
-function avatarColor(name: string) {
-  return AVATAR_COLORS[(name.charCodeAt(0) ?? 0) % AVATAR_COLORS.length];
-}
-
 export default function HomeScreen() {
+  const { t } = useTranslation();
   const { session, activeRide, activeDelivery } = useApp();
   const { colors, typography, isDark } = useTheme();
-  const { latitude, longitude } = useUserLocation();
+  const { latitude, longitude, hasFix } = useUserLocation();
   const [service, setService] = useState<HomeService>("ride");
   const [savedPlaces, setSavedPlaces] = useState<SavedPlace[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
 
   const pulseAnim = useRef(new Animated.Value(1)).current;
   useEffect(() => {
@@ -51,19 +48,6 @@ export default function HomeScreen() {
       .catch(() => setSavedPlaces([]));
   }, [session?.token]);
 
-  async function onRefresh() {
-    if (!session?.token) return;
-    setRefreshing(true);
-    try {
-      const places = await api<SavedPlace[]>("/places/saved", { token: session.token });
-      setSavedPlaces(places);
-    } catch {
-      // keep existing
-    } finally {
-      setRefreshing(false);
-    }
-  }
-
   function openService(placeId?: string) {
     if (service === "food") {
       router.push("/food");
@@ -77,8 +61,6 @@ export default function HomeScreen() {
       },
     });
   }
-
-  const bgColor = avatarColor(session?.user.fullName ?? "A");
 
   const styles = useMemo(
     () =>
@@ -103,14 +85,6 @@ export default function HomeScreen() {
         },
         greeting: { ...typography.h3, color: colors.text },
         sub: { ...typography.caption, color: colors.textSecondary },
-        avatar: {
-          width: 40,
-          height: 40,
-          borderRadius: 20,
-          alignItems: "center",
-          justifyContent: "center",
-        },
-        avatarText: { ...typography.bodySemibold, color: colors.textOnPrimary },
         activeTripWrap: { marginHorizontal: spacing.lg },
         activeTrip: {
           flexDirection: "row",
@@ -125,15 +99,6 @@ export default function HomeScreen() {
         activeLabel: { ...typography.label, color: colors.textOnPrimary },
         activeValue: { ...typography.bodySemibold, color: colors.textOnPrimary, marginTop: 2 },
         activeArrow: { fontSize: 22, color: colors.textOnPrimary, fontWeight: "300" },
-        sheet: {
-          backgroundColor: colors.background,
-          borderTopLeftRadius: radius.xxl,
-          borderTopRightRadius: radius.xxl,
-          padding: spacing.xl,
-          paddingBottom: spacing.xxxl,
-          ...shadows.sheet,
-          gap: spacing.lg,
-        },
         serviceTabs: { flexDirection: "row", gap: spacing.sm },
         serviceTab: {
           flex: 1,
@@ -192,23 +157,22 @@ export default function HomeScreen() {
           latitudeDelta: 0.04,
           longitudeDelta: 0.04,
         }}
-        autoCenterOnLocation
+        autoCenterOnLocation={hasFix}
         showCenterButton
-        centerButtonInset={{ bottom: 260, right: spacing.lg }}
+        centerButtonInset={{ bottom: MAP_SHEET_CENTER_INSET, right: spacing.lg }}
       />
 
       <SafeAreaView style={styles.overlay} pointerEvents="box-none">
         <View style={styles.topBarWrap}>
           <View style={styles.topBar}>
             <View>
-              <Text style={styles.greeting}>Hello, {session?.user.fullName.split(" ")[0]} 👋</Text>
-              <Text style={styles.sub}>Where to today?</Text>
+              <Text style={styles.greeting}>
+                {t("home.hello", { name: session?.user.fullName.split(" ")[0] ?? "" })}
+              </Text>
+              <Text style={styles.sub}>{t("home.whereToToday")}</Text>
             </View>
-            <Pressable
-              style={[styles.avatar, { backgroundColor: bgColor }]}
-              onPress={() => router.push("/(main)/profile")}
-            >
-              <Text style={styles.avatarText}>{session?.user.fullName[0]}</Text>
+            <Pressable onPress={() => router.push("/(main)/profile")} accessibilityRole="button">
+              <Avatar name={session?.user.fullName ?? "A"} size={40} imageUri={session?.user.avatarUrl ?? undefined} />
             </Pressable>
           </View>
         </View>
@@ -226,7 +190,7 @@ export default function HomeScreen() {
             >
               <View style={styles.activeDot} />
               <View style={{ flex: 1 }}>
-                <Text style={styles.activeLabel}>Active trip — tap to track</Text>
+                <Text style={styles.activeLabel}>{t("home.activeTripLabel")}</Text>
                 <Text style={styles.activeValue} numberOfLines={1}>
                   {activeRide?.destinationAddress ?? activeDelivery?.dropoffAddress}
                 </Text>
@@ -236,16 +200,16 @@ export default function HomeScreen() {
           </Animated.View>
         )}
 
-        <View style={styles.sheet}>
+        <MapBottomSheet>
           <View style={styles.serviceTabs}>
-            {SERVICES.map(({ id, label, icon: Icon }) => (
+            {SERVICES.map(({ id, labelKey, icon: Icon }) => (
               <Pressable
                 key={id}
                 onPress={() => setService(id)}
                 style={[styles.serviceTab, service === id && styles.serviceTabActive]}
               >
                 <Icon size={18} color={service === id ? colors.primary : colors.textMuted} />
-                <Text style={[styles.serviceLabel, service === id && styles.serviceLabelActive]}>{label}</Text>
+                <Text style={[styles.serviceLabel, service === id && styles.serviceLabelActive]}>{t(labelKey)}</Text>
               </Pressable>
             ))}
           </View>
@@ -253,13 +217,17 @@ export default function HomeScreen() {
           <Pressable style={styles.searchBar} onPress={() => openService()}>
             <Search size={20} color={colors.textMuted} />
             <Text style={styles.searchPlaceholder}>
-              {service === "ride" ? "Search destination" : service === "food" ? "Restaurants & groceries" : "Send a package"}
+              {service === "ride"
+                ? t("home.searchRide")
+                : service === "food"
+                  ? t("home.searchFood")
+                  : t("home.searchSend")}
             </Text>
           </Pressable>
 
           {savedPlaces.length > 0 ? (
             <View style={styles.savedSection}>
-              <Text style={styles.savedTitle}>Saved places</Text>
+              <Text style={styles.savedTitle}>{t("home.savedPlaces")}</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.savedRow}>
                 {savedPlaces.map((place) => (
                   <Pressable key={place.id} style={styles.savedChip} onPress={() => openService(place.id)}>
@@ -270,7 +238,7 @@ export default function HomeScreen() {
               </ScrollView>
             </View>
           ) : null}
-        </View>
+        </MapBottomSheet>
       </SafeAreaView>
     </View>
   );

@@ -49,6 +49,18 @@ export type PayoutRequest = {
   rejectionReason?: string | null;
 };
 
+export type PayoutAccount = {
+  id: string;
+  method: string;
+  destinationLabel: string;
+  label: string | null;
+  provider: string | null;
+  isDefault: boolean;
+  lastUsedAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export type RoutePreview = {
   distanceKm: number;
   durationMinutes: number;
@@ -62,9 +74,11 @@ export type Ride = {
   pickupAddress: string;
   pickupLatitude?: number | string | null;
   pickupLongitude?: number | string | null;
+  pickupLandmark?: string | null;
   destinationAddress: string;
   destinationLatitude?: number | string | null;
   destinationLongitude?: number | string | null;
+  destinationLandmark?: string | null;
   estimatedFare?: string | number | null;
   finalFare?: string | number | null;
   riderEarnings?: string | number | null;
@@ -86,9 +100,11 @@ export type Delivery = {
   pickupAddress: string;
   pickupLatitude?: number | string | null;
   pickupLongitude?: number | string | null;
+  pickupLandmark?: string | null;
   dropoffAddress: string;
   dropoffLatitude?: number | string | null;
   dropoffLongitude?: number | string | null;
+  dropoffLandmark?: string | null;
   recipientName: string;
   recipientPhoneE164: string;
   packageType: string;
@@ -106,6 +122,24 @@ export type Delivery = {
     currentLongitude?: number | string | null;
   } | null;
   passenger?: { user?: { fullName: string; phoneE164?: string } };
+};
+
+export type DeliveryStop = {
+  id: string;
+  deliveryId: string;
+  sequence: number;
+  type: "PICKUP" | "DROPOFF";
+  status: "PENDING" | "ARRIVED" | "COMPLETED" | "SKIPPED";
+  address: string;
+  latitude: number | string;
+  longitude: number | string;
+  landmark?: string | null;
+  recipientName?: string | null;
+  recipientPhoneE164?: string | null;
+  instructions?: string | null;
+  proofPhotoUrl?: string | null;
+  arrivedAt?: string | null;
+  completedAt?: string | null;
 };
 
 export type TripKind = "ride" | "delivery";

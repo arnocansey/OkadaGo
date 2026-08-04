@@ -9,11 +9,13 @@
     "start": "tsx src/main.ts",
     "start:prod": "node dist/main.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node --import tsx --test src/**/*.test.ts",
     "admin:bootstrap": "tsx src/scripts/create-first-admin.ts",
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",
     "prisma:format": "prisma format",
-    "prisma:push": "prisma db push"
+    "prisma:push": "prisma db push",
+    "db:postgis": "tsx src/scripts/setup-postgis.ts"
   },
   "dependencies": {
     "@fastify/cors": "^11.1.0",

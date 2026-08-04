@@ -2,12 +2,15 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Moon, Sun, Camera } from "lucide-react-native";
+import { Moon, Sun, Camera, Globe, ChevronRight } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
+import { useTranslation } from "react-i18next";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/lib/api";
@@ -25,6 +28,7 @@ type PassengerSettings = {
 export default function ProfileScreen() {
   const { session, signOut, zones, refreshSession } = useApp();
   const { colors, typography, isDark, setTheme } = useTheme();
+  const { t } = useTranslation();
   const user = session!.user;
   const [settings, setSettings] = useState<PassengerSettings | null>(null);
   const [friendCode, setFriendCode] = useState("");
@@ -58,7 +62,7 @@ export default function ProfileScreen() {
           justifyContent: "space-between",
           alignItems: "center",
           paddingHorizontal: spacing.lg,
-          paddingVertical: spacing.md,
+          paddingVertical: spacing.lg,
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
         },
@@ -67,6 +71,14 @@ export default function ProfileScreen() {
         infoValue: { ...typography.bodySemibold, color: colors.text },
         sectionTitle: { ...typography.bodySemibold, color: colors.text },
         sectionHint: { ...typography.caption, color: colors.textMuted },
+        languageHeader: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: spacing.sm,
+          paddingHorizontal: spacing.lg,
+          paddingTop: spacing.lg,
+          paddingBottom: spacing.sm,
+        },
         themeCard: { padding: 0, overflow: "hidden" },
         themeRow: {
           flexDirection: "row",
@@ -99,6 +111,16 @@ export default function ProfileScreen() {
           borderWidth: 2,
           borderColor: colors.background,
         },
+        linkRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingVertical: spacing.md,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        },
+        linkRowLast: { borderBottomWidth: 0 },
+        linkLabel: { ...typography.bodyMedium, color: colors.text, flex: 1 },
       }),
     [colors, typography],
   );
@@ -183,10 +205,10 @@ export default function ProfileScreen() {
   }
 
   function showAvatarOptions() {
-    Alert.alert("Change photo", "Choose an option", [
-      { text: "Take photo", onPress: takePhotoAndUpload },
-      { text: "Choose from library", onPress: pickAndUploadAvatar },
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("profile.changePhoto"), t("profile.choosePhotoOption"), [
+      { text: t("common.takePhoto"), onPress: takePhotoAndUpload },
+      { text: t("common.chooseFromLibrary"), onPress: pickAndUploadAvatar },
+      { text: t("common.cancel"), style: "cancel" },
     ]);
   }
 
@@ -211,11 +233,12 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <ScreenHeader title={t("nav.profile")} />
         <View style={styles.header}>
           <View style={styles.avatarWrap}>
             <Avatar name={user.fullName} size={80} imageUri={user.avatarUrl ?? undefined} />
             <Pressable style={styles.cameraBtn} onPress={showAvatarOptions} disabled={uploadingAvatar} hitSlop={8} accessibilityLabel="Change profile photo" accessibilityRole="button">
-              <Camera size={14} color="#fff" />
+              <Camera size={14} color={colors.textOnPrimary} />
             </Pressable>
           </View>
           <Text style={styles.name}>{user.fullName}</Text>
@@ -224,35 +247,49 @@ export default function ProfileScreen() {
 
         <Card style={styles.infoCard} padded={false}>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Preferred currency</Text>
+            <Text style={styles.infoLabel}>{t("profile.preferredCurrency")}</Text>
             <Text style={styles.infoValue}>{user.preferredCurrency}</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Service zone</Text>
+            <Text style={styles.infoLabel}>{t("profile.serviceZone")}</Text>
             <Text style={styles.infoValue}>{zones[0]?.name ?? "Accra"}</Text>
           </View>
           <View style={[styles.infoRow, styles.noBorder]}>
-            <Text style={styles.infoLabel}>Your referral code</Text>
+            <Text style={styles.infoLabel}>{t("profile.referralCode")}</Text>
             <Text style={styles.infoValue}>{settings?.referralCode ?? "—"}</Text>
           </View>
         </Card>
 
         <Card stacked>
-          <Text style={styles.sectionTitle}>Safety & account</Text>
-          <Button label="Edit Profile" variant="outline" fullWidth onPress={() => router.push("/edit-profile")} />
-          <Button label="Emergency contacts" variant="outline" fullWidth onPress={() => router.push("/emergency-contacts")} />
-          <Button label="Saved places" variant="outline" fullWidth onPress={() => router.push("/saved-places")} />
-          <Button label="Support tickets" variant="outline" fullWidth onPress={() => router.push("/support")} />
-          {user.isPhoneVerified === false ? (
-            <Button label="Verify phone number" fullWidth onPress={() => router.push("/(auth)/verify-phone")} />
-          ) : null}
+          <Text style={styles.sectionTitle}>{t("profile.safetyAccount")}</Text>
+          {(
+            [
+              { label: t("profile.notifications"), href: "/notifications" },
+              { label: t("profile.editProfile"), href: "/edit-profile" },
+              { label: t("profile.emergencyContacts"), href: "/emergency-contacts" },
+              { label: t("profile.savedPlaces"), href: "/saved-places" },
+              { label: t("profile.supportTickets"), href: "/support" },
+              ...(user.isPhoneVerified === false
+                ? [{ label: t("profile.verifyPhone"), href: "/(auth)/verify-phone" }]
+                : []),
+            ] as Array<{ label: string; href: string }>
+          ).map((item, index, arr) => (
+            <Pressable
+              key={item.href}
+              style={[styles.linkRow, index === arr.length - 1 && styles.linkRowLast]}
+              onPress={() => router.push(item.href as never)}
+            >
+              <Text style={styles.linkLabel}>{item.label}</Text>
+              <ChevronRight size={18} color={colors.textMuted} />
+            </Pressable>
+          ))}
         </Card>
 
         <Card stacked>
-          <Text style={styles.sectionTitle}>Have a friend's code?</Text>
-          <Text style={styles.sectionHint}>Enter a referral code to unlock rewards.</Text>
-          <Input label="Referral code" value={friendCode} onChangeText={setFriendCode} autoCapitalize="characters" />
-          <Button label="Apply referral" loading={applyingReferral} onPress={applyReferral} fullWidth />
+          <Text style={styles.sectionTitle}>{t("profile.friendCodeTitle")}</Text>
+          <Text style={styles.sectionHint}>{t("profile.friendCodeHint")}</Text>
+          <Input label={t("profile.referralCodeLabel")} value={friendCode} onChangeText={setFriendCode} autoCapitalize="characters" />
+          <Button label={t("profile.applyReferral")} loading={applyingReferral} onPress={applyReferral} fullWidth />
         </Card>
 
         <Card style={styles.themeCard} padded={false}>
@@ -261,8 +298,8 @@ export default function ProfileScreen() {
               {isDark ? <Moon size={18} color={colors.text} /> : <Sun size={18} color={colors.primary} />}
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.themeLabel}>{isDark ? "Dark mode" : "Light mode"}</Text>
-              <Text style={styles.themeHint}>Toggle app appearance</Text>
+              <Text style={styles.themeLabel}>{isDark ? t("profile.darkMode") : t("profile.lightMode")}</Text>
+              <Text style={styles.themeHint}>{t("profile.toggleAppearance")}</Text>
             </View>
             <Switch
               value={isDark}
@@ -273,8 +310,16 @@ export default function ProfileScreen() {
           </View>
         </Card>
 
+        <Card stacked padded={false}>
+          <View style={styles.languageHeader}>
+            <Globe size={16} color={colors.primary} />
+            <Text style={styles.sectionTitle}>{t("language.title")}</Text>
+          </View>
+          <LanguageSwitcher />
+        </Card>
+
         <Button
-          label="Sign out"
+          label={t("profile.signOut")}
           variant="outline"
           fullWidth
           onPress={async () => {

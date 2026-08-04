@@ -72,6 +72,11 @@ backend/
 6. Rider location pings are stored and streamed to active subscribers.
 7. Trip completion triggers fare finalization, payment capture, wallet postings, and rating prompts.
 
+## Database setup
+- `npm run prisma:push` syncs `prisma/schema.prisma` to `DATABASE_URL` (this project uses `db push`, not `migrate`).
+- `npm run db:postgis` (optional but recommended for production) runs `prisma/postgis-setup.sql`, which enables the `postgis` extension, adds the `RiderProfile.currentLocation` geography column, and creates a GiST index for fast nearest-rider queries. Supported on Render, Railway (custom image), Supabase, and RDS with the PostGIS add-on.
+- If PostGIS is not enabled, the backend detects this at boot and automatically falls back to the existing in-memory Haversine matching — no functionality is lost, only the query performance advantage at scale.
+
 ## Business rules to enforce server-side
 - Rider must be approved and online before receiving offers.
 - Trip can only start after rider arrival or pickup confirmation.

@@ -125,21 +125,21 @@ export default function Payouts() {
 
   const handleTabClick = (tab: string) => {
     setActiveTab(tab);
-    addToast(Viewing  payouts);
+    addToast(`Viewing ${tab} payouts`);
   };
 
   const handleRowClick = (row: PayoutRow, idx: number) => {
     setSelectedRow(idx);
-    addToast(Viewing payout details for );
+    addToast(`Viewing payout details for ${row.rider}`);
   };
 
   const handleRowAction = (row: PayoutRow, e: React.MouseEvent) => {
     e.stopPropagation();
-    addToast(Payout actions menu opened for );
+    addToast(`Payout actions menu opened for ${row.rider}`);
   };
 
   const handleDonutLegend = (method: string) => {
-    addToast(Highlighting ...);
+    addToast(`Highlighting ${method}...`);
   };
 
   const handleExportCSV = () => {

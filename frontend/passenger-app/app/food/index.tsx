@@ -14,6 +14,8 @@ import { MapPin, Star } from "lucide-react-native";
 import { FOOD_CATEGORIES } from "@/data/foodCatalog";
 import { useNearbyRestaurants } from "@/hooks/useNearbyRestaurants";
 import { useTheme } from "@/context/ThemeContext";
+import { Chip } from "@/components/ui/Chip";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { photoUrl } from "@/services/googlePlaces";
 import { formatDistanceKm } from "@/lib/geo";
@@ -26,7 +28,7 @@ export default function FoodHomeScreen() {
       StyleSheet.create({
         screen: { flex: 1, backgroundColor: colors.background },
         list: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxxl },
-        sectionHeader: { paddingTop: spacing.lg, paddingBottom: spacing.md, gap: 2 },
+        sectionHeader: { paddingTop: spacing.lg, paddingBottom: spacing.md, gap: spacing.xs },
         sectionTitle: { ...typography.h3, color: colors.text },
         sectionSub: { ...typography.caption, color: colors.textMuted },
         categories: {
@@ -35,28 +37,6 @@ export default function FoodHomeScreen() {
           gap: spacing.sm,
           paddingBottom: spacing.lg,
         },
-        category: {
-          paddingHorizontal: spacing.md,
-          paddingVertical: spacing.sm,
-          borderRadius: radius.full,
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 6,
-          backgroundColor: colors.surface,
-          borderWidth: 1,
-          borderColor: colors.border,
-        },
-        categoryActive: {
-          backgroundColor: colors.primary,
-          borderColor: colors.primary,
-        },
-        categoryActiveRing: {
-          borderWidth: 2,
-          borderColor: colors.primary,
-        },
-        categoryEmoji: { fontSize: 14 },
-        categoryLabel: { ...typography.captionMedium, color: colors.text },
-        categoryLabelActive: { color: colors.text },
         errorBanner: {
           backgroundColor: colors.dangerLight,
           borderRadius: radius.md,
@@ -77,9 +57,6 @@ export default function FoodHomeScreen() {
           backgroundColor: colors.danger,
         },
         retryButtonText: { ...typography.captionMedium, color: colors.textOnPrimary },
-        empty: { alignItems: "center", paddingVertical: spacing.xxxl, gap: spacing.sm },
-        emptyTitle: { ...typography.bodySemibold, color: colors.text },
-        emptySub: { ...typography.caption, color: colors.textMuted, textAlign: "center" },
         card: {
           flexDirection: "row",
           gap: spacing.lg,
@@ -94,12 +71,12 @@ export default function FoodHomeScreen() {
         thumbImg: { width: 64, height: 64, borderRadius: radius.md },
         thumbFallback: { width: 64, height: 64, borderRadius: radius.md, alignItems: "center", justifyContent: "center" },
         thumbText: { ...typography.h2, color: colors.text },
-        cardBody: { flex: 1, gap: 2 },
+        cardBody: { flex: 1, gap: spacing.xs },
         name: { ...typography.bodySemibold, color: colors.text },
         cuisine: { ...typography.caption, color: colors.textSecondary },
-        meta: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: spacing.sm, flexWrap: "wrap" },
+        meta: { flexDirection: "row", alignItems: "center", gap: spacing.xs, marginTop: spacing.sm, flexWrap: "wrap" },
         metaText: { ...typography.caption, color: colors.textMuted },
-        distanceRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
+        distanceRow: { flexDirection: "row", alignItems: "center", gap: spacing.xs, marginTop: spacing.xs },
         distanceText: { ...typography.caption, color: colors.textMuted },
       }),
     [colors, typography],
@@ -134,29 +111,26 @@ export default function FoodHomeScreen() {
             <>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Near you</Text>
-                <Text style={styles.sectionSub}>Sorted by distance from your location</Text>
+                <Text style={styles.sectionSub}>
+                  Courier pickup from nearby places — not in-app restaurant menus
+                </Text>
               </View>
 
               <View style={styles.categories}>
-                <Pressable
-                  style={[styles.category, !selectedCategory && styles.categoryActive]}
+                <Chip
+                  label="All"
+                  selected={!selectedCategory}
                   onPress={() => setSelectedCategory(null)}
-                >
-                  <Text style={[styles.categoryLabel, !selectedCategory && styles.categoryLabelActive]}>
-                    All
-                  </Text>
-                </Pressable>
+                />
                 {FOOD_CATEGORIES.map((cat) => {
                   const active = selectedCategory === cat.id;
                   return (
-                    <Pressable
+                    <Chip
                       key={cat.id}
-                      style={[styles.category, { backgroundColor: cat.color }, active && styles.categoryActiveRing]}
+                      label={`${cat.emoji} ${cat.label}`}
+                      selected={active}
                       onPress={() => setSelectedCategory(active ? null : cat.id)}
-                    >
-                      <Text style={styles.categoryEmoji}>{cat.emoji}</Text>
-                      <Text style={styles.categoryLabel}>{cat.label}</Text>
-                    </Pressable>
+                    />
                   );
                 })}
               </View>
@@ -178,14 +152,14 @@ export default function FoodHomeScreen() {
           }
           ListEmptyComponent={
             !loading && !error ? (
-              <View style={styles.empty}>
-                <Text style={styles.emptyTitle}>No places nearby</Text>
-                <Text style={styles.emptySub}>
-                  {selectedCategory
+              <EmptyState
+                title="No places nearby"
+                message={
+                  selectedCategory
                     ? "Try another category or pull down to refresh."
-                    : "Pull down to refresh your location."}
-                </Text>
-              </View>
+                    : "Pull down to refresh your location."
+                }
+              />
             ) : null
           }
           renderItem={({ item }) => (

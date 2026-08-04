@@ -1,4 +1,5 @@
 import { AppError } from "../../common/errors.js";
+import { appConfig } from "../../common/config.js";
 import { prisma } from "../../common/prisma.js";
 import { sendOtpEmail } from "../../common/mailer.js";
 import {
@@ -299,6 +300,46 @@ export class SafetyService {
 
   async createSafetyShareEvent(token: string, input: CreateSafetyShareEventInput) {
     const session = await this.getCurrentUserSession(token);
+    const webBase = appConfig.appWebUrl.replace(/\/$/, "");
+
+    if (input.deliveryId) {
+      const delivery = await prisma.deliveryRequest.findUnique({
+        where: { id: input.deliveryId },
+        select: {
+          id: true,
+          pickupAddress: true,
+          dropoffAddress: true,
+          passenger: { select: { userId: true } },
+          rider: { select: { userId: true } }
+        }
+      });
+      if (!delivery) {
+        throw new AppError("Delivery could not be found.", 404, "DELIVERY_NOT_FOUND");
+      }
+      const canAccess =
+        delivery.passenger?.userId === session.user.id || delivery.rider?.userId === session.user.id;
+      if (!canAccess) {
+        throw new AppError("You cannot share this delivery.", 403, "DELIVERY_ACCESS_FORBIDDEN");
+      }
+
+      const shareUrl = `${webBase}/passenger/delivery?delivery=${delivery.id}`;
+      const message = [
+        "I'm using OkadaGo for a delivery right now.",
+        `${delivery.pickupAddress} → ${delivery.dropoffAddress}`,
+        input.note?.trim() || null,
+        `Live track: ${shareUrl}`
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+      return {
+        id: delivery.id,
+        shareUrl,
+        message,
+        mode: input.mode,
+        channel: input.channel
+      };
+    }
 
     const ride = await prisma.ride.findUnique({
       where: {
@@ -306,6 +347,8 @@ export class SafetyService {
       },
       select: {
         id: true,
+        pickupAddress: true,
+        destinationAddress: true,
         passenger: {
           select: {
             userId: true
@@ -329,7 +372,17 @@ export class SafetyService {
       throw new AppError("You cannot share this ride.", 403, "RIDE_ACCESS_FORBIDDEN");
     }
 
-    return prisma.rideEvent.create({
+    const shareUrl = `${webBase}/passenger/book?ride=${ride.id}`;
+    const message = [
+      "I'm on an OkadaGo trip right now.",
+      `${ride.pickupAddress} → ${ride.destinationAddress}`,
+      input.note?.trim() || null,
+      `Live track: ${shareUrl}`
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    const event = await prisma.rideEvent.create({
       data: {
         rideId: ride.id,
         actorUserId: session.user.id,
@@ -337,10 +390,17 @@ export class SafetyService {
         payload: {
           channel: input.channel,
           contactId: input.contactId,
-          note: input.note ?? null
+          note: input.note ?? null,
+          shareUrl
         }
       }
     });
+
+    return {
+      ...event,
+      shareUrl,
+      message
+    };
   }
 
   async requestSafetyContactVerification(
@@ -484,21 +544,24 @@ export class SafetyService {
 
     const fromDate = query.fromDate ? new Date(`${query.fromDate}T00:00:00.000Z`) : null;
     const toDate = query.toDate ? new Date(`${query.toDate}T23:59:59.999Z`) : null;
+    const where = {
+      status: query.status as IncidentStatus | undefined,
+      severity: query.severity as IncidentSeverity | undefined,
+      riderId: query.riderId,
+      rideId: query.rideId,
+      createdAt:
+        fromDate || toDate
+          ? {
+              gte: fromDate ?? undefined,
+              lte: toDate ?? undefined
+            }
+          : undefined
+    };
+    const limit = Math.min(Math.max(query.limit ?? 50, 1), 200);
+    const page = query.page;
 
-    return prisma.incident.findMany({
-      where: {
-        status: query.status as IncidentStatus | undefined,
-        severity: query.severity as IncidentSeverity | undefined,
-        riderId: query.riderId,
-        rideId: query.rideId,
-        createdAt:
-          fromDate || toDate
-            ? {
-                gte: fromDate ?? undefined,
-                lte: toDate ?? undefined
-              }
-            : undefined
-      },
+    const data = await prisma.incident.findMany({
+      where,
       include: {
         reporter: {
           select: {
@@ -538,8 +601,13 @@ export class SafetyService {
       orderBy: {
         createdAt: "desc"
       },
-      take: 120
+      take: limit,
+      ...(page ? { skip: (page - 1) * limit } : {})
     });
+
+    if (!page) return data;
+    const total = await prisma.incident.count({ where });
+    return { data, total, page, limit };
   }
 
   async reviewAdminIncident(token: string, incidentId: string, input: AdminIncidentReviewInput) {
@@ -555,14 +623,29 @@ export class SafetyService {
       throw new AppError("Incident could not be found.", 404, "INCIDENT_NOT_FOUND");
     }
 
+    if (input.assignedToId) {
+      const assignee = await prisma.user.findFirst({
+        where: { id: input.assignedToId, deletedAt: null },
+        include: { adminProfile: true }
+      });
+      if (!assignee?.adminProfile) {
+        throw new AppError("Assignee must be an admin", 400, "INVALID_ASSIGNEE");
+      }
+    }
+
     return prisma.incident.update({
       where: {
         id: incidentId
       },
       data: {
-        status: input.status as IncidentStatus,
-        assignedToId: session.user.id,
-        resolvedAt: input.status === "RESOLVED" || input.status === "CLOSED" ? new Date() : null
+        ...(input.status ? { status: input.status as IncidentStatus } : {}),
+        assignedToId: input.assignedToId ?? session.user.id,
+        ...(input.status
+          ? {
+              resolvedAt:
+                input.status === "RESOLVED" || input.status === "CLOSED" ? new Date() : null
+            }
+          : {})
       },
       include: {
         reporter: {

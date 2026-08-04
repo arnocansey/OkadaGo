@@ -1,10 +1,10 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/brand/BrandMark";
 
 const navItems = [
   { href: "/", label: "Overview" },
   { href: "/passenger", label: "Passenger" },
-  { href: "/rider", label: "Rider" },
-  { href: "/admin", label: "Admin" }
+  { href: "/rider", label: "Rider" }
 ];
 
 export function SiteHeader() {
@@ -12,7 +12,7 @@ export function SiteHeader() {
     <header className="site-header">
       <div className="container site-header-inner">
         <Link href="/" className="brand">
-          <div className="brand-mark">OG</div>
+          <BrandMark variant="icon" height={40} />
           <div className="brand-copy">
             <strong>OkadaGo</strong>
             <span>Ride-hailing platform foundation</span>
@@ -28,8 +28,8 @@ export function SiteHeader() {
         </nav>
 
         <div className="button-row">
-          <Link href="/admin" className="button-ghost">
-            Operations
+          <Link href="/rider" className="button-ghost">
+            Rider
           </Link>
           <Link href="/passenger" className="button">
             Launch PWA

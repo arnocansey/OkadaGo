@@ -1,18 +1,29 @@
 import { useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowDownLeft, ArrowUpRight, Clock, XCircle, CheckCircle2 } from "lucide-react-native";
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react-native";
+import { Badge } from "@/components/ui/Badge";
+import { BalanceHero } from "@/components/ui/BalanceHero";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { PaystackCheckout } from "@/components/PaystackCheckout";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { api, compactDate, money } from "@/lib/api";
 import { spacing } from "@/theme/tokens";
 import type { WalletTransaction } from "@/types";
+
+function txStatusBadge(tx: WalletTransaction) {
+  const status = (tx.status ?? "").toUpperCase();
+  if (status === "PENDING") return <Badge label="Pending" tone="warning" />;
+  if (status === "FAILED") return <Badge label="Failed" tone="danger" />;
+  if (status === "POSTED") return <Badge label="Completed" tone="success" />;
+  return null;
+}
 
 export default function WalletScreen() {
   const { session, wallets, transactions, loading, refresh } = useApp();
@@ -26,16 +37,6 @@ export default function WalletScreen() {
       StyleSheet.create({
         screen: { flex: 1, backgroundColor: colors.background },
         content: { padding: spacing.xl, gap: spacing.lg, paddingBottom: spacing.xxxl },
-        title: { ...typography.h1, color: colors.text },
-        hero: {
-          backgroundColor: colors.primary,
-          borderRadius: 16,
-          padding: 24,
-          gap: 4,
-        },
-        heroLabel: { ...typography.captionMedium, color: colors.textOnPrimary },
-        heroAmount: { ...typography.hero, color: colors.textOnPrimary },
-        locked: { ...typography.caption, color: colors.textOnPrimary, marginTop: 4, opacity: 0.7 },
         section: { ...typography.h3, color: colors.text },
         topUpRow: { flexDirection: "row", gap: spacing.sm, alignItems: "flex-end" },
         topUpInput: { flex: 1 },
@@ -46,7 +47,7 @@ export default function WalletScreen() {
           paddingVertical: spacing.md,
           paddingHorizontal: spacing.lg,
         },
-        txPending: { backgroundColor: colors.primaryLight + "22" },
+        txPending: { backgroundColor: colors.warningLight },
         txBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
         txIcon: {
           width: 36,
@@ -58,27 +59,11 @@ export default function WalletScreen() {
         creditIcon: { backgroundColor: colors.primaryLight },
         debitIcon: { backgroundColor: colors.dangerLight },
         txTitle: { ...typography.bodyMedium, color: colors.text },
-        txDate: { ...typography.caption, color: colors.textMuted, marginTop: 2 },
+        txDate: { ...typography.caption, color: colors.textMuted, marginTop: spacing.xs },
         txAmount: { ...typography.bodySemibold, color: colors.primary },
         debit: { color: colors.danger },
-        badge: {
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 4,
-          paddingHorizontal: 8,
-          paddingVertical: 3,
-          borderRadius: 999,
-          marginTop: 4,
-          alignSelf: "flex-start",
-        },
-        badgePending: { backgroundColor: "#FF9800" + "22" },
-        badgeFailed: { backgroundColor: colors.danger + "22" },
-        badgePosted: { backgroundColor: colors.success + "22" },
-        badgeText: { ...typography.tiny, fontWeight: "700" },
-        badgePendingText: { color: "#FF9800" },
-        badgeFailedText: { color: colors.danger },
-        badgePostedText: { color: colors.success },
-        retryHint: { ...typography.caption, color: colors.primary, marginTop: 2 },
+        badgeWrap: { marginTop: spacing.sm },
+        retryHint: { ...typography.caption, color: colors.primary, marginTop: spacing.xs },
       }),
     [colors, typography],
   );
@@ -137,35 +122,6 @@ export default function WalletScreen() {
     setCheckoutUrl(null);
   }
 
-  function renderStatusBadge(tx: WalletTransaction) {
-    const status = (tx.status ?? "").toUpperCase();
-    if (status === "PENDING") {
-      return (
-        <View style={[styles.badge, styles.badgePending]}>
-          <Clock size={10} color="#FF9800" />
-          <Text style={[styles.badgeText, styles.badgePendingText]}>Pending</Text>
-        </View>
-      );
-    }
-    if (status === "FAILED") {
-      return (
-        <View style={[styles.badge, styles.badgeFailed]}>
-          <XCircle size={10} color={colors.danger} />
-          <Text style={[styles.badgeText, styles.badgeFailedText]}>Failed</Text>
-        </View>
-      );
-    }
-    if (status === "POSTED") {
-      return (
-        <View style={[styles.badge, styles.badgePosted]}>
-          <CheckCircle2 size={10} color={colors.success} />
-          <Text style={[styles.badgeText, styles.badgePostedText]}>Completed</Text>
-        </View>
-      );
-    }
-    return null;
-  }
-
   const isPending = (tx: WalletTransaction) => (tx.status ?? "").toUpperCase() === "PENDING";
 
   return (
@@ -177,15 +133,13 @@ export default function WalletScreen() {
         onCancel={handleCheckoutCancel}
       />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>Wallet</Text>
+        <ScreenHeader title="Wallet" />
 
-        <View style={styles.hero}>
-          <Text style={styles.heroLabel}>Available balance</Text>
-          <Text style={styles.heroAmount}>{money(wallet?.availableBalance, wallet?.currency ?? "GHS")}</Text>
-          {wallet?.lockedBalance ? (
-            <Text style={styles.locked}>Locked: {money(wallet.lockedBalance, wallet.currency)}</Text>
-          ) : null}
-        </View>
+        <BalanceHero
+          label="Available balance"
+          amount={money(wallet?.availableBalance, wallet?.currency ?? "GHS")}
+          hint={wallet?.lockedBalance ? `Locked: ${money(wallet.lockedBalance, wallet.currency)}` : undefined}
+        />
 
         <Card>
           <Text style={styles.section}>Top up via Paystack</Text>
@@ -230,7 +184,7 @@ export default function WalletScreen() {
                   <View style={{ flex: 1 }}>
                     <Text style={styles.txTitle}>{tx.description ?? tx.type}</Text>
                     <Text style={styles.txDate}>{compactDate(tx.createdAt)}</Text>
-                    {renderStatusBadge(tx)}
+                    <View style={styles.badgeWrap}>{txStatusBadge(tx)}</View>
                     {pending && tx.direction === "credit" ? (
                       <Text style={styles.retryHint}>Tap to complete payment</Text>
                     ) : null}

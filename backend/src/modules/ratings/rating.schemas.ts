@@ -4,6 +4,10 @@ export const rideRatingParamsSchema = z.object({
   rideId: z.string().cuid()
 });
 
+export const deliveryRatingParamsSchema = z.object({
+  deliveryId: z.string().cuid()
+});
+
 export const createRideRatingSchema = z.object({
   score: z.number().int().min(1).max(5),
   category: z.string().trim().min(2).max(80).optional(),
@@ -14,5 +18,7 @@ export const adminRatingsQuerySchema = z.object({
   riderId: z.string().cuid().optional(),
   rideId: z.string().cuid().optional(),
   fromDate: z.string().date().optional(),
-  toDate: z.string().date().optional()
+  toDate: z.string().date().optional(),
+  page: z.coerce.number().int().min(1).optional(),
+  limit: z.coerce.number().int().min(1).max(500).optional()
 });

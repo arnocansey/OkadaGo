@@ -30,8 +30,14 @@ function buildCacheKey(
 export function useNearbyRestaurants(options: UseNearbyRestaurantsOptions = {}) {
   const { categoryId = null } = options;
   const { session } = useApp();
-  const { latitude, longitude, loading: locationLoading, error: locationError, refresh: refreshLocation } =
-    useUserLocation();
+  const {
+    latitude,
+    longitude,
+    loading: locationLoading,
+    error: locationError,
+    hasFix,
+    refresh: refreshLocation,
+  } = useUserLocation();
 
   const [restaurants, setRestaurants] = useState<NearbyRestaurant[]>(cachedRestaurants ?? []);
   const [loading, setLoading] = useState(!cachedRestaurants);
@@ -40,7 +46,7 @@ export function useNearbyRestaurants(options: UseNearbyRestaurantsOptions = {}) 
 
   const load = useCallback(async (force = false) => {
     if (locationLoading) return;
-    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    if (!hasFix || !Number.isFinite(latitude) || !Number.isFinite(longitude)) {
       setError("Waiting for your location…");
       setLoading(false);
       return;
@@ -83,12 +89,12 @@ export function useNearbyRestaurants(options: UseNearbyRestaurantsOptions = {}) 
     } finally {
       setLoading(false);
     }
-  }, [latitude, longitude, categoryId, session?.token, locationLoading]);
+  }, [latitude, longitude, hasFix, categoryId, session?.token, locationLoading]);
 
   useEffect(() => {
-    if (locationLoading) return;
-    load();
-  }, [load, locationLoading]);
+    if (locationLoading || !hasFix) return;
+    void load();
+  }, [load, locationLoading, hasFix]);
 
   const filtered = useMemo(() => restaurants, [restaurants]);
 

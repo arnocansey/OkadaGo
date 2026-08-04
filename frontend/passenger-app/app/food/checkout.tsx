@@ -1,6 +1,6 @@
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
@@ -9,6 +9,8 @@ import { useResolvedLocationAddress } from "@/hooks/useResolvedLocationAddress";
 import { useNearbyRestaurants } from "@/hooks/useNearbyRestaurants";
 import { formatDistanceKm } from "@/lib/geo";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { SkeletonList } from "@/components/ui/Skeleton";
 import { spacing } from "@/theme/tokens";
 import type { CartItem } from "@/types";
 
@@ -24,7 +26,7 @@ export default function FoodCheckoutScreen() {
     () =>
       StyleSheet.create({
         screen: { flex: 1, backgroundColor: colors.background },
-        loader: { marginTop: spacing.xxxl },
+        loadingPad: { padding: spacing.xl, marginTop: spacing.xxl },
         content: { padding: spacing.xl, gap: spacing.lg },
         addressInput: { minHeight: 64, paddingTop: spacing.md },
         title: { ...typography.h2, color: colors.text },
@@ -47,6 +49,7 @@ export default function FoodCheckoutScreen() {
     submitAddress: dropoffSubmitAddress,
     setAddress: setDropoff,
     coords: { latitude: dropoffLatitude, longitude: dropoffLongitude },
+    hasPickupCoords: hasDropoffCoords,
     hint: dropoffHint,
   } = useResolvedLocationAddress();
   const { getRestaurant, loading: restaurantLoading } = useNearbyRestaurants();
@@ -55,15 +58,23 @@ export default function FoodCheckoutScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+  const storeSubtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
   const deliveryFee = restaurant?.deliveryFee ?? 10;
-  const total = subtotal + deliveryFee;
+  const dueInApp = deliveryFee;
   const notes = typeof orderNotes === "string" ? orderNotes.trim() : "";
   const orderSummary = cart.map((i) => `${i.quantity}x ${i.name}`).join(", ");
   const orderDescription = [orderSummary, notes ? `Notes: ${notes}` : ""].filter(Boolean).join(" · ");
 
   async function submit() {
     if (!restaurant) return;
+    if (notes.length < 4) {
+      setError("Add pickup instructions so the courier knows what to collect.");
+      return;
+    }
+    if (!hasDropoffCoords) {
+      setError("Waiting for your GPS location. Allow location access or set the delivery address manually.");
+      return;
+    }
     setError("");
     setLoading(true);
     try {
@@ -81,7 +92,7 @@ export default function FoodCheckoutScreen() {
           recipientName: session!.user.fullName,
           recipientPhoneE164: session!.user.phoneE164,
           packageType: "food",
-          packageDescription: `Food order from ${restaurant.name}: ${orderDescription || "Custom pickup"} · Delivery GHS ${deliveryFee.toFixed(2)}`,
+          packageDescription: `Courier pickup from ${restaurant.name}: ${orderDescription || "Pickup order"} · Courier fee GHS ${deliveryFee.toFixed(2)} (store items paid separately)`,
         },
       });
       await refresh();
@@ -96,7 +107,9 @@ export default function FoodCheckoutScreen() {
   if (restaurantLoading && !restaurant) {
     return (
       <SafeAreaView style={styles.screen}>
-        <ActivityIndicator color={colors.primary} style={styles.loader} />
+        <View style={styles.loadingPad}>
+          <SkeletonList count={4} />
+        </View>
       </SafeAreaView>
     );
   }
@@ -111,10 +124,10 @@ export default function FoodCheckoutScreen() {
       >
         <SafeAreaView style={styles.screen} edges={["bottom"]}>
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Text style={styles.title}>{restaurant?.name ?? "Order"}</Text>
+          <Text style={styles.title}>{restaurant?.name ?? "Pickup"}</Text>
           {restaurant ? (
             <Text style={styles.subtitle}>
-              Pickup {formatDistanceKm(restaurant.distanceKm)} away · ~{restaurant.etaMin} min
+              Courier pickup {formatDistanceKm(restaurant.distanceKm)} away · ~{restaurant.etaMin} min · food paid at store
             </Text>
           ) : null}
           {cart.map((item) => (
@@ -127,17 +140,25 @@ export default function FoodCheckoutScreen() {
           ))}
           {notes ? (
             <View style={styles.notesBox}>
-              <Text style={styles.notesLabel}>Order notes</Text>
+              <Text style={styles.notesLabel}>Pickup instructions</Text>
               <Text style={styles.notesText}>{notes}</Text>
             </View>
-          ) : null}
+          ) : (
+            <Text style={styles.error}>Pickup instructions are required.</Text>
+          )}
           <View style={styles.row}>
-            <Text style={styles.rowLabel}>Delivery fee</Text>
+            <Text style={styles.rowLabel}>Store items</Text>
+            <Text style={styles.rowVal}>
+              {storeSubtotal > 0 ? `~GHS ${storeSubtotal.toFixed(2)} at store` : "Pay at store"}
+            </Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.rowLabel}>Courier fee</Text>
             <Text style={styles.rowVal}>GHS {deliveryFee.toFixed(2)}</Text>
           </View>
           <View style={[styles.row, styles.totalRow]}>
-            <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalVal}>GHS {total.toFixed(2)}</Text>
+            <Text style={styles.totalLabel}>Due in app</Text>
+            <Text style={styles.totalVal}>GHS {dueInApp.toFixed(2)}</Text>
           </View>
 
           <Input
@@ -152,7 +173,13 @@ export default function FoodCheckoutScreen() {
             style={styles.addressInput}
           />
           {error ? <Text style={styles.error}>{error}</Text> : null}
-          <Button label="Place order" loading={loading} disabled={!restaurant} onPress={submit} fullWidth />
+          <Button
+            label="Request courier"
+            loading={loading}
+            disabled={!restaurant || !hasDropoffCoords}
+            onPress={submit}
+            fullWidth
+          />
         </ScrollView>
         </SafeAreaView>
       </KeyboardAvoidingView>

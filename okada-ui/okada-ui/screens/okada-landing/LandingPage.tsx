@@ -1,14 +1,15 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../ui/button';
-import { ChevronRight, Shield, Clock, MapPin, Star, Menu } from 'lucide-react';
-import heroRider from '../../images/hero-rider.png';
-import streetScene from '../../images/street-scene.png';
-import { useToastAndLoader } from '@/components/providers/toast-and-loader-provider';
+import { ChevronRight, Shield, Clock, MapPin, Star, Menu, X } from 'lucide-react';
+import { BrandMark } from "@/components/brand/BrandMark";
+import heroRider from "../../images/hero-rider.png";
+import streetScene from "../../images/street-scene.png";
+import { useToastAndLoader } from "@/components/providers/toast-and-loader-provider";
 
 // Motion Variants
 const fadeInUp = {
@@ -41,155 +42,207 @@ const slideInRight = {
   visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } }
 } as const;
 
+const NAV_LINKS = [
+  { href: "#how", label: "How it works" },
+  { href: "#safety", label: "Safety" },
+  { href: "#testimonials", label: "Stories" },
+  { href: "#faq", label: "FAQ" },
+] as const;
+
 export function LandingPage() {
   const router = useRouter();
   const { showToast, showLoader, hideLoader } = useToastAndLoader();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleConfirmRide = (e: React.MouseEvent) => {
     e.preventDefault();
     showLoader("Searching for nearby riders...");
     setTimeout(() => {
       hideLoader();
-      showToast("Rider Assigned: Oluwaseun B. (4.9★) is 2 mins away!", "success");
+      showToast("Rider Assigned: Kofi Boateng (4.9★) is 2 mins away!", "success");
       setTimeout(() => {
         router.push("/signup");
       }, 1500);
     }, 2000);
   };
 
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded bg-primary flex items-center justify-center text-[#0a0b0d] font-bold text-xl">
-              O
-            </div>
-            <span className="font-bold text-xl tracking-tight text-[#0a0b0d]">OkadaGo</span>
+          <Link href="/" className="flex items-center" onClick={closeMobileMenu}>
+            <BrandMark variant="wordmark" height={52} priority />
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <a href="#how" className="text-muted-foreground hover:text-foreground transition-colors">How it works</a>
-            <a href="#safety" className="text-muted-foreground hover:text-foreground transition-colors">Safety</a>
-            <a href="#testimonials" className="text-muted-foreground hover:text-foreground transition-colors">Stories</a>
-            <a href="#faq" className="text-muted-foreground hover:text-foreground transition-colors">FAQ</a>
+            {NAV_LINKS.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {link.label}
+              </a>
+            ))}
           </nav>
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="hidden md:block text-sm font-medium">Log in</Link>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <div className="flex items-center gap-3 md:gap-4">
+            <Link href="/login" className="hidden md:block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Login as passenger
+            </Link>
+            <Link href="/rider/login" className="hidden md:block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Login as rider
+            </Link>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="hidden sm:block">
               <Link href="/signup" className="inline-flex items-center justify-center bg-primary text-[#0a0b0d] hover:bg-primary/90 rounded-full px-6 min-h-10 font-medium transition-colors">
                 Ride Now
               </Link>
             </motion.div>
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="w-5 h-5" />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
+              onClick={() => setMobileMenuOpen((open) => !open)}
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
           </div>
         </div>
+
+        <AnimatePresence>
+          {mobileMenuOpen ? (
+            <motion.div
+              key="mobile-menu"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="md:hidden overflow-hidden border-t bg-white"
+            >
+              <nav className="container mx-auto px-4 py-4 flex flex-col gap-1">
+                {NAV_LINKS.map((link) => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    onClick={closeMobileMenu}
+                    className="rounded-lg px-3 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                  >
+                    {link.label}
+                  </a>
+                ))}
+                <div className="mt-2 flex flex-col gap-2 border-t pt-3">
+                  <Link
+                    href="/login"
+                    onClick={closeMobileMenu}
+                    className="rounded-lg px-3 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                  >
+                    Login as passenger
+                  </Link>
+                  <Link
+                    href="/rider/login"
+                    onClick={closeMobileMenu}
+                    className="rounded-lg px-3 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                  >
+                    Login as rider
+                  </Link>
+                  <Link
+                    href="/signup"
+                    onClick={closeMobileMenu}
+                    className="inline-flex items-center justify-center bg-primary text-[#0a0b0d] hover:bg-primary/90 rounded-full px-6 min-h-11 font-medium transition-colors"
+                  >
+                    Ride Now
+                  </Link>
+                </div>
+              </nav>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
       </header>
 
-      {/* Hero */}
-      <section className="pt-32 pb-20 md:pt-40 md:pb-32 px-4 relative overflow-hidden">
-        <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center relative z-10">
-          <motion.div 
-            initial="hidden"
-            animate="visible"
-            variants={staggerContainer}
-            className="max-w-xl"
-          >
-            <motion.div 
-              variants={fadeInUp}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary-foreground font-medium text-sm mb-6"
+      {/* Hero — full-bleed brand composition */}
+      <section className="relative min-h-[100svh] flex items-end overflow-hidden">
+        <motion.img
+          initial={{ scale: 1.06, opacity: 0.85 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1.1, ease: "easeOut" }}
+          src={heroRider.src}
+          alt="OkadaGo rider on the road"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0b0d] via-[#0a0b0d]/55 to-[#0a0b0d]/25" />
+        <div className="relative z-10 w-full px-4 pb-16 pt-32 md:pb-24 md:pt-40">
+          <div className="container mx-auto max-w-3xl">
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={staggerContainer}
+              className="text-white"
             >
-              <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-              Now in Lagos & Accra
-            </motion.div>
-            <motion.h1 
-              variants={fadeInUp}
-              className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] mb-6"
-            >
-              The city moves <br/>
-              <span className="text-[#8a6c00]">at your pace.</span>
-            </motion.h1>
-            <motion.p 
-              variants={fadeInUp}
-              className="text-lg text-muted-foreground mb-8 leading-relaxed"
-            >
-              Fast, safe, and reliable motorcycle rides. Skip the traffic and get where you need to be with vetted professional riders you can trust.
-            </motion.p>
-            <motion.div 
-              variants={fadeInUp}
-              className="flex flex-col sm:flex-row gap-4"
-            >
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link href="/signup" className="inline-flex items-center justify-center bg-primary text-[#0a0b0d] hover:bg-primary/90 rounded-full h-14 px-8 text-base font-medium transition-colors w-full sm:w-auto">
-                  Book a Ride Now
-                </Link>
+              <motion.div variants={fadeInUp} className="mb-8">
+                <BrandMark variant="wordmark" onDark height={72} priority />
               </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link href="/rider/signup" className="inline-flex items-center justify-center rounded-full h-14 px-8 text-base border-2 border-border hover:bg-muted/50 transition-colors w-full sm:w-auto">
-                  Become a Rider
-                </Link>
+              <motion.h1
+                variants={fadeInUp}
+                className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.08] mb-5 max-w-2xl"
+              >
+                City rides that keep moving.
+              </motion.h1>
+              <motion.p
+                variants={fadeInUp}
+                className="text-lg md:text-xl text-white/80 mb-8 max-w-xl leading-relaxed"
+              >
+                Fast, insured motorcycle trips across Accra with vetted riders you can trust.
+              </motion.p>
+              <motion.div
+                variants={fadeInUp}
+                className="flex flex-col sm:flex-row gap-3"
+              >
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+                  <Link
+                    href="/signup"
+                    className="inline-flex items-center justify-center bg-primary text-[#0a0b0d] hover:bg-primary/90 rounded-full h-14 px-8 text-base font-semibold transition-colors w-full sm:w-auto"
+                  >
+                    Book a ride
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+                  <Link
+                    href="/rider/signup"
+                    className="inline-flex items-center justify-center rounded-full h-14 px-8 text-base border border-white/35 text-white hover:bg-white/10 transition-colors w-full sm:w-auto"
+                  >
+                    Drive with OkadaGo
+                  </Link>
+                </motion.div>
               </motion.div>
             </motion.div>
-            <motion.div 
-              variants={fadeInUp}
-              className="mt-8 flex items-center gap-4 text-sm text-muted-foreground"
-            >
-              <div className="flex -space-x-2">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-muted flex items-center justify-center overflow-hidden">
-                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`} alt="user" className="w-full h-full object-cover" />
-                  </div>
-                ))}
-              </div>
-              <p>Trusted by <strong className="text-foreground">50,000+</strong> daily riders</p>
-            </motion.div>
-          </motion.div>
-          <motion.div 
-            initial="hidden"
-            animate="visible"
-            variants={scaleIn}
-            className="relative"
-          >
-            <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-secondary/20 rounded-3xl blur-3xl transform rotate-12 scale-110" />
-            <motion.img 
-              animate={{ y: [0, -8, 0] }}
-              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-              src={heroRider.src}
-              alt="OkadaGo Rider in Lagos" 
-              className="relative z-10 w-full h-auto rounded-3xl shadow-2xl object-cover aspect-[4/5] md:aspect-square"
-            />
-          </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* Stats/Logos */}
-      <section className="py-12 bg-primary/5 border-y">
+      {/* How it works teaser */}
+      <section className="py-16 bg-primary/5 border-b">
         <div className="container mx-auto px-4">
-          <motion.div 
+          <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={staggerContainer}
-            className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-primary/10"
+            className="grid md:grid-cols-3 gap-8 text-center"
           >
-            <motion.div variants={fadeInUp}>
-              <div className="text-3xl font-bold text-[#8a6c00] mb-1">3M+</div>
-              <div className="text-sm font-medium text-muted-foreground">Safe Rides</div>
-            </motion.div>
-            <motion.div variants={fadeInUp}>
-              <div className="text-3xl font-bold text-[#8a6c00] mb-1">&lt; 3min</div>
-              <div className="text-sm font-medium text-muted-foreground">Average Wait</div>
-            </motion.div>
-            <motion.div variants={fadeInUp}>
-              <div className="text-3xl font-bold text-[#8a6c00] mb-1">24/7</div>
-              <div className="text-sm font-medium text-muted-foreground">Support</div>
-            </motion.div>
-            <motion.div variants={fadeInUp}>
-              <div className="text-3xl font-bold text-[#8a6c00] mb-1">100%</div>
-              <div className="text-sm font-medium text-muted-foreground">Vetted Riders</div>
-            </motion.div>
+            {[
+              { title: "Request", body: "Set pickup and destination in seconds." },
+              { title: "Match", body: "A nearby vetted rider accepts your trip." },
+              { title: "Arrive", body: "Live tracking and in-app SOS the whole way." }
+            ].map((item) => (
+              <motion.div key={item.title} variants={fadeInUp}>
+                <div className="text-xl font-bold text-[#0a0b0d] mb-2">{item.title}</div>
+                <div className="text-sm text-muted-foreground">{item.body}</div>
+              </motion.div>
+            ))}
           </motion.div>
         </div>
       </section>
@@ -327,15 +380,15 @@ export function LandingPage() {
               <div className="aspect-[4/5] bg-primary-foreground/5 rounded-3xl border border-white/10 p-8 flex flex-col justify-between">
                 <div className="w-full bg-white text-foreground rounded-2xl p-4 shadow-2xl transform -rotate-2">
                   <div className="flex justify-between items-center mb-4">
-                    <div className="font-bold">Ride to Victoria Island</div>
-                    <div className="text-[#8a6c00] font-bold">₦1,200</div>
+                    <div className="font-bold">Ride to Airport Residential</div>
+                    <div className="text-[#8a6c00] font-bold">₵45</div>
                   </div>
                   <div className="flex items-center gap-3 bg-muted p-3 rounded-xl">
                     <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
                       <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bisi" alt="rider" className="w-8 h-8 rounded-full" />
                     </div>
                     <div>
-                      <div className="font-medium text-sm">Oluwaseun B.</div>
+                      <div className="font-medium text-sm">Kofi Boateng</div>
                       <div className="flex items-center text-xs text-muted-foreground">
                         <Star className="w-3 h-3 text-secondary fill-secondary mr-1" /> 4.9 • KJA-294QB
                       </div>
@@ -378,8 +431,8 @@ export function LandingPage() {
           >
             {[
               {
-                name: "Chiamaka Eze",
-                role: "Marketing Executive, Lagos",
+                name: "Ama Serwaa",
+                role: "Marketing Executive, Accra",
                 text: "I used to spend 2 hours in traffic every morning. With OkadaGo, I get to the office in 25 minutes. It's clean, safe, and I actually have time for breakfast now."
               },
               {
@@ -389,7 +442,7 @@ export function LandingPage() {
               },
               {
                 name: "Aisha Mohammed",
-                role: "Small Business Owner, Abuja",
+                role: "Small Business Owner, Kumasi",
                 text: "Safety was my biggest concern with bikes. The tracking feature gives my husband peace of mind. I've never felt this safe on a motorcycle before."
               }
             ].map((t, i) => (
@@ -436,9 +489,14 @@ export function LandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Link href="/signup" className="inline-flex items-center justify-center bg-primary text-[#0a0b0d] hover:bg-primary/90 rounded-full h-14 px-8 text-lg font-bold transition-colors">
-                    Book on Web
+                  <Link href="/login" className="inline-flex items-center justify-center bg-primary text-[#0a0b0d] hover:bg-primary/90 rounded-full h-14 px-8 text-lg font-bold transition-colors">
+                    Login as passenger
                     <ChevronRight className="w-5 h-5 ml-2" />
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link href="/rider/login" className="inline-flex items-center justify-center rounded-full h-14 px-8 text-lg font-bold border border-white/35 text-white hover:bg-white/10 transition-colors">
+                    Login as rider
                   </Link>
                 </motion.div>
               </div>
@@ -474,10 +532,10 @@ export function LandingPage() {
             <div>
               <h4 className="font-bold mb-4">Products</h4>
               <ul className="space-y-2 text-sm text-white/60">
-                <li><a href="#" className="hover:text-white transition-colors">Ride</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Drive</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Deliveries</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Business</a></li>
+                <li><Link href="/login" className="hover:text-white transition-colors">Login as passenger</Link></li>
+                <li><Link href="/rider/login" className="hover:text-white transition-colors">Login as rider</Link></li>
+                <li><Link href="/signup" className="hover:text-white transition-colors">Book a ride</Link></li>
+                <li><Link href="/rider/signup" className="hover:text-white transition-colors">Drive with OkadaGo</Link></li>
               </ul>
             </div>
             <div>

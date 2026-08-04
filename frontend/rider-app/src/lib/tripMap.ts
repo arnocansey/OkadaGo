@@ -1,5 +1,6 @@
 import type { Delivery, Ride } from "@/types";
-import { colors } from "@/theme/tokens";
+import type { ThemeColors } from "@/theme/tokens";
+import { colors as defaultColors } from "@/theme/tokens";
 
 export type TripMarker = {
   id: string;
@@ -14,7 +15,7 @@ function coord(value: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-export function markersForRide(ride: Ride): TripMarker[] {
+export function markersForRide(ride: Ride, palette: ThemeColors = defaultColors): TripMarker[] {
   const markers: TripMarker[] = [];
   const pickupLat = coord(ride.pickupLatitude);
   const pickupLon = coord(ride.pickupLongitude);
@@ -24,19 +25,19 @@ export function markersForRide(ride: Ride): TripMarker[] {
   const riderLon = coord(ride.rider?.currentLongitude);
 
   if (pickupLat != null && pickupLon != null) {
-    markers.push({ id: "pickup", latitude: pickupLat, longitude: pickupLon, title: "Pickup", pinColor: colors.mapMarkerPickup });
+    markers.push({ id: "pickup", latitude: pickupLat, longitude: pickupLon, title: "Pickup", pinColor: palette.mapMarkerPickup });
   }
   if (destLat != null && destLon != null) {
-    markers.push({ id: "destination", latitude: destLat, longitude: destLon, title: "Destination", pinColor: colors.mapMarkerDestination });
+    markers.push({ id: "destination", latitude: destLat, longitude: destLon, title: "Destination", pinColor: palette.mapMarkerDestination });
   }
   if (riderLat != null && riderLon != null) {
-    markers.push({ id: "rider", latitude: riderLat, longitude: riderLon, title: "You", pinColor: colors.mapMarkerRider });
+    markers.push({ id: "rider", latitude: riderLat, longitude: riderLon, title: "You", pinColor: palette.mapMarkerRider });
   }
 
   return markers;
 }
 
-export function markersForDelivery(delivery: Delivery): TripMarker[] {
+export function markersForDelivery(delivery: Delivery, palette: ThemeColors = defaultColors): TripMarker[] {
   const markers: TripMarker[] = [];
   const pickupLat = coord(delivery.pickupLatitude);
   const pickupLon = coord(delivery.pickupLongitude);
@@ -46,13 +47,13 @@ export function markersForDelivery(delivery: Delivery): TripMarker[] {
   const riderLon = coord(delivery.rider?.currentLongitude);
 
   if (pickupLat != null && pickupLon != null) {
-    markers.push({ id: "pickup", latitude: pickupLat, longitude: pickupLon, title: "Pickup", pinColor: colors.mapMarkerPickup });
+    markers.push({ id: "pickup", latitude: pickupLat, longitude: pickupLon, title: "Pickup", pinColor: palette.mapMarkerPickup });
   }
   if (dropLat != null && dropLon != null) {
-    markers.push({ id: "dropoff", latitude: dropLat, longitude: dropLon, title: "Drop-off", pinColor: colors.mapMarkerDestination });
+    markers.push({ id: "dropoff", latitude: dropLat, longitude: dropLon, title: "Drop-off", pinColor: palette.mapMarkerDestination });
   }
   if (riderLat != null && riderLon != null) {
-    markers.push({ id: "rider", latitude: riderLat, longitude: riderLon, title: "You", pinColor: colors.mapMarkerRider });
+    markers.push({ id: "rider", latitude: riderLat, longitude: riderLon, title: "You", pinColor: palette.mapMarkerRider });
   }
 
   return markers;

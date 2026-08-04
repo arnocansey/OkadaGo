@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
-import "@/components/dashboard/admin.css";
 import "@/components/landing/landing.css";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { PwaProvider } from "@/components/providers/pwa-provider";
@@ -26,7 +25,10 @@ export const metadata: Metadata = {
   applicationName: "OkadaGo",
   metadataBase: new URL("https://okadago.local"),
   icons: {
-    icon: "/icon.svg"
+    icon: [
+      { url: "/branding/okadago-icon-dark.png", type: "image/png" },
+      { url: "/icon.svg" }
+    ]
   }
 };
 

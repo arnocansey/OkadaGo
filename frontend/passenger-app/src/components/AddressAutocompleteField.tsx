@@ -1,5 +1,13 @@
 import { useMemo } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View, type TextInputProps } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  type TextInputProps,
+} from "react-native";
 import { MapPin } from "lucide-react-native";
 import { Input } from "@/components/ui/Input";
 import { useTheme } from "@/context/ThemeContext";
@@ -14,6 +22,8 @@ type Props = TextInputProps & {
   suggestionsLoading?: boolean;
   suggestionsError?: string | null;
   showSuggestions?: boolean;
+  /** Expand the suggestions list (e.g. when the map is collapsed for search mode). */
+  expanded?: boolean;
   onSelectSuggestion: (suggestion: PlaceSuggestion) => void;
 };
 
@@ -25,6 +35,7 @@ export function AddressAutocompleteField({
   suggestionsLoading,
   suggestionsError,
   showSuggestions = false,
+  expanded = false,
   onSelectSuggestion,
   style,
   ...rest
@@ -33,15 +44,14 @@ export function AddressAutocompleteField({
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        wrap: { position: "relative", zIndex: 1 },
+        wrap: { position: "relative", zIndex: expanded ? 20 : 1 },
         dropdown: {
           marginTop: spacing.xs,
           borderWidth: 1,
           borderColor: colors.border,
           borderRadius: radius.md,
           backgroundColor: colors.surface,
-          overflow: "hidden",
-          maxHeight: 180,
+          maxHeight: expanded ? 320 : 220,
         },
         suggestionRow: {
           flexDirection: "row",
@@ -49,12 +59,21 @@ export function AddressAutocompleteField({
           gap: spacing.sm,
           paddingHorizontal: spacing.md,
           paddingVertical: spacing.md,
-          borderBottomWidth: 1,
+          borderBottomWidth: StyleSheet.hairlineWidth,
           borderBottomColor: colors.border,
         },
         suggestionRowLast: { borderBottomWidth: 0 },
-        suggestionName: { ...typography.bodyMedium, color: colors.text, flex: 1 },
-        suggestionAddress: { ...typography.caption, color: colors.textMuted, flex: 1, marginTop: 2 },
+        suggestionBody: { flex: 1, flexShrink: 1, gap: 2 },
+        suggestionName: {
+          ...typography.bodyMedium,
+          color: colors.text,
+          // Avoid flex on Text — it was squeezing row height and clipping glyphs.
+        },
+        suggestionAddress: {
+          ...typography.caption,
+          color: colors.textMuted,
+        },
+        pin: { marginTop: 3 },
         statusRow: {
           flexDirection: "row",
           alignItems: "center",
@@ -65,7 +84,7 @@ export function AddressAutocompleteField({
         statusText: { ...typography.caption, color: colors.textMuted },
         statusError: { ...typography.caption, color: colors.danger },
       }),
-    [colors, typography],
+    [colors, typography, expanded],
   );
 
   const visible = showSuggestions && (suggestionsLoading || suggestionsError || suggestions.length > 0);
@@ -75,7 +94,12 @@ export function AddressAutocompleteField({
       <Input label={label} hint={hint} error={error} style={style} {...rest} />
 
       {visible ? (
-        <View style={styles.dropdown}>
+        <ScrollView
+          style={styles.dropdown}
+          keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled
+          bounces={false}
+        >
           {suggestionsLoading ? (
             <View style={styles.statusRow}>
               <ActivityIndicator size="small" color={colors.primary} />
@@ -99,9 +123,9 @@ export function AddressAutocompleteField({
                   ]}
                   onPress={() => onSelectSuggestion(suggestion)}
                 >
-                  <MapPin size={16} color={colors.primary} style={{ marginTop: 2 }} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.suggestionName} numberOfLines={1}>
+                  <MapPin size={16} color={colors.primary} style={styles.pin} />
+                  <View style={styles.suggestionBody}>
+                    <Text style={styles.suggestionName} numberOfLines={2}>
                       {suggestion.name}
                     </Text>
                     <Text style={styles.suggestionAddress} numberOfLines={2}>
@@ -111,7 +135,7 @@ export function AddressAutocompleteField({
                 </Pressable>
               ))
             : null}
-        </View>
+        </ScrollView>
       ) : null}
     </View>
   );

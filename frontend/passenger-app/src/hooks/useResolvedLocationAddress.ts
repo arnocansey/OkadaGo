@@ -18,6 +18,8 @@ export function useResolvedLocationAddress() {
     loading: locationLoading,
     error: locationError,
     permissionGranted,
+    hasFix,
+    isMocked: liveLocationMocked,
     refresh: refreshLocation,
   } = useUserLocation();
 
@@ -28,10 +30,14 @@ export function useResolvedLocationAddress() {
   const userEditedRef = useRef(false);
   const requestIdRef = useRef(0);
 
-  const coords = manualCoords ?? {
-    latitude: permissionGranted ? latitude : ACCRA_REGION.latitude,
-    longitude: permissionGranted ? longitude : ACCRA_REGION.longitude,
-  };
+  /** Prefer a real GPS fix; never treat the Accra placeholder as the user's pickup. */
+  const coords = manualCoords ?? (hasFix
+    ? { latitude, longitude }
+    : { latitude: ACCRA_REGION.latitude, longitude: ACCRA_REGION.longitude });
+  const hasPickupCoords = Boolean(manualCoords) || hasFix;
+  // A manually-selected address (autocomplete/pin drop) isn't sourced from the live GPS
+  // fix, so the mock-location signal only applies when using the current-location coords.
+  const isMocked = manualCoords ? false : liveLocationMocked;
 
   const setAddress = useCallback((value: string) => {
     userEditedRef.current = true;
@@ -78,11 +84,18 @@ export function useResolvedLocationAddress() {
 
   useEffect(() => {
     if (!session?.token || locationLoading) return;
-    if (userEditedRef.current) return;
+    if (userEditedRef.current || manualCoords) return;
 
     if (!permissionGranted || locationError === "Location permission denied") {
       setAddressState("");
       setHint(PERMISSION_DENIED_HINT);
+      setResolving(false);
+      return;
+    }
+
+    if (!hasFix) {
+      setAddressState(LOADING_TEXT);
+      setHint(null);
       setResolving(false);
       return;
     }
@@ -93,8 +106,10 @@ export function useResolvedLocationAddress() {
     locationLoading,
     permissionGranted,
     locationError,
+    hasFix,
     latitude,
     longitude,
+    manualCoords,
     resolveAddress,
   ]);
 
@@ -105,6 +120,32 @@ export function useResolvedLocationAddress() {
     setHint(null);
     await refreshLocation();
   }, [refreshLocation]);
+
+  const pinDropLocation = useCallback(
+    async (lat: number, lon: number) => {
+      userEditedRef.current = true;
+      requestIdRef.current += 1;
+      setManualCoords({ latitude: lat, longitude: lon });
+      setAddressState(LOADING_TEXT);
+      setHint(null);
+
+      if (!session?.token) return;
+      setResolving(true);
+      try {
+        const result = await api<LocationResult>(
+          `/bootstrap/reverse-geocode?lat=${lat}&lon=${lon}`,
+          { token: session.token },
+        );
+        setAddressState(formatReverseGeocodeAddress(result));
+      } catch {
+        setAddressState("");
+        setHint(GEOCODE_FAILED_HINT);
+      } finally {
+        setResolving(false);
+      }
+    },
+    [session?.token],
+  );
 
   const inputValue =
     locationLoading || resolving
@@ -117,11 +158,15 @@ export function useResolvedLocationAddress() {
     setAddress,
     selectAddress,
     coords,
+    hasPickupCoords,
+    hasFix,
+    isMocked,
     locationLoading,
     resolving,
     hint,
     permissionGranted,
     locationError,
     useCurrentLocation,
+    pinDropLocation,
   };
 }

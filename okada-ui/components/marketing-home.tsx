@@ -9,7 +9,7 @@ export function MarketingHome() {
         <div className="container hero-grid">
           <div className="panel hero-copy">
             <div className="eyebrow">African motorcycle mobility, built for real operations</div>
-            <h1>Launch OkadaGo as a modern passenger, rider, and admin platform.</h1>
+            <h1>Launch OkadaGo as a modern passenger and rider platform.</h1>
             <p>
               This repository now combines a production-minded product blueprint, a PWA-ready web
               surface, a full relational schema, and an API contract plan tailored to the realities
@@ -26,8 +26,8 @@ export function MarketingHome() {
                 <span>Verification, dispatch, earnings, and payout operations</span>
               </div>
               <div className="stat-card">
-                <strong>Admin flow</strong>
-                <span>Pricing, live oversight, incidents, analytics, and compliance</span>
+                <strong>Cities</strong>
+                <span>Built for Accra and Kumasi launch corridors</span>
               </div>
             </div>
 
@@ -35,8 +35,8 @@ export function MarketingHome() {
               <Link href="/passenger" className="button">
                 Open passenger workspace
               </Link>
-              <Link href="/admin" className="button-secondary">
-                Review operations console
+              <Link href="/rider" className="button-secondary">
+                Open rider workspace
               </Link>
             </div>
           </div>
@@ -131,7 +131,7 @@ export function MarketingHome() {
               </ul>
             </article>
             <article className="info-card">
-              <h3>Admin console</h3>
+              <h3>Platform modules</h3>
               <ul className="module-list">
                 {adminModules.map((item) => (
                   <li key={item}>{item}</li>
@@ -163,7 +163,7 @@ export function MarketingHome() {
                 <li>TanStack Query for client data orchestration</li>
                 <li>TanStack Table for operational list rendering</li>
                 <li>Leaflet-based web map surface for live operations</li>
-                <li>Passenger, rider, and admin route surfaces with empty states</li>
+                <li>Passenger and rider route surfaces with empty states</li>
               </ul>
             </article>
 

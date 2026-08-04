@@ -2,7 +2,8 @@
 
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, CheckCircle, AlertCircle, Info, Loader2 } from "lucide-react";
+import { X, CheckCircle, AlertCircle, Info } from "lucide-react";
+import { OkadaLoader } from "@/components/ui/OkadaLoader";
 
 type ToastType = "info" | "success" | "error" | "warning";
 
@@ -114,10 +115,9 @@ export function ToastAndLoaderProvider({ children }: { children: React.ReactNode
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-[#15181d] text-white p-8 rounded-2xl border border-white/10 flex flex-col items-center gap-4 shadow-2xl max-w-xs text-center"
+              className="bg-[#15181d] text-white px-10 py-9 rounded-2xl border border-white/10 flex flex-col items-center shadow-2xl min-w-[220px] max-w-xs text-center"
             >
-              <Loader2 className="w-10 h-10 text-primary animate-spin" />
-              {loadingLabel && <p className="text-sm font-semibold tracking-wide text-white/90">{loadingLabel}</p>}
+              <OkadaLoader size="lg" label={loadingLabel ?? undefined} />
             </motion.div>
           </motion.div>
         )}

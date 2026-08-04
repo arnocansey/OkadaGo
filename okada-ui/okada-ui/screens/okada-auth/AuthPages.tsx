@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Shield, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import authBg from "../../images/auth-bg.png";
+import { BrandMark } from "@/components/brand/BrandMark";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
@@ -124,11 +125,12 @@ export function AuthPages({
     }
 
     if (audience === "admin") {
+      // Admin auth lives only on the separate admin app — not linked from this site.
       return {
-        login: "/admin/login",
-        signup: "/admin/login",
-        forgot: "/admin/login",
-        success: "/admin"
+        login: "/",
+        signup: "/",
+        forgot: "/",
+        success: "/"
       };
     }
 
@@ -145,14 +147,18 @@ export function AuthPages({
       return {
         brandBody:
           "Join verified riders earning every day across Accra and Kumasi. Fast payouts, insured trips, and a dashboard built for the hustle.",
-        loginTitle: "Welcome back, rider",
-        loginDescription: "Enter your phone number to continue to your rider dashboard.",
+        loginTitle: "Login as rider",
+        loginDescription: "Enter your rider phone number to open your driver dashboard.",
         signupTitle: "Create rider account",
         signupDescription: "Set up your rider profile to start receiving trips.",
-        forgotDescription: "Enter your phone number to request a rider password reset.",
+        forgotDescription: "Enter your rider phone number to request a password reset.",
         loginAltText: "Need a rider account? ",
         loginAltCta: "Create one",
-        signupCta: "Create Rider Account"
+        signupCta: "Create Rider Account",
+        loginCta: "Login as rider",
+        switchText: "Looking to book a ride? ",
+        switchCta: "Login as passenger",
+        switchHref: "/login"
       };
     }
 
@@ -167,21 +173,29 @@ export function AuthPages({
         forgotDescription: "Password reset is currently handled by the platform owner.",
         loginAltText: "Need admin access? ",
         loginAltCta: "Contact the platform owner",
-        signupCta: "Create Account"
+        signupCta: "Create Account",
+        loginCta: "Admin log in",
+        switchText: "",
+        switchCta: "",
+        switchHref: "/"
       };
     }
 
     return {
       brandBody:
-        "Join over 50,000 riders in Accra and Kumasi who trust OkadaGo for their daily commute. Fast, insured, and professional.",
-      loginTitle: "Welcome back",
-      loginDescription: "Enter your phone number to continue.",
-      signupTitle: "Create account",
-      signupDescription: "Start your journey with OkadaGo today.",
+        "Join passengers across Accra and Kumasi who trust OkadaGo for daily trips. Fast, insured, and professional.",
+      loginTitle: "Login as passenger",
+      loginDescription: "Enter your phone number to continue booking rides.",
+      signupTitle: "Create passenger account",
+      signupDescription: "Start booking OkadaGo trips today.",
       forgotDescription: "Enter your phone number to request a password reset.",
-      loginAltText: "New to OkadaGo? ",
+      loginAltText: "New passenger? ",
       loginAltCta: "Create an account",
-      signupCta: "Create Account"
+      signupCta: "Create Passenger Account",
+      loginCta: "Login as passenger",
+      switchText: "Drive with OkadaGo? ",
+      switchCta: "Login as rider",
+      switchHref: "/rider/login"
     };
   }, [audience]);
 
@@ -300,11 +314,8 @@ export function AuthPages({
           <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#0a0b0d]/70 to-transparent" />
         </div>
 
-        <Link href="/" className="relative z-10 flex items-center gap-2 w-fit">
-          <div className="w-10 h-10 rounded bg-primary flex items-center justify-center text-[#0a0b0d] font-bold text-2xl">
-            O
-          </div>
-          <span className="font-bold text-2xl tracking-tight">OkadaGo</span>
+        <Link href="/" className="relative z-10 flex items-center w-fit">
+          <BrandMark variant="wordmark" onDark product={audience === "rider" ? "rider" : "passenger"} height={32} priority />
         </Link>
 
         <motion.div 
@@ -337,11 +348,8 @@ export function AuthPages({
             </Link>
           </div>
 
-          <Link href="/" className="mb-10 flex items-center justify-center gap-2 md:hidden w-fit">
-            <div className="flex h-10 w-10 items-center justify-center rounded bg-primary text-2xl font-bold text-[#0a0b0d]">
-              O
-            </div>
-            <span className="text-2xl font-bold tracking-tight text-[#0a0b0d]">OkadaGo</span>
+          <Link href="/" className="mb-10 flex items-center md:hidden w-fit">
+            <BrandMark variant="wordmark" height={30} priority />
           </Link>
 
           <AnimatePresence mode="wait">
@@ -415,7 +423,7 @@ export function AuthPages({
                         <Input
                           id="phone"
                           type="tel"
-                          placeholder="801 234 5678"
+                          placeholder="024 123 4567"
                           className="min-w-0 rounded-l-none"
                           value={phoneLocal}
                           onChange={(event) => setPhoneLocal(event.target.value)}
@@ -459,20 +467,34 @@ export function AuthPages({
 
                   <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
                     <Button type="submit" className="h-12 w-full bg-primary text-base text-[#0a0b0d] hover:bg-primary/90" disabled={loading}>
-                      {loading ? "Please wait..." : "Log in"}
+                      {loading ? "Please wait..." : copy.loginCta}
                     </Button>
                   </motion.div>
                 </form>
 
-                <div className="mt-8 text-center text-sm">
-                  <span className="text-slate-600">{copy.loginAltText}</span>
-                  <Link
-                    href={routeLinks.signup}
-                    className="font-bold hover:underline"
-                    style={{ color: "#8a6c00" }}
-                  >
-                    {copy.loginAltCta}
-                  </Link>
+                <div className="mt-8 space-y-3 text-center text-sm">
+                  <div>
+                    <span className="text-slate-600">{copy.loginAltText}</span>
+                    <Link
+                      href={routeLinks.signup}
+                      className="font-bold hover:underline"
+                      style={{ color: "#8a6c00" }}
+                    >
+                      {copy.loginAltCta}
+                    </Link>
+                  </div>
+                  {copy.switchCta ? (
+                    <div>
+                      <span className="text-slate-600">{copy.switchText}</span>
+                      <Link
+                        href={copy.switchHref}
+                        className="font-bold hover:underline"
+                        style={{ color: "#8a6c00" }}
+                      >
+                        {copy.switchCta}
+                      </Link>
+                    </div>
+                  ) : null}
                 </div>
               </motion.div>
             )}
@@ -504,7 +526,7 @@ export function AuthPages({
                       <Label htmlFor="firstName">First Name</Label>
                       <Input
                         id="firstName"
-                        placeholder="Chidi"
+                        placeholder="Kwame"
                         value={firstName}
                         onChange={(event) => setFirstName(event.target.value)}
                         required
@@ -514,7 +536,7 @@ export function AuthPages({
                       <Label htmlFor="lastName">Last Name</Label>
                       <Input
                         id="lastName"
-                        placeholder="Obi"
+                        placeholder="Mensah"
                         value={lastName}
                         onChange={(event) => setLastName(event.target.value)}
                         required
@@ -551,7 +573,7 @@ export function AuthPages({
                       <Input
                         id="signup-phone"
                         type="tel"
-                        placeholder="801 234 5678"
+                        placeholder="024 123 4567"
                         className="min-w-0 rounded-l-none"
                         value={phoneLocal}
                         onChange={(event) => setPhoneLocal(event.target.value)}
@@ -627,6 +649,19 @@ export function AuthPages({
                     </a>.
                   </p>
                 </form>
+
+                {copy.switchCta ? (
+                  <div className="mt-6 text-center text-sm">
+                    <span className="text-slate-600">{copy.switchText}</span>
+                    <Link
+                      href={copy.switchHref}
+                      className="font-bold hover:underline"
+                      style={{ color: "#8a6c00" }}
+                    >
+                      {copy.switchCta}
+                    </Link>
+                  </div>
+                ) : null}
               </motion.div>
             )}
 
@@ -683,7 +718,7 @@ export function AuthPages({
                         <Input
                           id="forgot-phone"
                           type="tel"
-                          placeholder="801 234 5678"
+                          placeholder="024 123 4567"
                           className="min-w-0 rounded-l-none"
                           value={phoneLocal}
                           onChange={(event) => setPhoneLocal(event.target.value)}

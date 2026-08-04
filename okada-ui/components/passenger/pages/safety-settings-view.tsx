@@ -116,7 +116,7 @@ export function SafetySettingsView() {
             <Shield size={16} /> Trusted contacts
           </div>
           <div className="pax-alert-box-sub mt-1">
-            Add people who can be notified if you need help during a trip.
+            Same emergency contacts as the passenger app. Add at least one primary contact so trip SOS can reach someone quickly.
           </div>
         </div>
 
@@ -178,7 +178,9 @@ export function SafetySettingsView() {
         {overviewQuery.isLoading ? (
           <ListRowsSkeleton count={3} />
         ) : contacts.length === 0 ? (
-          <p className="mb-6 pax-empty text-sm">No emergency contacts yet.</p>
+          <p className="mb-6 pax-empty text-sm">
+            No emergency contacts yet. Add one above — it syncs with the mobile passenger app.
+          </p>
         ) : (
           <div className="mb-8 flex flex-col gap-3">
             <h3 className="pax-section-title">Your contacts</h3>

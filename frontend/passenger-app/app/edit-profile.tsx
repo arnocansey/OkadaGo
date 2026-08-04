@@ -25,10 +25,10 @@ type SettingsUpdateResponse = {
 };
 
 const PAYMENT_OPTIONS: Array<{ id: PaymentMethod; label: string }> = [
+  { id: "mobile_money", label: "Mobile money" },
   { id: "cash", label: "Cash" },
   { id: "wallet", label: "Wallet" },
   { id: "card", label: "Card" },
-  { id: "mobile_money", label: "Mobile money" },
 ];
 
 export default function EditProfileScreen() {
@@ -39,7 +39,7 @@ export default function EditProfileScreen() {
   const [email, setEmail] = useState(user.email ?? "");
   const [phoneE164, setPhoneE164] = useState(user.phoneE164);
   const [defaultServiceCity, setDefaultServiceCity] = useState("");
-  const [preferredPayment, setPreferredPayment] = useState<PaymentMethod>("cash");
+  const [preferredPayment, setPreferredPayment] = useState<PaymentMethod>("mobile_money");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -51,7 +51,7 @@ export default function EditProfileScreen() {
         setEmail(data.email ?? "");
         setPhoneE164(data.phoneE164);
         setDefaultServiceCity(data.defaultServiceCity ?? "");
-        setPreferredPayment(data.preferredPayment ?? "cash");
+        setPreferredPayment(data.preferredPayment ?? "mobile_money");
       })
       .catch(() => undefined);
   }, [session?.token]);

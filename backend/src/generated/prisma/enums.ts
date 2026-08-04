@@ -71,7 +71,26 @@ export const VehicleStatus = {
 export type VehicleStatus = (typeof VehicleStatus)[keyof typeof VehicleStatus]
 
 
+export const VehicleType = {
+  OKADA: 'OKADA',
+  TRICYCLE: 'TRICYCLE',
+  BICYCLE: 'BICYCLE'
+} as const
+
+export type VehicleType = (typeof VehicleType)[keyof typeof VehicleType]
+
+
+export const JobPreference = {
+  RIDES_ONLY: 'RIDES_ONLY',
+  DELIVERY_ONLY: 'DELIVERY_ONLY',
+  BOTH: 'BOTH'
+} as const
+
+export type JobPreference = (typeof JobPreference)[keyof typeof JobPreference]
+
+
 export const RideStatus = {
+  SCHEDULED: 'SCHEDULED',
   SEARCHING: 'SEARCHING',
   ASSIGNED: 'ASSIGNED',
   ARRIVING: 'ARRIVING',
@@ -274,3 +293,61 @@ export const PricingRuleScope = {
 } as const
 
 export type PricingRuleScope = (typeof PricingRuleScope)[keyof typeof PricingRuleScope]
+
+
+export const SavedPaymentChannel = {
+  CARD: 'CARD',
+  MOBILE_MONEY: 'MOBILE_MONEY',
+  PAYPAL: 'PAYPAL'
+} as const
+
+export type SavedPaymentChannel = (typeof SavedPaymentChannel)[keyof typeof SavedPaymentChannel]
+
+
+export const SavedPaymentStatus = {
+  PENDING: 'PENDING',
+  ACTIVE: 'ACTIVE',
+  REVOKED: 'REVOKED'
+} as const
+
+export type SavedPaymentStatus = (typeof SavedPaymentStatus)[keyof typeof SavedPaymentStatus]
+
+
+export const DeliveryStopType = {
+  PICKUP: 'PICKUP',
+  DROPOFF: 'DROPOFF'
+} as const
+
+export type DeliveryStopType = (typeof DeliveryStopType)[keyof typeof DeliveryStopType]
+
+
+export const DeliveryStopStatus = {
+  PENDING: 'PENDING',
+  ARRIVED: 'ARRIVED',
+  COMPLETED: 'COMPLETED',
+  SKIPPED: 'SKIPPED'
+} as const
+
+export type DeliveryStopStatus = (typeof DeliveryStopStatus)[keyof typeof DeliveryStopStatus]
+
+
+export const BroadcastAudience = {
+  ALL: 'ALL',
+  RIDERS: 'RIDERS',
+  PASSENGERS: 'PASSENGERS',
+  ZONE: 'ZONE',
+  INACTIVE_RIDERS: 'INACTIVE_RIDERS',
+  NEW_PASSENGERS: 'NEW_PASSENGERS'
+} as const
+
+export type BroadcastAudience = (typeof BroadcastAudience)[keyof typeof BroadcastAudience]
+
+
+export const BroadcastStatus = {
+  PENDING: 'PENDING',
+  SENT: 'SENT',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type BroadcastStatus = (typeof BroadcastStatus)[keyof typeof BroadcastStatus]

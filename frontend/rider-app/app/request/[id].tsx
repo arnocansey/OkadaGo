@@ -1,12 +1,13 @@
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppMap } from "@/components/AppMap";
 import { api, money } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { markersForDelivery, markersForRide } from "@/lib/tripMap";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { radius, spacing } from "@/theme/tokens";
@@ -15,6 +16,7 @@ export default function RequestScreen() {
   const { id, kind } = useLocalSearchParams<{ id: string; kind?: string }>();
   const { session, rides, deliveries, refresh } = useApp();
   const { colors, typography, stackHeaderOptions } = useTheme();
+  const [acting, setActing] = useState(false);
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -24,28 +26,17 @@ export default function RequestScreen() {
         progressBar: { height: 4, backgroundColor: colors.accent },
         headerRow: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" },
         kicker: { ...typography.label, color: colors.textMuted },
-        title: { ...typography.h1, marginTop: 4, color: colors.text },
+        title: { ...typography.h1, marginTop: spacing.xs, color: colors.text },
         farePill: {
           backgroundColor: colors.primary,
           borderRadius: radius.full,
           paddingHorizontal: spacing.lg,
           paddingVertical: spacing.sm,
           alignSelf: "flex-start",
-          marginTop: 4,
+          marginTop: spacing.xs,
         },
         fareText: { ...typography.bodySemibold, color: colors.textOnPrimary },
         timerRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
-        timerBadge: {
-          width: 40,
-          height: 40,
-          borderRadius: 20,
-          backgroundColor: colors.accentLight,
-          borderWidth: 2,
-          borderColor: colors.accent,
-          alignItems: "center",
-          justifyContent: "center",
-        },
-        timerText: { ...typography.label, color: colors.primary },
         timerLabel: { ...typography.caption, color: colors.textMuted },
         routeCard: {
           flexDirection: "row",
@@ -54,16 +45,16 @@ export default function RequestScreen() {
           borderRadius: radius.lg,
           padding: spacing.lg,
         },
-        routeLine: { alignItems: "center", paddingTop: 4, gap: 0 },
+        routeLine: { alignItems: "center", paddingTop: spacing.xs, gap: 0 },
         dot: { width: 12, height: 12, borderRadius: 6 },
         dotStart: { backgroundColor: colors.primary },
         dotEnd: { backgroundColor: colors.danger },
-        connector: { flex: 1, width: 2, backgroundColor: colors.border, minHeight: 32, marginVertical: 4 },
+        connector: { flex: 1, width: 2, backgroundColor: colors.border, minHeight: 32, marginVertical: spacing.xs },
         routeLabels: { flex: 1, justifyContent: "space-between", gap: spacing.lg },
         routeItem: {},
         routeItemEnd: {},
         routeLabel: { ...typography.caption, color: colors.textMuted },
-        routeAddress: { ...typography.bodySemibold, marginTop: 2, color: colors.text },
+        routeAddress: { ...typography.bodySemibold, marginTop: spacing.xs, color: colors.text },
         actions: { gap: spacing.md },
       }),
     [colors, typography],
@@ -102,12 +93,15 @@ export default function RequestScreen() {
 
   const markers = useMemo(() => {
     if (!trip) return [];
-    return isRide ? markersForRide(trip as (typeof rides)[0]) : markersForDelivery(trip as (typeof deliveries)[0]);
-  }, [trip, isRide]);
+    return isRide
+      ? markersForRide(trip as (typeof rides)[0], colors)
+      : markersForDelivery(trip as (typeof deliveries)[0], colors);
+  }, [trip, isRide, colors, rides, deliveries]);
 
   async function accept() {
-    if (!trip || !session) return;
+    if (!trip || !session || acting) return;
     const nextStatus = isRide ? "arriving" : "assigned";
+    setActing(true);
     try {
       if (isRide) {
         await api(`/rides/${trip.id}/status`, {
@@ -127,11 +121,15 @@ export default function RequestScreen() {
     } catch (e) {
       Alert.alert("Accept failed", e instanceof Error ? e.message : "Could not accept request.");
       router.back();
+    } finally {
+      setActing(false);
     }
   }
 
   async function decline() {
     if (!trip || !session) return router.back();
+    if (acting) return;
+    setActing(true);
     try {
       if (isRide) {
         await api(`/rides/${trip.id}/status`, {
@@ -200,11 +198,8 @@ export default function RequestScreen() {
             ) : null}
           </View>
 
-          {/* Timer badge */}
           <View style={styles.timerRow}>
-            <View style={styles.timerBadge}>
-              <Text style={styles.timerText}>{countdown}s</Text>
-            </View>
+            <Badge label={`${countdown}s`} tone={countdown <= 5 ? "danger" : "warning"} />
             <Text style={styles.timerLabel}>Auto-declines in {countdown} seconds</Text>
           </View>
 
@@ -228,8 +223,8 @@ export default function RequestScreen() {
           </View>
 
           <View style={styles.actions}>
-            <Button label="Decline" variant="outline" onPress={decline} fullWidth />
-            <Button label="Accept" variant="accent" onPress={accept} fullWidth />
+            <Button label="Accept" variant="accent" loading={acting} onPress={accept} fullWidth />
+            <Button label="Decline" variant="outline" disabled={acting} onPress={decline} fullWidth />
           </View>
         </SafeAreaView>
       </View>

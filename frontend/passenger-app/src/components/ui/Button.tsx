@@ -54,14 +54,14 @@ export function Button({
       },
       danger: {
         container: { backgroundColor: colors.danger },
-        text: { color: colors.text },
+        text: { color: colors.textOnDanger },
       },
       accent: {
         container: { backgroundColor: colors.accent },
         text: { color: colors.textOnPrimary },
       },
       outline: {
-        container: { backgroundColor: colors.background, borderWidth: 1.5, borderColor: colors.primary },
+        container: { backgroundColor: "transparent", borderWidth: 1.5, borderColor: colors.borderStrong },
         text: { color: colors.text },
       },
     }),

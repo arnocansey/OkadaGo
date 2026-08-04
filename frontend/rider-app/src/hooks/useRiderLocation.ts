@@ -30,11 +30,12 @@ export function useRiderLocation(params: {
         },
         (position) => {
           const { latitude, longitude } = position.coords;
+          const isMocked = position.mocked ?? undefined;
 
           void api(`/riders/${params.riderProfileId}/availability`, {
             method: "PATCH",
             token: params.token,
-            body: { onlineStatus: Boolean(params.online), latitude, longitude },
+            body: { onlineStatus: Boolean(params.online), latitude, longitude, isMocked },
           }).catch(() => undefined);
 
           if (params.activeTrip) {
@@ -55,6 +56,7 @@ export function useRiderLocation(params: {
                     ? position.coords.heading
                     : undefined,
                 accuracyM: position.coords.accuracy ?? undefined,
+                isMocked,
               },
             }).catch(() => undefined);
           }

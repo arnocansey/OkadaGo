@@ -264,9 +264,9 @@ export function AdminDashboard() {
                 <div className="divide-y divide-gray-100">
                   {[
                     { rank: 1, name: 'Kwame Asante', trips: 142, rating: 4.9 },
-                    { rank: 2, name: 'Emeka Okafor', trips: 138, rating: 4.8 },
+                    { rank: 2, name: 'Kojo Appiah', trips: 138, rating: 4.8 },
                     { rank: 3, name: 'John Mensah', trips: 131, rating: 5.0 },
-                    { rank: 4, name: 'Tunde Bakare', trips: 124, rating: 4.7 },
+                    { rank: 4, name: 'Yaw Mensah', trips: 124, rating: 4.7 },
                     { rank: 5, name: 'Kofi Annan', trips: 119, rating: 4.9 },
                   ].map((rider) => (
                     <div key={rider.rank} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
@@ -299,7 +299,7 @@ export function AdminDashboard() {
                 <div className="divide-y divide-gray-100">
                   {[
                     { id: 'RD-0892', name: 'Abena Osei', city: 'Accra', time: '2h ago' },
-                    { id: 'RD-0893', name: 'Chinedu Eze', city: 'Lagos', time: '3h ago' },
+                    { id: 'RD-0893', name: 'Kojo Amoah', city: 'Kumasi', time: '3h ago' },
                     { id: 'RD-0894', name: 'Yaw Yeboah', city: 'Kumasi', time: '5h ago' },
                   ].map((pending) => (
                     <div key={pending.id} className="p-4 space-y-3 hover:bg-gray-50 transition-colors">

@@ -86,9 +86,12 @@ export type RideMinAggregateOutputType = {
   pickupAddress: string | null
   pickupLatitude: runtime.Decimal | null
   pickupLongitude: runtime.Decimal | null
+  pickupLandmark: string | null
   destinationAddress: string | null
   destinationLatitude: runtime.Decimal | null
   destinationLongitude: runtime.Decimal | null
+  destinationLandmark: string | null
+  pickupLocationMocked: boolean | null
   routePolyline: string | null
   estimatedDistanceKm: runtime.Decimal | null
   estimatedDurationMinutes: number | null
@@ -129,9 +132,12 @@ export type RideMaxAggregateOutputType = {
   pickupAddress: string | null
   pickupLatitude: runtime.Decimal | null
   pickupLongitude: runtime.Decimal | null
+  pickupLandmark: string | null
   destinationAddress: string | null
   destinationLatitude: runtime.Decimal | null
   destinationLongitude: runtime.Decimal | null
+  destinationLandmark: string | null
+  pickupLocationMocked: boolean | null
   routePolyline: string | null
   estimatedDistanceKm: runtime.Decimal | null
   estimatedDurationMinutes: number | null
@@ -172,9 +178,12 @@ export type RideCountAggregateOutputType = {
   pickupAddress: number
   pickupLatitude: number
   pickupLongitude: number
+  pickupLandmark: number
   destinationAddress: number
   destinationLatitude: number
   destinationLongitude: number
+  destinationLandmark: number
+  pickupLocationMocked: number
   routePolyline: number
   estimatedDistanceKm: number
   estimatedDurationMinutes: number
@@ -257,9 +266,12 @@ export type RideMinAggregateInputType = {
   pickupAddress?: true
   pickupLatitude?: true
   pickupLongitude?: true
+  pickupLandmark?: true
   destinationAddress?: true
   destinationLatitude?: true
   destinationLongitude?: true
+  destinationLandmark?: true
+  pickupLocationMocked?: true
   routePolyline?: true
   estimatedDistanceKm?: true
   estimatedDurationMinutes?: true
@@ -300,9 +312,12 @@ export type RideMaxAggregateInputType = {
   pickupAddress?: true
   pickupLatitude?: true
   pickupLongitude?: true
+  pickupLandmark?: true
   destinationAddress?: true
   destinationLatitude?: true
   destinationLongitude?: true
+  destinationLandmark?: true
+  pickupLocationMocked?: true
   routePolyline?: true
   estimatedDistanceKm?: true
   estimatedDurationMinutes?: true
@@ -343,9 +358,12 @@ export type RideCountAggregateInputType = {
   pickupAddress?: true
   pickupLatitude?: true
   pickupLongitude?: true
+  pickupLandmark?: true
   destinationAddress?: true
   destinationLatitude?: true
   destinationLongitude?: true
+  destinationLandmark?: true
+  pickupLocationMocked?: true
   routePolyline?: true
   estimatedDistanceKm?: true
   estimatedDurationMinutes?: true
@@ -473,9 +491,12 @@ export type RideGroupByOutputType = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal
   pickupLongitude: runtime.Decimal
+  pickupLandmark: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal
   destinationLongitude: runtime.Decimal
+  destinationLandmark: string | null
+  pickupLocationMocked: boolean
   routePolyline: string | null
   estimatedDistanceKm: runtime.Decimal | null
   estimatedDurationMinutes: number | null
@@ -539,9 +560,12 @@ export type RideWhereInput = {
   pickupAddress?: Prisma.StringFilter<"Ride"> | string
   pickupLatitude?: Prisma.DecimalFilter<"Ride"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFilter<"Ride"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.StringNullableFilter<"Ride"> | string | null
   destinationAddress?: Prisma.StringFilter<"Ride"> | string
   destinationLatitude?: Prisma.DecimalFilter<"Ride"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFilter<"Ride"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.StringNullableFilter<"Ride"> | string | null
+  pickupLocationMocked?: Prisma.BoolFilter<"Ride"> | boolean
   routePolyline?: Prisma.StringNullableFilter<"Ride"> | string | null
   estimatedDistanceKm?: Prisma.DecimalNullableFilter<"Ride"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.IntNullableFilter<"Ride"> | number | null
@@ -595,9 +619,12 @@ export type RideOrderByWithRelationInput = {
   pickupAddress?: Prisma.SortOrder
   pickupLatitude?: Prisma.SortOrder
   pickupLongitude?: Prisma.SortOrder
+  pickupLandmark?: Prisma.SortOrderInput | Prisma.SortOrder
   destinationAddress?: Prisma.SortOrder
   destinationLatitude?: Prisma.SortOrder
   destinationLongitude?: Prisma.SortOrder
+  destinationLandmark?: Prisma.SortOrderInput | Prisma.SortOrder
+  pickupLocationMocked?: Prisma.SortOrder
   routePolyline?: Prisma.SortOrderInput | Prisma.SortOrder
   estimatedDistanceKm?: Prisma.SortOrderInput | Prisma.SortOrder
   estimatedDurationMinutes?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -654,9 +681,12 @@ export type RideWhereUniqueInput = Prisma.AtLeast<{
   pickupAddress?: Prisma.StringFilter<"Ride"> | string
   pickupLatitude?: Prisma.DecimalFilter<"Ride"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFilter<"Ride"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.StringNullableFilter<"Ride"> | string | null
   destinationAddress?: Prisma.StringFilter<"Ride"> | string
   destinationLatitude?: Prisma.DecimalFilter<"Ride"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFilter<"Ride"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.StringNullableFilter<"Ride"> | string | null
+  pickupLocationMocked?: Prisma.BoolFilter<"Ride"> | boolean
   routePolyline?: Prisma.StringNullableFilter<"Ride"> | string | null
   estimatedDistanceKm?: Prisma.DecimalNullableFilter<"Ride"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.IntNullableFilter<"Ride"> | number | null
@@ -710,9 +740,12 @@ export type RideOrderByWithAggregationInput = {
   pickupAddress?: Prisma.SortOrder
   pickupLatitude?: Prisma.SortOrder
   pickupLongitude?: Prisma.SortOrder
+  pickupLandmark?: Prisma.SortOrderInput | Prisma.SortOrder
   destinationAddress?: Prisma.SortOrder
   destinationLatitude?: Prisma.SortOrder
   destinationLongitude?: Prisma.SortOrder
+  destinationLandmark?: Prisma.SortOrderInput | Prisma.SortOrder
+  pickupLocationMocked?: Prisma.SortOrder
   routePolyline?: Prisma.SortOrderInput | Prisma.SortOrder
   estimatedDistanceKm?: Prisma.SortOrderInput | Prisma.SortOrder
   estimatedDurationMinutes?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -761,9 +794,12 @@ export type RideScalarWhereWithAggregatesInput = {
   pickupAddress?: Prisma.StringWithAggregatesFilter<"Ride"> | string
   pickupLatitude?: Prisma.DecimalWithAggregatesFilter<"Ride"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalWithAggregatesFilter<"Ride"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.StringNullableWithAggregatesFilter<"Ride"> | string | null
   destinationAddress?: Prisma.StringWithAggregatesFilter<"Ride"> | string
   destinationLatitude?: Prisma.DecimalWithAggregatesFilter<"Ride"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalWithAggregatesFilter<"Ride"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.StringNullableWithAggregatesFilter<"Ride"> | string | null
+  pickupLocationMocked?: Prisma.BoolWithAggregatesFilter<"Ride"> | boolean
   routePolyline?: Prisma.StringNullableWithAggregatesFilter<"Ride"> | string | null
   estimatedDistanceKm?: Prisma.DecimalNullableWithAggregatesFilter<"Ride"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.IntNullableWithAggregatesFilter<"Ride"> | number | null
@@ -800,9 +836,12 @@ export type RideCreateInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -856,9 +895,12 @@ export type RideUncheckedCreateInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -904,9 +946,12 @@ export type RideUpdateInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -960,9 +1005,12 @@ export type RideUncheckedUpdateInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1012,9 +1060,12 @@ export type RideCreateManyInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -1051,9 +1102,12 @@ export type RideUpdateManyMutationInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1094,9 +1148,12 @@ export type RideUncheckedUpdateManyInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1147,9 +1204,12 @@ export type RideCountOrderByAggregateInput = {
   pickupAddress?: Prisma.SortOrder
   pickupLatitude?: Prisma.SortOrder
   pickupLongitude?: Prisma.SortOrder
+  pickupLandmark?: Prisma.SortOrder
   destinationAddress?: Prisma.SortOrder
   destinationLatitude?: Prisma.SortOrder
   destinationLongitude?: Prisma.SortOrder
+  destinationLandmark?: Prisma.SortOrder
+  pickupLocationMocked?: Prisma.SortOrder
   routePolyline?: Prisma.SortOrder
   estimatedDistanceKm?: Prisma.SortOrder
   estimatedDurationMinutes?: Prisma.SortOrder
@@ -1210,9 +1270,12 @@ export type RideMaxOrderByAggregateInput = {
   pickupAddress?: Prisma.SortOrder
   pickupLatitude?: Prisma.SortOrder
   pickupLongitude?: Prisma.SortOrder
+  pickupLandmark?: Prisma.SortOrder
   destinationAddress?: Prisma.SortOrder
   destinationLatitude?: Prisma.SortOrder
   destinationLongitude?: Prisma.SortOrder
+  destinationLandmark?: Prisma.SortOrder
+  pickupLocationMocked?: Prisma.SortOrder
   routePolyline?: Prisma.SortOrder
   estimatedDistanceKm?: Prisma.SortOrder
   estimatedDurationMinutes?: Prisma.SortOrder
@@ -1253,9 +1316,12 @@ export type RideMinOrderByAggregateInput = {
   pickupAddress?: Prisma.SortOrder
   pickupLatitude?: Prisma.SortOrder
   pickupLongitude?: Prisma.SortOrder
+  pickupLandmark?: Prisma.SortOrder
   destinationAddress?: Prisma.SortOrder
   destinationLatitude?: Prisma.SortOrder
   destinationLongitude?: Prisma.SortOrder
+  destinationLandmark?: Prisma.SortOrder
+  pickupLocationMocked?: Prisma.SortOrder
   routePolyline?: Prisma.SortOrder
   estimatedDistanceKm?: Prisma.SortOrder
   estimatedDurationMinutes?: Prisma.SortOrder
@@ -1504,10 +1570,12 @@ export type RideCreateNestedOneWithoutRatingsInput = {
   connect?: Prisma.RideWhereUniqueInput
 }
 
-export type RideUpdateOneRequiredWithoutRatingsNestedInput = {
+export type RideUpdateOneWithoutRatingsNestedInput = {
   create?: Prisma.XOR<Prisma.RideCreateWithoutRatingsInput, Prisma.RideUncheckedCreateWithoutRatingsInput>
   connectOrCreate?: Prisma.RideCreateOrConnectWithoutRatingsInput
   upsert?: Prisma.RideUpsertWithoutRatingsInput
+  disconnect?: Prisma.RideWhereInput | boolean
+  delete?: Prisma.RideWhereInput | boolean
   connect?: Prisma.RideWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.RideUpdateToOneWithWhereWithoutRatingsInput, Prisma.RideUpdateWithoutRatingsInput>, Prisma.RideUncheckedUpdateWithoutRatingsInput>
 }
@@ -1518,10 +1586,12 @@ export type RideCreateNestedOneWithoutReviewsInput = {
   connect?: Prisma.RideWhereUniqueInput
 }
 
-export type RideUpdateOneRequiredWithoutReviewsNestedInput = {
+export type RideUpdateOneWithoutReviewsNestedInput = {
   create?: Prisma.XOR<Prisma.RideCreateWithoutReviewsInput, Prisma.RideUncheckedCreateWithoutReviewsInput>
   connectOrCreate?: Prisma.RideCreateOrConnectWithoutReviewsInput
   upsert?: Prisma.RideUpsertWithoutReviewsInput
+  disconnect?: Prisma.RideWhereInput | boolean
+  delete?: Prisma.RideWhereInput | boolean
   connect?: Prisma.RideWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.RideUpdateToOneWithWhereWithoutReviewsInput, Prisma.RideUpdateWithoutReviewsInput>, Prisma.RideUncheckedUpdateWithoutReviewsInput>
 }
@@ -1632,9 +1702,12 @@ export type RideCreateWithoutPassengerInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -1686,9 +1759,12 @@ export type RideUncheckedCreateWithoutPassengerInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -1767,9 +1843,12 @@ export type RideScalarWhereInput = {
   pickupAddress?: Prisma.StringFilter<"Ride"> | string
   pickupLatitude?: Prisma.DecimalFilter<"Ride"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFilter<"Ride"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.StringNullableFilter<"Ride"> | string | null
   destinationAddress?: Prisma.StringFilter<"Ride"> | string
   destinationLatitude?: Prisma.DecimalFilter<"Ride"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFilter<"Ride"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.StringNullableFilter<"Ride"> | string | null
+  pickupLocationMocked?: Prisma.BoolFilter<"Ride"> | boolean
   routePolyline?: Prisma.StringNullableFilter<"Ride"> | string | null
   estimatedDistanceKm?: Prisma.DecimalNullableFilter<"Ride"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.IntNullableFilter<"Ride"> | number | null
@@ -1806,9 +1885,12 @@ export type RideCreateWithoutRiderInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -1860,9 +1942,12 @@ export type RideUncheckedCreateWithoutRiderInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -1934,9 +2019,12 @@ export type RideCreateWithoutServiceZoneInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -1988,9 +2076,12 @@ export type RideUncheckedCreateWithoutServiceZoneInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -2062,9 +2153,12 @@ export type RideCreateWithoutLocationsInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -2117,9 +2211,12 @@ export type RideUncheckedCreateWithoutLocationsInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -2180,9 +2277,12 @@ export type RideUpdateWithoutLocationsInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -2235,9 +2335,12 @@ export type RideUncheckedUpdateWithoutLocationsInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -2282,9 +2385,12 @@ export type RideCreateWithoutEventsInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -2337,9 +2443,12 @@ export type RideUncheckedCreateWithoutEventsInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -2400,9 +2509,12 @@ export type RideUpdateWithoutEventsInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -2455,9 +2567,12 @@ export type RideUncheckedUpdateWithoutEventsInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -2502,9 +2617,12 @@ export type RideCreateWithoutPaymentInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -2557,9 +2675,12 @@ export type RideUncheckedCreateWithoutPaymentInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -2620,9 +2741,12 @@ export type RideUpdateWithoutPaymentInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -2675,9 +2799,12 @@ export type RideUncheckedUpdateWithoutPaymentInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -2722,9 +2849,12 @@ export type RideCreateWithoutWalletTransactionsInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -2777,9 +2907,12 @@ export type RideUncheckedCreateWithoutWalletTransactionsInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -2840,9 +2973,12 @@ export type RideUpdateWithoutWalletTransactionsInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -2895,9 +3031,12 @@ export type RideUncheckedUpdateWithoutWalletTransactionsInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -2942,9 +3081,12 @@ export type RideCreateWithoutRatingsInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -2997,9 +3139,12 @@ export type RideUncheckedCreateWithoutRatingsInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -3060,9 +3205,12 @@ export type RideUpdateWithoutRatingsInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -3115,9 +3263,12 @@ export type RideUncheckedUpdateWithoutRatingsInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -3162,9 +3313,12 @@ export type RideCreateWithoutReviewsInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -3217,9 +3371,12 @@ export type RideUncheckedCreateWithoutReviewsInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -3280,9 +3437,12 @@ export type RideUpdateWithoutReviewsInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -3335,9 +3495,12 @@ export type RideUncheckedUpdateWithoutReviewsInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -3382,9 +3545,12 @@ export type RideCreateWithoutPromoCodeInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -3436,9 +3602,12 @@ export type RideUncheckedCreateWithoutPromoCodeInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -3510,9 +3679,12 @@ export type RideCreateWithoutPromoRedemptionsInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -3565,9 +3737,12 @@ export type RideUncheckedCreateWithoutPromoRedemptionsInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -3628,9 +3803,12 @@ export type RideUpdateWithoutPromoRedemptionsInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -3683,9 +3861,12 @@ export type RideUncheckedUpdateWithoutPromoRedemptionsInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -3730,9 +3911,12 @@ export type RideCreateWithoutTicketInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -3785,9 +3969,12 @@ export type RideUncheckedCreateWithoutTicketInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -3848,9 +4035,12 @@ export type RideUpdateWithoutTicketInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -3903,9 +4093,12 @@ export type RideUncheckedUpdateWithoutTicketInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -3950,9 +4143,12 @@ export type RideCreateWithoutIncidentsInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -4005,9 +4201,12 @@ export type RideUncheckedCreateWithoutIncidentsInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -4068,9 +4267,12 @@ export type RideUpdateWithoutIncidentsInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -4123,9 +4325,12 @@ export type RideUncheckedUpdateWithoutIncidentsInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -4173,9 +4378,12 @@ export type RideCreateManyPassengerInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -4212,9 +4420,12 @@ export type RideUpdateWithoutPassengerInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -4266,9 +4477,12 @@ export type RideUncheckedUpdateWithoutPassengerInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -4317,9 +4531,12 @@ export type RideUncheckedUpdateManyWithoutPassengerInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -4359,9 +4576,12 @@ export type RideCreateManyRiderInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -4398,9 +4618,12 @@ export type RideUpdateWithoutRiderInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -4452,9 +4675,12 @@ export type RideUncheckedUpdateWithoutRiderInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -4503,9 +4729,12 @@ export type RideUncheckedUpdateManyWithoutRiderInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -4545,9 +4774,12 @@ export type RideCreateManyServiceZoneInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -4584,9 +4816,12 @@ export type RideUpdateWithoutServiceZoneInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -4638,9 +4873,12 @@ export type RideUncheckedUpdateWithoutServiceZoneInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -4689,9 +4927,12 @@ export type RideUncheckedUpdateManyWithoutServiceZoneInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -4731,9 +4972,12 @@ export type RideCreateManyPromoCodeInput = {
   pickupAddress: string
   pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
   destinationAddress: string
   destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
   routePolyline?: string | null
   estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: number | null
@@ -4770,9 +5014,12 @@ export type RideUpdateWithoutPromoCodeInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -4824,9 +5071,12 @@ export type RideUncheckedUpdateWithoutPromoCodeInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -4875,9 +5125,12 @@ export type RideUncheckedUpdateManyWithoutPromoCodeInput = {
   pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
   pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
   destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -5003,9 +5256,12 @@ export type RideSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   pickupAddress?: boolean
   pickupLatitude?: boolean
   pickupLongitude?: boolean
+  pickupLandmark?: boolean
   destinationAddress?: boolean
   destinationLatitude?: boolean
   destinationLongitude?: boolean
+  destinationLandmark?: boolean
+  pickupLocationMocked?: boolean
   routePolyline?: boolean
   estimatedDistanceKm?: boolean
   estimatedDurationMinutes?: boolean
@@ -5060,9 +5316,12 @@ export type RideSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   pickupAddress?: boolean
   pickupLatitude?: boolean
   pickupLongitude?: boolean
+  pickupLandmark?: boolean
   destinationAddress?: boolean
   destinationLatitude?: boolean
   destinationLongitude?: boolean
+  destinationLandmark?: boolean
+  pickupLocationMocked?: boolean
   routePolyline?: boolean
   estimatedDistanceKm?: boolean
   estimatedDurationMinutes?: boolean
@@ -5107,9 +5366,12 @@ export type RideSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   pickupAddress?: boolean
   pickupLatitude?: boolean
   pickupLongitude?: boolean
+  pickupLandmark?: boolean
   destinationAddress?: boolean
   destinationLatitude?: boolean
   destinationLongitude?: boolean
+  destinationLandmark?: boolean
+  pickupLocationMocked?: boolean
   routePolyline?: boolean
   estimatedDistanceKm?: boolean
   estimatedDurationMinutes?: boolean
@@ -5154,9 +5416,12 @@ export type RideSelectScalar = {
   pickupAddress?: boolean
   pickupLatitude?: boolean
   pickupLongitude?: boolean
+  pickupLandmark?: boolean
   destinationAddress?: boolean
   destinationLatitude?: boolean
   destinationLongitude?: boolean
+  destinationLandmark?: boolean
+  pickupLocationMocked?: boolean
   routePolyline?: boolean
   estimatedDistanceKm?: boolean
   estimatedDurationMinutes?: boolean
@@ -5177,7 +5442,7 @@ export type RideSelectScalar = {
   updatedAt?: boolean
 }
 
-export type RideOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "passengerId" | "riderId" | "serviceZoneId" | "promoCodeId" | "status" | "paymentMethod" | "cancellationParty" | "cancellationReason" | "requestedAt" | "scheduledFor" | "assignedAt" | "riderArrivedAt" | "startedAt" | "completedAt" | "cancelledAt" | "pickupAddress" | "pickupLatitude" | "pickupLongitude" | "destinationAddress" | "destinationLatitude" | "destinationLongitude" | "routePolyline" | "estimatedDistanceKm" | "estimatedDurationMinutes" | "actualDistanceKm" | "actualDurationMinutes" | "estimatedFare" | "finalFare" | "promoDiscount" | "referralDiscount" | "surgeAmount" | "waitingAmount" | "cancellationFee" | "riderEarnings" | "platformCommission" | "currency" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["ride"]>
+export type RideOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "passengerId" | "riderId" | "serviceZoneId" | "promoCodeId" | "status" | "paymentMethod" | "cancellationParty" | "cancellationReason" | "requestedAt" | "scheduledFor" | "assignedAt" | "riderArrivedAt" | "startedAt" | "completedAt" | "cancelledAt" | "pickupAddress" | "pickupLatitude" | "pickupLongitude" | "pickupLandmark" | "destinationAddress" | "destinationLatitude" | "destinationLongitude" | "destinationLandmark" | "pickupLocationMocked" | "routePolyline" | "estimatedDistanceKm" | "estimatedDurationMinutes" | "actualDistanceKm" | "actualDurationMinutes" | "estimatedFare" | "finalFare" | "promoDiscount" | "referralDiscount" | "surgeAmount" | "waitingAmount" | "cancellationFee" | "riderEarnings" | "platformCommission" | "currency" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["ride"]>
 export type RideInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   passenger?: boolean | Prisma.PassengerProfileDefaultArgs<ExtArgs>
   rider?: boolean | Prisma.Ride$riderArgs<ExtArgs>
@@ -5244,9 +5509,12 @@ export type $RidePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     pickupAddress: string
     pickupLatitude: runtime.Decimal
     pickupLongitude: runtime.Decimal
+    pickupLandmark: string | null
     destinationAddress: string
     destinationLatitude: runtime.Decimal
     destinationLongitude: runtime.Decimal
+    destinationLandmark: string | null
+    pickupLocationMocked: boolean
     routePolyline: string | null
     estimatedDistanceKm: runtime.Decimal | null
     estimatedDurationMinutes: number | null
@@ -5720,9 +5988,12 @@ export interface RideFieldRefs {
   readonly pickupAddress: Prisma.FieldRef<"Ride", 'String'>
   readonly pickupLatitude: Prisma.FieldRef<"Ride", 'Decimal'>
   readonly pickupLongitude: Prisma.FieldRef<"Ride", 'Decimal'>
+  readonly pickupLandmark: Prisma.FieldRef<"Ride", 'String'>
   readonly destinationAddress: Prisma.FieldRef<"Ride", 'String'>
   readonly destinationLatitude: Prisma.FieldRef<"Ride", 'Decimal'>
   readonly destinationLongitude: Prisma.FieldRef<"Ride", 'Decimal'>
+  readonly destinationLandmark: Prisma.FieldRef<"Ride", 'String'>
+  readonly pickupLocationMocked: Prisma.FieldRef<"Ride", 'Boolean'>
   readonly routePolyline: Prisma.FieldRef<"Ride", 'String'>
   readonly estimatedDistanceKm: Prisma.FieldRef<"Ride", 'Decimal'>
   readonly estimatedDurationMinutes: Prisma.FieldRef<"Ride", 'Int'>

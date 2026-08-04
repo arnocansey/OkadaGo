@@ -11,10 +11,12 @@ import {
   DELIVERY_STEPS,
   type StepDetail,
 } from "@/components/TripTimeline";
+import { Avatar } from "@/components/ui/Avatar";
 import { Badge, statusTone } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { SkeletonList } from "@/components/ui/Skeleton";
 import { Input } from "@/components/ui/Input";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -24,6 +26,7 @@ import { api, money } from "@/lib/api";
 import { passengerWs } from "@/lib/websocket";
 import { markersForDelivery, markersForRide } from "@/lib/tripMap";
 import { spacing } from "@/theme/tokens";
+import type { DeliveryStop } from "@/types";
 
 const ACTIVE_STATUSES = ["searching", "arriving", "arrived", "started", "assigned", "picked_up", "in_transit"];
 
@@ -57,9 +60,17 @@ const DELIVERY_SUB_LABELS: Record<string, Record<string, string>> = {
   delivered: { searching: "", assigned: "", picked_up: "", in_transit: "", delivered: "Package delivered successfully" },
 };
 
+const FOOD_DELIVERY_SUB_LABELS: Record<string, Record<string, string>> = {
+  searching: { searching: "Finding a courier for your store pickup...", assigned: "", picked_up: "", in_transit: "", delivered: "" },
+  assigned: { searching: "Courier found!", assigned: "Courier is heading to the store", picked_up: "", in_transit: "", delivered: "" },
+  picked_up: { searching: "", assigned: "", picked_up: "Order collected from the store — on the way to you", in_transit: "", delivered: "" },
+  in_transit: { searching: "", assigned: "", picked_up: "", in_transit: "Courier is delivering your pickup", delivered: "" },
+  delivered: { searching: "", assigned: "", picked_up: "", in_transit: "", delivered: "Store pickup delivered" },
+};
+
 export default function TrackScreen() {
   const { id, kind } = useLocalSearchParams<{ id: string; kind?: string }>();
-  const { session, rides, deliveries, refresh } = useApp();
+  const { session, rides, deliveries, refresh, loading, restoring } = useApp();
   const { colors, typography, stackHeaderOptions } = useTheme();
   const prevIndexRef = useRef<number>(-1);
   const [stepTimestamps, setStepTimestamps] = useState<Record<number, string>>({});
@@ -73,22 +84,11 @@ export default function TrackScreen() {
         header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
         fare: { ...typography.h3, color: colors.text },
         label: { ...typography.caption, color: colors.textMuted },
-        address: { ...typography.bodySemibold, marginTop: 4, color: colors.text },
+        address: { ...typography.bodySemibold, marginTop: spacing.xs, color: colors.text },
         section: { ...typography.h3, color: colors.text },
         riderRow: { flexDirection: "row", alignItems: "center", gap: spacing.lg },
-        riderAvatar: {
-          width: 44,
-          height: 44,
-          borderRadius: 22,
-          backgroundColor: colors.primaryLight,
-          alignItems: "center",
-          justifyContent: "center",
-          borderWidth: 2,
-          borderColor: colors.primary,
-        },
-        riderInitial: { ...typography.bodySemibold, color: colors.primary },
-        riderName: { ...typography.bodySemibold, marginTop: 2, color: colors.text },
-        plate: { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
+        riderName: { ...typography.bodySemibold, marginTop: spacing.xs, color: colors.text },
+        plate: { ...typography.caption, color: colors.textSecondary, marginTop: spacing.xs },
         callBtn: {
           width: 44,
           height: 44,
@@ -105,19 +105,18 @@ export default function TrackScreen() {
         starBtn: { padding: spacing.sm },
         wsStatus: { ...typography.caption, color: colors.textMuted, textAlign: "center" },
         expandRiderRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
-        expandRiderAvatar: {
-          width: 36,
-          height: 36,
-          borderRadius: 18,
-          backgroundColor: colors.primaryLight,
-          alignItems: "center",
-          justifyContent: "center",
-          borderWidth: 1,
-          borderColor: colors.primary,
-        },
-        expandRiderInitial: { ...typography.bodyMedium, color: colors.primary },
         expandRiderName: { ...typography.bodyMedium, color: colors.text },
         expandRiderPlate: { ...typography.caption, color: colors.textSecondary },
+        stopRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: spacing.md,
+          paddingVertical: spacing.sm,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+        },
+        stopAddress: { ...typography.body, color: colors.text },
       }),
     [colors, typography],
   );
@@ -130,6 +129,7 @@ export default function TrackScreen() {
   const [ratingLoading, setRatingLoading] = useState(false);
   const [safetyLoading, setSafetyLoading] = useState(false);
   const [safetyContacts, setSafetyContacts] = useState<SafetyOverview["contacts"]>([]);
+  const [stops, setStops] = useState<DeliveryStop[]>([]);
 
   useTripRefresh(refresh, passengerWs, 8000);
 
@@ -140,10 +140,22 @@ export default function TrackScreen() {
       .catch(() => setSafetyContacts([]));
   }, [session?.token]);
 
+  useEffect(() => {
+    if (isRide || !trip?.id || !session?.token) {
+      setStops([]);
+      return;
+    }
+    api<DeliveryStop[]>(`/deliveries/${trip.id}/stops`, { token: session.token })
+      .then(setStops)
+      .catch(() => setStops([]));
+  }, [isRide, trip?.id, trip?.status, session?.token]);
+
   const markers = useMemo(() => {
     if (!trip) return [];
-    return isRide ? markersForRide(trip as (typeof rides)[0]) : markersForDelivery(trip as (typeof deliveries)[0]);
-  }, [trip, isRide]);
+    return isRide
+      ? markersForRide(trip as (typeof rides)[0], colors)
+      : markersForDelivery(trip as (typeof deliveries)[0], colors);
+  }, [trip, isRide, colors, rides, deliveries]);
 
   const status = trip?.status ?? "searching";
   const isActiveTrip = ACTIVE_STATUSES.includes(status.toLowerCase());
@@ -163,6 +175,10 @@ export default function TrackScreen() {
     Boolean(trip) && isActiveTrip && Boolean(trip?.rider),
   );
 
+  const deliveryTrip = !isRide && trip ? (trip as (typeof deliveries)[0]) : null;
+  const isFoodPickup = Boolean(
+    deliveryTrip && (deliveryTrip.packageType ?? "").toLowerCase() === "food",
+  );
   const steps = isRide ? RIDE_STEPS : DELIVERY_STEPS;
   const currentIndex = stepIndexForStatus(status, isRide ? "ride" : "delivery");
 
@@ -181,7 +197,11 @@ export default function TrackScreen() {
     prevIndexRef.current = currentIndex;
   }, [currentIndex]);
 
-  const subLabels = isRide ? RIDE_SUB_LABELS : DELIVERY_SUB_LABELS;
+  const subLabels = isRide
+    ? RIDE_SUB_LABELS
+    : isFoodPickup
+      ? FOOD_DELIVERY_SUB_LABELS
+      : DELIVERY_SUB_LABELS;
   const currentStatusKey = status.toLowerCase();
 
   const stepDetails: StepDetail[] = useMemo(() => {
@@ -223,9 +243,7 @@ export default function TrackScreen() {
             expandContent = (
               <View>
                 <View style={styles.expandRiderRow}>
-                  <View style={styles.expandRiderAvatar}>
-                    <Text style={styles.expandRiderInitial}>{riderName[0]}</Text>
-                  </View>
+                  <Avatar name={riderName} size={36} />
                   <View style={{ flex: 1 }}>
                     <Text style={styles.expandRiderName}>{riderName}</Text>
                     {plateNumber ? <Text style={styles.expandRiderPlate}>{plateNumber}</Text> : null}
@@ -264,6 +282,15 @@ export default function TrackScreen() {
   }, [currentIndex, steps, subLabels, currentStatusKey, livePreview, stepTimestamps, trip, isRide, colors]);
 
   if (!trip) {
+    if (loading || restoring) {
+      return (
+        <View style={styles.screen}>
+          <View style={{ padding: spacing.xl, marginTop: spacing.xxl }}>
+            <SkeletonList count={4} />
+          </View>
+        </View>
+      );
+    }
     return (
       <View style={styles.screen}>
         <EmptyState title="Trip not found" message="This trip may have been completed or cancelled." />
@@ -271,8 +298,8 @@ export default function TrackScreen() {
     );
   }
 
-  const canCancel = ACTIVE_STATUSES.slice(0, 2).includes(status.toLowerCase());
-  const canRate = isRide && status.toLowerCase() === "completed";
+  const canCancel = ["scheduled", ...ACTIVE_STATUSES.slice(0, 2)].includes(status.toLowerCase());
+  const canRate = isRide ? status.toLowerCase() === "completed" : status.toLowerCase() === "delivered";
   const showReceipt = isRide ? status.toLowerCase() === "completed" : status.toLowerCase() === "delivered";
   const riderPhone = (trip.rider?.user as { phoneE164?: string } | undefined)?.phoneE164;
   const pickupAddress = isRide ? (trip as (typeof rides)[0]).pickupAddress : (trip as (typeof deliveries)[0]).pickupAddress;
@@ -280,42 +307,70 @@ export default function TrackScreen() {
 
   async function reportSos() {
     if (!session) return;
-    setSafetyLoading(true);
-    try {
-      await api("/safety/incidents", {
-        method: "POST",
-        token: session.token,
-        body: {
-          rideId: isRide ? trip!.id : undefined,
-          severity: "CRITICAL",
-          category: "SOS",
-          description: `Passenger SOS during ${isRide ? "ride" : "delivery"} ${trip!.id}`,
+    Alert.alert("Send SOS?", "We'll alert OkadaGo safety and keep this trip marked critical.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Send SOS",
+        style: "destructive",
+        onPress: async () => {
+          setSafetyLoading(true);
+          try {
+            await api("/safety/incidents", {
+              method: "POST",
+              token: session.token,
+              body: {
+                rideId: isRide ? trip!.id : undefined,
+                severity: "CRITICAL",
+                category: "SOS",
+                description: `Passenger SOS during ${isRide ? "ride" : "delivery"} ${trip!.id}`,
+              },
+            });
+            Alert.alert("SOS sent", "Our safety team has been notified. Stay on the line if you can.");
+          } catch (e) {
+            Alert.alert("SOS failed", e instanceof Error ? e.message : "Could not send SOS.");
+          } finally {
+            setSafetyLoading(false);
+          }
         },
-      });
-      Alert.alert("SOS sent", "Our safety team has been notified.");
-    } catch (e) {
-      Alert.alert("SOS failed", e instanceof Error ? e.message : "Could not send SOS.");
-    } finally {
-      setSafetyLoading(false);
-    }
+      },
+    ]);
   }
 
   async function shareTrip() {
-    if (!session || !isRide) return;
+    if (!session || !trip) return;
     setSafetyLoading(true);
     try {
       const result = await api<{ shareUrl?: string; message?: string }>("/safety/share-trip", {
         method: "POST",
         token: session.token,
         body: {
-          rideId: trip!.id,
+          rideId: isRide ? trip.id : undefined,
+          deliveryId: isRide ? undefined : trip.id,
           mode: "START",
           channel: "LINK",
-          note: `Track my OkadaGo trip from ${pickupAddress} to ${dropoffAddress}`,
+          note: isRide
+            ? `I'm on an OkadaGo trip from ${pickupAddress} to ${dropoffAddress}`
+            : isFoodPickup
+              ? `OkadaGo is picking up my food order from ${pickupAddress}`
+              : `OkadaGo is delivering from ${pickupAddress} to ${dropoffAddress}`,
         },
       });
-      const message = result.message ?? result.shareUrl ?? `Track my trip: ${pickupAddress} → ${dropoffAddress}`;
-      await Share.share({ message });
+      const fallback = [
+        isRide
+          ? "I'm on an OkadaGo trip right now."
+          : isFoodPickup
+            ? "OkadaGo is collecting my store pickup right now."
+            : "I'm using OkadaGo for a delivery right now.",
+        `${pickupAddress} → ${dropoffAddress}`,
+        result.shareUrl ? `Live track: ${result.shareUrl}` : null,
+      ]
+        .filter(Boolean)
+        .join("\n");
+      const message = result.message?.trim() || fallback;
+      if (!message.includes("http") && !result.shareUrl) {
+        throw new Error("Share link was unavailable. Try again in a moment.");
+      }
+      await Share.share({ message, title: isRide ? "OkadaGo trip" : "OkadaGo delivery" });
     } catch (e) {
       Alert.alert("Share failed", e instanceof Error ? e.message : "Could not share trip.");
     } finally {
@@ -326,17 +381,21 @@ export default function TrackScreen() {
   async function callEmergencyContact() {
     const primary = safetyContacts?.find((contact) => contact.isPrimary) ?? safetyContacts?.[0];
     if (!primary) {
-      Alert.alert("No emergency contact", "Add a safety contact in your profile settings on the web app.");
+      Alert.alert(
+        "No emergency contact",
+        "Add a safety contact in Profile → Emergency contacts (app) or Safety settings on the web app.",
+      );
       return;
     }
     await Linking.openURL(`tel:${primary.phoneE164}`);
   }
 
   async function submitRating() {
-    if (!session || !isRide) return;
+    if (!session || !trip) return;
     setRatingLoading(true);
     try {
-      await api(`/ratings/rides/${trip!.id}`, {
+      const endpoint = isRide ? `/ratings/rides/${trip.id}` : `/ratings/deliveries/${trip.id}`;
+      await api(endpoint, {
         method: "POST",
         token: session.token,
         body: { score: rating, review: review.trim() || undefined },
@@ -392,12 +451,31 @@ export default function TrackScreen() {
             <TripTimeline steps={steps} currentIndex={currentIndex} stepDetails={stepDetails} />
           </Card>
 
+          {!isRide && stops.filter((s) => s.type === "DROPOFF").length > 1 ? (
+            <Card>
+              <Text style={styles.section}>Stops</Text>
+              {stops
+                .filter((s) => s.type === "DROPOFF")
+                .map((stop, index) => (
+                  <View key={stop.id} style={styles.stopRow}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.stopAddress} numberOfLines={1}>
+                        {index + 1}. {stop.address}
+                      </Text>
+                    </View>
+                    <Badge
+                      label={stop.status === "COMPLETED" ? "Delivered" : "Pending"}
+                      tone={stop.status === "COMPLETED" ? "success" : "default"}
+                    />
+                  </View>
+                ))}
+            </Card>
+          ) : null}
+
           {trip.rider?.user?.fullName ? (
             <Card>
               <View style={styles.riderRow}>
-                <View style={styles.riderAvatar}>
-                  <Text style={styles.riderInitial}>{trip.rider.user.fullName[0]}</Text>
-                </View>
+                <Avatar name={trip.rider.user.fullName} size={44} />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.label}>Your rider</Text>
                   <Text style={styles.riderName}>{trip.rider.user.fullName}</Text>
@@ -425,16 +503,14 @@ export default function TrackScreen() {
                 style={styles.safetyBtn}
                 onPress={reportSos}
               />
-              {isRide ? (
-                <Button
-                  label="Share trip"
-                  variant="outline"
-                  loading={safetyLoading}
-                  icon={<Share2 size={16} color={colors.primary} />}
-                  style={styles.safetyBtn}
-                  onPress={shareTrip}
-                />
-              ) : null}
+              <Button
+                label={isRide ? "Share trip" : "Share delivery"}
+                variant="outline"
+                loading={safetyLoading}
+                icon={<Share2 size={16} color={colors.primary} />}
+                style={styles.safetyBtn}
+                onPress={shareTrip}
+              />
             </View>
             <Button
               label="Call emergency contact"
@@ -463,7 +539,7 @@ export default function TrackScreen() {
 
           {canRate ? (
             <Card stacked>
-              <Text style={styles.section}>Rate your ride</Text>
+              <Text style={styles.section}>{isRide ? "Rate your ride" : "Rate your delivery"}</Text>
               <View style={styles.stars}>
                 {[1, 2, 3, 4, 5].map((value) => (
                   <Pressable key={value} style={styles.starBtn} onPress={() => setRating(value)}>
@@ -475,7 +551,12 @@ export default function TrackScreen() {
                   </Pressable>
                 ))}
               </View>
-              <Input label="Review (optional)" value={review} onChangeText={setReview} placeholder="How was your trip?" />
+              <Input
+                label="Review (optional)"
+                value={review}
+                onChangeText={setReview}
+                placeholder={isRide ? "How was your trip?" : "How was your delivery?"}
+              />
               <Button label="Submit rating" loading={ratingLoading} onPress={submitRating} fullWidth />
             </Card>
           ) : null}

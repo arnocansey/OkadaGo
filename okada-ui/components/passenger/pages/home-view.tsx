@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Bell, MapPin, Navigation } from "lucide-react";
-import { fetchJson } from "@/lib/api";
+import { fetchJson, fetchListJson } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { PassengerAppFrame } from "@/components/passenger/layout/app-frame";
 import { useGeoLocation } from "@/components/passenger/hooks/use-geo-location";
@@ -47,7 +47,7 @@ export function HomeView() {
 
   const ridersQuery = useQuery({
     queryKey: ["riders-pins"],
-    queryFn: () => fetchJson<RiderPin[]>("/bootstrap/riders?limit=50"),
+    queryFn: () => fetchListJson<RiderPin>("/bootstrap/riders?limit=50"),
     refetchInterval: 15_000
   });
 

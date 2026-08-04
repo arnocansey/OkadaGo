@@ -28,6 +28,7 @@ export type ReviewMinAggregateOutputType = {
   id: string | null
   ratingId: string | null
   rideId: string | null
+  deliveryId: string | null
   authorId: string | null
   body: string | null
   isFlagged: boolean | null
@@ -38,6 +39,7 @@ export type ReviewMaxAggregateOutputType = {
   id: string | null
   ratingId: string | null
   rideId: string | null
+  deliveryId: string | null
   authorId: string | null
   body: string | null
   isFlagged: boolean | null
@@ -48,6 +50,7 @@ export type ReviewCountAggregateOutputType = {
   id: number
   ratingId: number
   rideId: number
+  deliveryId: number
   authorId: number
   body: number
   isFlagged: number
@@ -60,6 +63,7 @@ export type ReviewMinAggregateInputType = {
   id?: true
   ratingId?: true
   rideId?: true
+  deliveryId?: true
   authorId?: true
   body?: true
   isFlagged?: true
@@ -70,6 +74,7 @@ export type ReviewMaxAggregateInputType = {
   id?: true
   ratingId?: true
   rideId?: true
+  deliveryId?: true
   authorId?: true
   body?: true
   isFlagged?: true
@@ -80,6 +85,7 @@ export type ReviewCountAggregateInputType = {
   id?: true
   ratingId?: true
   rideId?: true
+  deliveryId?: true
   authorId?: true
   body?: true
   isFlagged?: true
@@ -162,7 +168,8 @@ export type ReviewGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 export type ReviewGroupByOutputType = {
   id: string
   ratingId: string
-  rideId: string
+  rideId: string | null
+  deliveryId: string | null
   authorId: string
   body: string
   isFlagged: boolean
@@ -193,26 +200,30 @@ export type ReviewWhereInput = {
   NOT?: Prisma.ReviewWhereInput | Prisma.ReviewWhereInput[]
   id?: Prisma.StringFilter<"Review"> | string
   ratingId?: Prisma.StringFilter<"Review"> | string
-  rideId?: Prisma.StringFilter<"Review"> | string
+  rideId?: Prisma.StringNullableFilter<"Review"> | string | null
+  deliveryId?: Prisma.StringNullableFilter<"Review"> | string | null
   authorId?: Prisma.StringFilter<"Review"> | string
   body?: Prisma.StringFilter<"Review"> | string
   isFlagged?: Prisma.BoolFilter<"Review"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Review"> | Date | string
   rating?: Prisma.XOR<Prisma.RatingScalarRelationFilter, Prisma.RatingWhereInput>
-  ride?: Prisma.XOR<Prisma.RideScalarRelationFilter, Prisma.RideWhereInput>
+  ride?: Prisma.XOR<Prisma.RideNullableScalarRelationFilter, Prisma.RideWhereInput> | null
+  delivery?: Prisma.XOR<Prisma.DeliveryRequestNullableScalarRelationFilter, Prisma.DeliveryRequestWhereInput> | null
   author?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
 
 export type ReviewOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   ratingId?: Prisma.SortOrder
-  rideId?: Prisma.SortOrder
+  rideId?: Prisma.SortOrderInput | Prisma.SortOrder
+  deliveryId?: Prisma.SortOrderInput | Prisma.SortOrder
   authorId?: Prisma.SortOrder
   body?: Prisma.SortOrder
   isFlagged?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   rating?: Prisma.RatingOrderByWithRelationInput
   ride?: Prisma.RideOrderByWithRelationInput
+  delivery?: Prisma.DeliveryRequestOrderByWithRelationInput
   author?: Prisma.UserOrderByWithRelationInput
 }
 
@@ -222,20 +233,23 @@ export type ReviewWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.ReviewWhereInput | Prisma.ReviewWhereInput[]
   OR?: Prisma.ReviewWhereInput[]
   NOT?: Prisma.ReviewWhereInput | Prisma.ReviewWhereInput[]
-  rideId?: Prisma.StringFilter<"Review"> | string
+  rideId?: Prisma.StringNullableFilter<"Review"> | string | null
+  deliveryId?: Prisma.StringNullableFilter<"Review"> | string | null
   authorId?: Prisma.StringFilter<"Review"> | string
   body?: Prisma.StringFilter<"Review"> | string
   isFlagged?: Prisma.BoolFilter<"Review"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Review"> | Date | string
   rating?: Prisma.XOR<Prisma.RatingScalarRelationFilter, Prisma.RatingWhereInput>
-  ride?: Prisma.XOR<Prisma.RideScalarRelationFilter, Prisma.RideWhereInput>
+  ride?: Prisma.XOR<Prisma.RideNullableScalarRelationFilter, Prisma.RideWhereInput> | null
+  delivery?: Prisma.XOR<Prisma.DeliveryRequestNullableScalarRelationFilter, Prisma.DeliveryRequestWhereInput> | null
   author?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }, "id" | "ratingId">
 
 export type ReviewOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   ratingId?: Prisma.SortOrder
-  rideId?: Prisma.SortOrder
+  rideId?: Prisma.SortOrderInput | Prisma.SortOrder
+  deliveryId?: Prisma.SortOrderInput | Prisma.SortOrder
   authorId?: Prisma.SortOrder
   body?: Prisma.SortOrder
   isFlagged?: Prisma.SortOrder
@@ -251,7 +265,8 @@ export type ReviewScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ReviewScalarWhereWithAggregatesInput | Prisma.ReviewScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Review"> | string
   ratingId?: Prisma.StringWithAggregatesFilter<"Review"> | string
-  rideId?: Prisma.StringWithAggregatesFilter<"Review"> | string
+  rideId?: Prisma.StringNullableWithAggregatesFilter<"Review"> | string | null
+  deliveryId?: Prisma.StringNullableWithAggregatesFilter<"Review"> | string | null
   authorId?: Prisma.StringWithAggregatesFilter<"Review"> | string
   body?: Prisma.StringWithAggregatesFilter<"Review"> | string
   isFlagged?: Prisma.BoolWithAggregatesFilter<"Review"> | boolean
@@ -264,14 +279,16 @@ export type ReviewCreateInput = {
   isFlagged?: boolean
   createdAt?: Date | string
   rating: Prisma.RatingCreateNestedOneWithoutReviewInput
-  ride: Prisma.RideCreateNestedOneWithoutReviewsInput
+  ride?: Prisma.RideCreateNestedOneWithoutReviewsInput
+  delivery?: Prisma.DeliveryRequestCreateNestedOneWithoutReviewsInput
   author: Prisma.UserCreateNestedOneWithoutReviewsGivenInput
 }
 
 export type ReviewUncheckedCreateInput = {
   id?: string
   ratingId: string
-  rideId: string
+  rideId?: string | null
+  deliveryId?: string | null
   authorId: string
   body: string
   isFlagged?: boolean
@@ -284,14 +301,16 @@ export type ReviewUpdateInput = {
   isFlagged?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rating?: Prisma.RatingUpdateOneRequiredWithoutReviewNestedInput
-  ride?: Prisma.RideUpdateOneRequiredWithoutReviewsNestedInput
+  ride?: Prisma.RideUpdateOneWithoutReviewsNestedInput
+  delivery?: Prisma.DeliveryRequestUpdateOneWithoutReviewsNestedInput
   author?: Prisma.UserUpdateOneRequiredWithoutReviewsGivenNestedInput
 }
 
 export type ReviewUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ratingId?: Prisma.StringFieldUpdateOperationsInput | string
-  rideId?: Prisma.StringFieldUpdateOperationsInput | string
+  rideId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deliveryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authorId?: Prisma.StringFieldUpdateOperationsInput | string
   body?: Prisma.StringFieldUpdateOperationsInput | string
   isFlagged?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -301,7 +320,8 @@ export type ReviewUncheckedUpdateInput = {
 export type ReviewCreateManyInput = {
   id?: string
   ratingId: string
-  rideId: string
+  rideId?: string | null
+  deliveryId?: string | null
   authorId: string
   body: string
   isFlagged?: boolean
@@ -318,7 +338,8 @@ export type ReviewUpdateManyMutationInput = {
 export type ReviewUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ratingId?: Prisma.StringFieldUpdateOperationsInput | string
-  rideId?: Prisma.StringFieldUpdateOperationsInput | string
+  rideId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deliveryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authorId?: Prisma.StringFieldUpdateOperationsInput | string
   body?: Prisma.StringFieldUpdateOperationsInput | string
   isFlagged?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -344,6 +365,7 @@ export type ReviewCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   ratingId?: Prisma.SortOrder
   rideId?: Prisma.SortOrder
+  deliveryId?: Prisma.SortOrder
   authorId?: Prisma.SortOrder
   body?: Prisma.SortOrder
   isFlagged?: Prisma.SortOrder
@@ -354,6 +376,7 @@ export type ReviewMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   ratingId?: Prisma.SortOrder
   rideId?: Prisma.SortOrder
+  deliveryId?: Prisma.SortOrder
   authorId?: Prisma.SortOrder
   body?: Prisma.SortOrder
   isFlagged?: Prisma.SortOrder
@@ -364,6 +387,7 @@ export type ReviewMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   ratingId?: Prisma.SortOrder
   rideId?: Prisma.SortOrder
+  deliveryId?: Prisma.SortOrder
   authorId?: Prisma.SortOrder
   body?: Prisma.SortOrder
   isFlagged?: Prisma.SortOrder
@@ -454,6 +478,48 @@ export type ReviewUncheckedUpdateManyWithoutRideNestedInput = {
   deleteMany?: Prisma.ReviewScalarWhereInput | Prisma.ReviewScalarWhereInput[]
 }
 
+export type ReviewCreateNestedManyWithoutDeliveryInput = {
+  create?: Prisma.XOR<Prisma.ReviewCreateWithoutDeliveryInput, Prisma.ReviewUncheckedCreateWithoutDeliveryInput> | Prisma.ReviewCreateWithoutDeliveryInput[] | Prisma.ReviewUncheckedCreateWithoutDeliveryInput[]
+  connectOrCreate?: Prisma.ReviewCreateOrConnectWithoutDeliveryInput | Prisma.ReviewCreateOrConnectWithoutDeliveryInput[]
+  createMany?: Prisma.ReviewCreateManyDeliveryInputEnvelope
+  connect?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+}
+
+export type ReviewUncheckedCreateNestedManyWithoutDeliveryInput = {
+  create?: Prisma.XOR<Prisma.ReviewCreateWithoutDeliveryInput, Prisma.ReviewUncheckedCreateWithoutDeliveryInput> | Prisma.ReviewCreateWithoutDeliveryInput[] | Prisma.ReviewUncheckedCreateWithoutDeliveryInput[]
+  connectOrCreate?: Prisma.ReviewCreateOrConnectWithoutDeliveryInput | Prisma.ReviewCreateOrConnectWithoutDeliveryInput[]
+  createMany?: Prisma.ReviewCreateManyDeliveryInputEnvelope
+  connect?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+}
+
+export type ReviewUpdateManyWithoutDeliveryNestedInput = {
+  create?: Prisma.XOR<Prisma.ReviewCreateWithoutDeliveryInput, Prisma.ReviewUncheckedCreateWithoutDeliveryInput> | Prisma.ReviewCreateWithoutDeliveryInput[] | Prisma.ReviewUncheckedCreateWithoutDeliveryInput[]
+  connectOrCreate?: Prisma.ReviewCreateOrConnectWithoutDeliveryInput | Prisma.ReviewCreateOrConnectWithoutDeliveryInput[]
+  upsert?: Prisma.ReviewUpsertWithWhereUniqueWithoutDeliveryInput | Prisma.ReviewUpsertWithWhereUniqueWithoutDeliveryInput[]
+  createMany?: Prisma.ReviewCreateManyDeliveryInputEnvelope
+  set?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  disconnect?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  delete?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  connect?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  update?: Prisma.ReviewUpdateWithWhereUniqueWithoutDeliveryInput | Prisma.ReviewUpdateWithWhereUniqueWithoutDeliveryInput[]
+  updateMany?: Prisma.ReviewUpdateManyWithWhereWithoutDeliveryInput | Prisma.ReviewUpdateManyWithWhereWithoutDeliveryInput[]
+  deleteMany?: Prisma.ReviewScalarWhereInput | Prisma.ReviewScalarWhereInput[]
+}
+
+export type ReviewUncheckedUpdateManyWithoutDeliveryNestedInput = {
+  create?: Prisma.XOR<Prisma.ReviewCreateWithoutDeliveryInput, Prisma.ReviewUncheckedCreateWithoutDeliveryInput> | Prisma.ReviewCreateWithoutDeliveryInput[] | Prisma.ReviewUncheckedCreateWithoutDeliveryInput[]
+  connectOrCreate?: Prisma.ReviewCreateOrConnectWithoutDeliveryInput | Prisma.ReviewCreateOrConnectWithoutDeliveryInput[]
+  upsert?: Prisma.ReviewUpsertWithWhereUniqueWithoutDeliveryInput | Prisma.ReviewUpsertWithWhereUniqueWithoutDeliveryInput[]
+  createMany?: Prisma.ReviewCreateManyDeliveryInputEnvelope
+  set?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  disconnect?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  delete?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  connect?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  update?: Prisma.ReviewUpdateWithWhereUniqueWithoutDeliveryInput | Prisma.ReviewUpdateWithWhereUniqueWithoutDeliveryInput[]
+  updateMany?: Prisma.ReviewUpdateManyWithWhereWithoutDeliveryInput | Prisma.ReviewUpdateManyWithWhereWithoutDeliveryInput[]
+  deleteMany?: Prisma.ReviewScalarWhereInput | Prisma.ReviewScalarWhereInput[]
+}
+
 export type ReviewCreateNestedOneWithoutRatingInput = {
   create?: Prisma.XOR<Prisma.ReviewCreateWithoutRatingInput, Prisma.ReviewUncheckedCreateWithoutRatingInput>
   connectOrCreate?: Prisma.ReviewCreateOrConnectWithoutRatingInput
@@ -492,13 +558,15 @@ export type ReviewCreateWithoutAuthorInput = {
   isFlagged?: boolean
   createdAt?: Date | string
   rating: Prisma.RatingCreateNestedOneWithoutReviewInput
-  ride: Prisma.RideCreateNestedOneWithoutReviewsInput
+  ride?: Prisma.RideCreateNestedOneWithoutReviewsInput
+  delivery?: Prisma.DeliveryRequestCreateNestedOneWithoutReviewsInput
 }
 
 export type ReviewUncheckedCreateWithoutAuthorInput = {
   id?: string
   ratingId: string
-  rideId: string
+  rideId?: string | null
+  deliveryId?: string | null
   body: string
   isFlagged?: boolean
   createdAt?: Date | string
@@ -536,7 +604,8 @@ export type ReviewScalarWhereInput = {
   NOT?: Prisma.ReviewScalarWhereInput | Prisma.ReviewScalarWhereInput[]
   id?: Prisma.StringFilter<"Review"> | string
   ratingId?: Prisma.StringFilter<"Review"> | string
-  rideId?: Prisma.StringFilter<"Review"> | string
+  rideId?: Prisma.StringNullableFilter<"Review"> | string | null
+  deliveryId?: Prisma.StringNullableFilter<"Review"> | string | null
   authorId?: Prisma.StringFilter<"Review"> | string
   body?: Prisma.StringFilter<"Review"> | string
   isFlagged?: Prisma.BoolFilter<"Review"> | boolean
@@ -549,12 +618,14 @@ export type ReviewCreateWithoutRideInput = {
   isFlagged?: boolean
   createdAt?: Date | string
   rating: Prisma.RatingCreateNestedOneWithoutReviewInput
+  delivery?: Prisma.DeliveryRequestCreateNestedOneWithoutReviewsInput
   author: Prisma.UserCreateNestedOneWithoutReviewsGivenInput
 }
 
 export type ReviewUncheckedCreateWithoutRideInput = {
   id?: string
   ratingId: string
+  deliveryId?: string | null
   authorId: string
   body: string
   isFlagged?: boolean
@@ -587,18 +658,66 @@ export type ReviewUpdateManyWithWhereWithoutRideInput = {
   data: Prisma.XOR<Prisma.ReviewUpdateManyMutationInput, Prisma.ReviewUncheckedUpdateManyWithoutRideInput>
 }
 
+export type ReviewCreateWithoutDeliveryInput = {
+  id?: string
+  body: string
+  isFlagged?: boolean
+  createdAt?: Date | string
+  rating: Prisma.RatingCreateNestedOneWithoutReviewInput
+  ride?: Prisma.RideCreateNestedOneWithoutReviewsInput
+  author: Prisma.UserCreateNestedOneWithoutReviewsGivenInput
+}
+
+export type ReviewUncheckedCreateWithoutDeliveryInput = {
+  id?: string
+  ratingId: string
+  rideId?: string | null
+  authorId: string
+  body: string
+  isFlagged?: boolean
+  createdAt?: Date | string
+}
+
+export type ReviewCreateOrConnectWithoutDeliveryInput = {
+  where: Prisma.ReviewWhereUniqueInput
+  create: Prisma.XOR<Prisma.ReviewCreateWithoutDeliveryInput, Prisma.ReviewUncheckedCreateWithoutDeliveryInput>
+}
+
+export type ReviewCreateManyDeliveryInputEnvelope = {
+  data: Prisma.ReviewCreateManyDeliveryInput | Prisma.ReviewCreateManyDeliveryInput[]
+  skipDuplicates?: boolean
+}
+
+export type ReviewUpsertWithWhereUniqueWithoutDeliveryInput = {
+  where: Prisma.ReviewWhereUniqueInput
+  update: Prisma.XOR<Prisma.ReviewUpdateWithoutDeliveryInput, Prisma.ReviewUncheckedUpdateWithoutDeliveryInput>
+  create: Prisma.XOR<Prisma.ReviewCreateWithoutDeliveryInput, Prisma.ReviewUncheckedCreateWithoutDeliveryInput>
+}
+
+export type ReviewUpdateWithWhereUniqueWithoutDeliveryInput = {
+  where: Prisma.ReviewWhereUniqueInput
+  data: Prisma.XOR<Prisma.ReviewUpdateWithoutDeliveryInput, Prisma.ReviewUncheckedUpdateWithoutDeliveryInput>
+}
+
+export type ReviewUpdateManyWithWhereWithoutDeliveryInput = {
+  where: Prisma.ReviewScalarWhereInput
+  data: Prisma.XOR<Prisma.ReviewUpdateManyMutationInput, Prisma.ReviewUncheckedUpdateManyWithoutDeliveryInput>
+}
+
 export type ReviewCreateWithoutRatingInput = {
   id?: string
   body: string
   isFlagged?: boolean
   createdAt?: Date | string
-  ride: Prisma.RideCreateNestedOneWithoutReviewsInput
+  ride?: Prisma.RideCreateNestedOneWithoutReviewsInput
+  delivery?: Prisma.DeliveryRequestCreateNestedOneWithoutReviewsInput
   author: Prisma.UserCreateNestedOneWithoutReviewsGivenInput
 }
 
 export type ReviewUncheckedCreateWithoutRatingInput = {
   id?: string
-  rideId: string
+  rideId?: string | null
+  deliveryId?: string | null
   authorId: string
   body: string
   isFlagged?: boolean
@@ -626,13 +745,15 @@ export type ReviewUpdateWithoutRatingInput = {
   body?: Prisma.StringFieldUpdateOperationsInput | string
   isFlagged?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  ride?: Prisma.RideUpdateOneRequiredWithoutReviewsNestedInput
+  ride?: Prisma.RideUpdateOneWithoutReviewsNestedInput
+  delivery?: Prisma.DeliveryRequestUpdateOneWithoutReviewsNestedInput
   author?: Prisma.UserUpdateOneRequiredWithoutReviewsGivenNestedInput
 }
 
 export type ReviewUncheckedUpdateWithoutRatingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  rideId?: Prisma.StringFieldUpdateOperationsInput | string
+  rideId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deliveryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authorId?: Prisma.StringFieldUpdateOperationsInput | string
   body?: Prisma.StringFieldUpdateOperationsInput | string
   isFlagged?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -642,7 +763,8 @@ export type ReviewUncheckedUpdateWithoutRatingInput = {
 export type ReviewCreateManyAuthorInput = {
   id?: string
   ratingId: string
-  rideId: string
+  rideId?: string | null
+  deliveryId?: string | null
   body: string
   isFlagged?: boolean
   createdAt?: Date | string
@@ -654,13 +776,15 @@ export type ReviewUpdateWithoutAuthorInput = {
   isFlagged?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rating?: Prisma.RatingUpdateOneRequiredWithoutReviewNestedInput
-  ride?: Prisma.RideUpdateOneRequiredWithoutReviewsNestedInput
+  ride?: Prisma.RideUpdateOneWithoutReviewsNestedInput
+  delivery?: Prisma.DeliveryRequestUpdateOneWithoutReviewsNestedInput
 }
 
 export type ReviewUncheckedUpdateWithoutAuthorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ratingId?: Prisma.StringFieldUpdateOperationsInput | string
-  rideId?: Prisma.StringFieldUpdateOperationsInput | string
+  rideId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deliveryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   body?: Prisma.StringFieldUpdateOperationsInput | string
   isFlagged?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -669,7 +793,8 @@ export type ReviewUncheckedUpdateWithoutAuthorInput = {
 export type ReviewUncheckedUpdateManyWithoutAuthorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ratingId?: Prisma.StringFieldUpdateOperationsInput | string
-  rideId?: Prisma.StringFieldUpdateOperationsInput | string
+  rideId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deliveryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   body?: Prisma.StringFieldUpdateOperationsInput | string
   isFlagged?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -678,6 +803,7 @@ export type ReviewUncheckedUpdateManyWithoutAuthorInput = {
 export type ReviewCreateManyRideInput = {
   id?: string
   ratingId: string
+  deliveryId?: string | null
   authorId: string
   body: string
   isFlagged?: boolean
@@ -690,12 +816,14 @@ export type ReviewUpdateWithoutRideInput = {
   isFlagged?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rating?: Prisma.RatingUpdateOneRequiredWithoutReviewNestedInput
+  delivery?: Prisma.DeliveryRequestUpdateOneWithoutReviewsNestedInput
   author?: Prisma.UserUpdateOneRequiredWithoutReviewsGivenNestedInput
 }
 
 export type ReviewUncheckedUpdateWithoutRideInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ratingId?: Prisma.StringFieldUpdateOperationsInput | string
+  deliveryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authorId?: Prisma.StringFieldUpdateOperationsInput | string
   body?: Prisma.StringFieldUpdateOperationsInput | string
   isFlagged?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -705,6 +833,47 @@ export type ReviewUncheckedUpdateWithoutRideInput = {
 export type ReviewUncheckedUpdateManyWithoutRideInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ratingId?: Prisma.StringFieldUpdateOperationsInput | string
+  deliveryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  authorId?: Prisma.StringFieldUpdateOperationsInput | string
+  body?: Prisma.StringFieldUpdateOperationsInput | string
+  isFlagged?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type ReviewCreateManyDeliveryInput = {
+  id?: string
+  ratingId: string
+  rideId?: string | null
+  authorId: string
+  body: string
+  isFlagged?: boolean
+  createdAt?: Date | string
+}
+
+export type ReviewUpdateWithoutDeliveryInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  body?: Prisma.StringFieldUpdateOperationsInput | string
+  isFlagged?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  rating?: Prisma.RatingUpdateOneRequiredWithoutReviewNestedInput
+  ride?: Prisma.RideUpdateOneWithoutReviewsNestedInput
+  author?: Prisma.UserUpdateOneRequiredWithoutReviewsGivenNestedInput
+}
+
+export type ReviewUncheckedUpdateWithoutDeliveryInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ratingId?: Prisma.StringFieldUpdateOperationsInput | string
+  rideId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  authorId?: Prisma.StringFieldUpdateOperationsInput | string
+  body?: Prisma.StringFieldUpdateOperationsInput | string
+  isFlagged?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type ReviewUncheckedUpdateManyWithoutDeliveryInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ratingId?: Prisma.StringFieldUpdateOperationsInput | string
+  rideId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authorId?: Prisma.StringFieldUpdateOperationsInput | string
   body?: Prisma.StringFieldUpdateOperationsInput | string
   isFlagged?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -717,12 +886,14 @@ export type ReviewSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   id?: boolean
   ratingId?: boolean
   rideId?: boolean
+  deliveryId?: boolean
   authorId?: boolean
   body?: boolean
   isFlagged?: boolean
   createdAt?: boolean
   rating?: boolean | Prisma.RatingDefaultArgs<ExtArgs>
-  ride?: boolean | Prisma.RideDefaultArgs<ExtArgs>
+  ride?: boolean | Prisma.Review$rideArgs<ExtArgs>
+  delivery?: boolean | Prisma.Review$deliveryArgs<ExtArgs>
   author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["review"]>
 
@@ -730,12 +901,14 @@ export type ReviewSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   id?: boolean
   ratingId?: boolean
   rideId?: boolean
+  deliveryId?: boolean
   authorId?: boolean
   body?: boolean
   isFlagged?: boolean
   createdAt?: boolean
   rating?: boolean | Prisma.RatingDefaultArgs<ExtArgs>
-  ride?: boolean | Prisma.RideDefaultArgs<ExtArgs>
+  ride?: boolean | Prisma.Review$rideArgs<ExtArgs>
+  delivery?: boolean | Prisma.Review$deliveryArgs<ExtArgs>
   author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["review"]>
 
@@ -743,12 +916,14 @@ export type ReviewSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   id?: boolean
   ratingId?: boolean
   rideId?: boolean
+  deliveryId?: boolean
   authorId?: boolean
   body?: boolean
   isFlagged?: boolean
   createdAt?: boolean
   rating?: boolean | Prisma.RatingDefaultArgs<ExtArgs>
-  ride?: boolean | Prisma.RideDefaultArgs<ExtArgs>
+  ride?: boolean | Prisma.Review$rideArgs<ExtArgs>
+  delivery?: boolean | Prisma.Review$deliveryArgs<ExtArgs>
   author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["review"]>
 
@@ -756,26 +931,30 @@ export type ReviewSelectScalar = {
   id?: boolean
   ratingId?: boolean
   rideId?: boolean
+  deliveryId?: boolean
   authorId?: boolean
   body?: boolean
   isFlagged?: boolean
   createdAt?: boolean
 }
 
-export type ReviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ratingId" | "rideId" | "authorId" | "body" | "isFlagged" | "createdAt", ExtArgs["result"]["review"]>
+export type ReviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ratingId" | "rideId" | "deliveryId" | "authorId" | "body" | "isFlagged" | "createdAt", ExtArgs["result"]["review"]>
 export type ReviewInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   rating?: boolean | Prisma.RatingDefaultArgs<ExtArgs>
-  ride?: boolean | Prisma.RideDefaultArgs<ExtArgs>
+  ride?: boolean | Prisma.Review$rideArgs<ExtArgs>
+  delivery?: boolean | Prisma.Review$deliveryArgs<ExtArgs>
   author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type ReviewIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   rating?: boolean | Prisma.RatingDefaultArgs<ExtArgs>
-  ride?: boolean | Prisma.RideDefaultArgs<ExtArgs>
+  ride?: boolean | Prisma.Review$rideArgs<ExtArgs>
+  delivery?: boolean | Prisma.Review$deliveryArgs<ExtArgs>
   author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type ReviewIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   rating?: boolean | Prisma.RatingDefaultArgs<ExtArgs>
-  ride?: boolean | Prisma.RideDefaultArgs<ExtArgs>
+  ride?: boolean | Prisma.Review$rideArgs<ExtArgs>
+  delivery?: boolean | Prisma.Review$deliveryArgs<ExtArgs>
   author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 
@@ -783,13 +962,15 @@ export type $ReviewPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   name: "Review"
   objects: {
     rating: Prisma.$RatingPayload<ExtArgs>
-    ride: Prisma.$RidePayload<ExtArgs>
+    ride: Prisma.$RidePayload<ExtArgs> | null
+    delivery: Prisma.$DeliveryRequestPayload<ExtArgs> | null
     author: Prisma.$UserPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     ratingId: string
-    rideId: string
+    rideId: string | null
+    deliveryId: string | null
     authorId: string
     body: string
     isFlagged: boolean
@@ -1189,7 +1370,8 @@ readonly fields: ReviewFieldRefs;
 export interface Prisma__ReviewClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   rating<T extends Prisma.RatingDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RatingDefaultArgs<ExtArgs>>): Prisma.Prisma__RatingClient<runtime.Types.Result.GetResult<Prisma.$RatingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  ride<T extends Prisma.RideDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RideDefaultArgs<ExtArgs>>): Prisma.Prisma__RideClient<runtime.Types.Result.GetResult<Prisma.$RidePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  ride<T extends Prisma.Review$rideArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Review$rideArgs<ExtArgs>>): Prisma.Prisma__RideClient<runtime.Types.Result.GetResult<Prisma.$RidePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  delivery<T extends Prisma.Review$deliveryArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Review$deliveryArgs<ExtArgs>>): Prisma.Prisma__DeliveryRequestClient<runtime.Types.Result.GetResult<Prisma.$DeliveryRequestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   author<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1223,6 +1405,7 @@ export interface ReviewFieldRefs {
   readonly id: Prisma.FieldRef<"Review", 'String'>
   readonly ratingId: Prisma.FieldRef<"Review", 'String'>
   readonly rideId: Prisma.FieldRef<"Review", 'String'>
+  readonly deliveryId: Prisma.FieldRef<"Review", 'String'>
   readonly authorId: Prisma.FieldRef<"Review", 'String'>
   readonly body: Prisma.FieldRef<"Review", 'String'>
   readonly isFlagged: Prisma.FieldRef<"Review", 'Boolean'>
@@ -1625,6 +1808,44 @@ export type ReviewDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Limit how many Reviews to delete.
    */
   limit?: number
+}
+
+/**
+ * Review.ride
+ */
+export type Review$rideArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Ride
+   */
+  select?: Prisma.RideSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Ride
+   */
+  omit?: Prisma.RideOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RideInclude<ExtArgs> | null
+  where?: Prisma.RideWhereInput
+}
+
+/**
+ * Review.delivery
+ */
+export type Review$deliveryArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DeliveryRequest
+   */
+  select?: Prisma.DeliveryRequestSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DeliveryRequest
+   */
+  omit?: Prisma.DeliveryRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DeliveryRequestInclude<ExtArgs> | null
+  where?: Prisma.DeliveryRequestWhereInput
 }
 
 /**

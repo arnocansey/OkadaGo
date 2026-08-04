@@ -30,13 +30,18 @@ export const createSafetyIncidentSchema = z.object({
   evidence: z.array(z.string().trim().url()).max(10).optional()
 });
 
-export const createSafetyShareEventSchema = z.object({
-  rideId: z.string().cuid(),
-  mode: z.enum(["START", "STOP"]).default("START"),
-  channel: z.enum(["SMS", "WHATSAPP", "LINK"]).default("LINK"),
-  contactId: z.string().cuid().optional(),
-  note: z.string().trim().min(2).max(240).optional()
-});
+export const createSafetyShareEventSchema = z
+  .object({
+    rideId: z.string().cuid().optional(),
+    deliveryId: z.string().cuid().optional(),
+    mode: z.enum(["START", "STOP"]).default("START"),
+    channel: z.enum(["SMS", "WHATSAPP", "LINK"]).default("LINK"),
+    contactId: z.string().cuid().optional(),
+    note: z.string().trim().min(2).max(240).optional()
+  })
+  .refine((value) => Boolean(value.rideId || value.deliveryId), {
+    message: "rideId or deliveryId is required"
+  });
 
 export const requestSafetyContactVerificationSchema = z.object({
   contactId: z.string().cuid()
@@ -53,10 +58,19 @@ export const adminIncidentsQuerySchema = z.object({
   riderId: z.string().cuid().optional(),
   rideId: z.string().cuid().optional(),
   fromDate: z.string().date().optional(),
-  toDate: z.string().date().optional()
+  toDate: z.string().date().optional(),
+  page: z.coerce.number().int().min(1).optional(),
+  limit: z.coerce.number().int().min(1).max(200).optional()
 });
 
-export const adminIncidentReviewSchema = z.object({
-  status: z.enum(["UNDER_REVIEW", "ACTIONED", "RESOLVED", "CLOSED"]),
-  note: z.string().trim().min(2).max(500).optional()
-});
+export const adminIncidentReviewSchema = z
+  .object({
+    status: z.enum(["UNDER_REVIEW", "ACTIONED", "RESOLVED", "CLOSED"]).optional(),
+    note: z.string().trim().min(2).max(500).optional(),
+    /// Explicitly assign the incident to another admin (defaults to the acting admin on status changes).
+    assignedToId: z.string().cuid().optional()
+  })
+  .refine((value) => value.status || value.assignedToId, {
+    message: "Provide a status or an assignee",
+    path: ["status"]
+  });

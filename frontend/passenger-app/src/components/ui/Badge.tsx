@@ -46,9 +46,9 @@ export function Badge({ label, tone = "default" }: Props) {
 
 export function statusTone(status: string): Tone {
   const s = status.toLowerCase();
-  if (["completed", "delivered"].includes(s)) return "success";
-  if (["cancelled", "failed"].includes(s)) return "danger";
-  if (["searching", "assigned", "arriving", "picked_up", "in_transit"].includes(s)) return "info";
+  if (["completed", "delivered", "posted", "paid"].includes(s)) return "success";
+  if (["cancelled", "failed", "rejected"].includes(s)) return "danger";
+  if (["scheduled", "searching", "assigned", "arriving", "picked_up", "in_transit", "pending", "processing"].includes(s)) return "info";
   if (["started", "arrived"].includes(s)) return "warning";
   return "default";
 }

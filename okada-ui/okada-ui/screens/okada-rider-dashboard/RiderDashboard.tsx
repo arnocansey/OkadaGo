@@ -143,7 +143,7 @@ export function RiderDashboard({
                   <CardTitle className="text-3xl">₵185</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-sm text-primary-foreground/80">₦14,800 approx</div>
+                  <div className="text-sm text-primary-foreground/80">₵148 approx</div>
                 </CardContent>
               </Card>
               
@@ -153,7 +153,7 @@ export function RiderDashboard({
                   <CardTitle className="text-3xl text-slate-900">₵890</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-sm text-slate-500">₦71,000 approx</div>
+                  <div className="text-sm text-slate-500">₵710 approx</div>
                 </CardContent>
               </Card>
               

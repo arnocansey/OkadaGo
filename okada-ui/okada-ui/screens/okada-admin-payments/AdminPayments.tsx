@@ -68,36 +68,36 @@ const commissionData = [
 const transactions = [
   { id: "TRX-8291", passenger: "Kwame Mensah", rider: "Samuel Osei", fare: "₵ 45.00", commission: "₵ 9.00", net: "₵ 36.00", method: "MTN MoMo", status: "Completed", date: "Today, 14:30" },
   { id: "TRX-8290", passenger: "Abena Ofori", rider: "Kofi Annan", fare: "₵ 32.50", commission: "₵ 6.50", net: "₵ 26.00", method: "Card", status: "Completed", date: "Today, 14:15" },
-  { id: "TRX-8289", passenger: "Chidi Eze", rider: "Emeka Okafor", fare: "₦ 2,500", commission: "₦ 500", net: "₦ 2,000", method: "Cash", status: "Pending", date: "Today, 14:00" },
-  { id: "TRX-8288", passenger: "Fatima Ali", rider: "Oluwaseun Ade", fare: "₦ 3,200", commission: "₦ 640", net: "₦ 2,560", method: "Card", status: "Completed", date: "Today, 13:45" },
+  { id: "TRX-8289", passenger: "Kwame Boateng", rider: "Kojo Appiah", fare: "₵ 25.00", commission: "₵ 5.00", net: "₵ 20.00", method: "Cash", status: "Pending", date: "Today, 14:00" },
+  { id: "TRX-8288", passenger: "Fatima Ali", rider: "Kofi Boateng", fare: "₵ 32.00", commission: "₵ 6.40", net: "₵ 25.60", method: "Card", status: "Completed", date: "Today, 13:45" },
   { id: "TRX-8287", passenger: "Ama Serwaa", rider: "Yaw Boakye", fare: "₵ 28.00", commission: "₵ 5.60", net: "₵ 22.40", method: "MTN MoMo", status: "Failed", date: "Today, 13:30" },
-  { id: "TRX-8286", passenger: "Ngozi Obi", rider: "Chinedu Uba", fare: "₦ 1,800", commission: "₦ 360", net: "₦ 1,440", method: "Cash", status: "Completed", date: "Today, 13:10" },
+  { id: "TRX-8286", passenger: "Ama Mensah", rider: "Kojo Amoah", fare: "₵ 18.00", commission: "₵ 3.60", net: "₵ 14.40", method: "Cash", status: "Completed", date: "Today, 13:10" },
   { id: "TRX-8285", passenger: "Esi Cobbinah", rider: "Kwabena Yeboah", fare: "₵ 55.00", commission: "₵ 11.00", net: "₵ 44.00", method: "Card", status: "Completed", date: "Today, 12:55" },
-  { id: "TRX-8284", passenger: "Tunde Bakare", rider: "Ibrahim Musa", fare: "₦ 4,500", commission: "₦ 900", net: "₦ 3,600", method: "Bank Transfer", status: "Completed", date: "Today, 12:40" },
+  { id: "TRX-8284", passenger: "Yaw Mensah", rider: "Ibrahim Musa", fare: "₵ 45.00", commission: "₵ 9.00", net: "₵ 36.00", method: "Bank Transfer", status: "Completed", date: "Today, 12:40" },
   { id: "TRX-8283", passenger: "Akosua Addo", rider: "Emmanuel Kusi", fare: "₵ 22.00", commission: "₵ 4.40", net: "₵ 17.60", method: "MTN MoMo", status: "Completed", date: "Today, 12:20" },
-  { id: "TRX-8282", passenger: "Zainab Bello", rider: "Suleiman Dauda", fare: "₦ 1,500", commission: "₦ 300", net: "₦ 1,200", method: "Cash", status: "Completed", date: "Today, 12:05" },
+  { id: "TRX-8282", passenger: "Zainab Bello", rider: "Suleiman Dauda", fare: "₵ 15.00", commission: "₵ 3.00", net: "₵ 12.00", method: "Cash", status: "Completed", date: "Today, 12:05" },
 ];
 
 const payouts = [
   { id: "PO-001", rider: "Samuel Osei", amount: "₵ 450.00", method: "MTN MoMo", status: "Pending", date: "Oct 24, 2023" },
-  { id: "PO-002", rider: "Emeka Okafor", amount: "₦ 25,000", method: "Bank Transfer", status: "Processing", date: "Oct 24, 2023" },
+  { id: "PO-002", rider: "Kojo Appiah", amount: "₵ 250.00", method: "Bank Transfer", status: "Processing", date: "Oct 24, 2023" },
   { id: "PO-003", rider: "Kofi Annan", amount: "₵ 320.00", method: "MTN MoMo", status: "Completed", date: "Oct 23, 2023" },
   { id: "PO-004", rider: "Yaw Boakye", amount: "₵ 150.00", method: "Vodafone Cash", status: "Failed", date: "Oct 23, 2023" },
 ];
 
 const withdrawals = [
-  { id: "WR-092", rider: "Oluwaseun Ade", amount: "₦ 18,500", account: "GTBank **** 4921", date: "2 hours ago" },
+  { id: "WR-092", rider: "Kofi Boateng", amount: "₵ 185.00", account: "Ecobank **** 4921", date: "2 hours ago" },
   { id: "WR-093", rider: "Emmanuel Kusi", amount: "₵ 600.00", account: "MTN **** 8829", date: "3 hours ago" },
-  { id: "WR-094", rider: "Chinedu Uba", amount: "₦ 42,000", account: "Access **** 1102", date: "5 hours ago" },
+  { id: "WR-094", rider: "Kojo Amoah", amount: "₵ 420.00", account: "GTBank **** 1102", date: "5 hours ago" },
 ];
 
 const promos = [
   { code: "NEWUSER50", type: "% Discount", value: "50%", limit: "1000", used: "842", expiry: "Dec 31, 2023", status: "Active" },
-  { code: "LAGOSWEEKEND", type: "Fixed", value: "₦ 500", limit: "5000", used: "1205", expiry: "Oct 29, 2023", status: "Active" },
+  { code: "ACCRAWEEKEND", type: "Fixed", value: "₵ 5.00", limit: "5000", used: "1205", expiry: "Oct 29, 2023", status: "Active" },
   { code: "ACCRAXPRESS", type: "% Discount", value: "20%", limit: "2000", used: "2000", expiry: "Oct 15, 2023", status: "Expired" },
   { code: "RAINYDAY", type: "Fixed", value: "₵ 5.00", limit: "Unlimited", used: "450", expiry: "Nov 30, 2023", status: "Active" },
   { code: "STUDENT23", type: "% Discount", value: "15%", limit: "10000", used: "8930", expiry: "Dec 31, 2023", status: "Active" },
-  { code: "HOLIDAYRIDE", type: "Fixed", value: "₦ 1000", limit: "1000", used: "0", expiry: "Dec 25, 2023", status: "Scheduled" },
+  { code: "HOLIDAYRIDE", type: "Fixed", value: "₵ 10.00", limit: "1000", used: "0", expiry: "Dec 25, 2023", status: "Scheduled" },
   { code: "FIRST5", type: "Fixed", value: "₵ 10.00", limit: "500", used: "500", expiry: "Sep 30, 2023", status: "Expired" },
   { code: "LOYALTYVIP", type: "% Discount", value: "30%", limit: "100", used: "42", expiry: "Jan 31, 2024", status: "Active" },
 ];
@@ -105,7 +105,7 @@ const promos = [
 const campaigns = [
   { name: "Driver Refer a Driver", referrals: 450, conversions: 320, reward: "₵ 16,000", status: "Active" },
   { name: "Rider Invite Friends", referrals: 1247, conversions: 834, reward: "₵ 16,680", status: "Active" },
-  { name: "Campus Ambassador", referrals: 890, conversions: 412, reward: "₦ 824,000", status: "Ending Soon" },
+  { name: "Campus Ambassador", referrals: 890, conversions: 412, reward: "₵ 8,240", status: "Ending Soon" },
 ];
 
 const campaignData = [
@@ -234,7 +234,7 @@ export function AdminPayments({
                       <div>
                         <p className="text-sm font-medium text-slate-500">Total Revenue</p>
                         <h3 className="text-2xl font-bold text-slate-800 mt-1">₵284,600</h3>
-                        <p className="text-xs text-slate-400 mt-1">₦22.8M Equivalent</p>
+                        <p className="text-xs text-slate-400 mt-1">₵228K Equivalent</p>
                       </div>
                       <div className="w-10 h-10 rounded-full bg-[#0D6B4A]/10 flex items-center justify-center text-[#0D6B4A]">
                         <DollarSign size={20} />
@@ -518,8 +518,8 @@ export function AdminPayments({
                       </div>
                       <div className="bg-white p-3 rounded-md border border-red-100 shadow-sm">
                         <div className="flex justify-between items-start mb-1">
-                          <span className="font-medium text-slate-800 text-sm">Ngozi Obi</span>
-                          <span className="font-semibold text-slate-800 text-sm">₦ 8,400</span>
+                          <span className="font-medium text-slate-800 text-sm">Ama Mensah</span>
+                          <span className="font-semibold text-slate-800 text-sm">₵ 84.00</span>
                         </div>
                         <p className="text-xs text-red-600 mb-2">Error: Bank details rejected by payment gateway.</p>
                         <div className="flex justify-end">
@@ -708,7 +708,7 @@ export function AdminPayments({
                   <CardContent className="p-6">
                     <p className="text-sm font-medium text-slate-500">Total Rewards Paid</p>
                     <h3 className="text-3xl font-bold text-[#FFB800] mt-1">₵32,680</h3>
-                    <p className="text-xs text-slate-400 mt-2">+₦824,000 NGN</p>
+                    <p className="text-xs text-slate-400 mt-2">+₵8,240 GHS</p>
                   </CardContent>
                 </Card>
               </div>

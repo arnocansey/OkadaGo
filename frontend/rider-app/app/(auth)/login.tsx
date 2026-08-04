@@ -2,17 +2,23 @@ import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Bike } from "lucide-react-native";
+import { useTranslation } from "react-i18next";
 import { api, phoneParts, type AuthResponse } from "@/lib/api";
 import { registerPushToken } from "@/lib/push";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
+import { BrandLogo } from "@/components/BrandLogo";
 import { Button } from "@/components/ui/Button";
+import { Chip } from "@/components/ui/Chip";
 import { Input } from "@/components/ui/Input";
 import { radius, spacing } from "@/theme/tokens";
 import type { AuthMode } from "@/types";
 
+type VehicleTypeOption = "okada" | "tricycle" | "bicycle";
+type JobPreferenceOption = "rides_only" | "delivery_only" | "both";
+
 export default function LoginScreen() {
+  const { t } = useTranslation();
   const { signIn } = useApp();
   const { colors, typography } = useTheme();
   const styles = useMemo(
@@ -23,15 +29,6 @@ export default function LoginScreen() {
         content: { padding: spacing.xxl, gap: spacing.xxl },
         hero: { gap: spacing.sm, alignItems: "flex-start" },
         logoWrap: { marginBottom: spacing.sm },
-        logo: {
-          width: 60,
-          height: 60,
-          borderRadius: radius.xl,
-          backgroundColor: colors.primary,
-          alignItems: "center",
-          justifyContent: "center",
-        },
-        brand: { ...typography.label, color: colors.primary, letterSpacing: 1.5 },
         title: { ...typography.hero, color: colors.text },
         subtitle: { ...typography.body, color: colors.textSecondary },
         tabs: { flexDirection: "row", backgroundColor: colors.surface, borderRadius: radius.lg, padding: 4 },
@@ -41,6 +38,11 @@ export default function LoginScreen() {
         tabTextActive: { color: colors.primary },
         form: { gap: spacing.lg },
         error: { ...typography.caption, color: colors.danger },
+        fieldGroup: { gap: spacing.sm },
+        fieldLabel: { ...typography.captionMedium, color: colors.textSecondary },
+        chipRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+        vehicleRow: { flexDirection: "row", gap: spacing.md },
+        vehicleField: { flex: 1 },
       }),
     [colors, typography],
   );
@@ -48,8 +50,25 @@ export default function LoginScreen() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [vehicleType, setVehicleType] = useState<VehicleTypeOption>("okada");
+  const [jobPreference, setJobPreference] = useState<JobPreferenceOption>("both");
+  const [vehicleMake, setVehicleMake] = useState("");
+  const [vehicleModel, setVehicleModel] = useState("");
+  const [vehiclePlate, setVehiclePlate] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const vehicleTypeOptions: Array<{ id: VehicleTypeOption; label: string }> = [
+    { id: "okada", label: t("auth.okada") },
+    { id: "tricycle", label: t("auth.tricycle") },
+    { id: "bicycle", label: t("auth.bicycle") },
+  ];
+
+  const jobPreferenceOptions: Array<{ id: JobPreferenceOption; label: string }> = [
+    { id: "both", label: t("auth.jobBoth") },
+    { id: "rides_only", label: t("auth.jobRidesOnly") },
+    { id: "delivery_only", label: t("auth.jobDeliveryOnly") },
+  ];
 
   async function submit() {
     setError("");
@@ -57,10 +76,26 @@ export default function LoginScreen() {
     try {
       const phoneData = phoneParts(phone);
       const path = mode === "login" ? "/auth/rider/login" : "/auth/rider/signup";
+      const hasVehicleDetails = vehicleMake.trim() && vehicleModel.trim() && vehiclePlate.trim();
       const body =
         mode === "login"
           ? { phoneE164: phoneData.phoneE164, password }
-          : { fullName, phoneCountryCode: phoneData.phoneCountryCode, phoneLocal: phoneData.phoneLocal, password };
+          : {
+              fullName,
+              phoneCountryCode: phoneData.phoneCountryCode,
+              phoneLocal: phoneData.phoneLocal,
+              password,
+              preferredCurrency: "GHS",
+              jobPreference,
+              vehicle: hasVehicleDetails
+                ? {
+                    make: vehicleMake.trim(),
+                    model: vehicleModel.trim(),
+                    plateNumber: vehiclePlate.trim(),
+                    vehicleType,
+                  }
+                : undefined,
+            };
 
       const result = await api<AuthResponse>(path, { method: "POST", body });
       await signIn({ token: result.token, expiresAt: result.expiresAt, user: result.user });
@@ -71,7 +106,7 @@ export default function LoginScreen() {
       }
       router.replace("/(main)");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Authentication failed.");
+      setError(e instanceof Error ? e.message : t("auth.authFailed"));
     } finally {
       setLoading(false);
     }
@@ -83,31 +118,94 @@ export default function LoginScreen() {
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.hero}>
             <View style={styles.logoWrap}>
-              <View style={styles.logo}>
-                <Bike size={28} color={colors.textOnPrimary} />
-              </View>
+              <BrandLogo variant="icon" size={60} />
             </View>
-            <Text style={styles.brand}>OkadaGo Rider</Text>
-            <Text style={styles.title}>{mode === "login" ? "Driver login" : "Join as rider"}</Text>
-            <Text style={styles.subtitle}>Earn on rides and deliveries across Accra</Text>
+            <BrandLogo variant="wordmark" size={28} />
+            <Text style={styles.title}>{mode === "login" ? t("auth.welcomeBack") : t("auth.createAccount")}</Text>
+            <Text style={styles.subtitle}>{t("auth.subtitle")}</Text>
           </View>
 
           <View style={styles.tabs}>
             {(["login", "signup"] as AuthMode[]).map((m) => (
               <Pressable key={m} onPress={() => setMode(m)} style={[styles.tab, mode === m && styles.tabActive]}>
-                <Text style={[styles.tabText, mode === m && styles.tabTextActive]}>{m === "login" ? "Sign in" : "Sign up"}</Text>
+                <Text style={[styles.tabText, mode === m && styles.tabTextActive]}>
+                  {m === "login" ? t("auth.signIn") : t("auth.signUp")}
+                </Text>
               </Pressable>
             ))}
           </View>
 
           <View style={styles.form}>
             {mode === "signup" ? (
-              <Input label="Full name" value={fullName} onChangeText={setFullName} placeholder="Kofi Asante" autoCapitalize="words" />
+              <Input label={t("auth.fullName")} value={fullName} onChangeText={setFullName} placeholder="Kofi Asante" autoCapitalize="words" />
             ) : null}
-            <Input label="Phone" value={phone} onChangeText={setPhone} placeholder="024 123 4567" keyboardType="phone-pad" />
-            <Input label="Password" value={password} onChangeText={setPassword} placeholder="••••••••" secureTextEntry />
+            <Input label={t("auth.phone")} value={phone} onChangeText={setPhone} placeholder="024 123 4567" keyboardType="phone-pad" />
+            <Input label={t("auth.password")} value={password} onChangeText={setPassword} placeholder="••••••••" secureTextEntry />
+
+            {mode === "signup" ? (
+              <>
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabel}>{t("auth.vehicleType")}</Text>
+                  <View style={styles.chipRow}>
+                    {vehicleTypeOptions.map((option) => (
+                      <Chip
+                        key={option.id}
+                        label={option.label}
+                        selected={vehicleType === option.id}
+                        onPress={() => setVehicleType(option.id)}
+                      />
+                    ))}
+                  </View>
+                </View>
+
+                <View style={styles.vehicleRow}>
+                  <Input
+                    style={styles.vehicleField}
+                    label={t("auth.vehicleMake")}
+                    value={vehicleMake}
+                    onChangeText={setVehicleMake}
+                    placeholder="Bajaj"
+                  />
+                  <Input
+                    style={styles.vehicleField}
+                    label={t("auth.vehicleModel")}
+                    value={vehicleModel}
+                    onChangeText={setVehicleModel}
+                    placeholder="Boxer"
+                  />
+                </View>
+                <Input
+                  label={t("auth.plateNumber")}
+                  value={vehiclePlate}
+                  onChangeText={setVehiclePlate}
+                  placeholder="GT 1234-24"
+                  autoCapitalize="characters"
+                />
+
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabel}>{t("auth.jobPreference")}</Text>
+                  <View style={styles.chipRow}>
+                    {jobPreferenceOptions.map((option) => (
+                      <Chip
+                        key={option.id}
+                        label={option.label}
+                        selected={jobPreference === option.id}
+                        onPress={() => setJobPreference(option.id)}
+                      />
+                    ))}
+                  </View>
+                </View>
+              </>
+            ) : null}
+
             {error ? <Text style={styles.error}>{error}</Text> : null}
-            <Button label={mode === "login" ? "Continue" : "Create account"} variant="accent" loading={loading} onPress={submit} fullWidth />
+            <Button
+              label={mode === "login" ? t("auth.continue") : t("auth.createAccountCta")}
+              variant="accent"
+              loading={loading}
+              onPress={submit}
+              fullWidth
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

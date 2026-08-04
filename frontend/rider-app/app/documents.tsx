@@ -112,7 +112,9 @@ export default function DocumentsScreen() {
     <>
       <Stack.Screen options={{ headerShown: true, title: "Documents", ...stackHeaderOptions }} />
       <SafeAreaView style={styles.screen} edges={["bottom"]}>
-        <Text style={styles.subtitle}>Keep documents up to date to stay active on the platform.</Text>
+        <Text style={styles.subtitle}>
+          Upload license, insurance, registration, and ID. Pending docs keep you offline until approved.
+        </Text>
         {loading ? (
           <SkeletonList count={4} />
         ) : (

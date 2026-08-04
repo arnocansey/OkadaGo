@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 export const listQuerySchema = z.object({
-  limit: z.coerce.number().int().min(1).max(100).default(25)
+  page: z.coerce.number().int().min(1).optional(),
+  limit: z.coerce.number().int().min(1).max(200).default(25)
 });
 
 export const reverseGeocodeQuerySchema = z.object({

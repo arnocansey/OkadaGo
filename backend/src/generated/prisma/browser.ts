@@ -48,6 +48,22 @@ export type RiderProfile = Prisma.RiderProfileModel
  */
 export type AdminProfile = Prisma.AdminProfileModel
 /**
+ * Model SavedPaymentMethod
+ * Vaulted billing instruments. Cards with Paystack authorization_code are chargeable;
+ * MoMo/PayPal rows are display/ops destinations unless reusable auth exists.
+ */
+export type SavedPaymentMethod = Prisma.SavedPaymentMethodModel
+/**
+ * Model AdminNote
+ * Free-form ops note pinned to any admin-managed entity (rider, incident, payout, …).
+ */
+export type AdminNote = Prisma.AdminNoteModel
+/**
+ * Model PlatformSetting
+ * Key-value store for persisted platform settings edited from the admin console.
+ */
+export type PlatformSetting = Prisma.PlatformSettingModel
+/**
  * Model DispatcherProfile
  * 
  */
@@ -83,6 +99,11 @@ export type Ride = Prisma.RideModel
  */
 export type DeliveryRequest = Prisma.DeliveryRequestModel
 /**
+ * Model DeliveryStop
+ * 
+ */
+export type DeliveryStop = Prisma.DeliveryStopModel
+/**
  * Model RideLocation
  * 
  */
@@ -112,6 +133,12 @@ export type WalletTransaction = Prisma.WalletTransactionModel
  * 
  */
 export type PayoutRequest = Prisma.PayoutRequestModel
+/**
+ * Model RiderPayoutAccount
+ * Saved rider disbursement destinations (MoMo/bank). Created when a rider saves
+ * a payout account or first requests a payout to a destination; visible to admin.
+ */
+export type RiderPayoutAccount = Prisma.RiderPayoutAccountModel
 /**
  * Model Rating
  * 
@@ -172,3 +199,18 @@ export type SavedPlace = Prisma.SavedPlaceModel
  * 
  */
 export type AuditLog = Prisma.AuditLogModel
+/**
+ * Model EscalationRule
+ * 
+ */
+export type EscalationRule = Prisma.EscalationRuleModel
+/**
+ * Model ScheduledBroadcast
+ * 
+ */
+export type ScheduledBroadcast = Prisma.ScheduledBroadcastModel
+/**
+ * Model OpsJobHeartbeat
+ * 
+ */
+export type OpsJobHeartbeat = Prisma.OpsJobHeartbeatModel

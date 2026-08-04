@@ -51,6 +51,7 @@ export type RideLocationMinAggregateOutputType = {
   speedKph: runtime.Decimal | null
   heading: runtime.Decimal | null
   accuracyM: runtime.Decimal | null
+  isMocked: boolean | null
   recordedAt: Date | null
 }
 
@@ -63,6 +64,7 @@ export type RideLocationMaxAggregateOutputType = {
   speedKph: runtime.Decimal | null
   heading: runtime.Decimal | null
   accuracyM: runtime.Decimal | null
+  isMocked: boolean | null
   recordedAt: Date | null
 }
 
@@ -75,6 +77,7 @@ export type RideLocationCountAggregateOutputType = {
   speedKph: number
   heading: number
   accuracyM: number
+  isMocked: number
   recordedAt: number
   _all: number
 }
@@ -105,6 +108,7 @@ export type RideLocationMinAggregateInputType = {
   speedKph?: true
   heading?: true
   accuracyM?: true
+  isMocked?: true
   recordedAt?: true
 }
 
@@ -117,6 +121,7 @@ export type RideLocationMaxAggregateInputType = {
   speedKph?: true
   heading?: true
   accuracyM?: true
+  isMocked?: true
   recordedAt?: true
 }
 
@@ -129,6 +134,7 @@ export type RideLocationCountAggregateInputType = {
   speedKph?: true
   heading?: true
   accuracyM?: true
+  isMocked?: true
   recordedAt?: true
   _all?: true
 }
@@ -228,6 +234,7 @@ export type RideLocationGroupByOutputType = {
   speedKph: runtime.Decimal | null
   heading: runtime.Decimal | null
   accuracyM: runtime.Decimal | null
+  isMocked: boolean
   recordedAt: Date
   _count: RideLocationCountAggregateOutputType | null
   _avg: RideLocationAvgAggregateOutputType | null
@@ -263,6 +270,7 @@ export type RideLocationWhereInput = {
   speedKph?: Prisma.DecimalNullableFilter<"RideLocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   heading?: Prisma.DecimalNullableFilter<"RideLocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accuracyM?: Prisma.DecimalNullableFilter<"RideLocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  isMocked?: Prisma.BoolFilter<"RideLocation"> | boolean
   recordedAt?: Prisma.DateTimeFilter<"RideLocation"> | Date | string
   ride?: Prisma.XOR<Prisma.RideScalarRelationFilter, Prisma.RideWhereInput>
 }
@@ -276,6 +284,7 @@ export type RideLocationOrderByWithRelationInput = {
   speedKph?: Prisma.SortOrderInput | Prisma.SortOrder
   heading?: Prisma.SortOrderInput | Prisma.SortOrder
   accuracyM?: Prisma.SortOrderInput | Prisma.SortOrder
+  isMocked?: Prisma.SortOrder
   recordedAt?: Prisma.SortOrder
   ride?: Prisma.RideOrderByWithRelationInput
 }
@@ -292,6 +301,7 @@ export type RideLocationWhereUniqueInput = Prisma.AtLeast<{
   speedKph?: Prisma.DecimalNullableFilter<"RideLocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   heading?: Prisma.DecimalNullableFilter<"RideLocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accuracyM?: Prisma.DecimalNullableFilter<"RideLocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  isMocked?: Prisma.BoolFilter<"RideLocation"> | boolean
   recordedAt?: Prisma.DateTimeFilter<"RideLocation"> | Date | string
   ride?: Prisma.XOR<Prisma.RideScalarRelationFilter, Prisma.RideWhereInput>
 }, "id">
@@ -305,6 +315,7 @@ export type RideLocationOrderByWithAggregationInput = {
   speedKph?: Prisma.SortOrderInput | Prisma.SortOrder
   heading?: Prisma.SortOrderInput | Prisma.SortOrder
   accuracyM?: Prisma.SortOrderInput | Prisma.SortOrder
+  isMocked?: Prisma.SortOrder
   recordedAt?: Prisma.SortOrder
   _count?: Prisma.RideLocationCountOrderByAggregateInput
   _avg?: Prisma.RideLocationAvgOrderByAggregateInput
@@ -325,6 +336,7 @@ export type RideLocationScalarWhereWithAggregatesInput = {
   speedKph?: Prisma.DecimalNullableWithAggregatesFilter<"RideLocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   heading?: Prisma.DecimalNullableWithAggregatesFilter<"RideLocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accuracyM?: Prisma.DecimalNullableWithAggregatesFilter<"RideLocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  isMocked?: Prisma.BoolWithAggregatesFilter<"RideLocation"> | boolean
   recordedAt?: Prisma.DateTimeWithAggregatesFilter<"RideLocation"> | Date | string
 }
 
@@ -336,6 +348,7 @@ export type RideLocationCreateInput = {
   speedKph?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   heading?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accuracyM?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  isMocked?: boolean
   recordedAt?: Date | string
   ride: Prisma.RideCreateNestedOneWithoutLocationsInput
 }
@@ -349,6 +362,7 @@ export type RideLocationUncheckedCreateInput = {
   speedKph?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   heading?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accuracyM?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  isMocked?: boolean
   recordedAt?: Date | string
 }
 
@@ -360,6 +374,7 @@ export type RideLocationUpdateInput = {
   speedKph?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   heading?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accuracyM?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  isMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   recordedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ride?: Prisma.RideUpdateOneRequiredWithoutLocationsNestedInput
 }
@@ -373,6 +388,7 @@ export type RideLocationUncheckedUpdateInput = {
   speedKph?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   heading?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accuracyM?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  isMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   recordedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -385,6 +401,7 @@ export type RideLocationCreateManyInput = {
   speedKph?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   heading?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accuracyM?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  isMocked?: boolean
   recordedAt?: Date | string
 }
 
@@ -396,6 +413,7 @@ export type RideLocationUpdateManyMutationInput = {
   speedKph?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   heading?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accuracyM?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  isMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   recordedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -408,6 +426,7 @@ export type RideLocationUncheckedUpdateManyInput = {
   speedKph?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   heading?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accuracyM?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  isMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   recordedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -430,6 +449,7 @@ export type RideLocationCountOrderByAggregateInput = {
   speedKph?: Prisma.SortOrder
   heading?: Prisma.SortOrder
   accuracyM?: Prisma.SortOrder
+  isMocked?: Prisma.SortOrder
   recordedAt?: Prisma.SortOrder
 }
 
@@ -450,6 +470,7 @@ export type RideLocationMaxOrderByAggregateInput = {
   speedKph?: Prisma.SortOrder
   heading?: Prisma.SortOrder
   accuracyM?: Prisma.SortOrder
+  isMocked?: Prisma.SortOrder
   recordedAt?: Prisma.SortOrder
 }
 
@@ -462,6 +483,7 @@ export type RideLocationMinOrderByAggregateInput = {
   speedKph?: Prisma.SortOrder
   heading?: Prisma.SortOrder
   accuracyM?: Prisma.SortOrder
+  isMocked?: Prisma.SortOrder
   recordedAt?: Prisma.SortOrder
 }
 
@@ -523,6 +545,7 @@ export type RideLocationCreateWithoutRideInput = {
   speedKph?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   heading?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accuracyM?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  isMocked?: boolean
   recordedAt?: Date | string
 }
 
@@ -534,6 +557,7 @@ export type RideLocationUncheckedCreateWithoutRideInput = {
   speedKph?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   heading?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accuracyM?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  isMocked?: boolean
   recordedAt?: Date | string
 }
 
@@ -575,6 +599,7 @@ export type RideLocationScalarWhereInput = {
   speedKph?: Prisma.DecimalNullableFilter<"RideLocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   heading?: Prisma.DecimalNullableFilter<"RideLocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accuracyM?: Prisma.DecimalNullableFilter<"RideLocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  isMocked?: Prisma.BoolFilter<"RideLocation"> | boolean
   recordedAt?: Prisma.DateTimeFilter<"RideLocation"> | Date | string
 }
 
@@ -586,6 +611,7 @@ export type RideLocationCreateManyRideInput = {
   speedKph?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   heading?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accuracyM?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  isMocked?: boolean
   recordedAt?: Date | string
 }
 
@@ -597,6 +623,7 @@ export type RideLocationUpdateWithoutRideInput = {
   speedKph?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   heading?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accuracyM?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  isMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   recordedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -608,6 +635,7 @@ export type RideLocationUncheckedUpdateWithoutRideInput = {
   speedKph?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   heading?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accuracyM?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  isMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   recordedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -619,6 +647,7 @@ export type RideLocationUncheckedUpdateManyWithoutRideInput = {
   speedKph?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   heading?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   accuracyM?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  isMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   recordedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -633,6 +662,7 @@ export type RideLocationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   speedKph?: boolean
   heading?: boolean
   accuracyM?: boolean
+  isMocked?: boolean
   recordedAt?: boolean
   ride?: boolean | Prisma.RideDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["rideLocation"]>
@@ -646,6 +676,7 @@ export type RideLocationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   speedKph?: boolean
   heading?: boolean
   accuracyM?: boolean
+  isMocked?: boolean
   recordedAt?: boolean
   ride?: boolean | Prisma.RideDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["rideLocation"]>
@@ -659,6 +690,7 @@ export type RideLocationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   speedKph?: boolean
   heading?: boolean
   accuracyM?: boolean
+  isMocked?: boolean
   recordedAt?: boolean
   ride?: boolean | Prisma.RideDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["rideLocation"]>
@@ -672,10 +704,11 @@ export type RideLocationSelectScalar = {
   speedKph?: boolean
   heading?: boolean
   accuracyM?: boolean
+  isMocked?: boolean
   recordedAt?: boolean
 }
 
-export type RideLocationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "rideId" | "source" | "latitude" | "longitude" | "speedKph" | "heading" | "accuracyM" | "recordedAt", ExtArgs["result"]["rideLocation"]>
+export type RideLocationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "rideId" | "source" | "latitude" | "longitude" | "speedKph" | "heading" | "accuracyM" | "isMocked" | "recordedAt", ExtArgs["result"]["rideLocation"]>
 export type RideLocationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ride?: boolean | Prisma.RideDefaultArgs<ExtArgs>
 }
@@ -700,6 +733,7 @@ export type $RideLocationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     speedKph: runtime.Decimal | null
     heading: runtime.Decimal | null
     accuracyM: runtime.Decimal | null
+    isMocked: boolean
     recordedAt: Date
   }, ExtArgs["result"]["rideLocation"]>
   composites: {}
@@ -1133,6 +1167,7 @@ export interface RideLocationFieldRefs {
   readonly speedKph: Prisma.FieldRef<"RideLocation", 'Decimal'>
   readonly heading: Prisma.FieldRef<"RideLocation", 'Decimal'>
   readonly accuracyM: Prisma.FieldRef<"RideLocation", 'Decimal'>
+  readonly isMocked: Prisma.FieldRef<"RideLocation", 'Boolean'>
   readonly recordedAt: Prisma.FieldRef<"RideLocation", 'DateTime'>
 }
     

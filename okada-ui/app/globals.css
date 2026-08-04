@@ -1851,3 +1851,151 @@ body {
   to { transform: translateX(0); opacity: 1; }
 }
 
+
+/* ── OkadaGo branded loader (route pin + lane dashes) ── */
+.okada-loader {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.okada-loader--xs,
+.okada-loader--sm {
+  gap: 8px;
+}
+
+.okada-loader-mark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.okada-loader-glow {
+  position: absolute;
+  inset: 18% 12% 8%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(247, 198, 0, 0.35) 0%, transparent 70%);
+  animation: okada-loader-glow 1.6s ease-in-out infinite;
+}
+
+.okada-loader-pin {
+  position: relative;
+  z-index: 1;
+  width: 38%;
+  aspect-ratio: 1;
+  margin-bottom: 22%;
+  animation: okada-loader-bounce 1.2s ease-in-out infinite;
+}
+
+.okada-loader-pin-head {
+  position: absolute;
+  inset: 0;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: linear-gradient(145deg, #f7c600 10%, #ff6b00 90%);
+  box-shadow: 0 4px 12px rgba(255, 107, 0, 0.35);
+}
+
+.okada-loader-pin-point {
+  position: absolute;
+  top: 28%;
+  left: 50%;
+  width: 30%;
+  height: 30%;
+  border-radius: 50%;
+  background: #15181d;
+  transform: translateX(-50%);
+  box-shadow: inset 0 0 0 1.5px rgba(247, 198, 0, 0.55);
+  z-index: 1;
+}
+
+.okada-loader-lanes {
+  position: absolute;
+  left: 50%;
+  bottom: 6%;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 56%;
+  transform: translateX(-50%);
+}
+
+.okada-loader-lane {
+  display: block;
+  height: 3px;
+  border-radius: 999px;
+  background: #f7c600;
+  opacity: 0.2;
+  animation: okada-loader-lane 1.05s ease-in-out infinite;
+}
+
+.okada-loader-lane:nth-child(1) {
+  width: 42%;
+  animation-delay: 0s;
+}
+
+.okada-loader-lane:nth-child(2) {
+  width: 68%;
+  animation-delay: 0.15s;
+}
+
+.okada-loader-lane:nth-child(3) {
+  width: 100%;
+  animation-delay: 0.3s;
+}
+
+.okada-loader-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: inherit;
+  text-align: center;
+}
+
+.okada-loader--xs .okada-loader-lanes,
+.okada-loader--sm .okada-loader-lanes {
+  gap: 3px;
+}
+
+.okada-loader--xs .okada-loader-lane,
+.okada-loader--sm .okada-loader-lane {
+  height: 2px;
+}
+
+@keyframes okada-loader-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10%);
+  }
+}
+
+@keyframes okada-loader-lane {
+  0%,
+  100% {
+    opacity: 0.18;
+    transform: scaleX(0.92);
+  }
+  40% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes okada-loader-glow {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}

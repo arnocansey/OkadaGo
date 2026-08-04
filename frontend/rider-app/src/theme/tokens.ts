@@ -14,6 +14,7 @@ export type ThemeColors = {
   textSecondary: string;
   textMuted: string;
   textOnPrimary: string;
+  textOnDanger: string;
   danger: string;
   dangerLight: string;
   warning: string;
@@ -45,9 +46,10 @@ export const darkColors: ThemeColors = {
   border: "#252D39",
   borderStrong: "#344052",
   text: "#FFFFFF",
-  textSecondary: "#8E8E93",
-  textMuted: "#8E8E93",
+  textSecondary: "#A1A1AA",
+  textMuted: "#71717A",
   textOnPrimary: "#000000",
+  textOnDanger: "#FFFFFF",
   danger: "#FF3B30",
   dangerLight: "#3D1512",
   warning: "#facc15",
@@ -82,6 +84,7 @@ export const lightColors: ThemeColors = {
   textSecondary: "#636366",
   textMuted: "#8E8E93",
   textOnPrimary: "#000000",
+  textOnDanger: "#FFFFFF",
   danger: "#FF3B30",
   dangerLight: "#FFE5E3",
   warning: "#facc15",
@@ -152,36 +155,44 @@ export function getStackHeaderOptions(palette: ThemeColors) {
 
 export const stackHeaderOptions = getStackHeaderOptions(darkColors);
 
-export const shadows = {
-  sm: {
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  md: {
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  lg: {
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 24,
-    elevation: 8,
-  },
-  sheet: {
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    elevation: 12,
-  },
-} as const;
+export function getShadows(isDark: boolean) {
+  const opacity = isDark
+    ? { sm: 0.3, md: 0.35, lg: 0.4, sheet: 0.35 }
+    : { sm: 0.08, md: 0.12, lg: 0.16, sheet: 0.14 };
+  return {
+    sm: {
+      shadowColor: "#000000",
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: opacity.sm,
+      shadowRadius: 3,
+      elevation: 2,
+    },
+    md: {
+      shadowColor: "#000000",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: opacity.md,
+      shadowRadius: 12,
+      elevation: 4,
+    },
+    lg: {
+      shadowColor: "#000000",
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: opacity.lg,
+      shadowRadius: 24,
+      elevation: 8,
+    },
+    sheet: {
+      shadowColor: "#000000",
+      shadowOffset: { width: 0, height: -4 },
+      shadowOpacity: opacity.sheet,
+      shadowRadius: 16,
+      elevation: 12,
+    },
+  } as const;
+}
+
+/** @deprecated Prefer getShadows(isDark) from theme. */
+export const shadows = getShadows(true);
 
 export const ACCRA_REGION = {
   latitude: 5.6037,

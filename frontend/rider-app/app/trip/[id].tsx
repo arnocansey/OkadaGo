@@ -1,10 +1,12 @@
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Alert, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MapPin, Navigation, Phone, Star } from "lucide-react-native";
+import * as ImagePicker from "expo-image-picker";
+import { Camera, MapPin, Navigation, Phone, Share2, ShieldAlert, Star } from "lucide-react-native";
 import { AppMap } from "@/components/AppMap";
 import { TripTimeline, stepIndexForStatus, RIDE_STEPS, DELIVERY_STEPS } from "@/components/TripTimeline";
+import { Avatar } from "@/components/ui/Avatar";
 import { Badge, statusTone } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -19,6 +21,7 @@ import { openGoogleMapsNavigation, openWazeNavigation } from "@/lib/navigation";
 import { riderWs } from "@/lib/websocket";
 import { markersForDelivery, markersForRide } from "@/lib/tripMap";
 import { spacing } from "@/theme/tokens";
+import type { DeliveryStop } from "@/types";
 
 const ACTION_LABELS: Record<string, string> = {
   arriving: "Head to pickup",
@@ -27,16 +30,20 @@ const ACTION_LABELS: Record<string, string> = {
   completed: "Complete trip",
   picked_up: "Package picked up",
   in_transit: "Start delivery",
-  delivered: "Mark delivered",
+  delivered: "Take photo & mark delivered",
 };
 
 const ACTIVE_STATUSES = ["assigned", "arriving", "arrived", "started", "picked_up", "in_transit"];
+
+type SafetyOverview = {
+  contacts?: Array<{ id: string; name: string; phoneE164: string; isPrimary?: boolean }>;
+};
 
 export default function TripScreen() {
   const { id, kind } = useLocalSearchParams<{ id: string; kind?: string }>();
   const { session, rides, deliveries, refresh } = useApp();
   const { colors, typography, stackHeaderOptions } = useTheme();
-  const { latitude, longitude } = useUserLocation();
+  const { latitude, longitude, isMocked, hasFix } = useUserLocation();
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -47,36 +54,40 @@ export default function TripScreen() {
         header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
         fare: { ...typography.h3, color: colors.text },
         passengerRow: { flexDirection: "row", alignItems: "center", gap: spacing.lg },
-        passengerAvatar: {
-          width: 44,
-          height: 44,
-          borderRadius: 22,
-          backgroundColor: colors.accentLight,
-          alignItems: "center",
-          justifyContent: "center",
-          borderWidth: 2,
-          borderColor: colors.accent,
-        },
-        passengerInitial: { ...typography.bodySemibold, color: colors.primary },
         passengerLabel: { ...typography.caption, color: colors.textMuted },
-        passengerName: { ...typography.bodySemibold, marginTop: 2, color: colors.text },
-        passengerPhone: { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
+        passengerName: { ...typography.bodySemibold, marginTop: spacing.xs, color: colors.text },
+        passengerPhone: { ...typography.caption, color: colors.textSecondary, marginTop: spacing.xs },
         callBtn: {
           width: 44,
           height: 44,
           borderRadius: 22,
-          backgroundColor: colors.accentLight,
+          backgroundColor: colors.primaryLight,
           alignItems: "center",
           justifyContent: "center",
-          borderWidth: 1.5,
-          borderColor: colors.accent,
+          borderWidth: 1,
+          borderColor: colors.primary,
         },
         section: { ...typography.h3, color: colors.text },
+        navDestination: { ...typography.body, color: colors.text, marginTop: spacing.xs },
+        navLandmark: { ...typography.caption, color: colors.textMuted, marginTop: spacing.xs, marginBottom: spacing.sm },
         navRow: { flexDirection: "row", gap: spacing.sm },
         navBtn: { flex: 1 },
+        safetyRow: { flexDirection: "row", gap: spacing.sm },
+        safetyBtn: { flex: 1 },
         stars: { flexDirection: "row", gap: spacing.sm },
         starBtn: { padding: spacing.sm },
         wsStatus: { ...typography.caption, color: colors.textMuted, textAlign: "center" },
+        stopRow: {
+          flexDirection: "row",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: spacing.md,
+          paddingVertical: spacing.sm,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+        },
+        stopLabel: { ...typography.captionMedium, color: colors.textSecondary },
+        stopAddress: { ...typography.body, color: colors.text, marginTop: 2 },
       }),
     [colors, typography],
   );
@@ -84,17 +95,38 @@ export default function TripScreen() {
   const [rating, setRating] = useState(5);
   const [review, setReview] = useState("");
   const [ratingLoading, setRatingLoading] = useState(false);
+  const [safetyLoading, setSafetyLoading] = useState(false);
+  const [safetyContacts, setSafetyContacts] = useState<SafetyOverview["contacts"]>([]);
+  const [stops, setStops] = useState<DeliveryStop[]>([]);
+  const [completingStopId, setCompletingStopId] = useState<string | null>(null);
   const isRide = kind !== "delivery";
   const trip = isRide ? rides.find((r) => r.id === id) : deliveries.find((d) => d.id === id);
 
   useTripRefresh(refresh, riderWs, 10000);
 
   useEffect(() => {
+    if (!session?.token) return;
+    api<SafetyOverview>("/safety/overview", { token: session.token })
+      .then((overview) => setSafetyContacts(overview.contacts ?? []))
+      .catch(() => setSafetyContacts([]));
+  }, [session?.token]);
+
+  useEffect(() => {
+    if (isRide || !trip?.id || !session?.token) {
+      setStops([]);
+      return;
+    }
+    api<DeliveryStop[]>(`/deliveries/${trip.id}/stops`, { token: session.token })
+      .then(setStops)
+      .catch(() => setStops([]));
+  }, [isRide, trip?.id, trip?.status, session?.token]);
+
+  useEffect(() => {
     if (!trip || !session?.token || !session.user.riderProfileId) return;
     if (!ACTIVE_STATUSES.includes((trip.status ?? "").toLowerCase())) return;
 
     const postLocation = () => {
-      if (!isRide) return;
+      if (!isRide || !hasFix) return;
       api(`/rides/${trip.id}/location`, {
         method: "POST",
         token: session.token,
@@ -103,6 +135,7 @@ export default function TripScreen() {
           latitude,
           longitude,
           source: "rider_app",
+          isMocked,
         },
       }).catch(() => undefined);
     };
@@ -110,12 +143,14 @@ export default function TripScreen() {
     postLocation();
     const timer = setInterval(postLocation, 5000);
     return () => clearInterval(timer);
-  }, [trip?.id, trip?.status, session?.token, session?.user.riderProfileId, latitude, longitude, isRide]);
+  }, [trip?.id, trip?.status, session?.token, session?.user.riderProfileId, latitude, longitude, isMocked, isRide, hasFix]);
 
   const markers = useMemo(() => {
     if (!trip) return [];
-    return isRide ? markersForRide(trip as (typeof rides)[0]) : markersForDelivery(trip as (typeof deliveries)[0]);
-  }, [trip, isRide]);
+    return isRide
+      ? markersForRide(trip as (typeof rides)[0], colors)
+      : markersForDelivery(trip as (typeof deliveries)[0], colors);
+  }, [trip, isRide, colors, rides, deliveries]);
 
   const status = trip?.status ?? "assigned";
   const navLat = Number(
@@ -164,9 +199,48 @@ export default function TripScreen() {
     : isRide
       ? (trip as typeof rides[0]).pickupAddress
       : (trip as typeof deliveries[0]).pickupAddress;
+  const navLandmark = ["started", "picked_up", "in_transit"].includes(status.toLowerCase())
+    ? isRide
+      ? (trip as typeof rides[0]).destinationLandmark
+      : (trip as typeof deliveries[0]).dropoffLandmark
+    : isRide
+      ? (trip as typeof rides[0]).pickupLandmark
+      : (trip as typeof deliveries[0]).pickupLandmark;
+
+  const dropoffStops = stops.filter((stop) => stop.type === "DROPOFF");
+  const isMultiStopDelivery = !isRide && dropoffStops.length > 1;
+  const nextPendingStop = dropoffStops.find((stop) => stop.status !== "COMPLETED");
+
+  async function captureProofOfDeliveryPhoto(): Promise<string | null> {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission needed", "Allow camera access to capture proof of delivery.");
+      return null;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({ quality: 0.6 });
+    if (result.canceled || !result.assets?.[0]) return null;
+
+    const asset = result.assets[0];
+    const response = await fetch(asset.uri);
+    const blob = await response.blob();
+    return new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.readAsDataURL(blob);
+    });
+  }
 
   async function advance() {
     if (!trip || !nextStatus || !session) return;
+
+    let proofPhotoBase64: string | undefined;
+    if (!isRide && nextStatus === "delivered") {
+      const photo = await captureProofOfDeliveryPhoto();
+      if (!photo) return;
+      proofPhotoBase64 = photo;
+    }
+
     setLoading(true);
     try {
       if (isRide) {
@@ -179,14 +253,98 @@ export default function TripScreen() {
         await api(`/deliveries/${trip.id}/status`, {
           method: "PATCH",
           token: session.token,
-          body: { nextStatus, actorRole: "rider", actorUserId: session.user.id },
+          body: { nextStatus, actorRole: "rider", actorUserId: session.user.id, proofPhotoBase64 },
         });
       }
       await refresh();
       if (!isRide && (nextStatus === "completed" || nextStatus === "delivered")) router.back();
+    } catch (e) {
+      Alert.alert("Update failed", e instanceof Error ? e.message : "Could not update delivery status.");
     } finally {
       setLoading(false);
     }
+  }
+
+  async function completeStop(stop: DeliveryStop, isFinal: boolean) {
+    if (!trip || !session) return;
+
+    let proofPhotoBase64: string | undefined;
+    if (isFinal) {
+      const photo = await captureProofOfDeliveryPhoto();
+      if (!photo) return;
+      proofPhotoBase64 = photo;
+    }
+
+    setCompletingStopId(stop.id);
+    try {
+      await api(`/deliveries/${trip.id}/stops/${stop.id}/complete`, {
+        method: "PATCH",
+        token: session.token,
+        body: { actorRole: "rider", proofPhotoBase64 },
+      });
+      await refresh();
+      const updatedStops = await api<DeliveryStop[]>(`/deliveries/${trip.id}/stops`, { token: session.token });
+      setStops(updatedStops);
+      if (isFinal) router.back();
+    } catch (e) {
+      Alert.alert("Update failed", e instanceof Error ? e.message : "Could not complete this stop.");
+    } finally {
+      setCompletingStopId(null);
+    }
+  }
+
+  async function reportSos() {
+    if (!session || !trip) return;
+    setSafetyLoading(true);
+    try {
+      await api("/safety/incidents", {
+        method: "POST",
+        token: session.token,
+        body: {
+          rideId: isRide ? trip.id : undefined,
+          severity: "CRITICAL",
+          category: "SOS",
+          description: `Rider SOS during ${isRide ? "ride" : "delivery"} ${trip.id}`,
+        },
+      });
+      Alert.alert("SOS sent", "Our safety team has been notified.");
+    } catch (e) {
+      Alert.alert("SOS failed", e instanceof Error ? e.message : "Could not send SOS.");
+    } finally {
+      setSafetyLoading(false);
+    }
+  }
+
+  async function shareTrip() {
+    if (!session || !isRide || !trip) return;
+    setSafetyLoading(true);
+    try {
+      const result = await api<{ shareUrl?: string; message?: string }>("/safety/share-trip", {
+        method: "POST",
+        token: session.token,
+        body: {
+          rideId: trip.id,
+          mode: "START",
+          channel: "LINK",
+          note: `Track my OkadaGo trip to ${navLabel}`,
+        },
+      });
+      const message = result.message ?? result.shareUrl ?? `Track my trip: heading to ${navLabel}`;
+      await Share.share({ message });
+    } catch (e) {
+      Alert.alert("Share failed", e instanceof Error ? e.message : "Could not share trip.");
+    } finally {
+      setSafetyLoading(false);
+    }
+  }
+
+  async function callEmergencyContact() {
+    const primary = safetyContacts?.find((contact) => contact.isPrimary) ?? safetyContacts?.[0];
+    if (!primary) {
+      Alert.alert("No emergency contact", "Add a safety contact in your profile first.");
+      return;
+    }
+    await Linking.openURL(`tel:${primary.phoneE164}`);
   }
 
   async function submitPassengerRating() {
@@ -244,11 +402,7 @@ export default function TripScreen() {
 
           <Card>
             <View style={styles.passengerRow}>
-              <View style={styles.passengerAvatar}>
-                <Text style={styles.passengerInitial}>
-                  {(trip.passenger?.user?.fullName ?? "P")[0]}
-                </Text>
-              </View>
+              <Avatar name={trip.passenger?.user?.fullName ?? "Passenger"} size={44} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.passengerLabel}>Passenger</Text>
                 <Text style={styles.passengerName}>{trip.passenger?.user?.fullName ?? "Passenger"}</Text>
@@ -271,6 +425,10 @@ export default function TripScreen() {
 
           <Card stacked>
             <Text style={styles.section}>Navigate</Text>
+            <Text style={styles.navDestination}>{navLabel}</Text>
+            {navLandmark ? (
+              <Text style={styles.navLandmark}>Landmark: {navLandmark}</Text>
+            ) : null}
             <View style={styles.navRow}>
               <Button
                 label="Google Maps"
@@ -290,9 +448,72 @@ export default function TripScreen() {
           </Card>
 
           <Card stacked>
+            <Text style={styles.section}>Safety</Text>
+            <View style={styles.safetyRow}>
+              <Button
+                label="SOS"
+                variant="danger"
+                loading={safetyLoading}
+                icon={<ShieldAlert size={16} color={colors.textOnPrimary} />}
+                style={styles.safetyBtn}
+                onPress={reportSos}
+              />
+              {isRide ? (
+                <Button
+                  label="Share trip"
+                  variant="outline"
+                  loading={safetyLoading}
+                  icon={<Share2 size={16} color={colors.primary} />}
+                  style={styles.safetyBtn}
+                  onPress={shareTrip}
+                />
+              ) : null}
+            </View>
+            <Button label="Call emergency contact" variant="secondary" fullWidth onPress={callEmergencyContact} />
+          </Card>
+
+          <Card stacked>
             <Text style={styles.section}>Progress</Text>
             <TripTimeline steps={steps} currentIndex={currentIndex} />
           </Card>
+
+          {isMultiStopDelivery && status.toLowerCase() === "in_transit" ? (
+            <Card stacked>
+              <Text style={styles.section}>Stops ({dropoffStops.filter((s) => s.status === "COMPLETED").length}/{dropoffStops.length})</Text>
+              {dropoffStops.map((stop, index) => {
+                const isCompleted = stop.status === "COMPLETED";
+                const isFinal = index === dropoffStops.length - 1;
+                const isNext = nextPendingStop?.id === stop.id;
+                return (
+                  <View key={stop.id} style={styles.stopRow}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.stopLabel}>
+                        Stop {index + 1}
+                        {isCompleted ? " · Delivered" : ""}
+                      </Text>
+                      <Text style={styles.stopAddress}>{stop.address}</Text>
+                      {stop.landmark ? <Text style={styles.navLandmark}>Landmark: {stop.landmark}</Text> : null}
+                      {stop.recipientName ? (
+                        <Text style={styles.navLandmark}>Recipient: {stop.recipientName}</Text>
+                      ) : null}
+                    </View>
+                    {isCompleted ? (
+                      <Badge label="Done" tone="success" />
+                    ) : (
+                      <Button
+                        label={isFinal ? "Take photo & complete" : "Complete stop"}
+                        variant={isNext ? "accent" : "outline"}
+                        loading={completingStopId === stop.id}
+                        disabled={!isNext}
+                        icon={isFinal ? <Camera size={14} color={colors.textOnPrimary} /> : undefined}
+                        onPress={() => void completeStop(stop, isFinal)}
+                      />
+                    )}
+                  </View>
+                );
+              })}
+            </Card>
+          ) : null}
 
           {canRatePassenger ? (
             <Card stacked>
@@ -314,11 +535,14 @@ export default function TripScreen() {
             </Card>
           ) : null}
 
-          {nextStatus ? (
+          {nextStatus && !(isMultiStopDelivery && nextStatus === "delivered") ? (
             <Button
               label={ACTION_LABELS[nextStatus] ?? `Update to ${nextStatus}`}
               variant="accent"
               loading={loading}
+              icon={
+                !isRide && nextStatus === "delivered" ? <Camera size={16} color={colors.textOnPrimary} /> : undefined
+              }
               onPress={advance}
               fullWidth
             />

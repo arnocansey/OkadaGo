@@ -18,12 +18,17 @@ import {
   parseCoord,
   riderDeficitOfflineThreshold
 } from "@/components/rider/types";
+import { OkadaLoader } from "@/components/ui/OkadaLoader";
 
 const RideMap = dynamic(
   () => import("@/components/passenger/map/ride-map").then((m) => m.RideMap),
   {
     ssr: false,
-    loading: () => <div className="pax-map-root rdr-map-root rdr-map-root--loading" />
+    loading: () => (
+      <div className="pax-map-root rdr-map-root rdr-map-root--loading flex items-center justify-center">
+        <OkadaLoader size="md" />
+      </div>
+    )
   }
 );
 

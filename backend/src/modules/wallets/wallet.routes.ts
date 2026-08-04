@@ -2,6 +2,8 @@ import type { FastifyPluginAsync } from "fastify";
 import { AppError } from "../../common/errors.js";
 import { parseBody, parseParams, parseQuery } from "../../common/validation.js";
 import {
+  riderPayoutAccountParamsSchema,
+  riderPayoutAccountSchema,
   riderPayoutRequestSchema,
   walletUserParamsSchema,
   payoutEligibilitySchema,
@@ -55,6 +57,30 @@ export const walletRoutes: FastifyPluginAsync = async (server) => {
     return reply.status(201).send(result);
   });
 
+  server.get("/wallets/rider/payout-accounts", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return walletService.listCurrentRiderPayoutAccounts(token);
+  });
+
+  server.post("/wallets/rider/payout-accounts", async (request, reply) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const input = parseBody(request, riderPayoutAccountSchema);
+    const result = await walletService.createCurrentRiderPayoutAccount(token, input);
+    return reply.status(201).send(result);
+  });
+
+  server.post("/wallets/rider/payout-accounts/:payoutAccountId/default", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, riderPayoutAccountParamsSchema);
+    return walletService.setCurrentRiderPayoutAccountDefault(token, params.payoutAccountId);
+  });
+
+  server.delete("/wallets/rider/payout-accounts/:payoutAccountId", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, riderPayoutAccountParamsSchema);
+    return walletService.revokeCurrentRiderPayoutAccount(token, params.payoutAccountId);
+  });
+
   server.post("/wallets/top-up", async (request, reply) => {
     const input = parseBody(request, walletTopUpSchema);
     const result = await walletService.topUpWallet(input);
@@ -75,4 +101,30 @@ export const walletRoutes: FastifyPluginAsync = async (server) => {
     );
     return reply.redirect(redirectUrl, 302);
   });
+
+  // Paystack transfer webhooks — signature verified against the raw JSON body.
+  server.post(
+    "/wallets/paystack/transfer-webhook",
+    {
+      preParsing: async (request, _reply, payload) => {
+        const chunks: Buffer[] = [];
+        for await (const chunk of payload) {
+          chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+        }
+        const raw = Buffer.concat(chunks);
+        (request as typeof request & { rawBody?: string }).rawBody = raw.toString("utf8");
+        const { Readable } = await import("node:stream");
+        return Readable.from(raw);
+      }
+    },
+    async (request, reply) => {
+      const signature = request.headers["x-paystack-signature"];
+      const signatureHeader = Array.isArray(signature) ? signature[0] : signature;
+      const rawBody =
+        (request as typeof request & { rawBody?: string }).rawBody ??
+        (typeof request.body === "string" ? request.body : JSON.stringify(request.body ?? {}));
+      const result = await walletService.handlePaystackTransferWebhook(rawBody, signatureHeader);
+      return reply.status(200).send(result);
+    }
+  );
 };
