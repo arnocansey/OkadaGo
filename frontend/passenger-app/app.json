@@ -59,6 +59,15 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/icon.png",
+      "themeColor": "#1A2E4C",
+      "backgroundColor": "#0F172A",
+      "shortName": "OkadaGo Passenger",
+      "name": "OkadaGo Passenger"
     }
   }
 }

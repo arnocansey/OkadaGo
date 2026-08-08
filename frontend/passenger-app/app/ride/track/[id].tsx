@@ -12,7 +12,8 @@ import {
   type StepDetail,
 } from "@/components/TripTimeline";
 import { Avatar } from "@/components/ui/Avatar";
-import { Badge, statusTone } from "@/components/ui/Badge";
+import { Badge } from "@/components/ui/Badge";
+import { RideStatusBadge } from "@/components/ui/RideStatusBadge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -20,6 +21,7 @@ import { SkeletonList } from "@/components/ui/Skeleton";
 import { Input } from "@/components/ui/Input";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useToast } from "@/context/ToastContext";
 import { useLiveRoutePreview } from "@/hooks/useLiveRoutePreview";
 import { useTripRefresh } from "@/hooks/useTripRefresh";
 import { api, money } from "@/lib/api";
@@ -72,6 +74,7 @@ export default function TrackScreen() {
   const { id, kind } = useLocalSearchParams<{ id: string; kind?: string }>();
   const { session, rides, deliveries, refresh, loading, restoring } = useApp();
   const { colors, typography, stackHeaderOptions } = useTheme();
+  const { showToast } = useToast();
   const prevIndexRef = useRef<number>(-1);
   const [stepTimestamps, setStepTimestamps] = useState<Record<number, string>>({});
 
@@ -325,7 +328,7 @@ export default function TrackScreen() {
                 description: `Passenger SOS during ${isRide ? "ride" : "delivery"} ${trip!.id}`,
               },
             });
-            Alert.alert("SOS sent", "Our safety team has been notified. Stay on the line if you can.");
+            showToast("SOS sent. Our safety team has been notified.", "error");
           } catch (e) {
             Alert.alert("SOS failed", e instanceof Error ? e.message : "Could not send SOS.");
           } finally {
@@ -400,7 +403,7 @@ export default function TrackScreen() {
         token: session.token,
         body: { score: rating, review: review.trim() || undefined },
       });
-      Alert.alert("Thanks!", "Your rating was submitted.");
+      showToast("Your rating was submitted.", "success");
       await refresh();
     } catch (e) {
       Alert.alert("Rating failed", e instanceof Error ? e.message : "Could not submit rating.");
@@ -428,7 +431,7 @@ export default function TrackScreen() {
           </Text>
 
           <View style={styles.header}>
-            <Badge label={status.replace(/_/g, " ")} tone={statusTone(status)} />
+            <RideStatusBadge status={status} />
             <Text style={styles.fare}>
               {money(
                 isRide

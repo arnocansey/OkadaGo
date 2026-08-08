@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react-native";
 import { Badge } from "@/components/ui/Badge";
@@ -13,6 +13,7 @@ import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { PaystackCheckout } from "@/components/PaystackCheckout";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useToast } from "@/context/ToastContext";
 import { api, compactDate, money } from "@/lib/api";
 import { spacing } from "@/theme/tokens";
 import type { WalletTransaction } from "@/types";
@@ -28,10 +29,18 @@ function txStatusBadge(tx: WalletTransaction) {
 export default function WalletScreen() {
   const { session, wallets, transactions, loading, refresh } = useApp();
   const { colors, typography } = useTheme();
+  const { showToast } = useToast();
   const wallet = wallets[0];
   const [topUpAmount, setTopUpAmount] = useState("20");
   const [topUpLoading, setTopUpLoading] = useState(false);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refresh();
+    setRefreshing(false);
+  }, [refresh]);
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -114,7 +123,7 @@ export default function WalletScreen() {
 
   async function handleCheckoutSuccess(reference: string) {
     setCheckoutUrl(null);
-    Alert.alert("Payment received", `Reference: ${reference}. Verifying...`);
+    showToast(`Payment received (${reference}). Balance updated!`, "success");
     await refresh();
   }
 
@@ -132,7 +141,7 @@ export default function WalletScreen() {
         onSuccess={handleCheckoutSuccess}
         onCancel={handleCheckoutCancel}
       />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}>
         <ScreenHeader title="Wallet" />
 
         <BalanceHero

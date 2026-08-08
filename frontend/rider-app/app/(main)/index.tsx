@@ -8,7 +8,9 @@ import { useTranslation } from "react-i18next";
 import { AppMap } from "@/components/AppMap";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { MapBottomSheet, MAP_SHEET_CENTER_INSET } from "@/components/ui/MapBottomSheet";
+import { FloatingActionButton } from "@/components/ui/FloatingActionButton";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useRiderLocation } from "@/hooks/useRiderLocation";
@@ -24,6 +26,7 @@ export default function DashboardScreen() {
   const { colors, typography, isDark } = useTheme();
   const { latitude, longitude, hasFix, isMocked } = useUserLocation();
   const [sosLoading, setSosLoading] = useState(false);
+  const [showOfflineConfirm, setShowOfflineConfirm] = useState(false);
 
   const locationPing = hasFix
     ? { latitude, longitude, isMocked }
@@ -58,13 +61,9 @@ export default function DashboardScreen() {
   }, [incomingDelivery?.id, online]);
 
   async function handleToggleOnline() {
-    // Going offline never needs a balance check.
+    // Going offline shows a confirmation dialog first.
     if (online) {
-      try {
-        await toggleOnline(locationPing);
-      } catch {
-        // toggleOnline already sets the banner message
-      }
+      setShowOfflineConfirm(true);
       return;
     }
 
@@ -357,7 +356,35 @@ export default function DashboardScreen() {
             </Pressable>
           )}
         </MapBottomSheet>
+
+        {online && (
+          <FloatingActionButton
+            icon={<ShieldAlert size={22} color={colors.textOnDanger} />}
+            label="SOS"
+            variant="danger"
+            onPress={() => sendSos()}
+            style={{ bottom: 120, right: spacing.lg }}
+          />
+        )}
       </SafeAreaView>
+
+      <ConfirmDialog
+        visible={showOfflineConfirm}
+        title="Go offline?"
+        message="You will stop receiving ride and delivery requests. You can go back online at any time."
+        confirmLabel="Go offline"
+        cancelLabel={t("common.cancel")}
+        destructive
+        onConfirm={async () => {
+          setShowOfflineConfirm(false);
+          try {
+            await toggleOnline(locationPing);
+          } catch {
+            // toggleOnline already sets the banner message
+          }
+        }}
+        onCancel={() => setShowOfflineConfirm(false)}
+      />
     </View>
   );
 }

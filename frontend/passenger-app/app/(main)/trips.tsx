@@ -1,10 +1,10 @@
 import { router } from "expo-router";
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CalendarClock, ChevronRight, MapPin, Package } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
-import { Badge, statusTone } from "@/components/ui/Badge";
+import { RideStatusBadge } from "@/components/ui/RideStatusBadge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ScreenHeader } from "@/components/ui/ScreenHeader";
@@ -14,10 +14,20 @@ import { useTheme } from "@/context/ThemeContext";
 import { compactDate, money } from "@/lib/api";
 import { radius, spacing } from "@/theme/tokens";
 
+const PAGE_SIZE = 20;
+
 export default function TripsScreen() {
   const { t } = useTranslation();
-  const { rides, deliveries, loading } = useApp();
+  const { rides, deliveries, loading, refresh } = useApp();
   const { colors, typography } = useTheme();
+  const [refreshing, setRefreshing] = useState(false);
+  const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refresh();
+    setRefreshing(false);
+  }, [refresh]);
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -81,9 +91,15 @@ export default function TripsScreen() {
         />
       ) : (
         <FlatList
-          data={items}
+          data={items.slice(0, displayCount)}
           keyExtractor={(item) => `${item.kind}-${item.id}`}
           contentContainerStyle={styles.list}
+          onRefresh={onRefresh}
+          refreshing={refreshing}
+          onEndReached={() => {
+            if (displayCount < items.length) setDisplayCount((c) => c + PAGE_SIZE);
+          }}
+          onEndReachedThreshold={0.5}
           ListHeaderComponent={
             upcoming.length > 0 ? (
               <View style={styles.upcomingSection}>
@@ -133,7 +149,7 @@ export default function TripsScreen() {
                 <Text style={styles.rowTitle} numberOfLines={1}>{item.title}</Text>
                 <Text style={styles.rowSub} numberOfLines={1}>{item.subtitle}</Text>
                 <View style={styles.meta}>
-                  <Badge label={item.status.replace(/_/g, " ")} tone={statusTone(item.status)} />
+                  <RideStatusBadge status={item.status} />
                   <Text style={styles.date}>{compactDate(item.date)}</Text>
                 </View>
               </View>

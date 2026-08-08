@@ -4,9 +4,11 @@ import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleShee
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { ErrorCard } from "@/components/ui/ErrorCard";
 import { Input } from "@/components/ui/Input";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useToast } from "@/context/ToastContext";
 import { api } from "@/lib/api";
 import { radius, spacing } from "@/theme/tokens";
 import type { PaymentMethod, SessionUser } from "@/types";
@@ -34,6 +36,7 @@ const PAYMENT_OPTIONS: Array<{ id: PaymentMethod; label: string }> = [
 export default function EditProfileScreen() {
   const { session, refreshSession } = useApp();
   const { colors, typography, stackHeaderOptions } = useTheme();
+  const { showToast } = useToast();
   const user = session!.user;
   const [fullName, setFullName] = useState(user.fullName);
   const [email, setEmail] = useState(user.email ?? "");
@@ -105,9 +108,8 @@ export default function EditProfileScreen() {
         },
       });
       await refreshSession();
-      Alert.alert("Profile updated", "Your account details were saved.", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
+      showToast("Profile updated successfully.", "success");
+      router.back();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save profile.");
     } finally {
@@ -161,7 +163,7 @@ export default function EditProfileScreen() {
                 ))}
               </View>
             </View>
-            {error ? <Text style={styles.error}>{error}</Text> : null}
+            {error ? <ErrorCard message={error} onDismiss={() => setError("")} /> : null}
             <Button label="Save profile" loading={saving} onPress={() => void saveProfile()} fullWidth />
           </Card>
         </ScrollView>

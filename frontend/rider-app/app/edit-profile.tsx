@@ -5,9 +5,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
+import { ErrorCard } from "@/components/ui/ErrorCard";
 import { Input } from "@/components/ui/Input";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useToast } from "@/context/ToastContext";
 import { api } from "@/lib/api";
 import { radius, spacing } from "@/theme/tokens";
 import type { SessionUser } from "@/types";
@@ -48,6 +50,7 @@ type SettingsUpdateResponse = {
 export default function EditProfileScreen() {
   const { session, refreshSession } = useApp();
   const { colors, typography, stackHeaderOptions } = useTheme();
+  const { showToast } = useToast();
   const user = session!.user;
   const [fullName, setFullName] = useState(user.fullName);
   const [email, setEmail] = useState(user.email ?? "");
@@ -124,9 +127,8 @@ export default function EditProfileScreen() {
         },
       });
       await refreshSession();
-      Alert.alert("Profile updated", "Your rider profile was saved.", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
+      showToast("Profile updated successfully.", "success");
+      router.back();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save profile.");
     } finally {
@@ -151,7 +153,7 @@ export default function EditProfileScreen() {
           vehicleType,
         },
       });
-      Alert.alert("Vehicle updated", "Your vehicle details were saved.");
+      showToast("Vehicle updated successfully.", "success");
     } catch (e) {
       setVehicleError(e instanceof Error ? e.message : "Could not save vehicle.");
     } finally {
@@ -184,7 +186,7 @@ export default function EditProfileScreen() {
               <Text style={styles.readOnlyField}>{phoneE164}</Text>
             </View>
             <Input label="Service city" value={city} onChangeText={setCity} placeholder="Accra" />
-            {error ? <Text style={styles.error}>{error}</Text> : null}
+            {error ? <ErrorCard message={error} onDismiss={() => setError("")} /> : null}
             <Button label="Save profile" loading={saving} onPress={() => void saveProfile()} fullWidth />
           </Card>
 
@@ -215,7 +217,7 @@ export default function EditProfileScreen() {
                 placeholder="INS-2026-000123"
                 autoCapitalize="characters"
               />
-              {vehicleError ? <Text style={styles.error}>{vehicleError}</Text> : null}
+              {vehicleError ? <ErrorCard message={vehicleError} onDismiss={() => setVehicleError("")} /> : null}
               <Button label="Save vehicle" loading={savingVehicle} onPress={() => void saveVehicle()} fullWidth />
             </Card>
           ) : null}

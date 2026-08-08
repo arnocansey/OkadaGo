@@ -1,16 +1,18 @@
 import { Stack, router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ErrorCard } from "@/components/ui/ErrorCard";
 import { Input } from "@/components/ui/Input";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { api, compactDate } from "@/lib/api";
 import { spacing } from "@/theme/tokens";
+import { useToast } from "@/context/ToastContext";
 
 type SupportTicket = {
   id: string;
@@ -25,12 +27,15 @@ type SupportTicket = {
 export default function SupportScreen() {
   const { session } = useApp();
   const { colors, typography, stackHeaderOptions } = useTheme();
+  const { showToast } = useToast();
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("RIDER");
   const [description, setDescription] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const styles = useMemo(
     () =>
@@ -47,15 +52,22 @@ export default function SupportScreen() {
   const load = useCallback(async () => {
     if (!session?.token) return;
     setLoading(true);
+    setError(null);
     try {
       setTickets(await api<SupportTicket[]>("/support/tickets", { token: session.token }));
-    } catch {
-      Alert.alert("Load failed", "Could not load your support tickets.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not load your support tickets.");
       setTickets([]);
     } finally {
       setLoading(false);
     }
   }, [session?.token]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }, [load]);
 
   useEffect(() => {
     void load();
@@ -77,7 +89,7 @@ export default function SupportScreen() {
       setTitle("");
       setDescription("");
       await load();
-      Alert.alert("Ticket submitted", "Support will review your request.");
+      showToast("Ticket submitted — support will review your request.", "success");
     } catch (e) {
       Alert.alert("Submission failed", e instanceof Error ? e.message : "Could not create ticket.");
     } finally {
@@ -94,7 +106,7 @@ export default function SupportScreen() {
         keyboardVerticalOffset={Platform.OS === "ios" ? 88 : 0}
       >
         <SafeAreaView style={styles.screen} edges={["bottom"]}>
-          <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}>
           <Card stacked>
             <Input label="Subject" value={title} onChangeText={setTitle} placeholder="Payout issue" />
             <Input label="Category" value={category} onChangeText={setCategory} placeholder="RIDER" />
@@ -110,7 +122,9 @@ export default function SupportScreen() {
           </Card>
 
           <Text style={styles.title}>Your tickets</Text>
-          {loading ? (
+          {error ? (
+            <ErrorCard message={error} onRetry={load} onDismiss={() => setError(null)} />
+          ) : loading ? (
             <SkeletonList count={3} />
           ) : tickets.length === 0 ? (
             <EmptyState title="No support tickets" message="Submit a ticket above to get help." />

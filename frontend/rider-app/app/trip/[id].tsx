@@ -7,13 +7,15 @@ import { Camera, MapPin, Navigation, Phone, Share2, ShieldAlert, Star } from "lu
 import { AppMap } from "@/components/AppMap";
 import { TripTimeline, stepIndexForStatus, RIDE_STEPS, DELIVERY_STEPS } from "@/components/TripTimeline";
 import { Avatar } from "@/components/ui/Avatar";
-import { Badge, statusTone } from "@/components/ui/Badge";
+import { Badge } from "@/components/ui/Badge";
+import { RideStatusBadge } from "@/components/ui/RideStatusBadge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { api, nextDeliveryStatus, nextRideStatus, money } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useToast } from "@/context/ToastContext";
 import { useLiveRoutePreview } from "@/hooks/useLiveRoutePreview";
 import { useTripRefresh } from "@/hooks/useTripRefresh";
 import { useUserLocation } from "@/hooks/useUserLocation";
@@ -43,6 +45,7 @@ export default function TripScreen() {
   const { id, kind } = useLocalSearchParams<{ id: string; kind?: string }>();
   const { session, rides, deliveries, refresh } = useApp();
   const { colors, typography, stackHeaderOptions } = useTheme();
+  const { showToast } = useToast();
   const { latitude, longitude, isMocked, hasFix } = useUserLocation();
   const styles = useMemo(
     () =>
@@ -307,7 +310,7 @@ export default function TripScreen() {
           description: `Rider SOS during ${isRide ? "ride" : "delivery"} ${trip.id}`,
         },
       });
-      Alert.alert("SOS sent", "Our safety team has been notified.");
+      showToast("SOS sent. Our safety team has been notified.", "error");
     } catch (e) {
       Alert.alert("SOS failed", e instanceof Error ? e.message : "Could not send SOS.");
     } finally {
@@ -356,7 +359,7 @@ export default function TripScreen() {
         token: session.token,
         body: { score: rating, review: review.trim() || undefined },
       });
-      Alert.alert("Thanks!", "Your passenger rating was submitted.");
+      showToast("Your passenger rating was submitted.", "success");
       router.back();
     } catch (e) {
       Alert.alert("Rating failed", e instanceof Error ? e.message : "Could not submit rating.");
@@ -389,7 +392,7 @@ export default function TripScreen() {
           </Text>
 
           <View style={styles.header}>
-            <Badge label={status.replace(/_/g, " ")} tone={statusTone(status)} />
+            <RideStatusBadge status={status} />
             <Text style={styles.fare}>
               {money(
                 isRide

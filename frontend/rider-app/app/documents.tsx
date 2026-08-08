@@ -1,16 +1,18 @@
 import { Stack } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as DocumentPicker from "expo-document-picker";
 import { FileCheck, FileWarning, Upload } from "lucide-react-native";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { ErrorCard } from "@/components/ui/ErrorCard";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/lib/api";
 import { spacing } from "@/theme/tokens";
+import { useToast } from "@/context/ToastContext";
 
 type RiderDocument = {
   id: string;
@@ -30,9 +32,12 @@ const DOC_TYPES: Array<{ id: string; label: string; apiType: string }> = [
 export default function DocumentsScreen() {
   const { session } = useApp();
   const { colors, typography, stackHeaderOptions } = useTheme();
+  const { showToast } = useToast();
   const [documents, setDocuments] = useState<RiderDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const styles = useMemo(
     () =>
@@ -52,19 +57,26 @@ export default function DocumentsScreen() {
     [colors, typography],
   );
 
-  async function loadDocuments() {
+  const loadDocuments = useCallback(async () => {
     if (!session?.token) return;
     setLoading(true);
+    setError(null);
     try {
       const result = await api<RiderDocument[]>("/riders/documents", { token: session.token });
       setDocuments(Array.isArray(result) ? result : []);
-    } catch {
-      Alert.alert("Load failed", "Could not load your documents.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not load your documents.");
       setDocuments([]);
     } finally {
       setLoading(false);
     }
-  }
+  }, [session?.token]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadDocuments();
+    setRefreshing(false);
+  }, [loadDocuments]);
 
   useEffect(() => {
     loadDocuments();
@@ -100,7 +112,7 @@ export default function DocumentsScreen() {
         },
       });
       await loadDocuments();
-      Alert.alert("Uploaded", `${docType.label} submitted for review.`);
+      showToast(`${docType.label} submitted for review.`, "success");
     } catch (e) {
       Alert.alert("Upload failed", e instanceof Error ? e.message : "Could not upload document.");
     } finally {
@@ -112,10 +124,13 @@ export default function DocumentsScreen() {
     <>
       <Stack.Screen options={{ headerShown: true, title: "Documents", ...stackHeaderOptions }} />
       <SafeAreaView style={styles.screen} edges={["bottom"]}>
+        <ScrollView contentContainerStyle={{ padding: spacing.xl, gap: spacing.md }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}>
         <Text style={styles.subtitle}>
           Upload license, insurance, registration, and ID. Pending docs keep you offline until approved.
         </Text>
-        {loading ? (
+        {error ? (
+          <ErrorCard message={error} onRetry={loadDocuments} onDismiss={() => setError(null)} />
+        ) : loading ? (
           <SkeletonList count={4} />
         ) : (
           DOC_TYPES.map((doc) => {
@@ -163,6 +178,7 @@ export default function DocumentsScreen() {
             );
           })
         )}
+        </ScrollView>
       </SafeAreaView>
     </>
   );

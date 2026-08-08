@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { api, compactDate, money } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useToast } from "@/context/ToastContext";
 import { PaystackCheckout } from "@/components/PaystackCheckout";
 import { Badge, statusTone } from "@/components/ui/Badge";
 import { BalanceHero } from "@/components/ui/BalanceHero";
@@ -31,6 +33,7 @@ const RIDER_MIN_ONLINE_BALANCE = 30;
 export default function WalletScreen() {
   const { session, wallets, transactions, payouts, loading, refresh, setMessage } = useApp();
   const { colors, typography } = useTheme();
+  const { showToast } = useToast();
   const [topUpAmount, setTopUpAmount] = useState(String(RIDER_MIN_ONLINE_BALANCE));
   const [payoutAmount, setPayoutAmount] = useState("");
   const [destination, setDestination] = useState("");
@@ -39,6 +42,13 @@ export default function WalletScreen() {
   const [topUpLoading, setTopUpLoading] = useState(false);
   const [payoutLoading, setPayoutLoading] = useState(false);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refresh();
+    setRefreshing(false);
+  }, [refresh]);
   const wallet =
     wallets.find((w) => (w.type ?? "").toLowerCase() === "rider_settlement") ?? wallets[0];
   const availableBalance = Number(wallet?.availableBalance ?? 0);
@@ -140,7 +150,7 @@ export default function WalletScreen() {
 
   async function handleCheckoutSuccess(reference: string) {
     setCheckoutUrl(null);
-    Alert.alert("Payment received", `Reference: ${reference}. Updating your balance…`);
+    showToast(`Payment received (${reference}). Balance updated!`, "success");
     await refresh();
   }
 
@@ -168,7 +178,7 @@ export default function WalletScreen() {
         token: session!.token,
       });
       setPayoutAccounts(Array.isArray(res.accounts) ? res.accounts : []);
-      Alert.alert("Payout account saved", "This destination is ready for withdrawals.");
+      showToast("Payout account saved and ready for withdrawals.", "success");
     } catch (e) {
       Alert.alert("Could not save", e instanceof Error ? e.message : "Save failed.");
     } finally {
@@ -199,7 +209,7 @@ export default function WalletScreen() {
       });
       setPayoutAccounts(Array.isArray(res.accounts) ? res.accounts : []);
       await refresh();
-      Alert.alert("Payout requested", "We'll review this and pay out to your MoMo number.");
+      showToast("Payout requested. We'll transfer funds to your MoMo number.", "success");
     } catch (e) {
       Alert.alert("Payout failed", e instanceof Error ? e.message : "Payout request failed.");
       setMessage(e instanceof Error ? e.message : "Payout request failed.");
@@ -221,7 +231,7 @@ export default function WalletScreen() {
           onSuccess={(reference) => void handleCheckoutSuccess(reference)}
           onCancel={handleCheckoutCancel}
         />
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}>
           <ScreenHeader title="Wallet" />
 
           {deficit >= RIDER_DEFICIT_WARNING_THRESHOLD ? (

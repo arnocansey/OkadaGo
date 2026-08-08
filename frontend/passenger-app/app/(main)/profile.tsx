@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Input } from "@/components/ui/Input";
 import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -34,6 +35,7 @@ export default function ProfileScreen() {
   const [friendCode, setFriendCode] = useState("");
   const [applyingReferral, setApplyingReferral] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -322,10 +324,22 @@ export default function ProfileScreen() {
           label={t("profile.signOut")}
           variant="outline"
           fullWidth
-          onPress={async () => {
+          onPress={() => setShowLogoutConfirm(true)}
+        />
+
+        <ConfirmDialog
+          visible={showLogoutConfirm}
+          title="Sign out"
+          message="Are you sure you want to sign out? You'll need to log in again to access your account."
+          confirmLabel="Sign out"
+          cancelLabel={t("common.cancel")}
+          destructive
+          onConfirm={async () => {
+            setShowLogoutConfirm(false);
             await signOut();
             router.replace("/(auth)/login");
           }}
+          onCancel={() => setShowLogoutConfirm(false)}
         />
       </ScrollView>
     </SafeAreaView>

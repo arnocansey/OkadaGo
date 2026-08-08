@@ -1,20 +1,32 @@
 import { router } from "expo-router";
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ChevronRight } from "lucide-react-native";
-import { Badge, statusTone } from "@/components/ui/Badge";
+import { RideStatusBadge } from "@/components/ui/RideStatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useToast } from "@/context/ToastContext";
 import { compactDate, money } from "@/lib/api";
 import { radius, spacing } from "@/theme/tokens";
 
+const PAGE_SIZE = 20;
+
 export default function TripsScreen() {
-  const { rides, deliveries, loading } = useApp();
+  const { rides, deliveries, loading, refresh } = useApp();
   const { colors, typography } = useTheme();
+  const { showToast } = useToast();
+  const [refreshing, setRefreshing] = useState(false);
+  const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refresh();
+    setRefreshing(false);
+  }, [refresh]);
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -52,9 +64,15 @@ export default function TripsScreen() {
         <EmptyState title="No trips yet" message="Go online to start accepting rides and deliveries." />
       ) : (
         <FlatList
-          data={items}
+          data={items.slice(0, displayCount)}
           keyExtractor={(item) => `${item.kind}-${item.id}`}
           contentContainerStyle={styles.list}
+          onRefresh={onRefresh}
+          refreshing={refreshing}
+          onEndReached={() => {
+            if (displayCount < items.length) setDisplayCount((c) => c + PAGE_SIZE);
+          }}
+          onEndReachedThreshold={0.5}
           renderItem={({ item }) => (
             <Pressable
               style={styles.row}
@@ -62,7 +80,7 @@ export default function TripsScreen() {
             >
               <View style={styles.rowBody}>
                 <Text style={styles.rowTitle} numberOfLines={1}>{item.title}</Text>
-                <Badge label={item.status.replace(/_/g, " ")} tone={statusTone(item.status)} />
+                <RideStatusBadge status={item.status} />
               </View>
               <View style={styles.right}>
                 <Text style={styles.fare}>{money(item.amount, item.currency ?? "GHS")}</Text>

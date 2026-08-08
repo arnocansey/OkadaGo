@@ -1,6 +1,6 @@
 import { Stack, router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Pencil, Trash2 } from "lucide-react-native";
 import { Button } from "@/components/ui/Button";
@@ -10,6 +10,7 @@ import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { api, phoneParts } from "@/lib/api";
 import { spacing } from "@/theme/tokens";
+import { useToast } from "@/context/ToastContext";
 
 type EmergencyContact = {
   id: string;
@@ -23,6 +24,7 @@ type EmergencyContact = {
 export default function EmergencyContactsScreen() {
   const { session } = useApp();
   const { colors, typography, stackHeaderOptions } = useTheme();
+  const { showToast } = useToast();
   const [contacts, setContacts] = useState<EmergencyContact[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -31,6 +33,13 @@ export default function EmergencyContactsScreen() {
   const [phone, setPhone] = useState("");
   const [relationship, setRelationship] = useState("");
   const [isPrimary, setIsPrimary] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }, []);
 
   const styles = useMemo(
     () =>
@@ -135,7 +144,7 @@ export default function EmergencyContactsScreen() {
     <>
       <Stack.Screen options={{ headerShown: true, title: "Emergency contacts", ...stackHeaderOptions }} />
       <SafeAreaView style={styles.screen} edges={["bottom"]}>
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}>
           <Card stacked>
             <Text style={styles.name}>{editingId ? "Edit contact" : "Add contact"}</Text>
             <Input label="Name" value={name} onChangeText={setName} placeholder="Ama Mensah" />

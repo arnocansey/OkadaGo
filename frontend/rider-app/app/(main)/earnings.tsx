@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BalanceHero } from "@/components/ui/BalanceHero";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -11,11 +11,18 @@ import { api, compactDate, money } from "@/lib/api";
 import { spacing } from "@/theme/tokens";
 
 export default function EarningsScreen() {
-  const { session, rides, deliveries, wallets, loading } = useApp();
+  const { session, rides, deliveries, wallets, loading, refresh } = useApp();
   const { colors, typography } = useTheme();
   const currency = wallets[0]?.currency ?? "GHS";
   const [commissionPercent, setCommissionPercent] = useState<number | null>(null);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refresh();
+    setRefreshing(false);
+  }, [refresh]);
 
   useEffect(() => {
     if (!session?.token) {
@@ -31,7 +38,7 @@ export default function EarningsScreen() {
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        screen: { flex: 1, backgroundColor: colors.background, padding: spacing.xl },
+        screen: { flex: 1, backgroundColor: colors.background },
         section: { ...typography.h3, marginBottom: spacing.lg, color: colors.text },
         row: {
           flexDirection: "row",
@@ -65,6 +72,7 @@ export default function EarningsScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
+      <ScrollView contentContainerStyle={{ padding: spacing.xl }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}>
       <ScreenHeader title="Earnings" />
 
       <BalanceHero
@@ -91,6 +99,7 @@ export default function EarningsScreen() {
           </View>
         ))
       )}
+      </ScrollView>
     </SafeAreaView>
   );
 }

@@ -3,13 +3,21 @@ import { Clock, LayoutDashboard, TrendingUp, User, Wallet } from "lucide-react-n
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/context/ThemeContext";
+import { useRef, useEffect } from "react";
+import { Animated } from "react-native";
 
 export default function MainLayout() {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const { t } = useTranslation();
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(opacity, { toValue: 1, duration: 350, useNativeDriver: true }).start();
+  }, [opacity]);
 
   return (
+    <Animated.View style={{ flex: 1, opacity }}>
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -31,5 +39,6 @@ export default function MainLayout() {
       <Tabs.Screen name="wallet" options={{ title: t("nav.wallet"), tabBarIcon: ({ color, size }) => <Wallet color={color} size={size} /> }} />
       <Tabs.Screen name="profile" options={{ title: t("nav.profile"), tabBarIcon: ({ color, size }) => <User color={color} size={size} /> }} />
     </Tabs>
+    </Animated.View>
   );
 }

@@ -8,6 +8,7 @@ import { AnimatedSplash } from "@/components/AnimatedSplash";
 import { AppProvider } from "@/context/AppContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
+import { ToastProvider } from "@/context/ToastContext";
 import "@/i18n";
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
@@ -54,7 +55,9 @@ export default function RootLayout() {
       <LanguageProvider>
         <ThemeProvider>
           <AppProvider>
-            <RootNavigator />
+            <ToastProvider>
+              <RootNavigator />
+            </ToastProvider>
           </AppProvider>
         </ThemeProvider>
       </LanguageProvider>
