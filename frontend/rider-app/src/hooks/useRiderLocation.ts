@@ -25,8 +25,8 @@ export function useRiderLocation(params: {
       watchRef.current = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.High,
-          distanceInterval: 25,
-          timeInterval: 8000,
+          distanceInterval: params.activeTrip ? 5 : 20,
+          timeInterval: params.activeTrip ? 3000 : 8000,
         },
         (position) => {
           const { latitude, longitude } = position.coords;

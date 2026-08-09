@@ -108,9 +108,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
             r.id === patch.rideId
               ? {
                   ...r,
-                  rider: r.rider
-                    ? { ...r.rider, currentLatitude: patch.latitude, currentLongitude: patch.longitude }
-                    : r.rider,
+                  rider: {
+                    ...(r.rider ?? {}),
+                    currentLatitude: patch.latitude,
+                    currentLongitude: patch.longitude,
+                  },
                 }
               : r,
           ),
@@ -123,9 +125,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
             d.id === patch.deliveryId
               ? {
                   ...d,
-                  rider: d.rider
-                    ? { ...d.rider, currentLatitude: patch.latitude, currentLongitude: patch.longitude }
-                    : d.rider,
+                  rider: {
+                    ...(d.rider ?? {}),
+                    currentLatitude: patch.latitude,
+                    currentLongitude: patch.longitude,
+                  },
                 }
               : d,
           ),

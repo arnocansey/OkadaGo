@@ -20,6 +20,7 @@ import { promotionService } from "../promotions/promotion.service.js";
 import { referralService } from "../referrals/referral.service.js";
 import {
   emitRideAssigned,
+  emitRideRequestToRiders,
   emitRideStatusUpdate,
   emitRiderLocationUpdate,
   serializeRideForRealtime
@@ -694,6 +695,30 @@ export class RideService {
         ride: realtimeRide,
         passengerUserId: passenger.userId
       });
+
+      const candidateRiderUserIds = Array.from(
+        new Set(
+          rankedCandidates
+            .map((c) => c.riderId)
+            .map((riderId) => riders.find((r) => r.id === riderId)?.userId)
+            .filter((id): id is string => Boolean(id))
+        )
+      );
+
+      if (candidateRiderUserIds.length > 0) {
+        emitRideRequestToRiders({
+          ride: realtimeRide,
+          riderUserIds: candidateRiderUserIds
+        });
+
+        for (const riderUserId of candidateRiderUserIds) {
+          void pushService.sendToUser(riderUserId, {
+            title: "New ride request nearby",
+            body: `Pickup: ${ride.pickupAddress}`,
+            data: { rideId: ride.id, type: "ride_assigned" }
+          });
+        }
+      }
     }
 
     void pushService.sendToUser(passenger.userId, {

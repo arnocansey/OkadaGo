@@ -25,14 +25,14 @@ export function useRiderData() {
     queryKey: ["rides"],
     queryFn: () => fetchJson<RideRecord[]>("/rides"),
     enabled,
-    refetchInterval: 10_000
+    refetchInterval: 4_000
   });
 
   const ridersQuery = useQuery({
     queryKey: ["riders"],
     queryFn: () => fetchListJson<RiderRecord>("/bootstrap/riders?limit=100"),
     enabled,
-    refetchInterval: 10_000
+    refetchInterval: 4_000
   });
 
   const walletsQuery = useQuery({

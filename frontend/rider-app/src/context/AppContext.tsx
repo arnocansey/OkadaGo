@@ -99,6 +99,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     riderWs.connect(session.token).catch(() => undefined);
 
+    const onRideRequest = (data: unknown) => {
+      const patch = data as Ride;
+      if (!patch || !patch.id) return;
+      setRides((prev) => {
+        if (prev.some((r) => r.id === patch.id)) {
+          return prev.map((r) => (r.id === patch.id ? { ...r, ...patch } : r));
+        }
+        return [patch, ...prev];
+      });
+      refresh();
+    };
+
     const onRideUpdate = (data: unknown) => {
       const patch = data as Ride;
       setRides((prev) => prev.map((r) => (r.id === patch.id ? { ...r, ...patch } : r)));
@@ -111,6 +123,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       refresh();
     };
 
+    riderWs.on("ride:request", onRideRequest);
     riderWs.on("ride:status-update", onRideUpdate);
     riderWs.on("delivery:status-update", onDeliveryUpdate);
     riderWs.on("ride:assigned", () => refresh());

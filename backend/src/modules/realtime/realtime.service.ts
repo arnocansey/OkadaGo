@@ -31,6 +31,14 @@ export function emitRideAssigned(payload: {
   }
 }
 
+export function emitRideRequestToRiders(payload: {
+  ride: Record<string, unknown>;
+  riderUserIds: string[];
+}) {
+  emitToUsers(payload.riderUserIds, "ride:request", payload.ride);
+  emitToUsers(payload.riderUserIds, "ride:assigned", payload.ride);
+}
+
 export function emitRideStatusUpdate(payload: {
   ride: Record<string, unknown>;
   passengerUserId: string;
