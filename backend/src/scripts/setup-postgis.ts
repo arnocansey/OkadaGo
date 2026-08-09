@@ -8,14 +8,41 @@ import { prisma } from "../common/prisma.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const sqlPath = join(__dirname, "../../prisma/postgis-setup.sql");
 
-function splitStatements(sql: string): string[] {
-  return sql
-    .split(/;\s*(?:\n|$)/)
-    .map((statement) => statement.trim())
-    .filter((statement) => statement.length > 0 && !statement.startsWith("--"));
+export function splitStatements(sql: string): string[] {
+  const statements: string[] = [];
+  let current = "";
+  let inDollarQuote = false;
+
+  for (const line of sql.split("\n")) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("--") && !current.trim()) continue;
+
+    if (line.includes("$$")) {
+      const occurrences = (line.match(/\$\$/g) || []).length;
+      if (occurrences % 2 !== 0) {
+        inDollarQuote = !inDollarQuote;
+      }
+    }
+
+    current += line + "\n";
+
+    if (!inDollarQuote && trimmed.endsWith(";")) {
+      const stmt = current.trim();
+      if (stmt.length > 0) {
+        statements.push(stmt);
+      }
+      current = "";
+    }
+  }
+
+  if (current.trim().length > 0) {
+    statements.push(current.trim());
+  }
+
+  return statements;
 }
 
-async function main() {
+export async function runPostgisSetup(): Promise<void> {
   const sql = readFileSync(sqlPath, "utf8");
   const statements = splitStatements(sql);
 
@@ -41,14 +68,16 @@ async function main() {
   console.log(`PostGIS is enabled (version ${postgisVersion}). Rider matching will use the fast geography path.`);
 }
 
-main()
-  .catch((error: unknown) => {
-    console.error(
-      "PostGIS setup failed. The backend will continue to work using the in-memory Haversine matching fallback."
-    );
-    console.error(error instanceof Error ? error.message : error);
-    process.exitCode = 1;
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  runPostgisSetup()
+    .catch((error: unknown) => {
+      console.error(
+        "PostGIS setup failed. The backend will continue to work using the in-memory Haversine matching fallback."
+      );
+      console.error(error instanceof Error ? error.message : error);
+      process.exitCode = 1;
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}
