@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { router } from "expo-router";
 import { api } from "@/lib/api";
 import { clearSavedSession, loadSavedSession, saveSession } from "@/lib/session-storage";
 import { passengerWs } from "@/lib/websocket";
@@ -85,12 +86,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const patch = data as Ride;
       setRides((prev) => prev.map((r) => (r.id === patch.id ? { ...r, ...patch } : r)));
       refresh();
+
+      const status = (patch.status ?? "").toLowerCase();
+      if (["assigned", "arriving"].includes(status) || patch.rider) {
+        try {
+          router.push({ pathname: "/ride/track/[id]", params: { id: patch.id, kind: "ride" } });
+        } catch {
+          // ignore navigation error if unmounted
+        }
+      }
     };
 
     const onDeliveryUpdate = (data: unknown) => {
       const patch = data as Delivery;
       setDeliveries((prev) => prev.map((d) => (d.id === patch.id ? { ...d, ...patch } : d)));
       refresh();
+
+      const status = (patch.status ?? "").toLowerCase();
+      if (["assigned", "arriving"].includes(status) || patch.rider) {
+        try {
+          router.push({ pathname: "/ride/track/[id]", params: { id: patch.id, kind: "delivery" } });
+        } catch {
+          // ignore navigation error if unmounted
+        }
+      }
     };
 
     const onRiderLocation = (data: unknown) => {
@@ -137,7 +156,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    passengerWs.on("ride:assigned", () => refresh());
+    passengerWs.on("ride:assigned", (data: unknown) => {
+      refresh();
+      const patch = data as Ride;
+      if (patch?.id) {
+        try {
+          router.push({ pathname: "/ride/track/[id]", params: { id: patch.id, kind: "ride" } });
+        } catch {
+          // ignore router errors
+        }
+      }
+    });
     passengerWs.on("ride:status-update", onRideUpdate);
     passengerWs.on("delivery:status-update", onDeliveryUpdate);
     passengerWs.on("rider:location-update", onRiderLocation);

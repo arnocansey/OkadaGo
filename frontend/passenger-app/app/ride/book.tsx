@@ -526,7 +526,7 @@ export default function BookRideScreen() {
       const estimatedDurationMinutes = Math.max(1, Math.round(estimate?.durationMinutes ?? 5));
 
       if (isDelivery) {
-        await api("/deliveries/request", {
+        const response = await api<{ delivery: { id: string } }>("/deliveries/request", {
           method: "POST",
           token: session!.token,
           body: {
@@ -564,6 +564,9 @@ export default function BookRideScreen() {
             promoCode: promoCode.trim() || undefined,
           },
         });
+        await refresh();
+        router.replace({ pathname: "/ride/track/[id]", params: { id: response.delivery.id, kind: "delivery" } });
+        return;
       } else {
         const response = await api<{ ride: { id: string } }>("/rides/request", {
           method: "POST",
@@ -598,8 +601,6 @@ export default function BookRideScreen() {
         router.replace(`/ride/track/${response.ride.id}`);
         return;
       }
-      await refresh();
-      router.replace("/(main)/trips");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Booking failed.");
     } finally {
