@@ -9,6 +9,7 @@ export type WalletRecord = {
 export type RideRecord = {
   id: string;
   riderId: string | null;
+  rider?: { id: string } | null;
   status: string;
   pickupAddress: string;
   destinationAddress: string;
@@ -111,7 +112,9 @@ export function roundCurrency(value: number) {
 }
 
 export function formatStatus(status: string) {
+  if (!status) return "";
   return status
+    .toLowerCase()
     .split("_")
     .join(" ")
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
@@ -134,26 +137,28 @@ export function initials(name: string) {
 }
 
 export function getNextAction(activeRide: { status: string } | null) {
+  const status = activeRide?.status?.toLowerCase() ?? "";
+
   const nextActionLabel =
-    activeRide?.status === "assigned"
+    status === "assigned"
       ? "Mark arriving"
-      : activeRide?.status === "arriving"
+      : status === "arriving"
         ? "Mark arrived"
-        : activeRide?.status === "arrived"
+        : status === "arrived"
           ? "Start trip"
-          : activeRide?.status === "started"
+          : status === "started"
             ? "Complete trip"
             : null;
 
   const nextActionStatus =
-    activeRide?.status === "assigned"
-      ? "arriving"
-      : activeRide?.status === "arriving"
-        ? "arrived"
-        : activeRide?.status === "arrived"
-          ? "started"
-          : activeRide?.status === "started"
-            ? "completed"
+    status === "assigned"
+      ? "ARRIVING"
+      : status === "arriving"
+        ? "ARRIVED"
+        : status === "arrived"
+          ? "STARTED"
+          : status === "started"
+            ? "COMPLETED"
             : null;
 
   return { nextActionLabel, nextActionStatus };

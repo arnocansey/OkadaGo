@@ -62,7 +62,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ]);
       setWallets(Array.isArray(walletData) ? walletData : []);
       setTransactions(Array.isArray(txData) ? txData : []);
-      setRides((Array.isArray(rideData) ? rideData : []).filter((r) => r.rider?.id === current.user.riderProfileId));
+      setRides(
+        (Array.isArray(rideData) ? rideData : []).filter(
+          (r) => r.rider?.id === current.user.riderProfileId || (r.status ?? "").toLowerCase() === "searching",
+        ),
+      );
       setDeliveries(
         (Array.isArray(deliveryData) ? deliveryData : []).filter(
           (d) => d.rider?.id === current.user.riderProfileId || (d.status ?? "").toLowerCase() === "searching",
@@ -172,15 +176,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const activeRide = rides.find((r) => !["completed", "cancelled"].includes((r.status ?? "").toLowerCase()));
+  const activeRide = rides.find(
+    (r) =>
+      r.rider?.id === session?.user.riderProfileId &&
+      !["completed", "cancelled"].includes((r.status ?? "").toLowerCase()),
+  );
   const activeDelivery = deliveries.find(
     (d) =>
       d.rider?.id === session?.user.riderProfileId &&
       !["delivered", "cancelled"].includes((d.status ?? "").toLowerCase()),
   );
-  // A ride sits at "assigned" until the rider explicitly accepts (-> arriving) or
-  // declines (-> cancelled), mirroring the "searching" pending-decision window for deliveries.
-  const incomingRide = rides.find((r) => (r.status ?? "").toLowerCase() === "assigned");
+  // A ride sits at "assigned" or "searching" (if unassigned) until the rider explicitly accepts or declines.
+  const incomingRide = rides.find(
+    (r) =>
+      (r.status ?? "").toLowerCase() === "assigned" ||
+      ((r.status ?? "").toLowerCase() === "searching" && !r.rider?.id),
+  );
   const incomingDelivery = deliveries.find((d) => (d.status ?? "").toLowerCase() === "searching");
 
   const value = useMemo(

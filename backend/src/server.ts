@@ -6,6 +6,7 @@ import { registerRoutes } from "./modules/index.js";
 
 export function buildServer() {
   const server = Fastify({
+    bodyLimit: 5 * 1024 * 1024, // 5 MB payload limit
     logger: {
       level: appConfig.nodeEnv === "production" ? "info" : "debug"
     }

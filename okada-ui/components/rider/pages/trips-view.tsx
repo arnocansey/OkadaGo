@@ -58,7 +58,7 @@ export function TripsView() {
                       <div className="rdr-trip-card-body">
                         <div className="rdr-trip-card-head">
                           <strong>{ride.passenger.user.fullName}</strong>
-                          <span className={`rdr-badge rdr-badge--${ride.status === "completed" ? "success" : "muted"}`}>
+                          <span className={`rdr-badge rdr-badge--${ride.status?.toLowerCase() === "completed" ? "success" : "muted"}`}>
                             {formatStatus(ride.status)}
                           </span>
                         </div>

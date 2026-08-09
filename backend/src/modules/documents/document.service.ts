@@ -17,10 +17,13 @@ type ReviewDocumentInput = z.infer<typeof reviewDocumentSchema>;
 const uploadsRoot = path.join(process.cwd(), "uploads", "documents");
 
 function extensionFromContentType(contentType: string) {
-  if (contentType.includes("png")) return "png";
-  if (contentType.includes("jpeg") || contentType.includes("jpg")) return "jpg";
-  if (contentType.includes("pdf")) return "pdf";
-  if (contentType.includes("webp")) return "webp";
+  const lower = contentType.toLowerCase();
+  if (lower.includes("png")) return "png";
+  if (lower.includes("jpeg") || lower.includes("jpg")) return "jpg";
+  if (lower.includes("pdf")) return "pdf";
+  if (lower.includes("webp")) return "webp";
+  if (lower.includes("heic")) return "heic";
+  if (lower.includes("heif")) return "heif";
   return "bin";
 }
 

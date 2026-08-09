@@ -1095,7 +1095,7 @@ export class RideService {
 
     const nextDbStatus = apiToDbRideStatus[input.nextStatus];
     const assignedRider =
-      input.nextStatus === "assigned"
+      input.nextStatus === "assigned" || (input.nextStatus === "arriving" && !ride.riderId)
         ? await this.findRiderForAssignment(ride, input.riderProfileId)
         : undefined;
 
@@ -1106,8 +1106,8 @@ export class RideService {
         },
         data: {
           status: nextDbStatus,
-          riderId: assignedRider?.id,
-          assignedAt: input.nextStatus === "assigned" ? new Date() : undefined,
+          riderId: assignedRider?.id ?? ride.riderId,
+          assignedAt: input.nextStatus === "assigned" || (input.nextStatus === "arriving" && !ride.assignedAt) ? new Date() : undefined,
           riderArrivedAt: input.nextStatus === "arrived" ? new Date() : undefined,
           startedAt: input.nextStatus === "started" ? new Date() : undefined,
           completedAt: input.nextStatus === "completed" ? new Date() : undefined,

@@ -49,18 +49,18 @@ export function useRiderData() {
   const riderRides = useMemo(
     () =>
       (ridesQuery.data ?? [])
-        .filter((ride) => ride.riderId === riderProfileId)
+        .filter((ride) => ride.riderId === riderProfileId || ride.rider?.id === riderProfileId)
         .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
     [riderProfileId, ridesQuery.data]
   );
 
   const activeRide = useMemo(
-    () => riderRides.find((ride) => ACTIVE_RIDE_STATUSES.has(ride.status)) ?? null,
+    () => riderRides.find((ride) => ACTIVE_RIDE_STATUSES.has((ride.status ?? "").toLowerCase())) ?? null,
     [riderRides]
   );
 
   const completedRides = useMemo(
-    () => riderRides.filter((ride) => ride.status === "completed"),
+    () => riderRides.filter((ride) => (ride.status ?? "").toLowerCase() === "completed"),
     [riderRides]
   );
 
