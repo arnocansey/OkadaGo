@@ -4,6 +4,7 @@ import { Alert, Animated, Pressable, StyleSheet, Text, View } from "react-native
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppMap } from "@/components/AppMap";
 import { api, money } from "@/lib/api";
+import { requestAlarm } from "@/lib/alarm";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { markersForDelivery, markersForRide } from "@/lib/tripMap";
@@ -67,6 +68,7 @@ export default function RequestScreen() {
   const progressAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
+    requestAlarm.start();
     const animation = Animated.timing(progressAnim, {
       toValue: 0,
       duration: 20000,
@@ -78,6 +80,7 @@ export default function RequestScreen() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
+          requestAlarm.stop();
           router.back();
           return 0;
         }
@@ -88,6 +91,7 @@ export default function RequestScreen() {
     return () => {
       clearInterval(timer);
       animation.stop();
+      requestAlarm.stop();
     };
   }, []);
 
@@ -100,6 +104,7 @@ export default function RequestScreen() {
 
   async function accept() {
     if (!trip || !session || acting) return;
+    requestAlarm.stop();
     const nextStatus = isRide ? "arriving" : "assigned";
     setActing(true);
     try {
@@ -127,6 +132,7 @@ export default function RequestScreen() {
   }
 
   async function decline() {
+    requestAlarm.stop();
     if (!trip || !session) return router.back();
     if (acting) return;
     setActing(true);
