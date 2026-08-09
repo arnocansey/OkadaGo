@@ -320,9 +320,6 @@ model RiderProfile {
   jobPreference     JobPreference       @default(BOTH)
   currentLatitude   Decimal?            @db.Decimal(10, 7)
   currentLongitude  Decimal?            @db.Decimal(10, 7)
-  /// Populated via raw SQL only (see prisma/postgis-setup.sql). Requires the
-  /// postgis extension; matching falls back to Haversine when unavailable.
-  currentLocation   Unsupported("geography(Point,4326)")?
   /// True when the rider's most recent location/availability ping was flagged
   /// by the device as a mocked/simulated GPS location (fake-GPS app or emulator).
   lastLocationMocked   Boolean          @default(false)
