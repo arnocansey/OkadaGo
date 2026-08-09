@@ -891,7 +891,36 @@ export class WalletService {
   }
 
   async listUserWallets(userId: string) {
-    return prisma.wallet.findMany({
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true, preferredCurrency: true }
+    });
+
+    if (user) {
+      const defaultType =
+        user.role === UserRole.RIDER
+          ? WalletType.RIDER_SETTLEMENT
+          : WalletType.PASSENGER_CASHLESS;
+
+      await prisma.wallet.upsert({
+        where: {
+          userId_type_currency: {
+            userId,
+            type: defaultType,
+            currency: user.preferredCurrency || "GHS"
+          }
+        },
+        update: {},
+        create: {
+          userId,
+          type: defaultType,
+          currency: user.preferredCurrency || "GHS",
+          availableBalance: 0
+        }
+      });
+    }
+
+    const wallets = await prisma.wallet.findMany({
       where: {
         userId
       },
@@ -904,10 +933,17 @@ export class WalletService {
         }
       ]
     });
+
+    return wallets.map((w) => ({
+      ...w,
+      type: w.type.toLowerCase(),
+      availableBalance: Number(w.availableBalance),
+      lockedBalance: Number(w.lockedBalance)
+    }));
   }
 
   async listUserWalletTransactions(userId: string) {
-    return prisma.walletTransaction.findMany({
+    const txs = await prisma.walletTransaction.findMany({
       where: {
         wallet: {
           userId
@@ -936,6 +972,21 @@ export class WalletService {
         }
       }
     });
+
+    return txs.map((t) => ({
+      ...t,
+      type: t.type.toLowerCase(),
+      status: t.status.toLowerCase(),
+      amount: Number(t.amount),
+      wallet: t.wallet
+        ? {
+            ...t.wallet,
+            type: t.wallet.type.toLowerCase(),
+            availableBalance: Number(t.wallet.availableBalance),
+            lockedBalance: Number(t.wallet.lockedBalance)
+          }
+        : t.wallet
+    }));
   }
 
   previewSettlement(input: SettlementPreviewInput) {

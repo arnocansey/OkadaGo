@@ -5,7 +5,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { radius, shadows, spacing } from "@/theme/tokens";
 
 /** Approximate visual height for map center-button inset (padding + typical content). */
-export const MAP_SHEET_CENTER_INSET = 260;
+export const MAP_SHEET_CENTER_INSET = 300;
 
 type Props = {
   children: ReactNode;

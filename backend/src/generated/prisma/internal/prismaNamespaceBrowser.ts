@@ -56,6 +56,7 @@ export const ModelName = {
   UserDevice: 'UserDevice',
   PassengerProfile: 'PassengerProfile',
   RiderProfile: 'RiderProfile',
+  RiderOnlineLog: 'RiderOnlineLog',
   AdminProfile: 'AdminProfile',
   SavedPaymentMethod: 'SavedPaymentMethod',
   AdminNote: 'AdminNote',
@@ -207,6 +208,20 @@ export const RiderProfileScalarFieldEnum = {
 } as const
 
 export type RiderProfileScalarFieldEnum = (typeof RiderProfileScalarFieldEnum)[keyof typeof RiderProfileScalarFieldEnum]
+
+
+export const RiderOnlineLogScalarFieldEnum = {
+  id: 'id',
+  riderProfileId: 'riderProfileId',
+  status: 'status',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  serviceZoneId: 'serviceZoneId',
+  isMocked: 'isMocked',
+  createdAt: 'createdAt'
+} as const
+
+export type RiderOnlineLogScalarFieldEnum = (typeof RiderOnlineLogScalarFieldEnum)[keyof typeof RiderOnlineLogScalarFieldEnum]
 
 
 export const AdminProfileScalarFieldEnum = {

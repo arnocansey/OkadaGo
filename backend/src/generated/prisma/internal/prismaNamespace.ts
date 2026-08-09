@@ -389,6 +389,7 @@ export const ModelName = {
   UserDevice: 'UserDevice',
   PassengerProfile: 'PassengerProfile',
   RiderProfile: 'RiderProfile',
+  RiderOnlineLog: 'RiderOnlineLog',
   AdminProfile: 'AdminProfile',
   SavedPaymentMethod: 'SavedPaymentMethod',
   AdminNote: 'AdminNote',
@@ -438,7 +439,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "adminProfile" | "savedPaymentMethod" | "adminNote" | "platformSetting" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "deliveryRequest" | "deliveryStop" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "riderPayoutAccount" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog" | "escalationRule" | "scheduledBroadcast" | "opsJobHeartbeat"
+    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "riderOnlineLog" | "adminProfile" | "savedPaymentMethod" | "adminNote" | "platformSetting" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "deliveryRequest" | "deliveryStop" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "riderPayoutAccount" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog" | "escalationRule" | "scheduledBroadcast" | "opsJobHeartbeat"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -809,6 +810,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.RiderProfileCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.RiderProfileCountAggregateOutputType> | number
+        }
+      }
+    }
+    RiderOnlineLog: {
+      payload: Prisma.$RiderOnlineLogPayload<ExtArgs>
+      fields: Prisma.RiderOnlineLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.RiderOnlineLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderOnlineLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.RiderOnlineLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderOnlineLogPayload>
+        }
+        findFirst: {
+          args: Prisma.RiderOnlineLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderOnlineLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.RiderOnlineLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderOnlineLogPayload>
+        }
+        findMany: {
+          args: Prisma.RiderOnlineLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderOnlineLogPayload>[]
+        }
+        create: {
+          args: Prisma.RiderOnlineLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderOnlineLogPayload>
+        }
+        createMany: {
+          args: Prisma.RiderOnlineLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.RiderOnlineLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderOnlineLogPayload>[]
+        }
+        delete: {
+          args: Prisma.RiderOnlineLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderOnlineLogPayload>
+        }
+        update: {
+          args: Prisma.RiderOnlineLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderOnlineLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.RiderOnlineLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.RiderOnlineLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.RiderOnlineLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderOnlineLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.RiderOnlineLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderOnlineLogPayload>
+        }
+        aggregate: {
+          args: Prisma.RiderOnlineLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateRiderOnlineLog>
+        }
+        groupBy: {
+          args: Prisma.RiderOnlineLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RiderOnlineLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.RiderOnlineLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RiderOnlineLogCountAggregateOutputType> | number
         }
       }
     }
@@ -3468,6 +3543,20 @@ export const RiderProfileScalarFieldEnum = {
 export type RiderProfileScalarFieldEnum = (typeof RiderProfileScalarFieldEnum)[keyof typeof RiderProfileScalarFieldEnum]
 
 
+export const RiderOnlineLogScalarFieldEnum = {
+  id: 'id',
+  riderProfileId: 'riderProfileId',
+  status: 'status',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  serviceZoneId: 'serviceZoneId',
+  isMocked: 'isMocked',
+  createdAt: 'createdAt'
+} as const
+
+export type RiderOnlineLogScalarFieldEnum = (typeof RiderOnlineLogScalarFieldEnum)[keyof typeof RiderOnlineLogScalarFieldEnum]
+
+
 export const AdminProfileScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -4837,6 +4926,7 @@ export type GlobalOmitConfig = {
   userDevice?: Prisma.UserDeviceOmit
   passengerProfile?: Prisma.PassengerProfileOmit
   riderProfile?: Prisma.RiderProfileOmit
+  riderOnlineLog?: Prisma.RiderOnlineLogOmit
   adminProfile?: Prisma.AdminProfileOmit
   savedPaymentMethod?: Prisma.SavedPaymentMethodOmit
   adminNote?: Prisma.AdminNoteOmit

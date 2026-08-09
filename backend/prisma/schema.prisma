@@ -349,10 +349,27 @@ model RiderProfile {
   payoutRequests    PayoutRequest[]
   payoutAccounts    RiderPayoutAccount[]
   incidents         Incident[]
+  onlineLogs        RiderOnlineLog[]
 
   @@index([approvalStatus, onlineStatus])
   @@index([serviceZoneId, city])
   @@index([currentLatitude, currentLongitude])
+}
+
+model RiderOnlineLog {
+  id              String   @id @default(cuid())
+  riderProfileId  String
+  status          Boolean
+  latitude        Decimal? @db.Decimal(10, 7)
+  longitude       Decimal? @db.Decimal(10, 7)
+  serviceZoneId   String?
+  isMocked        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  riderProfile    RiderProfile @relation(fields: [riderProfileId], references: [id])
+
+  @@index([riderProfileId, createdAt])
+  @@index([createdAt])
 }
 
 model AdminProfile {

@@ -322,6 +322,32 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
     return reply.send(csv);
   });
 
+  // ── Rider online/offline log ───────────────────────────────────────────────
+  server.get("/admin/riders/:riderProfileId/online-log", async (request, reply) => {
+    const params = parseParams(request, riderApprovalParamsSchema);
+    const query = request.query as { limit?: string; offset?: string };
+    const limit = Math.min(Number(query.limit) || 50, 200);
+    const offset = Number(query.offset) || 0;
+
+    const logs = await prisma.riderOnlineLog.findMany({
+      where: { riderProfileId: params.riderProfileId },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      skip: offset,
+      include: {
+        riderProfile: {
+          include: { user: { select: { fullName: true } } },
+        },
+      },
+    });
+
+    const total = await prisma.riderOnlineLog.count({
+      where: { riderProfileId: params.riderProfileId },
+    });
+
+    return reply.send({ logs, total });
+  });
+
   // ── Live ops stream (SSE) ──────────────────────────────────────────────
   // EventSource cannot set headers, so the session token arrives as a query param.
 

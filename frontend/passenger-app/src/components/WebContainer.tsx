@@ -56,8 +56,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#0F172A",
   },
   desktopFrame: {
-    maxWidth: 440,
-    maxHeight: 900,
+    width: 390,
+    height: 844,
     borderRadius: 36,
     borderWidth: 2,
     borderColor: "rgba(255, 255, 255, 0.15)",
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   statusBarHeader: {
-    height: 38,
+    height: 44,
     backgroundColor: "#080E1A",
     flexDirection: "row",
     alignItems: "center",

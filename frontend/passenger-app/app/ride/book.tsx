@@ -2,7 +2,7 @@ import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Bike, Clock, LocateFixed, MapPinned, Navigation, Plus, Trash2, Truck, Zap } from "lucide-react-native";
+import { Clock, LocateFixed, MapPinned, Navigation, Plus, Trash2 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { api, money } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
@@ -15,6 +15,10 @@ import { AppMap } from "@/components/AppMap";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { Input } from "@/components/ui/Input";
+import { RideOptionCard } from "@/components/RideOptionCard";
+import { StandardBike } from "@/components/vehicles/StandardBike";
+import { ExpressBike } from "@/components/vehicles/ExpressBike";
+import { CargoTrike } from "@/components/vehicles/CargoTrike";
 import { radius, spacing } from "@/theme/tokens";
 import type { LocationResult, PaymentMethod, PlaceSuggestion, RoutePreview, SavedPlace, ServiceZone } from "@/types";
 
@@ -92,7 +96,13 @@ function estimateZoneFare(zone: ServiceZone | undefined, distanceKm: number, dur
 
 export default function BookRideScreen() {
   const { t } = useTranslation();
-  const { mode, placeId } = useLocalSearchParams<{ mode?: string; placeId?: string }>();
+  const { mode, placeId, destination: destParam, destLat, destLng } = useLocalSearchParams<{
+    mode?: string;
+    placeId?: string;
+    destination?: string;
+    destLat?: string;
+    destLng?: string;
+  }>();
   const isDelivery = mode === "delivery";
   const { session, zones, refresh } = useApp();
   const { colors, typography, stackHeaderOptions } = useTheme();
@@ -109,11 +119,35 @@ export default function BookRideScreen() {
     [t],
   );
 
-  const rideTypeOptions: Array<{ id: RideType; label: string; sub: string; icon: typeof Bike }> = useMemo(
+  const rideTypeOptions: Array<{
+    id: RideType;
+    label: string;
+    sub: string;
+    capacity: string;
+    benefits: string[];
+  }> = useMemo(
     () => [
-      { id: "standard", label: "OkadaGo", sub: t("book.rideTypeStandard"), icon: Bike },
-      { id: "express", label: "OkadaX", sub: t("book.rideTypeExpress"), icon: Zap },
-      { id: "cargo", label: "Cargo", sub: t("book.rideTypeCargo"), icon: Truck },
+      {
+        id: "standard",
+        label: "OkadaGo",
+        sub: t("book.rideTypeStandard"),
+        capacity: "1 passenger",
+        benefits: ["Affordable", "Daily commute"],
+      },
+      {
+        id: "express",
+        label: "OkadaX",
+        sub: t("book.rideTypeExpress"),
+        capacity: "1 passenger",
+        benefits: ["Fastest route", "Priority pickup"],
+      },
+      {
+        id: "cargo",
+        label: "Cargo",
+        sub: t("book.rideTypeCargo"),
+        capacity: "1 + luggage",
+        benefits: ["Cargo space", "Heavy items"],
+      },
     ],
     [t],
   );
@@ -199,23 +233,6 @@ export default function BookRideScreen() {
         chipRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
         promoHint: { ...typography.caption, color: colors.success },
         error: { ...typography.caption, color: colors.danger },
-        rideTypeRow: { flexDirection: "row", gap: spacing.sm },
-        rideTypeOption: {
-          flex: 1,
-          alignItems: "center",
-          gap: 2,
-          paddingVertical: spacing.md,
-          paddingHorizontal: spacing.xs,
-          borderRadius: radius.md,
-          borderWidth: 1.5,
-          borderColor: colors.border,
-          backgroundColor: colors.surface,
-        },
-        rideTypeOptionActive: { borderColor: colors.primary, backgroundColor: colors.primaryLight },
-        rideTypeLabel: { ...typography.captionMedium, color: colors.text, marginTop: spacing.xs },
-        rideTypeLabelActive: { color: colors.primary },
-        rideTypeSub: { ...typography.caption, color: colors.textMuted },
-        rideTypeFare: { ...typography.captionMedium, color: colors.primary, marginTop: 2 },
       }),
     [colors, typography],
   );
@@ -392,6 +409,15 @@ export default function BookRideScreen() {
       })
       .catch(() => undefined);
   }, [session?.token, placeId]);
+
+  useEffect(() => {
+    if (!destParam) return;
+    setDestination(destParam);
+    if (destLat && destLng) {
+      setDestCoords({ latitude: parseFloat(destLat), longitude: parseFloat(destLng) });
+      setDestSelected(true);
+    }
+  }, [destParam, destLat, destLng]);
 
   useEffect(() => {
     if (!destination.trim() || !session || destSelected) return;
@@ -832,28 +858,37 @@ export default function BookRideScreen() {
               <Input label={t("book.packageDetails")} value={packageDesc} onChangeText={setPackageDesc} placeholder={t("book.packagePlaceholder")} />
             </View>
           ) : (
-            <View>
-              <Text style={styles.sectionLabel}>Ride type</Text>
-              <View style={[styles.rideTypeRow, { marginTop: spacing.sm }]}>
-                {rideTypeOptions.map((option) => {
-                  const Icon = option.icon;
-                  const active = rideType === option.id;
-                  return (
-                    <Pressable
-                      key={option.id}
-                      style={[styles.rideTypeOption, active && styles.rideTypeOptionActive]}
-                      onPress={() => setRideType(option.id)}
-                    >
-                      <Icon size={24} color={active ? colors.primary : colors.textSecondary} />
-                      <Text style={[styles.rideTypeLabel, active && styles.rideTypeLabelActive]}>{option.label}</Text>
-                      <Text style={styles.rideTypeSub}>{option.sub}</Text>
-                      {fareByType[option.id] ? (
-                        <Text style={styles.rideTypeFare}>{money(fareByType[option.id], zones[0]?.currency)}</Text>
-                      ) : null}
-                    </Pressable>
-                  );
-                })}
-              </View>
+            <View style={{ gap: spacing.md }}>
+              <Text style={styles.sectionLabel}>Choose your ride</Text>
+              {rideTypeOptions.map((option) => {
+                const active = rideType === option.id;
+                const fare = fareByType[option.id];
+                const eta = estimate
+                  ? `~${Math.round(estimate.durationMinutes * (option.id === "express" ? 0.8 : option.id === "cargo" ? 1.2 : 1))} min`
+                  : undefined;
+                return (
+                  <RideOptionCard
+                    key={option.id}
+                    label={option.label}
+                    subtitle={option.sub}
+                    fare={fare ? money(fare, zones[0]?.currency) : undefined}
+                    eta={eta}
+                    capacity={option.capacity}
+                    benefits={option.benefits}
+                    selected={active}
+                    onPress={() => setRideType(option.id)}
+                    vehicle={
+                      option.id === "standard" ? (
+                        <StandardBike width={180} height={126} />
+                      ) : option.id === "express" ? (
+                        <ExpressBike width={180} height={126} />
+                      ) : (
+                        <CargoTrike width={200} height={136} />
+                      )
+                    }
+                  />
+                );
+              })}
             </View>
           )}
 

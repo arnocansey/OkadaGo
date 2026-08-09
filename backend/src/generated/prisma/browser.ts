@@ -43,6 +43,11 @@ export type PassengerProfile = Prisma.PassengerProfileModel
  */
 export type RiderProfile = Prisma.RiderProfileModel
 /**
+ * Model RiderOnlineLog
+ * 
+ */
+export type RiderOnlineLog = Prisma.RiderOnlineLogModel
+/**
  * Model AdminProfile
  * 
  */

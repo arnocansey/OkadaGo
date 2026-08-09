@@ -19,6 +19,8 @@ import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { Input } from "@/components/ui/Input";
+import { CancellationReasonModal } from "@/components/ui/CancellationReasonModal";
+import { RiderTransparencyCard } from "@/components/RiderTransparencyCard";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useToast } from "@/context/ToastContext";
@@ -127,6 +129,7 @@ export default function TrackScreen() {
   const isRide = kind !== "delivery";
   const trip = isRide ? rides.find((r) => r.id === id) : deliveries.find((d) => d.id === id);
   const [cancelling, setCancelling] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
   const [rating, setRating] = useState(5);
   const [review, setReview] = useState("");
   const [ratingLoading, setRatingLoading] = useState(false);
@@ -476,23 +479,41 @@ export default function TrackScreen() {
           ) : null}
 
           {trip.rider?.user?.fullName ? (
-            <Card>
-              <View style={styles.riderRow}>
-                <Avatar name={trip.rider.user.fullName} size={44} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.label}>Your rider</Text>
-                  <Text style={styles.riderName}>{trip.rider.user.fullName}</Text>
-                  {trip.rider.vehicle?.plateNumber ? (
-                    <Text style={styles.plate}>{trip.rider.vehicle.plateNumber}</Text>
-                  ) : null}
-                </View>
-                {riderPhone ? (
-                  <Pressable style={styles.callBtn} onPress={() => Linking.openURL(`tel:${riderPhone}`)} accessibilityLabel="Call rider" accessibilityRole="button">
-                    <Phone size={18} color={colors.primary} />
-                  </Pressable>
-                ) : null}
-              </View>
-            </Card>
+            <RiderTransparencyCard
+              rider={{
+                name: trip.rider.user.fullName,
+                avatarUrl: trip.rider.user.avatarUrl,
+                rating: trip.rider.ratingAverage != null ? Number(trip.rider.ratingAverage) : null,
+                completedTrips: trip.rider.completedTrips,
+                joinedAt: trip.rider.createdAt,
+                distanceKm: (() => {
+                  if (
+                    trip.rider.currentLatitude != null &&
+                    trip.rider.currentLongitude != null &&
+                    trip.pickupLatitude != null &&
+                    trip.pickupLongitude != null
+                  ) {
+                    const R = 6371;
+                    const dLat = ((Number(trip.pickupLatitude) - Number(trip.rider.currentLatitude)) * Math.PI) / 180;
+                    const dLon = ((Number(trip.pickupLongitude) - Number(trip.rider.currentLongitude)) * Math.PI) / 180;
+                    const a =
+                      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                      Math.cos((Number(trip.rider.currentLatitude) * Math.PI) / 180) *
+                        Math.cos((Number(trip.pickupLatitude) * Math.PI) / 180) *
+                        Math.sin(dLon / 2) *
+                        Math.sin(dLon / 2);
+                    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                  }
+                  return null;
+                })(),
+                vehicle: trip.rider.vehicle,
+                isPhoneVerified: trip.rider.user.isPhoneVerified,
+                isApproved: trip.rider.approvalStatus === "APPROVED",
+                bio: trip.rider.bio,
+              }}
+              matchReason="Matched based on proximity and availability"
+              onCall={riderPhone ? () => Linking.openURL(`tel:${riderPhone}`) : undefined}
+            />
           ) : null}
 
           <Card stacked>
@@ -566,31 +587,46 @@ export default function TrackScreen() {
 
           {canCancel ? (
             <Button
-              label="Cancel ride"
+              label={isRide ? "Cancel ride" : "Cancel delivery"}
               variant="danger"
               loading={cancelling}
               fullWidth
-                onPress={async () => {
-                if (!session) return;
-                setCancelling(true);
-                try {
-                  const endpoint = isRide ? `/rides/${trip.id}/status` : `/deliveries/${trip.id}/status`;
-                  await api(endpoint, {
-                    method: "PATCH",
-                    token: session.token,
-                    body: { nextStatus: "cancelled", actorRole: "passenger", actorUserId: session.user.id },
-                  });
-                  await refresh();
-                } catch (e) {
-                  Alert.alert("Cancel failed", e instanceof Error ? e.message : "Could not cancel ride.");
-                } finally {
-                  setCancelling(false);
-                }
-              }}
+              onPress={() => setShowCancelModal(true)}
             />
           ) : null}
         </ScrollView>
       </View>
+
+      <CancellationReasonModal
+        visible={showCancelModal}
+        tripType={isRide ? "ride" : "delivery"}
+        loading={cancelling}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={async (reason) => {
+          if (!session || !trip) return;
+          setCancelling(true);
+          try {
+            const endpoint = isRide ? `/rides/${trip.id}/status` : `/deliveries/${trip.id}/status`;
+            await api(endpoint, {
+              method: "PATCH",
+              token: session.token,
+              body: {
+                nextStatus: "cancelled",
+                actorRole: "passenger",
+                actorUserId: session.user.id,
+                cancellationReason: reason,
+              },
+            });
+            setShowCancelModal(false);
+            showToast("Trip cancelled successfully.", "info");
+            await refresh();
+          } catch (e) {
+            Alert.alert("Cancel failed", e instanceof Error ? e.message : "Could not cancel trip.");
+          } finally {
+            setCancelling(false);
+          }
+        }}
+      />
     </>
   );
 }

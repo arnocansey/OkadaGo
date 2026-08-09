@@ -118,8 +118,23 @@ export type Ride = {
   passenger?: { id: string; user?: { fullName: string } };
   rider?: {
     id?: string;
-    user?: { fullName: string };
-    vehicle?: { plateNumber?: string | null } | null;
+    user?: {
+      fullName: string;
+      phoneE164?: string;
+      avatarUrl?: string | null;
+      isPhoneVerified?: boolean;
+    };
+    ratingAverage?: number | string | null;
+    completedTrips?: number | null;
+    approvalStatus?: string | null;
+    bio?: string | null;
+    createdAt?: string | null;
+    vehicle?: {
+      make?: string | null;
+      model?: string | null;
+      plateNumber?: string | null;
+      color?: string | null;
+    } | null;
     currentLatitude?: number | string | null;
     currentLongitude?: number | string | null;
   } | null;
@@ -162,8 +177,23 @@ export type Delivery = {
   passenger?: { id: string; user?: { fullName: string } };
   rider?: {
     id?: string;
-    user?: { fullName: string };
-    vehicle?: { plateNumber?: string | null } | null;
+    user?: {
+      fullName: string;
+      phoneE164?: string;
+      avatarUrl?: string | null;
+      isPhoneVerified?: boolean;
+    };
+    ratingAverage?: number | string | null;
+    completedTrips?: number | null;
+    approvalStatus?: string | null;
+    bio?: string | null;
+    createdAt?: string | null;
+    vehicle?: {
+      make?: string | null;
+      model?: string | null;
+      plateNumber?: string | null;
+      color?: string | null;
+    } | null;
     currentLatitude?: number | string | null;
     currentLongitude?: number | string | null;
   } | null;

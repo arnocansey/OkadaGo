@@ -26,6 +26,7 @@ type AppState = {
   setMessage: (message: string) => void;
   toggleOnline: (location?: { latitude: number; longitude: number; isMocked?: boolean }) => Promise<void>;
   setOnline: (value: boolean) => void;
+  dismissRequest: (id: string) => void;
   activeRide: Ride | undefined;
   activeDelivery: Delivery | undefined;
   incomingRide: Ride | undefined;
@@ -46,32 +47,50 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [zones, setZones] = useState<ServiceZone[]>([]);
   const [payouts, setPayouts] = useState<PayoutRequest[]>([]);
+  const [dismissedRequestIds, setDismissedRequestIds] = useState<string[]>([]);
+
+  const dismissRequest = useCallback((id: string) => {
+    if (!id) return;
+    setDismissedRequestIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+  }, []);
 
   const refresh = useCallback(async (current = session) => {
     if (!current) return;
     setLoading(true);
     setMessage("");
     try {
-      const [walletData, txData, rideData, deliveryData, zoneData, payoutData] = await Promise.all([
+      const riderProfileId = current.user.riderProfileId;
+      const [walletData, txData, ownRideData, searchingRideData, ownDeliveryData, searchingDeliveryData, zoneData, payoutData] = await Promise.all([
         api<Wallet[]>(`/wallets/users/${current.user.id}`, { token: current.token }),
         api<WalletTransaction[]>(`/wallets/users/${current.user.id}/transactions`, { token: current.token }),
-        api<Ride[]>("/rides", { token: current.token }),
-        api<Delivery[]>("/deliveries", { token: current.token }),
+        riderProfileId
+          ? api<Ride[]>(`/rides?riderId=${riderProfileId}&limit=100`, { token: current.token }).catch(() => [])
+          : Promise.resolve([]),
+        api<Ride[]>("/rides?status=searching&limit=50", { token: current.token }).catch(() => []),
+        riderProfileId
+          ? api<Delivery[]>(`/deliveries?riderId=${riderProfileId}&limit=100`, { token: current.token }).catch(() => [])
+          : Promise.resolve([]),
+        api<Delivery[]>("/deliveries?status=searching&limit=50", { token: current.token }).catch(() => []),
         api<ServiceZone[]>("/bootstrap/service-zones?limit=30", { token: current.token }),
         api<PayoutRequest[]>("/wallets/rider/payout-requests", { token: current.token }).catch(() => []),
       ]);
+
+      const combinedRides = [
+        ...(Array.isArray(ownRideData) ? ownRideData : []),
+        ...(Array.isArray(searchingRideData) ? searchingRideData : []),
+      ];
+      const uniqueRides = Array.from(new Map(combinedRides.map((r) => [r.id, r])).values());
+
+      const combinedDeliveries = [
+        ...(Array.isArray(ownDeliveryData) ? ownDeliveryData : []),
+        ...(Array.isArray(searchingDeliveryData) ? searchingDeliveryData : []),
+      ];
+      const uniqueDeliveries = Array.from(new Map(combinedDeliveries.map((d) => [d.id, d])).values());
+
       setWallets(Array.isArray(walletData) ? walletData : []);
       setTransactions(Array.isArray(txData) ? txData : []);
-      setRides(
-        (Array.isArray(rideData) ? rideData : []).filter(
-          (r) => r.rider?.id === current.user.riderProfileId || (r.status ?? "").toLowerCase() === "searching",
-        ),
-      );
-      setDeliveries(
-        (Array.isArray(deliveryData) ? deliveryData : []).filter(
-          (d) => d.rider?.id === current.user.riderProfileId || (d.status ?? "").toLowerCase() === "searching",
-        ),
-      );
+      setRides(uniqueRides);
+      setDeliveries(uniqueDeliveries);
       setZones(Array.isArray(zoneData) ? zoneData : []);
       setPayouts(Array.isArray(payoutData) ? payoutData : []);
     } catch (error) {
@@ -111,6 +130,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
       refresh();
     };
 
+    const onDeliveryRequest = (data: unknown) => {
+      const patch = data as Delivery;
+      if (!patch || !patch.id) return;
+      setDeliveries((prev) => {
+        if (prev.some((d) => d.id === patch.id)) {
+          return prev.map((d) => (d.id === patch.id ? { ...d, ...patch } : d));
+        }
+        return [patch, ...prev];
+      });
+      refresh();
+    };
+
     const onRideUpdate = (data: unknown) => {
       const patch = data as Ride;
       setRides((prev) => prev.map((r) => (r.id === patch.id ? { ...r, ...patch } : r)));
@@ -125,6 +156,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     riderWs.on("ride:request", onRideRequest);
     riderWs.on("ride:status-update", onRideUpdate);
+    riderWs.on("delivery:request", onDeliveryRequest);
     riderWs.on("delivery:status-update", onDeliveryUpdate);
     riderWs.on("ride:assigned", () => refresh());
 
@@ -199,13 +231,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
       d.rider?.id === session?.user.riderProfileId &&
       !["delivered", "cancelled"].includes((d.status ?? "").toLowerCase()),
   );
-  // A ride sits at "assigned" or "searching" (if unassigned) until the rider explicitly accepts or declines.
+  // A ride sits at "assigned" or "searching" (if unassigned) until the rider explicitly accepts or declines/dismisses.
   const incomingRide = rides.find(
     (r) =>
-      (r.status ?? "").toLowerCase() === "assigned" ||
-      ((r.status ?? "").toLowerCase() === "searching" && !r.rider?.id),
+      !dismissedRequestIds.includes(r.id) &&
+      (((r.status ?? "").toLowerCase() === "assigned" && r.rider?.id === session?.user.riderProfileId) ||
+        ((r.status ?? "").toLowerCase() === "searching" && !r.rider?.id)),
   );
-  const incomingDelivery = deliveries.find((d) => (d.status ?? "").toLowerCase() === "searching");
+  const incomingDelivery = deliveries.find(
+    (d) =>
+      !dismissedRequestIds.includes(d.id) &&
+      (d.status ?? "").toLowerCase() === "searching" &&
+      (!d.rider?.id || d.rider?.id === session?.user.riderProfileId),
+  );
 
   const value = useMemo(
     () => ({
@@ -228,12 +266,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setMessage,
       toggleOnline,
       setOnline,
+      dismissRequest,
       activeRide,
       activeDelivery,
       incomingRide,
       incomingDelivery,
     }),
-    [session, restoring, loading, message, online, wallets, transactions, rides, deliveries, zones, payouts, refresh, refreshSession, updateUser, activeRide, activeDelivery, incomingRide, incomingDelivery],
+    [session, restoring, loading, message, online, wallets, transactions, rides, deliveries, zones, payouts, refresh, refreshSession, updateUser, dismissRequest, activeRide, activeDelivery, incomingRide, incomingDelivery],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

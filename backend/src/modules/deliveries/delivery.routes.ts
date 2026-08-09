@@ -25,10 +25,13 @@ export const deliveryRoutes: FastifyPluginAsync = async (server) => {
   });
 
   server.get("/deliveries", async (request) => {
-    const query = request.query as { limit?: string; page?: string };
+    const query = request.query as { limit?: string; page?: string; riderId?: string; passengerId?: string; status?: string };
     return deliveryService.listDeliveries({
       limit: query.limit ? Number(query.limit) || undefined : undefined,
-      page: query.page ? Number(query.page) || undefined : undefined
+      page: query.page ? Number(query.page) || undefined : undefined,
+      riderId: query.riderId,
+      passengerId: query.passengerId,
+      status: query.status
     });
   });
 

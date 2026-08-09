@@ -54,8 +54,23 @@ export function phoneParts(raw: string) {
   return { phoneCountryCode: "+233", phoneLocal: local, phoneE164: `+233${local}` };
 }
 
-export function money(value: string | number | null | undefined, currency = "GHS") {
-  return `${currency} ${Number(value ?? 0).toFixed(2)}`;
+export function money(value: unknown, currency = "GHS") {
+  let num = 0;
+  if (typeof value === "number") {
+    num = value;
+  } else if (typeof value === "string") {
+    num = Number.parseFloat(value);
+  } else if (value && typeof value === "object") {
+    if ("toNumber" in value && typeof (value as { toNumber: () => number }).toNumber === "function") {
+      num = (value as { toNumber: () => number }).toNumber();
+    } else if ("amount" in value) {
+      num = Number((value as { amount: unknown }).amount);
+    } else {
+      num = Number(String(value));
+    }
+  }
+  if (!Number.isFinite(num)) num = 0;
+  return `${currency} ${num.toFixed(2)}`;
 }
 
 export function compactDate(value?: string) {

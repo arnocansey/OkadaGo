@@ -440,6 +440,18 @@ export class RideService {
       }
     });
 
+    // Log online/offline transition for admin panel
+    void prisma.riderOnlineLog.create({
+      data: {
+        riderProfileId,
+        status: input.onlineStatus,
+        latitude: input.latitude !== undefined ? roundCoordinate(input.latitude) : undefined,
+        longitude: input.longitude !== undefined ? roundCoordinate(input.longitude) : undefined,
+        serviceZoneId: input.serviceZoneId ?? riderProfile.serviceZoneId ?? undefined,
+        isMocked: input.isMocked ?? false,
+      },
+    }).catch(() => undefined);
+
     if (input.latitude !== undefined && input.longitude !== undefined) {
       void syncRiderLocationGeography(riderProfileId, input.latitude, input.longitude);
     }
@@ -850,11 +862,18 @@ export class RideService {
     return ride;
   }
 
-  async listRides(query: { limit?: number; page?: number } = {}) {
+  async listRides(query: { limit?: number; page?: number; riderId?: string; passengerId?: string; status?: string } = {}) {
     const limit = Math.min(Math.max(query.limit ?? 25, 1), 300);
     const page = query.page;
 
+    const where = {
+      ...(query.riderId ? { riderId: query.riderId } : {}),
+      ...(query.passengerId ? { passengerId: query.passengerId } : {}),
+      ...(query.status ? { status: apiToDbRideStatus[query.status as keyof typeof apiToDbRideStatus] ?? (query.status as RideStatus) } : {})
+    };
+
     const data = await prisma.ride.findMany({
+      where,
       take: limit,
       ...(page ? { skip: (page - 1) * limit } : {}),
       orderBy: {
@@ -864,7 +883,7 @@ export class RideService {
     });
 
     if (!page) return data;
-    const total = await prisma.ride.count();
+    const total = await prisma.ride.count({ where });
     return { data, total, page, limit };
   }
 
@@ -1110,6 +1129,10 @@ export class RideService {
 
     if (!ride) {
       throw new AppError("Ride was not found", 404, "RIDE_NOT_FOUND");
+    }
+
+    if (toApiRideStatus(ride.status) === input.nextStatus) {
+      return ride;
     }
 
     this.validateLifecycle({

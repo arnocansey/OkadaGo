@@ -136,7 +136,7 @@ export function AnimatedSplash({ onFinish }: Props) {
   return (
     <Animated.View
       pointerEvents="none"
-      style={[styles.container, { backgroundColor: colors.background, opacity: fade }]}
+      style={[styles.container, { backgroundColor: "#153252", opacity: fade }]}
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >

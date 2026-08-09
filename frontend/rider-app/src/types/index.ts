@@ -87,6 +87,8 @@ export type Ride = {
   estimatedDurationMinutes?: number | string | null;
   currency?: string;
   createdAt?: string;
+  completedAt?: string;
+  updatedAt?: string;
   rider?: {
     id: string;
     user?: { fullName: string };
@@ -119,6 +121,8 @@ export type Delivery = {
   estimatedDurationMinutes?: number | string | null;
   currency?: string;
   createdAt?: string;
+  deliveredAt?: string;
+  updatedAt?: string;
   rider?: {
     id: string;
     user?: { fullName: string };

@@ -10,7 +10,10 @@ import {
   DeliveryStopType,
   JobPreference,
   PaymentMethod,
-  RiderApprovalStatus
+  RiderApprovalStatus,
+  WalletType,
+  WalletTransactionType,
+  WalletTransactionStatus
 } from "../../generated/prisma/enums.js";
 import { FareService } from "../pricing/fare.service.js";
 import { MatchingService } from "../matching/matching.service.js";
@@ -571,11 +574,18 @@ export class DeliveryService {
     });
   }
 
-  async listDeliveries(query: { limit?: number; page?: number } = {}) {
+  async listDeliveries(query: { limit?: number; page?: number; riderId?: string; passengerId?: string; status?: string } = {}) {
     const limit = Math.min(Math.max(query.limit ?? 50, 1), 300);
     const page = query.page;
 
+    const where = {
+      ...(query.riderId ? { riderId: query.riderId } : {}),
+      ...(query.passengerId ? { passengerId: query.passengerId } : {}),
+      ...(query.status ? { status: apiToDbDeliveryStatus[query.status as keyof typeof apiToDbDeliveryStatus] ?? (query.status as DeliveryStatus) } : {})
+    };
+
     const data = await prisma.deliveryRequest.findMany({
+      where,
       take: limit,
       ...(page ? { skip: (page - 1) * limit } : {}),
       orderBy: {
@@ -585,7 +595,7 @@ export class DeliveryService {
     });
 
     if (!page) return data;
-    const total = await prisma.deliveryRequest.count();
+    const total = await prisma.deliveryRequest.count({ where });
     return { data, total, page, limit };
   }
 
@@ -614,6 +624,10 @@ export class DeliveryService {
 
     if (!delivery) {
       throw new AppError("Delivery was not found", 404, "DELIVERY_NOT_FOUND");
+    }
+
+    if (toApiDeliveryStatus(delivery.status) === input.nextStatus) {
+      return delivery;
     }
 
     this.validateLifecycle(toApiDeliveryStatus(delivery.status), input.nextStatus);
@@ -674,6 +688,129 @@ export class DeliveryService {
             proofPhotoUrl
           }
         });
+
+        const finalAmount = Number(updatedDelivery.finalFee ?? updatedDelivery.estimatedFee ?? 0);
+        const riderUserId = updatedDelivery.rider?.userId;
+
+        const passengerWallet = await tx.wallet.upsert({
+          where: {
+            userId_type_currency: {
+              userId: updatedDelivery.passenger.userId,
+              type: WalletType.PASSENGER_CASHLESS,
+              currency: updatedDelivery.currency
+            }
+          },
+          update: {},
+          create: {
+            userId: updatedDelivery.passenger.userId,
+            type: WalletType.PASSENGER_CASHLESS,
+            currency: updatedDelivery.currency
+          }
+        });
+
+        const riderWallet = riderUserId
+          ? await tx.wallet.upsert({
+              where: {
+                userId_type_currency: {
+                  userId: riderUserId,
+                  type: WalletType.RIDER_SETTLEMENT,
+                  currency: updatedDelivery.currency
+                }
+              },
+              update: {},
+              create: {
+                userId: riderUserId,
+                type: WalletType.RIDER_SETTLEMENT,
+                currency: updatedDelivery.currency
+              }
+            })
+          : null;
+
+        if (updatedDelivery.paymentMethod === PaymentMethod.WALLET) {
+          const refreshedPassengerWallet = await tx.wallet.findUniqueOrThrow({
+            where: { id: passengerWallet.id }
+          });
+
+          if (Number(refreshedPassengerWallet.availableBalance) < finalAmount) {
+            throw new AppError(
+              "Passenger wallet balance is insufficient for completion",
+              409,
+              "INSUFFICIENT_WALLET_BALANCE"
+            );
+          }
+
+          await tx.wallet.update({
+            where: { id: passengerWallet.id },
+            data: { availableBalance: { decrement: finalAmount } }
+          });
+
+          await tx.walletTransaction.upsert({
+            where: { reference: `DELIVERY-DEBIT-${deliveryId}` },
+            update: {},
+            create: {
+              walletId: passengerWallet.id,
+              type: WalletTransactionType.DEBIT,
+              status: WalletTransactionStatus.POSTED,
+              amount: finalAmount,
+              currency: updatedDelivery.currency,
+              direction: "debit",
+              reference: `DELIVERY-DEBIT-${deliveryId}`,
+              description: "Passenger delivery payment",
+              postedAt: new Date()
+            }
+          });
+        }
+
+        const riderSettlementAmount = Number(updatedDelivery.riderEarnings ?? 0);
+        const platformCommissionAmount = Number(updatedDelivery.platformCommission ?? 0);
+
+        if (riderWallet) {
+          if (updatedDelivery.paymentMethod === PaymentMethod.CASH) {
+            if (platformCommissionAmount > 0) {
+              await tx.wallet.update({
+                where: { id: riderWallet.id },
+                data: { availableBalance: { decrement: platformCommissionAmount } }
+              });
+
+              await tx.walletTransaction.upsert({
+                where: { reference: `DELIVERY-COMMISSION-${deliveryId}` },
+                update: {},
+                create: {
+                  walletId: riderWallet.id,
+                  type: WalletTransactionType.COMMISSION,
+                  status: WalletTransactionStatus.POSTED,
+                  amount: platformCommissionAmount,
+                  currency: updatedDelivery.currency,
+                  direction: "debit",
+                  reference: `DELIVERY-COMMISSION-${deliveryId}`,
+                  description: "Cash delivery commission owed",
+                  postedAt: new Date()
+                }
+              });
+            }
+          } else if (riderSettlementAmount > 0) {
+            await tx.wallet.update({
+              where: { id: riderWallet.id },
+              data: { availableBalance: { increment: riderSettlementAmount } }
+            });
+
+            await tx.walletTransaction.upsert({
+              where: { reference: `DELIVERY-CREDIT-${deliveryId}` },
+              update: {},
+              create: {
+                walletId: riderWallet.id,
+                type: WalletTransactionType.CREDIT,
+                status: WalletTransactionStatus.POSTED,
+                amount: riderSettlementAmount,
+                currency: updatedDelivery.currency,
+                direction: "credit",
+                reference: `DELIVERY-CREDIT-${deliveryId}`,
+                description: "Rider delivery earnings",
+                postedAt: new Date()
+              }
+            });
+          }
+        }
       }
 
       return updatedDelivery;

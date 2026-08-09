@@ -8,6 +8,12 @@ export type ThemeColors = {
   background: string;
   surface: string;
   surfaceElevated: string;
+  /** New design system: raised surface for cards */
+  surfaceRaised: string;
+  /** New design system: overlay surface for elevated elements */
+  surfaceOverlay: string;
+  /** New design system: deep background */
+  bg: string;
   border: string;
   borderStrong: string;
   text: string;
@@ -41,6 +47,9 @@ export const darkColors: ThemeColors = {
   background: "#0B0F19",
   surface: "#151C2C",
   surfaceElevated: "#1C2538",
+  surfaceRaised: "#1C2538",
+  surfaceOverlay: "rgba(255,255,255,0.05)",
+  bg: "#070B14",
   border: "#252D39",
   borderStrong: "#344052",
   text: "#FFFFFF",
@@ -74,6 +83,9 @@ export const lightColors: ThemeColors = {
   background: "#FFFFFF",
   surface: "#F2F2F7",
   surfaceElevated: "#FFFFFF",
+  surfaceRaised: "#FFFFFF",
+  surfaceOverlay: "rgba(0,0,0,0.03)",
+  bg: "#FFFFFF",
   border: "#E5E5EA",
   borderStrong: "#C7C7CC",
   text: "#000000",

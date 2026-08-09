@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/Input";
-import { ScreenHeader } from "@/components/ui/ScreenHeader";
+import { NavigationHeader } from "@/components/ScreenHeader";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { spacing } from "@/theme/tokens";
 import type { PayoutAccount } from "@/types";
@@ -232,7 +232,7 @@ export default function WalletScreen() {
           onCancel={handleCheckoutCancel}
         />
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}>
-          <ScreenHeader title="Wallet" />
+          <NavigationHeader title="Wallet" />
 
           {deficit >= RIDER_DEFICIT_WARNING_THRESHOLD ? (
             <Card elevated style={styles.deficitBanner}>

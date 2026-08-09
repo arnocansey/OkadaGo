@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { OperationsMap } from "@/components/maps/operations-map";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageSkeleton } from "./AdminSkeleton";
@@ -10,6 +10,7 @@ import type { RiderFinancialRow } from "./types";
 import { parseNumber, ACCRA_MAP_CENTER, ACCRA_MAP_ZOOM_CITY, ACCRA_MAP_ZOOM_METRO } from "./utils";
 import { useAdminToast } from "./AdminToast";
 import { useBreakpoint } from "../../../hooks/use-breakpoint";
+import { apiUrl } from "@/lib/api";
 import {
   MapPin,
   Wifi,
@@ -25,6 +26,7 @@ import {
   Zap,
   Clock,
   X,
+  History,
 } from "lucide-react";
 
 export type RiderActivityMapMarker = {
@@ -64,7 +66,7 @@ export type RiderActivityScreenProps = {
 
 const ITEMS_PER_PAGE = 8;
 
-const tabs = ["Live Map", "Rider Activity Feed", "Geofence Zones", "Heatmap"] as const;
+const tabs = ["Live Map", "Rider Activity Feed", "Status History", "Geofence Zones", "Heatmap"] as const;
 type Tab = (typeof tabs)[number];
 
 const quickFilters = ["All", "Online", "On Trip", "Idle"] as const;
@@ -137,6 +139,45 @@ export function RiderActivityScreen({
   const [quickFilter, setQuickFilter] = useState<string>("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedRider, setSelectedRider] = useState<RiderFinancialRow | null>(null);
+  const [onlineLog, setOnlineLog] = useState<Array<{
+    id: string;
+    status: boolean;
+    latitude: string | number | null;
+    longitude: string | number | null;
+    isMocked: boolean;
+    createdAt: string;
+    riderProfile: { id: string; user: { fullName: string }; displayCode: string };
+  }>>([]);
+  const [onlineLogLoading, setOnlineLogLoading] = useState(false);
+  const [onlineLogFilter, setOnlineLogFilter] = useState<"all" | "online" | "offline">("all");
+
+  const fetchOnlineLog = useCallback(async () => {
+    setOnlineLogLoading(true);
+    try {
+      const res = await fetch(apiUrl("/admin/riders/online-log?limit=100"));
+      if (res.ok) {
+        const data = await res.json();
+        setOnlineLog(data.logs ?? []);
+      }
+    } catch {
+      // Silent fail
+    } finally {
+      setOnlineLogLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === "Status History") {
+      fetchOnlineLog();
+    }
+  }, [activeTab, fetchOnlineLog]);
+
+  const filteredOnlineLog = useMemo(() => {
+    if (onlineLogFilter === "all") return onlineLog;
+    return onlineLog.filter((log) =>
+      onlineLogFilter === "online" ? log.status : !log.status
+    );
+  }, [onlineLog, onlineLogFilter]);
 
   const onTripNames = useMemo(() => {
     const names = new Set(activeTripRiderNames);
@@ -286,6 +327,7 @@ export function RiderActivityScreen({
             >
               {tab === "Live Map" && <MapPin size={14} />}
               {tab === "Rider Activity Feed" && <Activity size={14} />}
+              {tab === "Status History" && <History size={14} />}
               {tab === "Geofence Zones" && <Layers size={14} />}
               {tab === "Heatmap" && <Zap size={14} />}
               {tab}
@@ -882,6 +924,161 @@ export function RiderActivityScreen({
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === "Status History" && (
+          <div style={cardBase}>
+            <div
+              style={{
+                padding: "14px 18px",
+                borderBottom: `1px solid ${D.border}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 600 }}>Rider Online/Offline History</div>
+                <div style={{ fontSize: 12, color: D.textMuted, marginTop: 2 }}>
+                  Timestamps of every rider status change across the platform.
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 6 }}>
+                {(["all", "online", "offline"] as const).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setOnlineLogFilter(f)}
+                    style={{
+                      ...btnBase,
+                      padding: "5px 12px",
+                      fontSize: 11,
+                      background: onlineLogFilter === f ? D.blueBg : D.surfaceAlt,
+                      border: `1px solid ${onlineLogFilter === f ? D.blue : D.border}`,
+                      color: onlineLogFilter === f ? D.blue : D.textSecondary,
+                    }}
+                  >
+                    {f === "online" && <Wifi size={10} />}
+                    {f === "offline" && <Clock size={10} />}
+                    {f.charAt(0).toUpperCase() + f.slice(1)}
+                  </button>
+                ))}
+                <button
+                  style={{ ...btnBase, padding: "5px 10px", fontSize: 11 }}
+                  onClick={fetchOnlineLog}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = D.surfaceHover)}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = D.surfaceAlt)}
+                >
+                  <Activity size={12} /> Refresh
+                </button>
+              </div>
+            </div>
+
+            {onlineLogLoading ? (
+              <div style={{ padding: 40, textAlign: "center", color: D.textMuted, fontSize: 13 }}>
+                Loading status history...
+              </div>
+            ) : filteredOnlineLog.length === 0 ? (
+              <div style={{ padding: 40, textAlign: "center", color: D.textMuted, fontSize: 13 }}>
+                No status changes recorded yet.
+              </div>
+            ) : (
+              <div style={{ maxHeight: 500, overflowY: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ borderBottom: `1px solid ${D.border}` }}>
+                      <th style={{ padding: "10px 16px", textAlign: "left", fontWeight: 600, color: D.textSecondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Rider</th>
+                      <th style={{ padding: "10px 16px", textAlign: "left", fontWeight: 600, color: D.textSecondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Status</th>
+                      <th style={{ padding: "10px 16px", textAlign: "left", fontWeight: 600, color: D.textSecondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Time</th>
+                      <th style={{ padding: "10px 16px", textAlign: "left", fontWeight: 600, color: D.textSecondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Location</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredOnlineLog.map((log, i) => {
+                      const ts = new Date(log.createdAt);
+                      const timeStr = ts.toLocaleString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      });
+                      const lat = parseNumber(log.latitude);
+                      const lng = parseNumber(log.longitude);
+                      return (
+                        <tr
+                          key={log.id}
+                          style={{
+                            borderBottom: i < filteredOnlineLog.length - 1 ? `1px solid ${D.border}` : "none",
+                          }}
+                        >
+                          <td style={{ padding: "10px 16px" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                              <div
+                                style={{
+                                  width: 32,
+                                  height: 32,
+                                  borderRadius: 8,
+                                  background: D.surfaceAlt,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  fontWeight: 700,
+                                  fontSize: 12,
+                                  color: D.textPrimary,
+                                  border: `1px solid ${D.border}`,
+                                }}
+                              >
+                                {log.riderProfile.user.fullName.charAt(0)}
+                              </div>
+                              <div>
+                                <div style={{ fontWeight: 600, color: D.textPrimary }}>{log.riderProfile.user.fullName}</div>
+                                <div style={{ fontSize: 11, color: D.textMuted }}>{log.riderProfile.displayCode}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td style={{ padding: "10px 16px" }}>
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 5,
+                                padding: "3px 10px",
+                                borderRadius: 20,
+                                fontSize: 11,
+                                fontWeight: 600,
+                                background: log.status ? D.greenBg : D.surfaceHover,
+                                color: log.status ? D.green : D.textMuted,
+                                border: `1px solid ${log.status ? D.greenBorder : D.border}`,
+                              }}
+                            >
+                              <span
+                                style={{
+                                  width: 6,
+                                  height: 6,
+                                  borderRadius: "50%",
+                                  background: log.status ? D.green : D.textMuted,
+                                }}
+                              />
+                              {log.status ? "Went Online" : "Went Offline"}
+                            </span>
+                          </td>
+                          <td style={{ padding: "10px 16px", color: D.textSecondary, whiteSpace: "nowrap" }}>
+                            {timeStr}
+                          </td>
+                          <td style={{ padding: "10px 16px", color: D.textMuted, fontSize: 11 }}>
+                            {Number.isFinite(lat) && Number.isFinite(lng)
+                              ? `${lat.toFixed(5)}, ${lng.toFixed(5)}`
+                              : "N/A"}
+                            {log.isMocked ? " (mocked)" : ""}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 

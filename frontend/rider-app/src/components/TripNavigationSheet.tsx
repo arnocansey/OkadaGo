@@ -1,0 +1,895 @@
+import { useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Linking,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  CheckCircle2,
+  Clock,
+  MapPin,
+  MessageCircle,
+  Navigation,
+  Phone,
+  Shield,
+  ShieldAlert,
+  Zap,
+} from "lucide-react-native";
+import * as Haptics from "expo-haptics";
+import { AppMap } from "@/components/AppMap";
+import { PinVerificationSheet } from "@/components/PinVerificationSheet";
+import { SafetyCenter } from "@/components/SafetyCenter";
+import { useTheme } from "@/context/ThemeContext";
+import { useLiveRoutePreview } from "@/hooks/useLiveRoutePreview";
+import { api } from "@/lib/api";
+import { useApp } from "@/context/AppContext";
+import { openGoogleMapsNavigation, openWazeNavigation } from "@/lib/navigation";
+import { brand, layers } from "@/theme/design-system";
+
+type TripData = {
+  id: string;
+  kind: "ride" | "delivery";
+  status: string;
+  passengerName?: string;
+  passengerPhone?: string;
+  pickupAddress: string;
+  pickupLandmark?: string;
+  pickupLatitude?: number;
+  pickupLongitude?: number;
+  destinationAddress?: string;
+  destinationLandmark?: string;
+  destinationLatitude?: number;
+  destinationLongitude?: number;
+  estimatedFare?: number;
+  riderEarnings?: number;
+  currency?: string;
+  rideType?: string;
+  tripPin?: string;
+};
+
+type Props = {
+  trip: TripData;
+  onAdvance: () => void;
+  onVerifyPin?: (pin: string) => Promise<boolean>;
+  loading?: boolean;
+};
+
+/**
+ * TripNavigationSheet — Navigation-focused trip screen.
+ *
+ * Three modes:
+ * 1. Navigation (arriving): Route to pickup with ETA
+ * 2. Arrived: Simple arrived state + PIN verification sheet
+ * 3. Trip (started): Navigation to destination
+ *
+ * Layout — Arriving:
+ * ┌─────────────────────────────────┐
+ * │       MAP (70%)                 │ ← Route to pickup
+ * ├─────────────────────────────────┤
+ * │  📍 PICKUP: Accra Mall          │
+ * │  🕐 3 min • 1.2 km             │
+ * │  👤 Kwame A.  [📞] [💬]        │
+ * │  [ ARRIVED AT PICKUP ]          │ ← CTA
+ * │  [Google Maps] [Waze]           │
+ * └─────────────────────────────────┘
+ *
+ * Layout — Arrived (PIN verification):
+ * ┌─────────────────────────────────┐
+ * │       MAP (70%)                 │ ← Centered on pickup
+ * ├─────────────────────────────────┤
+ * │  ✅ YOU'VE ARRIVED              │
+ * │  👤 Kwame A.                    │
+ * │  📍 Near Entrance B             │
+ * │  ───────────────────────────    │
+ * │  ⏳ WAITING TIPS                │
+ * │  • Park safely off road         │
+ * │  • Hazard lights on             │
+ * │  • Helmet on until seated       │
+ * │  ───────────────────────────    │
+ * │  ┌─────────────────────────────┐│
+ * │  │    VERIFY PASSENGER PIN     ││ ← Opens PinVerificationSheet
+ * │  └─────────────────────────────┘│
+ * └─────────────────────────────────┘
+ *
+ * Layout — In Trip:
+ * ┌─────────────────────────────────┐
+ * │       MAP (70%)                 │ ← Route to destination
+ * ├─────────────────────────────────┤
+ * │  📍 DESTINATION                 │
+ * │  👤 Kwame A.  [📞] [💬]        │
+ * │  [ COMPLETE TRIP ]              │
+ * │  [Google Maps] [Waze]           │
+ * └─────────────────────────────────┘
+ */
+export function TripNavigationSheet({
+  trip,
+  onAdvance,
+  onVerifyPin,
+  loading = false,
+}: Props) {
+  const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
+  const { session } = useApp();
+  const [showPinSheet, setShowPinSheet] = useState(false);
+  const [showSafetyCenter, setShowSafetyCenter] = useState(false);
+
+  const status = trip.status?.toLowerCase() ?? "assigned";
+  const isArriving = status === "arriving";
+  const isArrived = status === "arrived";
+  const isPickupPhase = ["assigned", "arriving"].includes(status);
+  const isTripPhase = ["started", "picked_up", "in_transit"].includes(status);
+
+  // Live route preview — only when en route
+  const livePreview = useLiveRoutePreview(
+    session?.token,
+    null,
+    isPickupPhase && trip.pickupLatitude && trip.pickupLongitude
+      ? { latitude: trip.pickupLatitude, longitude: trip.pickupLongitude }
+      : isTripPhase && trip.destinationLatitude && trip.destinationLongitude
+        ? { latitude: trip.destinationLatitude, longitude: trip.destinationLongitude }
+        : null,
+    true,
+  );
+
+  const actionLabel = useMemo(() => {
+    switch (status) {
+      case "arriving":
+        return "Arrived at Pickup";
+      case "arrived":
+        return "VERIFY PASSENGER";
+      case "started":
+      case "in_transit":
+        return "Complete Trip";
+      default:
+        return "Arrived";
+    }
+  }, [status]);
+
+  const markers = useMemo(() => {
+    const m = [];
+    if (trip.pickupLatitude && trip.pickupLongitude) {
+      m.push({
+        id: "pickup",
+        latitude: trip.pickupLatitude,
+        longitude: trip.pickupLongitude,
+        title: "Pickup",
+        pinColor: brand.primary,
+      });
+    }
+    if (isTripPhase && trip.destinationLatitude && trip.destinationLongitude) {
+      m.push({
+        id: "destination",
+        latitude: trip.destinationLatitude,
+        longitude: trip.destinationLongitude,
+        title: "Destination",
+        pinColor: colors.danger,
+      });
+    }
+    return m;
+  }, [trip, isTripPhase, colors]);
+
+  function handleAction() {
+    if (isArrived) {
+      // Open PIN verification sheet
+      setShowPinSheet(true);
+      return;
+    }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    onAdvance();
+  }
+
+  function handlePinVerified() {
+    setShowPinSheet(false);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    onAdvance();
+  }
+
+  const s = useMemo(
+    () =>
+      StyleSheet.create({
+        screen: {
+          flex: 1,
+          backgroundColor: colors.bg,
+        },
+
+        /* ─── Map Area (70%) ──────────────────────────────────── */
+        mapArea: {
+          flex: 70,
+          position: "relative",
+        },
+
+        /* ─── Bottom Sheet (30%) ──────────────────────────────── */
+        sheet: {
+          flex: 30,
+          backgroundColor: isDark ? colors.surface : "#FFFFFF",
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -6 },
+          shadowOpacity: isDark ? 0.5 : 0.18,
+          shadowRadius: 20,
+          elevation: 12,
+          borderWidth: 1,
+          borderBottomWidth: 0,
+          borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
+        },
+        sheetContent: {
+          flex: 1,
+          paddingHorizontal: 20,
+          paddingTop: 16,
+          paddingBottom: insets.bottom + 12,
+        },
+
+        /* ─── Handle Bar ──────────────────────────────────────── */
+        handleBar: {
+          width: 36,
+          height: 4,
+          borderRadius: 2,
+          backgroundColor: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.15)",
+          alignSelf: "center",
+          marginBottom: 12,
+        },
+
+        /* ─── Section Header ──────────────────────────────────── */
+        sectionHeader: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 8,
+          marginBottom: 8,
+        },
+        sectionDot: {
+          width: 8,
+          height: 8,
+          borderRadius: 4,
+          backgroundColor: brand.primary,
+        },
+        sectionLabel: {
+          fontSize: 11,
+          fontWeight: "700",
+          color: colors.textMuted,
+          textTransform: "uppercase",
+          letterSpacing: 0.8,
+        },
+        addressText: {
+          fontSize: 16,
+          fontWeight: "600",
+          color: colors.text,
+          marginBottom: 2,
+        },
+        landmarkText: {
+          fontSize: 13,
+          fontWeight: "500",
+          color: colors.textSecondary,
+          marginBottom: 8,
+        },
+
+        /* ─── ETA Row ──────────────────────────────────────────── */
+        etaRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 12,
+          marginBottom: 12,
+        },
+        etaItem: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 6,
+        },
+        etaIcon: {
+          width: 28,
+          height: 28,
+          borderRadius: 8,
+          backgroundColor: colors.surfaceOverlay,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        etaText: {
+          fontSize: 13,
+          fontWeight: "600",
+          color: colors.text,
+        },
+
+        /* ─── Passenger Row ────────────────────────────────────── */
+        passengerRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 12,
+          marginBottom: 12,
+        },
+        passengerAvatar: {
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          backgroundColor: colors.surfaceOverlay,
+          alignItems: "center",
+          justifyContent: "center",
+          borderWidth: 1,
+          borderColor: colors.border,
+        },
+        passengerInfo: {
+          flex: 1,
+        },
+        passengerLabel: {
+          fontSize: 10,
+          fontWeight: "600",
+          color: colors.textMuted,
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
+        },
+        passengerName: {
+          fontSize: 14,
+          fontWeight: "600",
+          color: colors.text,
+          marginTop: 2,
+        },
+        contactBtns: {
+          flexDirection: "row",
+          gap: 8,
+        },
+        contactBtn: {
+          width: 44,
+          height: 44,
+          borderRadius: 22,
+          backgroundColor: colors.surfaceOverlay,
+          alignItems: "center",
+          justifyContent: "center",
+          borderWidth: 1,
+          borderColor: colors.border,
+        },
+
+        /* ─── Divider ──────────────────────────────────────────── */
+        divider: {
+          height: 1,
+          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+          marginBottom: 12,
+        },
+
+        /* ─── Destination Section ──────────────────────────────── */
+        destSection: {
+          marginBottom: 12,
+        },
+
+        /* ─── Arrived Banner ──────────────────────────────────── */
+        arrivedBanner: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 8,
+          marginBottom: 12,
+        },
+        arrivedIcon: {
+          width: 24,
+          height: 24,
+          borderRadius: 12,
+          backgroundColor: "#22C55E20",
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        arrivedText: {
+          fontSize: 13,
+          fontWeight: "700",
+          color: "#22C55E",
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
+        },
+
+        /* ─── Waiting Instructions ──────────────────────────────── */
+        waitingCard: {
+          backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)",
+          borderRadius: 12,
+          borderWidth: 1,
+          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          padding: 12,
+          marginBottom: 12,
+        },
+        waitingTitle: {
+          fontSize: 11,
+          fontWeight: "700",
+          color: colors.textMuted,
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
+          marginBottom: 8,
+        },
+        waitingItem: {
+          flexDirection: "row",
+          alignItems: "flex-start",
+          gap: 8,
+          marginBottom: 6,
+        },
+        waitingDot: {
+          width: 6,
+          height: 6,
+          borderRadius: 3,
+          backgroundColor: colors.primary,
+          marginTop: 5,
+        },
+        waitingText: {
+          flex: 1,
+          fontSize: 12,
+          fontWeight: "500",
+          color: colors.textSecondary,
+          lineHeight: 17,
+        },
+
+        /* ─── Action Button ────────────────────────────────────── */
+        actionBtn: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+          height: 56,
+          borderRadius: 16,
+          backgroundColor: brand.primary,
+          shadowColor: brand.primary,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 12,
+          elevation: 8,
+          marginBottom: 8,
+        },
+        actionBtnDisabled: {
+          opacity: 0.5,
+        },
+        actionText: {
+          fontSize: 16,
+          fontWeight: "700",
+          color: "#000000",
+        },
+
+        /* ─── Navigation Apps ──────────────────────────────────── */
+        navRow: {
+          flexDirection: "row",
+          gap: 8,
+        },
+        navBtn: {
+          flex: 1,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 6,
+          height: 44,
+          borderRadius: 12,
+          backgroundColor: colors.surfaceOverlay,
+          borderWidth: 1,
+          borderColor: colors.border,
+        },
+        navBtnText: {
+          fontSize: 13,
+          fontWeight: "600",
+          color: colors.textSecondary,
+        },
+
+        /* ─── Safety Button ─────────────────────────────────────────── */
+        sosWrap: {
+          position: "absolute",
+          top: insets.top + 12,
+          right: 16,
+          zIndex: layers.floatingAction,
+        },
+        sosBtn: {
+          minWidth: 48,
+          height: 48,
+          borderRadius: 24,
+          paddingHorizontal: 14,
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "row",
+          gap: 6,
+          backgroundColor: "#3B82F6",
+          shadowColor: "#3B82F6",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.4,
+          shadowRadius: 12,
+          elevation: 8,
+        },
+        sosLabel: {
+          fontSize: 12,
+          fontWeight: "700",
+          color: "#FFFFFF",
+        },
+      }),
+    [colors, isDark, insets],
+  );
+
+  const pickupLat = trip.pickupLatitude;
+  const pickupLon = trip.pickupLongitude;
+
+  return (
+    <View style={s.screen}>
+      {/* ─── Map Area (70%) ────────────────────────────────────── */}
+      <View style={s.mapArea}>
+        <AppMap
+          markers={markers}
+          fitToMarkers={markers.length > 0}
+          showCenterButton
+          centerButtonInset={{ bottom: 16, right: 16 }}
+        />
+
+        {/* Safety Center Button */}
+        <View style={s.sosWrap}>
+          <Pressable
+            style={s.sosBtn}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              setShowSafetyCenter(true);
+            }}
+            accessibilityLabel="Open Safety Center"
+          >
+            <Shield size={16} color="#FFFFFF" />
+            <Text style={s.sosLabel}>Safety</Text>
+          </Pressable>
+        </View>
+      </View>
+
+      {/* ─── Bottom Sheet (30%) ─────────────────────────────────── */}
+      <KeyboardAvoidingView
+        style={s.sheet}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <View style={s.sheetContent}>
+          {/* Handle Bar */}
+          <View style={s.handleBar} />
+
+          {/* ═══════════════════════════════════════════════════════ */}
+          {/* ARRIVING: Navigation to pickup                       */}
+          {/* ═══════════════════════════════════════════════════════ */}
+          {isPickupPhase && (
+            <>
+              <View style={s.sectionHeader}>
+                <View style={s.sectionDot} />
+                <Text style={s.sectionLabel}>Pickup</Text>
+              </View>
+              <Text style={s.addressText} numberOfLines={1}>
+                {trip.pickupAddress}
+              </Text>
+              {trip.pickupLandmark && (
+                <Text style={s.landmarkText} numberOfLines={1}>
+                  {trip.pickupLandmark}
+                </Text>
+              )}
+
+              {/* ETA */}
+              <View style={s.etaRow}>
+                <View style={s.etaItem}>
+                  <View style={s.etaIcon}>
+                    <Clock size={14} color={colors.textSecondary} />
+                  </View>
+                  <Text style={s.etaText}>
+                    {livePreview
+                      ? `${Math.round(livePreview.durationMinutes)} min`
+                      : "—"}
+                  </Text>
+                </View>
+                <View style={s.etaItem}>
+                  <View style={s.etaIcon}>
+                    <MapPin size={14} color={colors.textSecondary} />
+                  </View>
+                  <Text style={s.etaText}>
+                    {livePreview
+                      ? `${livePreview.distanceKm.toFixed(1)} km`
+                      : "—"}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Passenger */}
+              <View style={s.passengerRow}>
+                <View style={s.passengerAvatar}>
+                  <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
+                    {trip.passengerName?.[0] ?? "P"}
+                  </Text>
+                </View>
+                <View style={s.passengerInfo}>
+                  <Text style={s.passengerLabel}>Passenger</Text>
+                  <Text style={s.passengerName} numberOfLines={1}>
+                    {trip.passengerName ?? "Passenger"}
+                  </Text>
+                </View>
+                <View style={s.contactBtns}>
+                  {trip.passengerPhone && (
+                    <Pressable
+                      style={s.contactBtn}
+                      onPress={() => Linking.openURL(`tel:${trip.passengerPhone}`)}
+                      accessibilityLabel="Call passenger"
+                    >
+                      <Phone size={18} color={colors.primary} />
+                    </Pressable>
+                  )}
+                  <Pressable
+                    style={s.contactBtn}
+                    onPress={() => {}}
+                    accessibilityLabel="Message passenger"
+                  >
+                    <MessageCircle size={18} color={colors.primary} />
+                  </Pressable>
+                </View>
+              </View>
+
+              {/* Action */}
+              <Pressable
+                style={[s.actionBtn, loading && s.actionBtnDisabled]}
+                onPress={handleAction}
+                disabled={loading}
+                accessibilityRole="button"
+                accessibilityLabel={actionLabel}
+              >
+                {loading ? (
+                  <ActivityIndicator size="small" color="#000000" />
+                ) : (
+                  <>
+                    <Navigation size={18} color="#000000" />
+                    <Text style={s.actionText}>{actionLabel}</Text>
+                  </>
+                )}
+              </Pressable>
+
+              {/* Navigation Apps */}
+              {pickupLat && pickupLon && (
+                <View style={s.navRow}>
+                  <Pressable
+                    style={s.navBtn}
+                    onPress={() => openGoogleMapsNavigation(pickupLat, pickupLon, trip.pickupAddress)}
+                  >
+                    <MapPin size={14} color={colors.primary} />
+                    <Text style={s.navBtnText}>Google Maps</Text>
+                  </Pressable>
+                  <Pressable
+                    style={s.navBtn}
+                    onPress={() => openWazeNavigation(pickupLat, pickupLon)}
+                  >
+                    <Navigation size={14} color={colors.primary} />
+                    <Text style={s.navBtnText}>Waze</Text>
+                  </Pressable>
+                </View>
+              )}
+            </>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════ */}
+          {/* ARRIVED: Pickup confirmation + waiting tips           */}
+          {/* ═══════════════════════════════════════════════════════ */}
+          {isArrived && (
+            <>
+              {/* Arrived Banner */}
+              <View style={s.arrivedBanner}>
+                <View style={s.arrivedIcon}>
+                  <CheckCircle2 size={14} color="#22C55E" />
+                </View>
+                <Text style={s.arrivedText}>You've arrived at pickup</Text>
+              </View>
+
+              {/* Passenger */}
+              <View style={s.passengerRow}>
+                <View style={s.passengerAvatar}>
+                  <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
+                    {trip.passengerName?.[0] ?? "P"}
+                  </Text>
+                </View>
+                <View style={s.passengerInfo}>
+                  <Text style={s.passengerLabel}>Passenger</Text>
+                  <Text style={s.passengerName} numberOfLines={1}>
+                    {trip.passengerName ?? "Passenger"}
+                  </Text>
+                </View>
+                <View style={s.contactBtns}>
+                  {trip.passengerPhone && (
+                    <Pressable
+                      style={s.contactBtn}
+                      onPress={() => Linking.openURL(`tel:${trip.passengerPhone}`)}
+                      accessibilityLabel="Call passenger"
+                    >
+                      <Phone size={18} color={colors.primary} />
+                    </Pressable>
+                  )}
+                  <Pressable
+                    style={s.contactBtn}
+                    onPress={() => {}}
+                    accessibilityLabel="Message passenger"
+                  >
+                    <MessageCircle size={18} color={colors.primary} />
+                  </Pressable>
+                </View>
+              </View>
+
+              {/* Pickup Address */}
+              <View style={s.sectionHeader}>
+                <View style={[s.sectionDot, { backgroundColor: "#22C55E" }]} />
+                <Text style={s.sectionLabel}>Pickup Point</Text>
+              </View>
+              <Text style={s.addressText} numberOfLines={1}>
+                {trip.pickupAddress}
+              </Text>
+              {trip.pickupLandmark && (
+                <Text style={s.landmarkText} numberOfLines={1}>
+                  {trip.pickupLandmark}
+                </Text>
+              )}
+
+              <View style={s.divider} />
+
+              {/* Waiting Instructions */}
+              <View style={s.waitingCard}>
+                <Text style={s.waitingTitle}>Safe Waiting</Text>
+                <View style={s.waitingItem}>
+                  <View style={s.waitingDot} />
+                  <Text style={s.waitingText}>
+                    Park in a safe spot off the main road
+                  </Text>
+                </View>
+                <View style={s.waitingItem}>
+                  <View style={s.waitingDot} />
+                  <Text style={s.waitingText}>
+                    Turn on hazard lights to stay visible
+                  </Text>
+                </View>
+                <View style={s.waitingItem}>
+                  <View style={s.waitingDot} />
+                  <Text style={s.waitingText}>
+                    Keep helmet on until passenger is seated
+                  </Text>
+                </View>
+              </View>
+
+              <View style={s.divider} />
+
+              {/* Verify Passenger Button */}
+              <Pressable
+                style={[s.actionBtn, loading && s.actionBtnDisabled]}
+                onPress={handleAction}
+                disabled={loading}
+                accessibilityRole="button"
+                accessibilityLabel="Verify passenger"
+              >
+                {loading ? (
+                  <ActivityIndicator size="small" color="#000000" />
+                ) : (
+                  <>
+                    <Zap size={18} color="#000000" />
+                    <Text style={s.actionText}>VERIFY PASSENGER</Text>
+                  </>
+                )}
+              </Pressable>
+            </>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════ */}
+          {/* TRIP PHASE: Navigation to destination                 */}
+          {/* ═══════════════════════════════════════════════════════ */}
+          {isTripPhase && (
+            <>
+              {/* Destination */}
+              {trip.destinationAddress && (
+                <View style={s.destSection}>
+                  <View style={s.sectionHeader}>
+                    <View style={[s.sectionDot, { backgroundColor: colors.danger }]} />
+                    <Text style={s.sectionLabel}>Destination</Text>
+                  </View>
+                  <Text style={s.addressText} numberOfLines={1}>
+                    {trip.destinationAddress}
+                  </Text>
+                  {trip.destinationLandmark && (
+                    <Text style={s.landmarkText} numberOfLines={1}>
+                      {trip.destinationLandmark}
+                    </Text>
+                  )}
+                </View>
+              )}
+
+              {/* Passenger */}
+              <View style={s.passengerRow}>
+                <View style={s.passengerAvatar}>
+                  <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
+                    {trip.passengerName?.[0] ?? "P"}
+                  </Text>
+                </View>
+                <View style={s.passengerInfo}>
+                  <Text style={s.passengerLabel}>Passenger</Text>
+                  <Text style={s.passengerName} numberOfLines={1}>
+                    {trip.passengerName ?? "Passenger"}
+                  </Text>
+                </View>
+                <View style={s.contactBtns}>
+                  {trip.passengerPhone && (
+                    <Pressable
+                      style={s.contactBtn}
+                      onPress={() => Linking.openURL(`tel:${trip.passengerPhone}`)}
+                      accessibilityLabel="Call passenger"
+                    >
+                      <Phone size={18} color={colors.primary} />
+                    </Pressable>
+                  )}
+                  <Pressable
+                    style={s.contactBtn}
+                    onPress={() => {}}
+                    accessibilityLabel="Message passenger"
+                  >
+                    <MessageCircle size={18} color={colors.primary} />
+                  </Pressable>
+                </View>
+              </View>
+
+              {/* Action */}
+              <Pressable
+                style={[s.actionBtn, loading && s.actionBtnDisabled]}
+                onPress={handleAction}
+                disabled={loading}
+                accessibilityRole="button"
+                accessibilityLabel={actionLabel}
+              >
+                {loading ? (
+                  <ActivityIndicator size="small" color="#000000" />
+                ) : (
+                  <>
+                    <Navigation size={18} color="#000000" />
+                    <Text style={s.actionText}>{actionLabel}</Text>
+                  </>
+                )}
+              </Pressable>
+
+              {/* Navigation Apps */}
+              {trip.destinationLatitude && trip.destinationLongitude && (
+                <View style={s.navRow}>
+                  <Pressable
+                    style={s.navBtn}
+                    onPress={() =>
+                      openGoogleMapsNavigation(
+                        trip.destinationLatitude!,
+                        trip.destinationLongitude!,
+                        trip.destinationAddress,
+                      )
+                    }
+                  >
+                    <MapPin size={14} color={colors.primary} />
+                    <Text style={s.navBtnText}>Google Maps</Text>
+                  </Pressable>
+                  <Pressable
+                    style={s.navBtn}
+                    onPress={() =>
+                      openWazeNavigation(
+                        trip.destinationLatitude!,
+                        trip.destinationLongitude!,
+                      )
+                    }
+                  >
+                    <Navigation size={14} color={colors.primary} />
+                    <Text style={s.navBtnText}>Waze</Text>
+                  </Pressable>
+                </View>
+              )}
+            </>
+          )}
+        </View>
+      </KeyboardAvoidingView>
+
+      {/* ─── PIN Verification Sheet ──────────────────────────────── */}
+      <PinVerificationSheet
+        visible={showPinSheet}
+        tripId={trip.id}
+        passengerName={trip.passengerName}
+        onVerified={handlePinVerified}
+        onSkip={() => setShowPinSheet(false)}
+        onVerify={onVerifyPin}
+      />
+
+      {/* ─── Safety Center ──────────────────────────────────────── */}
+      <SafetyCenter
+        visible={showSafetyCenter}
+        onClose={() => setShowSafetyCenter(false)}
+        tripId={trip.id}
+        tripKind={trip.kind}
+        passengerName={trip.passengerName}
+        passengerPhone={trip.passengerPhone}
+        pickupAddress={trip.pickupAddress}
+        destinationAddress={trip.destinationAddress}
+        pickupLatitude={trip.pickupLatitude}
+        pickupLongitude={trip.pickupLongitude}
+      />
+    </View>
+  );
+}

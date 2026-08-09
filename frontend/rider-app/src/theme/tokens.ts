@@ -8,6 +8,10 @@ export type ThemeColors = {
   background: string;
   surface: string;
   surfaceElevated: string;
+  /** Deep background (rider-specific) */
+  bg: string;
+  /** Overlay surface for elevated elements */
+  surfaceOverlay: string;
   border: string;
   borderStrong: string;
   text: string;
@@ -43,6 +47,8 @@ export const darkColors: ThemeColors = {
   background: "#0B0F19",
   surface: "#151C2C",
   surfaceElevated: "#1C2538",
+  bg: "#0A0E17",
+  surfaceOverlay: "rgba(255,255,255,0.06)",
   border: "#252D39",
   borderStrong: "#344052",
   text: "#FFFFFF",
@@ -78,6 +84,8 @@ export const lightColors: ThemeColors = {
   background: "#FFFFFF",
   surface: "#F2F2F7",
   surfaceElevated: "#FFFFFF",
+  bg: "#F8FAFC",
+  surfaceOverlay: "rgba(0,0,0,0.04)",
   border: "#E5E5EA",
   borderStrong: "#C7C7CC",
   text: "#000000",

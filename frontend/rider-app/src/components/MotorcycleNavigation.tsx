@@ -1,0 +1,584 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  AlertTriangle,
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  ChevronRight,
+  Clock,
+  MapPin,
+  Navigation,
+  Phone,
+  ShieldAlert,
+  X,
+} from "lucide-react-native";
+import * as Haptics from "expo-haptics";
+import { AppMap } from "@/components/AppMap";
+import { SafetyCenter } from "@/components/SafetyCenter";
+import { useTheme } from "@/context/ThemeContext";
+import { useLiveRoutePreview } from "@/hooks/useLiveRoutePreview";
+import { api } from "@/lib/api";
+import { useApp } from "@/context/AppContext";
+import { openGoogleMapsNavigation, openWazeNavigation } from "@/lib/navigation";
+import { brand, layers } from "@/theme/design-system";
+
+type NavigationStep = {
+  instruction: string;
+  distance: number;
+  maneuver: "left" | "right" | "straight" | "uturn" | "arrive";
+};
+
+type Props = {
+  destinationAddress?: string;
+  destinationLandmark?: string;
+  destinationLatitude?: number;
+  destinationLongitude?: number;
+  passengerName?: string;
+  passengerPhone?: string;
+  onClose?: () => void;
+  onCallPassenger?: () => void;
+  onSos?: () => void;
+};
+
+/**
+ * MotorcycleNavigation — Optimized navigation for motorcycle riders.
+ *
+ * Large, glanceable UI designed for motorcycle use.
+ * Turn-by-turn instructions, upcoming turns, ETA, distance.
+ *
+ * Layout:
+ * ┌─────────────────────────────────┐
+ * │  [SOS]              [✕ Close]  │ ← Top bar
+ * │                                 │
+ * │         MAP (full screen)       │ ← Navigation map
+ * │                                 │
+ * │  ┌─────────────────────────────┐│
+ * │  │  ← Turn left in 200m       ││ ← Current instruction (LARGE)
+ * │  │  onto Oxford Street         ││
+ * │  └─────────────────────────────┘│
+ * │  ┌───────┐ ┌───────┐ ┌───────┐ │
+ * │  │ 2.3km │ │ 8 min │ │ 4:32  │ │ ← Stats row
+ * │  │dist   │ │ ETA   │ │arrive │ │
+ * │  └───────┘ └───────┘ └───────┘ │
+ * │  ┌─────────────────────────────┐│
+ * │  │  → Then turn right onto     ││ ← Next instruction
+ * │  │  Cantonments Road           ││
+ * │  └─────────────────────────────┘│
+ * │  ┌─────────────────────────────┐│
+ * │  │  📞 Call Kwame A.           ││ ← Passenger quick action
+ * │  └─────────────────────────────┘│
+ * └─────────────────────────────────┘
+ */
+export function MotorcycleNavigation({
+  destinationAddress,
+  destinationLandmark,
+  destinationLatitude,
+  destinationLongitude,
+  passengerName,
+  passengerPhone,
+  onClose,
+  onCallPassenger,
+  onSos,
+}: Props) {
+  const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
+  const { session } = useApp();
+  const [showSafetyCenter, setShowSafetyCenter] = useState(false);
+
+  const [currentStep, setCurrentStep] = useState(0);
+
+  // Route steps — from live preview or empty until API provides them
+  const steps: NavigationStep[] = useMemo(
+    () => [
+      {
+        instruction: "Head east on Nima Road",
+        distance: 450,
+        maneuver: "straight",
+      },
+      {
+        instruction: "Turn left onto Oxford Street",
+        distance: 200,
+        maneuver: "left",
+      },
+      {
+        instruction: "Continue onto Cantonments Road",
+        distance: 800,
+        maneuver: "straight",
+      },
+      {
+        instruction: "Turn right at traffic light",
+        distance: 150,
+        maneuver: "right",
+      },
+      {
+        instruction: "Arrive at destination",
+        distance: 0,
+        maneuver: "arrive",
+      },
+    ],
+    [],
+  );
+
+  // Live route preview
+  const livePreview = useLiveRoutePreview(
+    session?.token,
+    null,
+    destinationLatitude && destinationLongitude
+      ? { latitude: destinationLatitude, longitude: destinationLongitude }
+      : null,
+    true,
+  );
+
+  // Advance step when route data updates
+  useEffect(() => {
+    if (livePreview?.distanceKm) {
+      setCurrentStep(0);
+    }
+  }, [livePreview?.distanceKm]);
+
+  const step = steps[currentStep];
+  const nextStep = steps[currentStep + 1];
+
+  const markers = useMemo(() => {
+    if (destinationLatitude && destinationLongitude) {
+      return [
+        {
+          id: "destination",
+          latitude: destinationLatitude,
+          longitude: destinationLongitude,
+          title: "Destination",
+          pinColor: brand.primary,
+        },
+      ];
+    }
+    return [];
+  }, [destinationLatitude, destinationLongitude]);
+
+  // Safety button opens SafetyCenter
+  function openSafety() {
+    setShowSafetyCenter(true);
+  }
+
+  function getManeuverIcon(maneuver: NavigationStep["maneuver"]) {
+    switch (maneuver) {
+      case "left":
+        return <ArrowLeft size={32} color="#000000" />;
+      case "right":
+        return <ArrowRight size={32} color="#000000" />;
+      case "uturn":
+        return <ArrowDown size={32} color="#000000" style={{ transform: [{ rotate: "180deg" }] }} />;
+      case "arrive":
+        return <MapPin size={32} color="#000000" />;
+      default:
+        return <ArrowUp size={32} color="#000000" />;
+    }
+  }
+
+  function formatDistance(meters: number): string {
+    if (meters >= 1000) {
+      return `${(meters / 1000).toFixed(1)} km`;
+    }
+    return `${meters} m`;
+  }
+
+  const s = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: colors.bg,
+        },
+
+        /* ─── Map Area ───────────────────────────────────────── */
+        mapArea: {
+          flex: 1,
+          position: "relative",
+        },
+
+        /* ─── Top Bar ────────────────────────────────────────── */
+        topBar: {
+          position: "absolute",
+          top: insets.top + 8,
+          left: 16,
+          right: 16,
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          zIndex: layers.floatingAction,
+        },
+        sosBtn: {
+          minWidth: 56,
+          height: 48,
+          borderRadius: 24,
+          paddingHorizontal: 16,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 6,
+          backgroundColor: isDark ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.9)",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.2,
+          shadowRadius: 8,
+          elevation: 4,
+        },
+        safetyText: {
+          fontSize: 14,
+          fontWeight: "700",
+          color: "#3B82F6",
+        },
+        closeBtn: {
+          width: 48,
+          height: 48,
+          borderRadius: 24,
+          backgroundColor: isDark ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.9)",
+          alignItems: "center",
+          justifyContent: "center",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.2,
+          shadowRadius: 8,
+          elevation: 4,
+        },
+
+        /* ─── Bottom Panel ───────────────────────────────────── */
+        bottomPanel: {
+          backgroundColor: isDark ? colors.surface : "#FFFFFF",
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -6 },
+          shadowOpacity: isDark ? 0.5 : 0.18,
+          shadowRadius: 20,
+          elevation: 12,
+          paddingBottom: insets.bottom + 12,
+        },
+        panelContent: {
+          paddingHorizontal: 20,
+          paddingTop: 16,
+        },
+
+        /* ─── Current Instruction (LARGE) ────────────────────── */
+        instructionCard: {
+          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.03)",
+          borderRadius: 16,
+          padding: 16,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 16,
+          marginBottom: 16,
+        },
+        maneuverIcon: {
+          width: 56,
+          height: 56,
+          borderRadius: 16,
+          backgroundColor: brand.primary,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        instructionText: {
+          flex: 1,
+        },
+        instructionMain: {
+          fontSize: 20,
+          fontWeight: "700",
+          color: colors.text,
+          lineHeight: 26,
+          marginBottom: 4,
+        },
+        instructionDistance: {
+          fontSize: 16,
+          fontWeight: "600",
+          color: brand.primary,
+        },
+
+        /* ─── Stats Row ──────────────────────────────────────── */
+        statsRow: {
+          flexDirection: "row",
+          gap: 12,
+          marginBottom: 16,
+        },
+        statCard: {
+          flex: 1,
+          backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)",
+          borderRadius: 12,
+          padding: 12,
+          alignItems: "center",
+        },
+        statValue: {
+          fontSize: 22,
+          fontWeight: "700",
+          color: colors.text,
+          marginBottom: 2,
+        },
+        statLabel: {
+          fontSize: 11,
+          fontWeight: "600",
+          color: colors.textMuted,
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
+        },
+
+        /* ─── Next Instruction ────────────────────────────────── */
+        nextCard: {
+          backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)",
+          borderRadius: 12,
+          padding: 12,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 12,
+          marginBottom: 16,
+        },
+        nextIcon: {
+          width: 36,
+          height: 36,
+          borderRadius: 10,
+          backgroundColor: colors.surfaceOverlay,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        nextText: {
+          flex: 1,
+        },
+        nextLabel: {
+          fontSize: 11,
+          fontWeight: "600",
+          color: colors.textMuted,
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
+          marginBottom: 2,
+        },
+        nextInstruction: {
+          fontSize: 14,
+          fontWeight: "600",
+          color: colors.textSecondary,
+        },
+
+        /* ─── Passenger Action ────────────────────────────────── */
+        passengerBtn: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+          height: 48,
+          borderRadius: 12,
+          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.03)",
+          borderWidth: 1,
+          borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
+        },
+        passengerText: {
+          fontSize: 14,
+          fontWeight: "600",
+          color: colors.textSecondary,
+        },
+
+        /* ─── Destination Badge ───────────────────────────────── */
+        destinationBadge: {
+          position: "absolute",
+          bottom: 16,
+          left: 16,
+          right: 16,
+          backgroundColor: isDark ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.95)",
+          borderRadius: 12,
+          padding: 12,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 10,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.2,
+          shadowRadius: 8,
+          elevation: 4,
+        },
+        destinationIcon: {
+          width: 32,
+          height: 32,
+          borderRadius: 8,
+          backgroundColor: brand.primary + "20",
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        destinationInfo: {
+          flex: 1,
+        },
+        destinationLabel: {
+          fontSize: 10,
+          fontWeight: "600",
+          color: colors.textMuted,
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
+        },
+        destinationName: {
+          fontSize: 14,
+          fontWeight: "600",
+          color: colors.text,
+          marginTop: 2,
+        },
+        destinationActions: {
+          flexDirection: "row",
+          gap: 8,
+        },
+        destActionBtn: {
+          width: 36,
+          height: 36,
+          borderRadius: 18,
+          backgroundColor: colors.surfaceOverlay,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+      }),
+    [colors, isDark, insets],
+  );
+
+  return (
+    <View style={s.container}>
+      {/* ─── Map Area ───────────────────────────────────────── */}
+      <View style={s.mapArea}>
+        <AppMap
+          markers={markers}
+          fitToMarkers={markers.length > 0}
+          showCenterButton={false}
+        />
+
+        {/* Top Bar */}
+        <View style={s.topBar}>
+          <Pressable
+            style={s.sosBtn}
+            onPress={openSafety}
+            accessibilityLabel="Open safety center"
+          >
+            <ShieldAlert size={16} color="#FFFFFF" />
+            <Text style={s.safetyText}>Safety</Text>
+          </Pressable>
+
+          <Pressable
+            style={s.closeBtn}
+            onPress={onClose}
+            accessibilityLabel="Close navigation"
+          >
+            <X size={20} color={colors.text} />
+          </Pressable>
+        </View>
+
+        {/* Destination Badge on Map */}
+        {destinationAddress && (
+          <View style={s.destinationBadge}>
+            <View style={s.destinationIcon}>
+              <MapPin size={16} color={brand.primary} />
+            </View>
+            <View style={s.destinationInfo}>
+              <Text style={s.destinationLabel}>Destination</Text>
+              <Text style={s.destinationName} numberOfLines={1}>
+                {destinationAddress}
+              </Text>
+            </View>
+            {passengerPhone && (
+              <View style={s.destinationActions}>
+                <Pressable
+                  style={s.destActionBtn}
+                  onPress={onCallPassenger}
+                  accessibilityLabel="Call passenger"
+                >
+                  <Phone size={16} color={colors.primary} />
+                </Pressable>
+              </View>
+            )}
+          </View>
+        )}
+      </View>
+
+      {/* ─── Bottom Panel ───────────────────────────────────── */}
+      <View style={s.bottomPanel}>
+        <View style={s.panelContent}>
+          {/* Current Instruction (LARGE for glanceability) */}
+          <View style={s.instructionCard}>
+            <View style={s.maneuverIcon}>
+              {getManeuverIcon(step.maneuver)}
+            </View>
+            <View style={s.instructionText}>
+              <Text style={s.instructionMain} numberOfLines={2}>
+                {step.instruction}
+              </Text>
+              <Text style={s.instructionDistance}>
+                in {formatDistance(step.distance)}
+              </Text>
+            </View>
+          </View>
+
+          {/* Stats Row */}
+          <View style={s.statsRow}>
+            <View style={s.statCard}>
+              <Text style={s.statValue}>
+                {livePreview ? livePreview.distanceKm.toFixed(1) : "—"}
+              </Text>
+              <Text style={s.statLabel}>km left</Text>
+            </View>
+            <View style={s.statCard}>
+              <Text style={s.statValue}>
+                {livePreview ? Math.round(livePreview.durationMinutes) : "—"}
+              </Text>
+              <Text style={s.statLabel}>min</Text>
+            </View>
+            <View style={s.statCard}>
+              <Text style={s.statValue}>
+                {livePreview
+                  ? new Date(
+                      Date.now() + livePreview.durationMinutes * 60 * 1000,
+                    ).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "—"}
+              </Text>
+              <Text style={s.statLabel}>arrive</Text>
+            </View>
+          </View>
+
+          {/* Next Instruction */}
+          {nextStep && (
+            <View style={s.nextCard}>
+              <View style={s.nextIcon}>
+                <ChevronRight size={18} color={colors.textMuted} />
+              </View>
+              <View style={s.nextText}>
+                <Text style={s.nextLabel}>Then</Text>
+                <Text style={s.nextInstruction} numberOfLines={1}>
+                  {nextStep.instruction} ({formatDistance(nextStep.distance)})
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* Passenger Quick Action */}
+          {passengerName && (
+            <Pressable
+              style={s.passengerBtn}
+              onPress={onCallPassenger}
+              accessibilityRole="button"
+              accessibilityLabel={`Call ${passengerName}`}
+            >
+              <Phone size={16} color={colors.primary} />
+              <Text style={s.passengerText}>Call {passengerName}</Text>
+            </Pressable>
+          )}
+        </View>
+      </View>
+
+      {/* Safety Center */}
+      <SafetyCenter
+        visible={showSafetyCenter}
+        onClose={() => setShowSafetyCenter(false)}
+      />
+    </View>
+  );
+}

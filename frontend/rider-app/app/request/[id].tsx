@@ -12,13 +12,15 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { SlideToAccept } from "@/components/ui/SlideToAccept";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { CancellationReasonModal } from "@/components/ui/CancellationReasonModal";
 import { radius, spacing } from "@/theme/tokens";
 
 export default function RequestScreen() {
   const { id, kind } = useLocalSearchParams<{ id: string; kind?: string }>();
-  const { session, rides, deliveries, refresh } = useApp();
+  const { session, rides, deliveries, refresh, dismissRequest } = useApp();
   const { colors, typography, stackHeaderOptions } = useTheme();
   const [acting, setActing] = useState(false);
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -96,6 +98,15 @@ export default function RequestScreen() {
     };
   }, []);
 
+  useEffect(() => {
+    if (trip && (trip.status ?? "").toLowerCase() === "cancelled") {
+      requestAlarm.stop();
+      if (trip.id) dismissRequest(trip.id);
+      Alert.alert("Request cancelled", "The passenger has cancelled this request.");
+      router.back();
+    }
+  }, [trip?.status, trip?.id, dismissRequest]);
+
   const markers = useMemo(() => {
     if (!trip) return [];
     return isRide
@@ -132,27 +143,27 @@ export default function RequestScreen() {
     }
   }
 
-  async function decline() {
+  async function decline(reason?: string) {
     requestAlarm.stop();
     if (!trip || !session) return router.back();
     if (acting) return;
     setActing(true);
     try {
-      if (isRide) {
-        await api(`/rides/${trip.id}/status`, {
-          method: "PATCH",
-          token: session.token,
-          body: { nextStatus: "cancelled", actorRole: "rider", actorUserId: session.user.id },
-        });
-      } else {
-        await api(`/deliveries/${trip.id}/status`, {
-          method: "PATCH",
-          token: session.token,
-          body: { nextStatus: "cancelled", actorRole: "rider", actorUserId: session.user.id },
-        });
-      }
+      dismissRequest(trip.id);
+      const endpoint = isRide ? `/rides/${trip.id}/status` : `/deliveries/${trip.id}/status`;
+      await api(endpoint, {
+        method: "PATCH",
+        token: session.token,
+        body: {
+          nextStatus: "cancelled",
+          actorRole: "rider",
+          actorUserId: session.user.id,
+          cancellationReason: reason,
+        },
+      });
       await refresh();
     } finally {
+      setShowDeclineModal(false);
       router.back();
     }
   }
@@ -252,10 +263,20 @@ export default function RequestScreen() {
               disabled={acting}
               label={isRide ? "SLIDE TO ACCEPT RIDE" : "SLIDE TO ACCEPT DELIVERY"}
             />
-            <Button label="Decline Request" variant="ghost" disabled={acting} onPress={decline} fullWidth />
+            <Button label="Decline Request" variant="ghost" disabled={acting} onPress={() => setShowDeclineModal(true)} fullWidth />
           </View>
         </SafeAreaView>
       </View>
+
+      <CancellationReasonModal
+        visible={showDeclineModal}
+        tripType={isRide ? "ride" : "delivery"}
+        loading={acting}
+        onClose={() => setShowDeclineModal(false)}
+        onConfirm={async (reason) => {
+          await decline(reason);
+        }}
+      />
     </>
   );
 }

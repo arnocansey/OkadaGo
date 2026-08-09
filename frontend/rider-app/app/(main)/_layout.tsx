@@ -1,14 +1,13 @@
 import { Tabs } from "expo-router";
-import { Clock, LayoutDashboard, TrendingUp, User, Wallet } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/context/ThemeContext";
 import { useRef, useEffect } from "react";
-import { Animated } from "react-native";
+import { Animated, StyleSheet, View } from "react-native";
 
 export default function MainLayout() {
   const insets = useSafeAreaInsets();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const { t } = useTranslation();
   const opacity = useRef(new Animated.Value(0)).current;
 
@@ -18,27 +17,24 @@ export default function MainLayout() {
 
   return (
     <Animated.View style={{ flex: 1, opacity }}>
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: {
-          backgroundColor: colors.background,
-          borderTopColor: colors.border,
-          height: 56 + insets.bottom,
-          paddingBottom: insets.bottom + 4,
-          paddingTop: 8,
-        },
-        tabBarLabelStyle: { fontSize: 12, fontWeight: "600" },
-      }}
-    >
-      <Tabs.Screen name="index" options={{ title: t("nav.drive"), tabBarIcon: ({ color, size }) => <LayoutDashboard color={color} size={size} /> }} />
-      <Tabs.Screen name="earnings" options={{ title: t("nav.earnings"), tabBarIcon: ({ color, size }) => <TrendingUp color={color} size={size} /> }} />
-      <Tabs.Screen name="trips" options={{ title: t("nav.trips"), tabBarIcon: ({ color, size }) => <Clock color={color} size={size} /> }} />
-      <Tabs.Screen name="wallet" options={{ title: t("nav.wallet"), tabBarIcon: ({ color, size }) => <Wallet color={color} size={size} /> }} />
-      <Tabs.Screen name="profile" options={{ title: t("nav.profile"), tabBarIcon: ({ color, size }) => <User color={color} size={size} /> }} />
-    </Tabs>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarStyle: {
+            display: "none",
+          },
+          tabBarLabelStyle: { fontSize: 12, fontWeight: "600" },
+        }}
+      >
+        <Tabs.Screen name="index" options={{ title: "Home" }} />
+        <Tabs.Screen name="earnings" options={{ title: "Earnings" }} />
+        <Tabs.Screen name="trips" options={{ title: "Trips" }} />
+        <Tabs.Screen name="wallet" options={{ title: "Wallet" }} />
+        <Tabs.Screen name="profile" options={{ title: "Profile" }} />
+        <Tabs.Screen name="achievements" options={{ title: "Achievements" }} />
+        <Tabs.Screen name="demand" options={{ title: "Demand Map" }} />
+        <Tabs.Screen name="performance" options={{ title: "Performance" }} />
+      </Tabs>
     </Animated.View>
   );
 }

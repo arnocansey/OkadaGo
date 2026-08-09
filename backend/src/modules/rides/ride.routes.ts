@@ -62,10 +62,13 @@ export const rideRoutes: FastifyPluginAsync = async (server) => {
   });
 
   server.get("/rides", async (request) => {
-    const query = request.query as { limit?: string; page?: string };
+    const query = request.query as { limit?: string; page?: string; riderId?: string; passengerId?: string; status?: string };
     return rideService.listRides({
       limit: query.limit ? Number(query.limit) || undefined : undefined,
-      page: query.page ? Number(query.page) || undefined : undefined
+      page: query.page ? Number(query.page) || undefined : undefined,
+      riderId: query.riderId,
+      passengerId: query.passengerId,
+      status: query.status
     });
   });
 

@@ -21,8 +21,10 @@ export class RiderWebSocketService {
         this.socket.on("error", (error) => reject(error));
 
         for (const event of [
+          "ride:request",
           "ride:assigned",
           "ride:status-update",
+          "delivery:request",
           "delivery:status-update",
           "rider:online-status",
           "notification",
