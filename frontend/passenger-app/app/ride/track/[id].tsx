@@ -1,9 +1,10 @@
-import { Stack, useLocalSearchParams } from "expo-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Stack, useLocalSearchParams, router } from "expo-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Linking, Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import * as Haptics from "expo-haptics";
 import { Phone, ShieldAlert, Share2, Star } from "lucide-react-native";
 import { AppMap } from "@/components/AppMap";
+import { MatchingScreen } from "@/components/MatchingScreen";
 import {
   TripTimeline,
   stepIndexForStatus,
@@ -165,6 +166,8 @@ export default function TrackScreen() {
 
   const status = trip?.status ?? "searching";
   const isActiveTrip = ACTIVE_STATUSES.includes(status.toLowerCase());
+  const isSearching = status.toLowerCase() === "searching";
+  const [showMatching, setShowMatching] = useState(isSearching);
   const rideTrip = isRide && trip ? (trip as (typeof rides)[0]) : null;
   const riderLat = Number(trip?.rider?.currentLatitude ?? rideTrip?.pickupLatitude ?? 0);
   const riderLon = Number(trip?.rider?.currentLongitude ?? rideTrip?.pickupLongitude ?? 0);
@@ -286,6 +289,38 @@ export default function TrackScreen() {
       return { subLabel: sub || undefined, etaText, timestamp, expandContent };
     });
   }, [currentIndex, steps, subLabels, currentStatusKey, livePreview, stepTimestamps, trip, isRide, colors]);
+
+  const handleMatched = useCallback(() => {
+    setShowMatching(false);
+  }, []);
+
+  const handleCancelMatching = useCallback(() => {
+    Alert.alert("Cancel ride?", "You won't be charged if you cancel now.", [
+      { text: "Keep searching", style: "cancel" },
+      {
+        text: "Cancel",
+        style: "destructive",
+        onPress: async () => {
+          if (!session || !trip) return;
+          try {
+            const endpoint = isRide ? `/rides/${trip.id}/status` : `/deliveries/${trip.id}/status`;
+            await api(endpoint, {
+              method: "PATCH",
+              token: session.token,
+              body: {
+                nextStatus: "cancelled",
+                actorRole: "passenger",
+                actorUserId: session.user.id,
+              },
+            });
+            router.back();
+          } catch {
+            // ignore
+          }
+        },
+      },
+    ]);
+  }, [session, trip, isRide]);
 
   if (!trip) {
     if (loading || restoring) {
@@ -420,14 +455,22 @@ export default function TrackScreen() {
       <Stack.Screen
         options={{
           headerShown: true,
-          title: "Track trip",
+          title: showMatching ? "Finding rider" : "Track trip",
           ...stackHeaderOptions,
         }}
       />
-      <View style={styles.screen}>
-        <AppMap style={styles.map} markers={markers} fitToMarkers />
 
-        <ScrollView contentContainerStyle={styles.body}>
+      {/* Matching Animation Overlay */}
+      {showMatching && isRide ? (
+        <MatchingScreen
+          tripId={trip.id}
+          onCancel={handleCancelMatching}
+          onMatched={handleMatched}
+        />
+      ) : (
+        <View style={styles.screen}>
+          <AppMap style={styles.map} markers={markers} fitToMarkers />
+          <ScrollView contentContainerStyle={styles.body}>
           <Text style={styles.wsStatus}>
             {passengerWs.isConnected() ? "Live updates connected" : "Polling for updates"}
             {livePreview ? ` · ETA ~${Math.round(livePreview.durationMinutes)} min (${livePreview.distanceKm.toFixed(1)} km)` : ""}
@@ -596,6 +639,7 @@ export default function TrackScreen() {
           ) : null}
         </ScrollView>
       </View>
+      )}
 
       <CancellationReasonModal
         visible={showCancelModal}
