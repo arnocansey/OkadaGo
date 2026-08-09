@@ -1,24 +1,22 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Clock, Star, Users } from "lucide-react-native";
+import { Clock, ArrowRight } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/context/ThemeContext";
 import { StandardBike } from "@/components/vehicles/StandardBike";
 import { ExpressBike } from "@/components/vehicles/ExpressBike";
 import { CargoTrike } from "@/components/vehicles/CargoTrike";
-import { OkadaSheet, ThumbButton, AsymmetricCard, StatPill } from "@/components/ui";
 import { space, radii, type, layout } from "@/theme/design-system";
 
-type RideType = "standard" | "express" | "cargo";
+export type RideType = "standard" | "express" | "cargo";
 
 type RideOption = {
   id: RideType;
   label: string;
   subtitle: string;
+  benefit: string;
   fare?: string;
   eta?: string;
-  capacity: string;
-  rating: string;
-  benefits: string[];
 };
 
 type Props = {
@@ -27,253 +25,397 @@ type Props = {
   onSelect: (id: RideType) => void;
   onConfirm: () => void;
   loading?: boolean;
+  currency?: string;
 };
 
+const CATEGORY_TABS: Array<{ id: RideType; label: string }> = [
+  { id: "standard", label: "OkadaGo" },
+  { id: "express", label: "OkadaX" },
+  { id: "cargo", label: "Cargo" },
+];
+
+function getVehicle(id: RideType, size: "featured" | "compact") {
+  const featured = size === "featured";
+  switch (id) {
+    case "standard":
+      return <StandardBike width={featured ? 160 : 56} height={featured ? 112 : 40} />;
+    case "express":
+      return <ExpressBike width={featured ? 160 : 56} height={featured ? 112 : 40} />;
+    case "cargo":
+      return <CargoTrike width={featured ? 180 : 64} height={featured ? 124 : 44} />;
+  }
+}
+
 /**
- * BookingSheet — Motorcycle-first ride selection in a bottom sheet.
+ * BookingSheet — Compact bottom-sheet ride selector.
  *
- * Design principles:
- * - Map stays visible (40% of screen)
- * - Bottom sheet slides up to 60% with ride options
- * - Each motorcycle is the HERO — large illustration, not a tiny icon
- * - Asymmetric card layout — slight left offset for visual interest
- * - Thumb-zone confirm button at bottom
- * - Stat pills show rating, capacity, ETA inline
- *
- * Visual hierarchy:
- * 1. Motorcycle illustration (dominant within each card)
- * 2. Ride name + fare (primary info)
- * 3. Stats row (secondary)
- * 4. Benefits badges (tertiary)
+ * Layout (inside bottom ~50% of screen):
+ * ┌──────────────────────────────────┐
+ * │  ─── handle ───                  │
+ * │                                  │
+ * │  [OkadaGo] [OkadaX] [Cargo]     │  ← horizontal category tabs
+ * │                                  │
+ * │  ┌──────────────────────────┐   │
+ * │  │  🏍️  OkadaGo             │   │  ← featured card (selected ride)
+ * │  │      Standard motorcycle  │   │
+ * │  │  ⏱ 8 min  ●  Affordable  │   │
+ * │  │              GHS 24.50    │   │
+ * │  └──────────────────────────┘   │
+ * │                                  │
+ * │  ── Other options ──────────────│
+ * │  🏍️ OkadaX   ~6 min  Fast  ₵30│  ← compact rows
+ * │  🚚 Cargo    ~10 min  Load ₵22│
+ * │                                  │
+ * │  ┌──────────────────────────┐   │
+ * │  │     Continue  →          │   │  ← fixed CTA
+ * │  └──────────────────────────┘   │
+ * └──────────────────────────────────┘
  */
 export function BookingSheet({ options, selected, onSelect, onConfirm, loading }: Props) {
+  const insets = useSafeAreaInsets();
   const { colors, isDark } = useTheme();
+  const scrollRef = useRef<ScrollView>(null);
+
+  const featured = options.find((o) => o.id === selected);
+  const alternatives = options.filter((o) => o.id !== selected);
 
   const s = useMemo(
     () =>
       StyleSheet.create({
-        header: {
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "baseline",
+        sheet: {
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          maxHeight: "55%",
+          backgroundColor: isDark ? colors.surface : "#FFFFFF",
+          borderTopLeftRadius: radii.sheet,
+          borderTopRightRadius: radii.sheet,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -6 },
+          shadowOpacity: isDark ? 0.5 : 0.12,
+          shadowRadius: 20,
+          elevation: 12,
+          paddingBottom: insets.bottom || space[4],
+        },
+        handle: {
+          alignSelf: "center",
+          width: 36,
+          height: 4,
+          borderRadius: 2,
+          backgroundColor: isDark ? colors.borderStrong : "#D1D5DB",
+          marginTop: space[3],
           marginBottom: space[2],
         },
-        title: {
-          ...type.headline,
-          color: colors.text,
+        inner: {
+          flex: 1,
+          paddingHorizontal: layout.sheetPadding,
         },
-        subtitle: {
-          ...type.caption,
-          color: colors.textMuted,
+
+        /* ─── Category Tabs ─────────────────────────────── */
+        tabRow: {
+          flexDirection: "row",
+          gap: space[2],
+          marginBottom: space[3],
         },
-        rideList: {
-          gap: space[3],
+        tab: {
+          paddingHorizontal: space[4],
+          paddingVertical: space[2],
+          borderRadius: radii.pill,
+          backgroundColor: isDark ? colors.surfaceOverlay : "#F1F3F5",
         },
-        rideCard: {
-          backgroundColor: isDark ? colors.surfaceRaised : "#FFFFFF",
+        tabActive: {
+          backgroundColor: colors.primary,
+        },
+        tabText: {
+          ...type.captionEmphasis,
+          color: isDark ? colors.textSecondary : "#495057",
+        },
+        tabTextActive: {
+          color: "#000000",
+        },
+
+        /* ─── Featured Card ─────────────────────────────── */
+        featuredCard: {
+          backgroundColor: isDark ? colors.surfaceRaised : "#FAFAFA",
           borderRadius: radii.card,
           borderWidth: 2,
-          borderColor: "transparent",
-          overflow: "hidden",
-        },
-        rideCardSelected: {
           borderColor: colors.primary,
+          padding: space[4],
+          marginBottom: space[3],
         },
-        vehicleHero: {
+        featuredTop: {
+          flexDirection: "row",
           alignItems: "center",
-          justifyContent: "center",
-          paddingTop: space[5],
-          paddingBottom: space[3],
-          backgroundColor: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.01)",
-        },
-        rideInfo: {
-          paddingHorizontal: space[5],
-          paddingBottom: space[5],
           gap: space[3],
         },
-        rideHeader: {
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
+        featuredVehicle: {
+          width: 72,
+          height: 56,
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: radii.md,
+          backgroundColor: isDark ? "rgba(250,204,21,0.08)" : "rgba(250,204,21,0.06)",
         },
-        rideNameGroup: { flex: 1 },
-        rideName: {
+        featuredInfo: {
+          flex: 1,
+        },
+        featuredName: {
           ...type.title,
           color: colors.text,
         },
-        rideSubtitle: {
+        featuredSubtitle: {
           ...type.caption,
           color: colors.textMuted,
-          marginTop: 2,
+          marginTop: 1,
         },
-        fareGroup: {
+        featuredFareWrap: {
           alignItems: "flex-end",
         },
-        fare: {
+        featuredFare: {
           ...type.title,
           color: colors.primary,
         },
-        fareLabel: {
+        featuredFareLabel: {
           ...type.micro,
           color: colors.textMuted,
         },
-        statsRow: {
+        featuredMeta: {
           flexDirection: "row",
+          alignItems: "center",
           gap: space[3],
+          marginTop: space[3],
         },
-        benefitsRow: {
+        metaChip: {
           flexDirection: "row",
-          flexWrap: "wrap",
-          gap: space[2],
+          alignItems: "center",
+          gap: space[1],
+          paddingHorizontal: space[2],
+          paddingVertical: 4,
+          borderRadius: radii.sm,
+          backgroundColor: isDark ? colors.surfaceOverlay : "#F1F3F5",
         },
-        benefitBadge: {
-          paddingHorizontal: space[3],
-          paddingVertical: space[1],
-          borderRadius: radii.pill,
-          backgroundColor: isDark ? "rgba(250, 204, 21, 0.08)" : "rgba(250, 204, 21, 0.06)",
-        },
-        benefitText: {
+        metaChipText: {
           ...type.micro,
-          color: colors.primary,
+          color: colors.textSecondary,
         },
-        confirmWrap: {
-          paddingTop: space[3],
+
+        /* ─── Section Divider ───────────────────────────── */
+        dividerRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: space[3],
+          marginBottom: space[2],
         },
-        selectedIndicator: {
-          position: "absolute",
-          top: space[3],
-          right: space[3],
-          width: 28,
-          height: 28,
-          borderRadius: 14,
-          backgroundColor: colors.primary,
+        dividerLine: {
+          flex: 1,
+          height: 1,
+          backgroundColor: colors.border,
+        },
+        dividerText: {
+          ...type.micro,
+          color: colors.textMuted,
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
+        },
+
+        /* ─── Compact Alternative Rows ──────────────────── */
+        altRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          paddingVertical: space[3],
+          paddingHorizontal: space[3],
+          borderRadius: radii.md,
+          backgroundColor: isDark ? colors.surfaceOverlay : "#F8F9FA",
+          marginBottom: space[2],
+          borderWidth: 1.5,
+          borderColor: "transparent",
+        },
+        altRowActive: {
+          borderColor: colors.primary,
+          backgroundColor: isDark ? "rgba(250,204,21,0.06)" : "rgba(250,204,21,0.04)",
+        },
+        altVehicle: {
+          width: 52,
+          height: 36,
           alignItems: "center",
           justifyContent: "center",
-          zIndex: 2,
+          marginRight: space[3],
         },
-        checkText: {
+        altInfo: {
+          flex: 1,
+        },
+        altName: {
           ...type.bodyEmphasis,
-          color: colors.textOnPrimary,
+          color: colors.text,
+        },
+        altBenefit: {
+          ...type.micro,
+          color: colors.textMuted,
+          marginTop: 1,
+        },
+        altRight: {
+          alignItems: "flex-end",
+          gap: 2,
+        },
+        altEta: {
+          ...type.micro,
+          color: colors.textSecondary,
+        },
+        altFare: {
+          ...type.bodyEmphasis,
+          color: colors.text,
+        },
+
+        /* ─── Continue CTA ──────────────────────────────── */
+        ctaWrap: {
+          paddingHorizontal: layout.sheetPadding,
+          paddingTop: space[3],
+          paddingBottom: insets.bottom ? 0 : space[3],
+        },
+        ctaBtn: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: space[2],
+          height: 56,
+          borderRadius: radii.lg,
+          backgroundColor: colors.primary,
+          shadowColor: colors.primary,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 12,
+          elevation: 8,
+        },
+        ctaLabel: {
+          ...type.bodyEmphasis,
+          color: "#000000",
+        },
+        ctaDisabled: {
+          opacity: 0.5,
         },
       }),
-    [colors, isDark],
+    [colors, isDark, insets.bottom],
   );
 
-  function getVehicle(type: RideType) {
-    switch (type) {
-      case "standard":
-        return <StandardBike width={180} height={126} />;
-      case "express":
-        return <ExpressBike width={180} height={126} />;
-      case "cargo":
-        return <CargoTrike width={200} height={136} />;
-    }
-  }
-
   return (
-    <OkadaSheet style={{ maxHeight: "60%" }} contentStyle={{ gap: space[4] }}>
-      {/* Header */}
-      <View style={s.header}>
-        <Text style={s.title}>Choose your ride</Text>
-        <Text style={s.subtitle}>3 options available</Text>
-      </View>
+    <View style={s.sheet}>
+      <View style={s.handle} />
 
-      {/* Ride Options — Scrollable motorcycle cards */}
       <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: space[3], paddingRight: space[4] }}
-        decelerationRate="fast"
-        snapToInterval={280}
+        ref={scrollRef}
+        style={s.inner}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        {options.map((option) => {
-          const isActive = selected === option.id;
-          return (
-            <Pressable
-              key={option.id}
-              style={[s.rideCard, isActive && s.rideCardSelected]}
-              onPress={() => onSelect(option.id)}
-              accessibilityRole="radio"
-              accessibilityState={{ checked: isActive }}
-            >
-              {isActive ? (
-                <View style={s.selectedIndicator}>
-                  <Text style={s.checkText}>✓</Text>
+        {/* Category Tabs */}
+        <View style={s.tabRow}>
+          {CATEGORY_TABS.map((tab) => {
+            const isActive = selected === tab.id;
+            return (
+              <Pressable
+                key={tab.id}
+                style={[s.tab, isActive && s.tabActive]}
+                onPress={() => onSelect(tab.id)}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: isActive }}
+              >
+                <Text style={[s.tabText, isActive && s.tabTextActive]}>
+                  {tab.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        {/* Featured Card — Selected Ride */}
+        {featured ? (
+          <Pressable
+            style={s.featuredCard}
+            onPress={() => onSelect(featured.id)}
+            accessibilityRole="radio"
+            accessibilityState={{ checked: true }}
+          >
+            <View style={s.featuredTop}>
+              <View style={s.featuredVehicle}>
+                {getVehicle(featured.id, "compact")}
+              </View>
+              <View style={s.featuredInfo}>
+                <Text style={s.featuredName}>{featured.label}</Text>
+                <Text style={s.featuredSubtitle}>{featured.subtitle}</Text>
+              </View>
+              {featured.fare ? (
+                <View style={s.featuredFareWrap}>
+                  <Text style={s.featuredFare}>{featured.fare}</Text>
+                  <Text style={s.featuredFareLabel}>estimated</Text>
                 </View>
               ) : null}
-
-              {/* Hero: Motorcycle illustration */}
-              <View style={s.vehicleHero}>
-                {getVehicle(option.id)}
-              </View>
-
-              {/* Info section */}
-              <View style={s.rideInfo}>
-                <View style={s.rideHeader}>
-                  <View style={s.rideNameGroup}>
-                    <Text style={s.rideName}>{option.label}</Text>
-                    <Text style={s.rideSubtitle}>{option.subtitle}</Text>
-                  </View>
-                  {option.fare ? (
-                    <View style={s.fareGroup}>
-                      <Text style={s.fare}>{option.fare}</Text>
-                      <Text style={s.fareLabel}>estimated</Text>
-                    </View>
-                  ) : null}
+            </View>
+            <View style={s.featuredMeta}>
+              {featured.eta ? (
+                <View style={s.metaChip}>
+                  <Clock size={12} color="#4CD964" />
+                  <Text style={s.metaChipText}>{featured.eta}</Text>
                 </View>
-
-                {/* Stats row */}
-                <View style={s.statsRow}>
-                  {option.eta ? (
-                    <StatPill
-                      icon={<Clock size={14} color="#4CD964" />}
-                      value={option.eta}
-                      label="ETA"
-                      tint="green"
-                      compact
-                    />
-                  ) : null}
-                  <StatPill
-                    icon={<Users size={14} color="#0A84FF" />}
-                    value={option.capacity}
-                    label="Capacity"
-                    tint="blue"
-                    compact
-                  />
-                  <StatPill
-                    icon={<Star size={14} color="#FFD700" />}
-                    value={option.rating}
-                    label="Rating"
-                    tint="gold"
-                    compact
-                  />
-                </View>
-
-                {/* Benefits */}
-                {option.benefits.length > 0 ? (
-                  <View style={s.benefitsRow}>
-                    {option.benefits.map((b) => (
-                      <View key={b} style={s.benefitBadge}>
-                        <Text style={s.benefitText}>{b}</Text>
-                      </View>
-                    ))}
-                  </View>
-                ) : null}
+              ) : null}
+              <View style={s.metaChip}>
+                <Text style={s.metaChipText}>{featured.benefit}</Text>
               </View>
-            </Pressable>
-          );
-        })}
+            </View>
+          </Pressable>
+        ) : null}
+
+        {/* Other Options */}
+        {alternatives.length > 0 ? (
+          <>
+            <View style={s.dividerRow}>
+              <View style={s.dividerLine} />
+              <Text style={s.dividerText}>Other options</Text>
+              <View style={s.dividerLine} />
+            </View>
+
+            {alternatives.map((alt) => (
+              <Pressable
+                key={alt.id}
+                style={s.altRow}
+                onPress={() => onSelect(alt.id)}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: false }}
+              >
+                <View style={s.altVehicle}>
+                  {getVehicle(alt.id, "compact")}
+                </View>
+                <View style={s.altInfo}>
+                  <Text style={s.altName}>{alt.label}</Text>
+                  <Text style={s.altBenefit}>{alt.benefit}</Text>
+                </View>
+                <View style={s.altRight}>
+                  {alt.eta ? <Text style={s.altEta}>{alt.eta}</Text> : null}
+                  {alt.fare ? <Text style={s.altFare}>{alt.fare}</Text> : null}
+                </View>
+              </Pressable>
+            ))}
+          </>
+        ) : null}
+
+        {/* Spacer for scroll content */}
+        <View style={{ height: space[2] }} />
       </ScrollView>
 
-      {/* Confirm CTA — Thumb zone */}
-      <View style={s.confirmWrap}>
-        <ThumbButton
-          label="Confirm ride"
+      {/* Fixed Continue CTA */}
+      <View style={s.ctaWrap}>
+        <Pressable
+          style={[s.ctaBtn, loading && s.ctaDisabled]}
           onPress={onConfirm}
-          loading={loading}
-          icon={<Text style={{ fontSize: 18 }}>🏍️</Text>}
-        />
+          disabled={loading}
+          accessibilityRole="button"
+        >
+          <Text style={s.ctaLabel}>
+            {loading ? "Finding rider..." : "Continue"}
+          </Text>
+          {!loading && <ArrowRight size={18} color="#000000" />}
+        </Pressable>
       </View>
-    </OkadaSheet>
+    </View>
   );
 }

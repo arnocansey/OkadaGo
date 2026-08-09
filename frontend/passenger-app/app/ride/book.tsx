@@ -15,10 +15,8 @@ import { AppMap } from "@/components/AppMap";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { Input } from "@/components/ui/Input";
-import { RideOptionCard } from "@/components/RideOptionCard";
-import { StandardBike } from "@/components/vehicles/StandardBike";
-import { ExpressBike } from "@/components/vehicles/ExpressBike";
-import { CargoTrike } from "@/components/vehicles/CargoTrike";
+import { BookingSheet } from "@/components/BookingSheet";
+import type { RideType as BookingRideType } from "@/components/BookingSheet";
 import { radius, spacing } from "@/theme/tokens";
 import type { LocationResult, PaymentMethod, PlaceSuggestion, RoutePreview, SavedPlace, ServiceZone } from "@/types";
 
@@ -176,7 +174,7 @@ export default function BookRideScreen() {
         },
         searchBannerText: { ...typography.captionMedium, color: colors.primary },
         formSection: { flex: 1 },
-        content: { padding: spacing.xl, gap: spacing.lg, paddingBottom: spacing.xxxl },
+        content: { padding: spacing.xl, gap: spacing.lg, paddingBottom: 400 },
         fieldStack: { gap: spacing.md },
         pickupRow: { flexDirection: "row", alignItems: "flex-end", gap: spacing.sm },
         pickupInput: { flex: 1 },
@@ -857,40 +855,7 @@ export default function BookRideScreen() {
               <Input label={t("book.recipientPhone")} value={recipientPhone} onChangeText={setRecipientPhone} keyboardType="phone-pad" />
               <Input label={t("book.packageDetails")} value={packageDesc} onChangeText={setPackageDesc} placeholder={t("book.packagePlaceholder")} />
             </View>
-          ) : (
-            <View style={{ gap: spacing.md }}>
-              <Text style={styles.sectionLabel}>Choose your ride</Text>
-              {rideTypeOptions.map((option) => {
-                const active = rideType === option.id;
-                const fare = fareByType[option.id];
-                const eta = estimate
-                  ? `~${Math.round(estimate.durationMinutes * (option.id === "express" ? 0.8 : option.id === "cargo" ? 1.2 : 1))} min`
-                  : undefined;
-                return (
-                  <RideOptionCard
-                    key={option.id}
-                    label={option.label}
-                    subtitle={option.sub}
-                    fare={fare ? money(fare, zones[0]?.currency) : undefined}
-                    eta={eta}
-                    capacity={option.capacity}
-                    benefits={option.benefits}
-                    selected={active}
-                    onPress={() => setRideType(option.id)}
-                    vehicle={
-                      option.id === "standard" ? (
-                        <StandardBike width={180} height={126} />
-                      ) : option.id === "express" ? (
-                        <ExpressBike width={180} height={126} />
-                      ) : (
-                        <CargoTrike width={200} height={136} />
-                      )
-                    }
-                  />
-                );
-              })}
-            </View>
-          )}
+          ) : null}
 
           {!isDelivery ? (
             <View>
@@ -961,15 +926,37 @@ export default function BookRideScreen() {
             ) : null}
 
             {error ? <Text style={styles.error}>{error}</Text> : null}
-            <Button
-              label={isDelivery ? t("book.requestDelivery") : scheduledForDate ? t("book.scheduleRide") : t("book.requestRide")}
-              loading={loading}
-              onPress={submit}
-              fullWidth
-              disabled={!destination.trim() || !hasPickupCoords || pickupLocationLoading || pickupResolving}
-            />
+            {isDelivery ? (
+              <Button
+                label={t("book.requestDelivery")}
+                loading={loading}
+                onPress={submit}
+                fullWidth
+                disabled={!destination.trim() || !hasPickupCoords || pickupLocationLoading || pickupResolving}
+              />
+            ) : null}
           </View>
         </ScrollView>
+
+        {/* Ride mode: BookingSheet overlay at bottom of screen */}
+        {!isDelivery ? (
+          <BookingSheet
+            options={rideTypeOptions.map((option) => ({
+              id: option.id as BookingRideType,
+              label: option.label,
+              subtitle: option.sub,
+              benefit: option.benefits[0] ?? "",
+              fare: fareByType[option.id] ? money(fareByType[option.id], zones[0]?.currency) : undefined,
+              eta: estimate
+                ? `~${Math.round(estimate.durationMinutes * (option.id === "express" ? 0.8 : option.id === "cargo" ? 1.2 : 1))} min`
+                : undefined,
+            }))}
+            selected={rideType}
+            onSelect={(id) => setRideType(id)}
+            onConfirm={submit}
+            loading={loading}
+          />
+        ) : null}
         </SafeAreaView>
       </KeyboardAvoidingView>
     </>
