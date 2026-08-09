@@ -18,7 +18,7 @@ import { useUserLocation } from "@/hooks/useUserLocation";
 import { ApiError, api, money } from "@/lib/api";
 import { radius, shadows, spacing } from "@/theme/tokens";
 
-const RIDER_MIN_ONLINE_BALANCE = 30;
+const RIDER_MIN_ONLINE_BALANCE = 0;
 
 export default function DashboardScreen() {
   const { t } = useTranslation();
@@ -83,7 +83,7 @@ export default function DashboardScreen() {
     const settlementWallet =
       wallets.find((w) => (w.type ?? "").toLowerCase() === "rider_settlement") ?? wallets[0];
     const balance = Number(settlementWallet?.availableBalance ?? 0);
-    if (balance < RIDER_MIN_ONLINE_BALANCE) {
+    if (RIDER_MIN_ONLINE_BALANCE > 0 && balance < RIDER_MIN_ONLINE_BALANCE) {
       Alert.alert(
         "Insufficient Balance",
         `Keep at least GH₵ ${RIDER_MIN_ONLINE_BALANCE} in your wallet, then top up via MoMo/Paystack to go online.`,
@@ -314,7 +314,7 @@ export default function DashboardScreen() {
         </View>
 
         <MapBottomSheet>
-          {!online && Number(wallet?.availableBalance ?? 0) < RIDER_MIN_ONLINE_BALANCE ? (
+          {RIDER_MIN_ONLINE_BALANCE > 0 && !online && Number(wallet?.availableBalance ?? 0) < RIDER_MIN_ONLINE_BALANCE ? (
             <Pressable style={styles.floatBanner} onPress={() => router.push("/(main)/wallet")}>
               <Text style={styles.floatTitle}>Wallet float needed</Text>
               <Text style={styles.floatBody}>

@@ -15,6 +15,21 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="apple-mobile-web-app-title" content="Okada Rider" />
         <link rel="manifest" href="/manifest.json" />
         <ScrollViewStyleReset />
+        <style dangerouslySetInnerHTML={{ __html: `
+          html, body, #root {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #090D16;
+            -webkit-tap-highlight-color: transparent;
+          }
+          body {
+            user-select: none;
+            -webkit-font-smoothing: antialiased;
+          }
+        ` }} />
         <script
           dangerouslySetInnerHTML={{
             __html: `

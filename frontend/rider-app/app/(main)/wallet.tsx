@@ -28,13 +28,13 @@ import type { PayoutAccount } from "@/types";
 
 const RIDER_DEFICIT_WARNING_THRESHOLD = 100;
 const RIDER_DEFICIT_OFFLINE_THRESHOLD = 200;
-const RIDER_MIN_ONLINE_BALANCE = 30;
+const RIDER_MIN_ONLINE_BALANCE = 0;
 
 export default function WalletScreen() {
   const { session, wallets, transactions, payouts, loading, refresh, setMessage } = useApp();
   const { colors, typography } = useTheme();
   const { showToast } = useToast();
-  const [topUpAmount, setTopUpAmount] = useState(String(RIDER_MIN_ONLINE_BALANCE));
+  const [topUpAmount, setTopUpAmount] = useState("10");
   const [payoutAmount, setPayoutAmount] = useState("");
   const [destination, setDestination] = useState("");
   const [payoutAccounts, setPayoutAccounts] = useState<PayoutAccount[]>([]);
@@ -53,7 +53,7 @@ export default function WalletScreen() {
     wallets.find((w) => (w.type ?? "").toLowerCase() === "rider_settlement") ?? wallets[0];
   const availableBalance = Number(wallet?.availableBalance ?? 0);
   const deficit = availableBalance < 0 ? Math.abs(availableBalance) : 0;
-  const needsFloat = availableBalance < RIDER_MIN_ONLINE_BALANCE;
+  const needsFloat = RIDER_MIN_ONLINE_BALANCE > 0 && availableBalance < RIDER_MIN_ONLINE_BALANCE;
 
   useEffect(() => {
     if (!session?.token) return;
@@ -114,10 +114,10 @@ export default function WalletScreen() {
   async function topUp() {
     const amount = Number(topUpAmount);
     if (!session?.token || !wallet) return;
-    if (!Number.isFinite(amount) || amount < RIDER_MIN_ONLINE_BALANCE) {
+    if (!Number.isFinite(amount) || amount <= 0) {
       Alert.alert(
         "Invalid amount",
-        `Enter at least GH₵ ${RIDER_MIN_ONLINE_BALANCE} to meet the online float requirement.`,
+        "Enter a valid top-up amount greater than GH₵ 0.",
       );
       return;
     }
@@ -140,7 +140,7 @@ export default function WalletScreen() {
       const detail = e instanceof Error ? e.message : "Could not start Paystack checkout.";
       Alert.alert(
         "Paystack top-up failed",
-        `${detail}\n\nCheck your connection and MoMo number, then try again. You need at least GH₵ ${RIDER_MIN_ONLINE_BALANCE} float to go online.`,
+        `${detail}\n\nCheck your connection and MoMo number, then try again.`,
         [{ text: "OK" }],
       );
     } finally {
@@ -257,7 +257,7 @@ export default function WalletScreen() {
           <BalanceHero
             label="Available balance"
             amount={money(wallet?.availableBalance, wallet?.currency ?? "GHS")}
-            hint={`Online float requirement: GH₵ ${RIDER_MIN_ONLINE_BALANCE}`}
+            hint="Platform fee: 10% per completed ride"
           />
 
           <Card style={styles.form}>
@@ -267,7 +267,7 @@ export default function WalletScreen() {
               value={topUpAmount}
               onChangeText={setTopUpAmount}
               keyboardType="decimal-pad"
-              placeholder={String(RIDER_MIN_ONLINE_BALANCE)}
+              placeholder="10"
             />
             <Button
               label="Top Up Now"

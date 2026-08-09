@@ -60,8 +60,8 @@ const startActors = new Set(["rider", "admin", "dispatcher"]);
 const completionActors = new Set(["rider", "admin", "dispatcher", "system"]);
 const riderDeficitWarningThreshold = 100;
 const riderDeficitOfflineThreshold = 200;
-/** Minimum positive settlement-wallet balance required before a rider can go online. */
-const riderMinOnlineBalance = 30;
+/** Minimum positive settlement-wallet balance required before a rider can go online (0 GHS under 10% commission model). */
+const riderMinOnlineBalance = 0;
 
 /**
  * Rides scheduled further out than this window are held as SCHEDULED (no matching yet).
@@ -397,7 +397,7 @@ export class RideService {
         );
       }
 
-      if (balance < riderMinOnlineBalance) {
+      if (riderMinOnlineBalance > 0 && balance < riderMinOnlineBalance) {
         await prisma.riderProfile.update({
           where: {
             id: riderProfileId
@@ -501,7 +501,7 @@ export class RideService {
           pickupLongitude: input.pickup.longitude,
           requiredVehicleType
         });
-    const commissionPercent = selectedRider ? Number(selectedRider.commissionPercent) : 12;
+    const commissionPercent = selectedRider ? Number(selectedRider.commissionPercent) : 10;
 
     let promoDiscount = input.promoDiscount;
     let promoCodeId: string | undefined;

@@ -11,6 +11,8 @@ import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 import { ToastProvider } from "@/context/ToastContext";
 import "@/i18n";
 
+import { WebContainer } from "@/components/WebContainer";
+
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 function RootNavigator() {
@@ -22,11 +24,11 @@ function RootNavigator() {
   }
 
   return (
-    <>
+    <WebContainer>
       <StatusBar style={isDark ? "light" : "dark"} />
       <Stack screenOptions={{ headerShown: false, ...stackHeaderOptions }} />
       {!splashDone ? <AnimatedSplash onFinish={() => setSplashDone(true)} /> : null}
-    </>
+    </WebContainer>
   );
 }
 

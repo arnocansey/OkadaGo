@@ -334,7 +334,7 @@ export class DeliveryService {
       minimumFare: Number(serviceZone.minimumFare),
       cancellationFee: Number(serviceZone.cancellationFee),
       waitingFeePerMinute: Number(serviceZone.waitingFeePerMin),
-      commissionPercent: 12,
+      commissionPercent: 10,
       surgeMultiplier: 1,
       zoneFee: 0,
       promoDiscount: 0,
@@ -434,7 +434,7 @@ export class DeliveryService {
     const selectedRider = selectedCandidate
       ? riders.find((rider) => rider.id === selectedCandidate.riderId)
       : undefined;
-    const commissionPercent = selectedRider ? Number(selectedRider.commissionPercent) : 12;
+    const commissionPercent = selectedRider ? Number(selectedRider.commissionPercent) : 10;
 
     const pricing = this.fareService.compute({
       countryCode: serviceZone.countryCode as "GH" | "NG",

@@ -331,7 +331,7 @@ model RiderProfile {
   acceptanceRate    Decimal             @default(0) @db.Decimal(5, 2)
   cancellationRate  Decimal             @default(0) @db.Decimal(5, 2)
   completedTrips    Int                 @default(0)
-  commissionPercent Decimal             @default(12) @db.Decimal(5, 2)
+  commissionPercent Decimal             @default(10) @db.Decimal(5, 2)
   bio               String?             @db.VarChar(500)
   approvedAt         DateTime?
   suspendedAt        DateTime?

@@ -23,7 +23,7 @@ export const pricingInputSchema = z.object({
   minimumFare: z.number().nonnegative(),
   cancellationFee: z.number().nonnegative().default(0),
   waitingFeePerMinute: z.number().nonnegative().default(0),
-  commissionPercent: z.number().min(0).max(100),
+  commissionPercent: z.number().min(0).max(100).default(10),
   surgeMultiplier: z.number().min(1).default(1),
   zoneFee: z.number().nonnegative().default(0),
   promoDiscount: z.number().nonnegative().default(0),
