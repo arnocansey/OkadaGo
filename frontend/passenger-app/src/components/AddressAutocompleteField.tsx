@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import {
   ActivityIndicator,
+  Keyboard,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -121,7 +122,10 @@ export function AddressAutocompleteField({
                     styles.suggestionRow,
                     index === suggestions.length - 1 ? styles.suggestionRowLast : null,
                   ]}
-                  onPress={() => onSelectSuggestion(suggestion)}
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    onSelectSuggestion(suggestion);
+                  }}
                 >
                   <MapPin size={16} color={colors.primary} style={styles.pin} />
                   <View style={styles.suggestionBody}>

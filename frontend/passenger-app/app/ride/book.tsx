@@ -1,6 +1,6 @@
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Bike, Clock, LocateFixed, MapPinned, Navigation, Plus, Trash2, Truck, Zap } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
@@ -279,6 +279,7 @@ export default function BookRideScreen() {
   });
 
   async function choosePickupSuggestion(suggestion: PlaceSuggestion) {
+    Keyboard.dismiss();
     try {
       const resolved = await pickupAutocomplete.resolveSuggestion(suggestion);
       selectPickupAddress(resolved.address, resolved.latitude, resolved.longitude);
@@ -290,6 +291,7 @@ export default function BookRideScreen() {
   }
 
   async function chooseDestinationSuggestion(suggestion: PlaceSuggestion) {
+    Keyboard.dismiss();
     try {
       const resolved = await destinationAutocomplete.resolveSuggestion(suggestion);
       setDestination(resolved.address);
