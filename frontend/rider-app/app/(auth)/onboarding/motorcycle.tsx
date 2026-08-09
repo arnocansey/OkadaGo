@@ -134,6 +134,7 @@ export default function OnboardingMotorcycleScreen() {
 
       const body = {
         fullName: onboarding.fullName,
+        email: onboarding.email || undefined,
         phoneCountryCode: onboarding.phoneCountryCode ?? "+233",
         phoneLocal: onboarding.phoneLocal ?? "",
         password: onboarding.password,

@@ -9,11 +9,13 @@ import {
   adminTotpCodeSchema,
   adminUserParamsSchema,
   avatarUploadSchema,
+  forgotPasswordSchema,
   otpRequestSchema,
   otpVerifySchema,
   passengerLoginSchema,
   passengerSettingsUpdateSchema,
   passengerSignupSchema,
+  resetPasswordSchema,
   riderLoginSchema,
   riderSettingsUpdateSchema,
   riderSignupSchema,
@@ -178,5 +180,15 @@ export const authRoutes: FastifyPluginAsync = async (server) => {
     const token = extractBearerToken(request.headers.authorization);
     const input = parseBody(request, avatarUploadSchema);
     return authService.uploadAvatar(token, input);
+  });
+
+  server.post("/auth/forgot-password", async (request) => {
+    const input = parseBody(request, forgotPasswordSchema);
+    return authService.forgotPassword(input);
+  });
+
+  server.post("/auth/reset-password", async (request) => {
+    const input = parseBody(request, resetPasswordSchema);
+    return authService.resetPassword(input);
   });
 };

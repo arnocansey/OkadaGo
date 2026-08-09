@@ -31,7 +31,7 @@ import type {
   riderSignupSchema,
   riderVehicleUpdateSchema
 } from "./auth.schemas.js";
-import type { avatarUploadSchema } from "./auth.schemas.js";
+import type { avatarUploadSchema, forgotPasswordSchema, resetPasswordSchema } from "./auth.schemas.js";
 import type { z } from "zod";
 import { hasSmsConfig, smsService } from "../notifications/sms.service.js";
 import { makeOtpCode, storeOtp, verifyStoredOtp } from "./otp-store.js";
@@ -1475,5 +1475,66 @@ export class AuthService {
       completedTrips: user.riderProfile?.completedTrips ?? 0,
       jobPreference: user.riderProfile?.jobPreference.toLowerCase() ?? null
     };
+  }
+
+  async forgotPassword(input: z.infer<typeof forgotPasswordSchema>) {
+    const user = await prisma.user.findFirst({
+      where: { phoneE164: input.phoneE164, deletedAt: null },
+      select: { id: true }
+    });
+
+    if (!user) {
+      return { sent: true, expiresInSeconds: 600 };
+    }
+
+    const code = makeOtpCode();
+    storeOtp(input.phoneE164, code, user.id);
+
+    if (appConfig.nodeEnv === "production") {
+      if (!hasSmsConfig()) {
+        throw new AppError("SMS delivery is not configured", 503, "SMS_NOT_CONFIGURED");
+      }
+      await smsService.sendOtpSms({ to: input.phoneE164, code });
+    } else {
+      console.info(`[forgot-password] ${input.phoneE164} -> ${code}`);
+    }
+
+    return {
+      sent: true,
+      expiresInSeconds: 600,
+      ...(appConfig.nodeEnv !== "production" ? { debugCode: code } : {})
+    };
+  }
+
+  async resetPassword(input: z.infer<typeof resetPasswordSchema>) {
+    const entry = verifyStoredOtp(input.phoneE164, input.code);
+    if (!entry) {
+      throw new AppError("Invalid or expired verification code", 400, "OTP_INVALID");
+    }
+
+    const user = await prisma.user.findFirst({
+      where: { phoneE164: input.phoneE164, deletedAt: null }
+    });
+
+    if (!user) {
+      throw new AppError("Account not found", 404, "ACCOUNT_NOT_FOUND");
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash: await hashPassword(input.newPassword) }
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        actorUserId: user.id,
+        actorRole: user.role as any,
+        action: "PASSWORD_RESET",
+        entityType: "User",
+        entityId: user.id
+      }
+    });
+
+    return { reset: true };
   }
 }

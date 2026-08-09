@@ -1,9 +1,11 @@
 import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
-import { ScrollView } from "react-native";
+import { ScrollView, View, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NavigationHeader } from "@/components/ScreenHeader";
 import { EarningsDashboard } from "@/components/EarningsDashboard";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ErrorCard } from "@/components/ui/ErrorCard";
 import { api } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -44,18 +46,21 @@ export default function EarningsScreen() {
   const { colors } = useTheme();
   const [earnings, setEarnings] = useState<EarningsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchEarnings() {
       if (!session?.token) return;
+      setLoading(true);
+      setError(null);
 
       try {
         const data = await api<EarningsData>("/rider/earnings", {
           token: session.token,
         });
         setEarnings(data);
-      } catch {
-        // API endpoint not available — leave earnings as null
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Could not load earnings.");
         setEarnings(null);
       } finally {
         setLoading(false);
@@ -77,11 +82,22 @@ export default function EarningsScreen() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <EarningsDashboard
-          data={earnings ?? undefined}
-          loading={loading}
-          currency="GH₵"
-        />
+        {error ? (
+          <ErrorCard
+            message={error}
+            onRetry={() => {
+              setLoading(true);
+              setError(null);
+            }}
+            onDismiss={() => setError(null)}
+          />
+        ) : (
+          <EarningsDashboard
+            data={earnings ?? undefined}
+            loading={loading}
+            currency="GH₵"
+          />
+        )}
       </ScrollView>
     </>
   );

@@ -43,12 +43,16 @@ export default function LoginScreen() {
         chipRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
         vehicleRow: { flexDirection: "row", gap: spacing.md },
         vehicleField: { flex: 1 },
+        onboardingCta: { alignItems: "center", paddingVertical: spacing.md, gap: spacing.xs },
+        onboardingCtaText: { ...typography.caption, color: colors.textSecondary },
+        onboardingCtaLink: { ...typography.bodyMedium, color: colors.primary },
       }),
     [colors, typography],
   );
   const [mode, setMode] = useState<AuthMode>("login");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [vehicleType, setVehicleType] = useState<VehicleTypeOption>("okada");
   const [jobPreference, setJobPreference] = useState<JobPreferenceOption>("both");
@@ -82,6 +86,7 @@ export default function LoginScreen() {
           ? { phoneE164: phoneData.phoneE164, password }
           : {
               fullName,
+              email: email.trim() || undefined,
               phoneCountryCode: phoneData.phoneCountryCode,
               phoneLocal: phoneData.phoneLocal,
               password,
@@ -135,12 +140,33 @@ export default function LoginScreen() {
             ))}
           </View>
 
+          {mode === "signup" ? (
+            <Pressable
+              onPress={() => router.push("/(auth)/onboarding/welcome")}
+              style={styles.onboardingCta}
+            >
+              <Text style={styles.onboardingCtaText}>
+                New rider? Complete the full onboarding process
+              </Text>
+              <Text style={styles.onboardingCtaLink}>Start onboarding →</Text>
+            </Pressable>
+          ) : null}
+
           <View style={styles.form}>
             {mode === "signup" ? (
               <Input label={t("auth.fullName")} value={fullName} onChangeText={setFullName} placeholder="Kofi Asante" autoCapitalize="words" />
             ) : null}
             <Input label={t("auth.phone")} value={phone} onChangeText={setPhone} placeholder="024 123 4567" keyboardType="phone-pad" />
+            {mode === "signup" ? (
+              <Input label={t("auth.email") ?? "Email"} value={email} onChangeText={setEmail} placeholder="you@example.com" keyboardType="email-address" autoCapitalize="none" />
+            ) : null}
             <Input label={t("auth.password")} value={password} onChangeText={setPassword} placeholder="••••••••" secureTextEntry />
+
+            {mode === "login" ? (
+              <Pressable onPress={() => router.push("/(auth)/forgot-password")}>
+                <Text style={styles.error}>{t("auth.forgotPassword") ?? "Forgot password?"}</Text>
+              </Pressable>
+            ) : null}
 
             {mode === "signup" ? (
               <>

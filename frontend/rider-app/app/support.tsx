@@ -4,6 +4,7 @@ import { Alert, KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Styl
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { Chip } from "@/components/ui/Chip";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorCard } from "@/components/ui/ErrorCard";
 import { Input } from "@/components/ui/Input";
@@ -13,6 +14,15 @@ import { useTheme } from "@/context/ThemeContext";
 import { api, compactDate } from "@/lib/api";
 import { spacing } from "@/theme/tokens";
 import { useToast } from "@/context/ToastContext";
+
+const SUPPORT_CATEGORIES = [
+  { id: "payout", label: "Payout" },
+  { id: "vehicle", label: "Vehicle" },
+  { id: "account", label: "Account" },
+  { id: "safety", label: "Safety" },
+  { id: "trip", label: "Trip issue" },
+  { id: "other", label: "Other" },
+];
 
 type SupportTicket = {
   id: string;
@@ -32,7 +42,7 @@ export default function SupportScreen() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("RIDER");
+  const [category, setCategory] = useState("account");
   const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -45,6 +55,8 @@ export default function SupportScreen() {
         title: { ...typography.bodySemibold, color: colors.text },
         meta: { ...typography.caption, color: colors.textMuted, marginTop: 2 },
         status: { ...typography.captionMedium, color: colors.primary, marginTop: 4, textTransform: "capitalize" },
+        chipRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+        chipLabel: { ...typography.captionMedium, color: colors.textSecondary, marginBottom: spacing.xs },
       }),
     [colors, typography],
   );
@@ -82,7 +94,7 @@ export default function SupportScreen() {
         token: session.token,
         body: {
           title: title.trim(),
-          category: category.trim() || "RIDER",
+          category: category.toUpperCase(),
           description: description.trim(),
         },
       });
@@ -109,7 +121,17 @@ export default function SupportScreen() {
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}>
           <Card stacked>
             <Input label="Subject" value={title} onChangeText={setTitle} placeholder="Payout issue" />
-            <Input label="Category" value={category} onChangeText={setCategory} placeholder="RIDER" />
+            <Text style={styles.chipLabel}>Category</Text>
+            <View style={styles.chipRow}>
+              {SUPPORT_CATEGORIES.map((cat) => (
+                <Chip
+                  key={cat.id}
+                  label={cat.label}
+                  selected={category === cat.id}
+                  onPress={() => setCategory(cat.id)}
+                />
+              ))}
+            </View>
             <Input
               label="Description"
               value={description}

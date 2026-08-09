@@ -140,6 +140,16 @@ export const adminChangePasswordSchema = z.object({
   path: ["newPassword"]
 });
 
+export const forgotPasswordSchema = z.object({
+  phoneE164: z.string().min(8).max(24)
+});
+
+export const resetPasswordSchema = z.object({
+  phoneE164: z.string().min(8).max(24),
+  code: z.string().trim().length(6),
+  newPassword: passwordSchema
+});
+
 export const adminProfileUpdateSchema = z.object({
   fullName: z.string().min(2).max(160).optional(),
   email: z.string().email().optional(),

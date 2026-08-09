@@ -83,6 +83,7 @@ export default function RiderAchievementsScreen() {
   const { session } = useApp();
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -102,8 +103,8 @@ export default function RiderAchievementsScreen() {
           token: session.token,
         });
         setAchievements(data);
-      } catch {
-        // API endpoint not available — leave achievements as empty
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Could not load achievements.");
         setAchievements([]);
       } finally {
         setLoading(false);
@@ -372,7 +373,18 @@ export default function RiderAchievementsScreen() {
         </View>
 
         {/* Achievements List */}
-        {filteredAchievements.length === 0 ? (
+        {error ? (
+          <View style={s.emptyState}>
+            <View style={s.emptyIcon}>
+              <Award size={28} color={colors.danger} />
+            </View>
+            <Text style={s.emptyTitle}>Something went wrong</Text>
+            <Text style={s.emptyText}>{error}</Text>
+            <Pressable onPress={() => { setError(null); setLoading(true); }} style={{ marginTop: 16 }}>
+              <Text style={{ color: brand.primary, fontWeight: "600" }}>Try again</Text>
+            </Pressable>
+          </View>
+        ) : filteredAchievements.length === 0 ? (
           <View style={s.emptyState}>
             <View style={s.emptyIcon}>
               <Award size={28} color={colors.textMuted} />
