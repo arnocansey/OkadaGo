@@ -266,7 +266,7 @@ export class RideService {
       ? riders.find((candidate) => candidate.id === selectedCandidate.riderId)
       : undefined;
 
-    return { selectedRider, rankedCandidates };
+    return { selectedRider, rankedCandidates, riders };
   }
 
   estimateRide(input: RideEstimateInput) {
@@ -494,8 +494,8 @@ export class RideService {
       scheduledForDate && scheduledForDate.getTime() - Date.now() > SCHEDULED_RIDE_LOOKAHEAD_MS
     );
 
-    const { selectedRider, rankedCandidates } = isFutureSchedule
-      ? { selectedRider: undefined, rankedCandidates: [] as ReturnType<MatchingService["rankCandidates"]> }
+    const { selectedRider, rankedCandidates, riders } = isFutureSchedule
+      ? { selectedRider: undefined, rankedCandidates: [] as ReturnType<MatchingService["rankCandidates"]>, riders: [] }
       : await this.matchRiderForZone({
           serviceZoneId: input.serviceZoneId,
           pickupLatitude: input.pickup.latitude,

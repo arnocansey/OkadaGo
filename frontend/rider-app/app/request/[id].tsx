@@ -170,6 +170,21 @@ export default function RequestScreen() {
     ? (trip as typeof rides[0]).estimatedFare
     : (trip as typeof deliveries[0]).estimatedFee;
 
+  const estMins = trip.estimatedDurationMinutes ? Math.round(Number(trip.estimatedDurationMinutes)) : 5;
+  const estKm = trip.estimatedDistanceKm ? Number(trip.estimatedDistanceKm).toFixed(1) : null;
+  const rawRideType = isRide ? (trip as typeof rides[0]).rideType : (trip as typeof deliveries[0]).packageType;
+  const rideTypeLabel = rawRideType
+    ? rawRideType.toUpperCase() === "STANDARD"
+      ? "Standard Okada"
+      : rawRideType.toUpperCase() === "EXPRESS"
+        ? "Express Okada"
+        : rawRideType.toUpperCase() === "COMFORT" || rawRideType.toUpperCase() === "VIP"
+          ? "Okada Comfort"
+          : rawRideType
+    : isRide
+      ? "Standard Okada"
+      : "Parcel Delivery";
+
   return (
     <>
       <Stack.Screen options={{ presentation: "modal", title: "New request", headerShown: true, ...stackHeaderOptions }} />
@@ -206,7 +221,8 @@ export default function RequestScreen() {
 
           <View style={styles.timerRow}>
             <Badge label={`${countdown}s`} tone={countdown <= 5 ? "danger" : "warning"} />
-            <Text style={styles.timerLabel}>Auto-declines in {countdown} seconds</Text>
+            <Badge label={rideTypeLabel} tone="info" />
+            <Badge label={`⏱ ~${estMins} mins${estKm ? ` (${estKm} km)` : ""}`} tone="default" />
           </View>
 
           {/* Route visualization */}

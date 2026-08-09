@@ -392,7 +392,19 @@ export default function TripScreen() {
           </Text>
 
           <View style={styles.header}>
-            <RideStatusBadge status={status} />
+            <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.xs, flexWrap: "wrap", flex: 1 }}>
+              <RideStatusBadge status={status} />
+              {isRide && (trip as typeof rides[0]).rideType ? (
+                <Badge label={String((trip as typeof rides[0]).rideType).toUpperCase() === "EXPRESS" ? "Express Okada" : String((trip as typeof rides[0]).rideType).toUpperCase() === "COMFORT" ? "Okada Comfort" : "Standard Okada"} tone="info" />
+              ) : !isRide ? (
+                <Badge label="Package Delivery" tone="info" />
+              ) : null}
+              {livePreview ? (
+                <Badge label={`⏱ ~${Math.round(livePreview.durationMinutes)} min arrival`} tone="warning" />
+              ) : trip.estimatedDurationMinutes ? (
+                <Badge label={`⏱ ~${Math.round(Number(trip.estimatedDurationMinutes))} min arrival`} tone="default" />
+              ) : null}
+            </View>
             <Text style={styles.fare}>
               {money(
                 isRide

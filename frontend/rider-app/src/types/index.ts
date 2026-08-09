@@ -71,6 +71,7 @@ export type RoutePreview = {
 export type Ride = {
   id: string;
   status: string;
+  rideType?: string | null;
   pickupAddress: string;
   pickupLatitude?: number | string | null;
   pickupLongitude?: number | string | null;
@@ -82,6 +83,8 @@ export type Ride = {
   estimatedFare?: string | number | null;
   finalFare?: string | number | null;
   riderEarnings?: string | number | null;
+  estimatedDistanceKm?: number | string | null;
+  estimatedDurationMinutes?: number | string | null;
   currency?: string;
   createdAt?: string;
   rider?: {
@@ -112,6 +115,8 @@ export type Delivery = {
   estimatedFee?: string | number | null;
   finalFee?: string | number | null;
   riderEarnings?: string | number | null;
+  estimatedDistanceKm?: number | string | null;
+  estimatedDurationMinutes?: number | string | null;
   currency?: string;
   createdAt?: string;
   rider?: {
