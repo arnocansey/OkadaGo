@@ -10,6 +10,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { markersForDelivery, markersForRide } from "@/lib/tripMap";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { SlideToAccept } from "@/components/ui/SlideToAccept";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { radius, spacing } from "@/theme/tokens";
 
@@ -245,8 +246,13 @@ export default function RequestScreen() {
           </View>
 
           <View style={styles.actions}>
-            <Button label="Accept" variant="accent" loading={acting} onPress={accept} fullWidth />
-            <Button label="Decline" variant="outline" disabled={acting} onPress={decline} fullWidth />
+            <SlideToAccept
+              onAccept={accept}
+              loading={acting}
+              disabled={acting}
+              label={isRide ? "SLIDE TO ACCEPT RIDE" : "SLIDE TO ACCEPT DELIVERY"}
+            />
+            <Button label="Decline Request" variant="ghost" disabled={acting} onPress={decline} fullWidth />
           </View>
         </SafeAreaView>
       </View>
