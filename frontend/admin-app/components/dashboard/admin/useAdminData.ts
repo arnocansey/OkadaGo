@@ -1800,6 +1800,25 @@ export function useAdminData(
     onError: (error) => addToast((error as Error).message || "Could not delete admin", "error")
   });
 
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) =>
+      requestJson(`/admin/users/${userId}`, {
+        method: "DELETE",
+        token
+      }),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: QK.passengers }),
+        queryClient.invalidateQueries({ queryKey: QK.riders }),
+        queryClient.invalidateQueries({ queryKey: QK.userStats }),
+        queryClient.invalidateQueries({ queryKey: QK.adminAccounts }),
+        invalidateOpsSummary()
+      ]);
+      addToast("User account deleted successfully", "success");
+    },
+    onError: (error) => addToast((error as Error).message || "Could not delete user account", "error")
+  });
+
   const riderApprovalMutation = useMutation({
     mutationFn: async ({ riderProfileId, action, reason }: { riderProfileId: string; action: "approve" | "reject"; reason?: string }) =>
       requestJson(`/admin/riders/${riderProfileId}/approval`, {
@@ -2368,6 +2387,7 @@ export function useAdminData(
     createAdminMutation,
     promotePassengerMutation,
     deleteAdminMutation,
+    deleteUserMutation,
     riderApprovalMutation,
     riderSuspensionMutation,
     documentReviewMutation,

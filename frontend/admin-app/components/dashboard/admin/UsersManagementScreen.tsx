@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Users, MapPin, Search, Bike, User } from "lucide-react";
+import { Users, MapPin, Search, Bike, User, Trash2 } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
@@ -47,6 +47,7 @@ export type UsersManagementScreenProps = {
   totalItems?: number;
   pageSize?: number;
   onPageChange?: (page: number) => void;
+  onDeleteUser?: (userId: string) => void;
 };
 
 export function UsersManagementScreen({
@@ -71,7 +72,8 @@ export function UsersManagementScreen({
   page,
   totalItems,
   pageSize,
-  onPageChange
+  onPageChange,
+  onDeleteUser
 }: UsersManagementScreenProps) {
   const totalUsers = totalUsersCount ?? passengersCount + ridersCount;
 
@@ -176,6 +178,7 @@ export function UsersManagementScreen({
                     <th>Location</th>
                     <th>Reference</th>
                     <th>Joined</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -200,6 +203,22 @@ export function UsersManagementScreen({
                         <td><small>{user.location}</small></td>
                         <td><code style={{ fontSize: 11 }}>{user.reference}</code></td>
                         <td><small>{user.joinedAt ? formatDateTime(user.joinedAt) : "—"}</small></td>
+                        <td>
+                          {onDeleteUser && (
+                            <button
+                              type="button"
+                              className="settings-btn settings-btn--ghost"
+                              title={`Delete account for ${user.name}`}
+                              onClick={() => {
+                                if (window.confirm(`Are you sure you want to delete the account for ${user.name}? This will revoke access.`)) {
+                                  onDeleteUser(user.id);
+                                }
+                              }}
+                            >
+                              <Trash2 size={14} style={{ color: "#ef4444" }} />
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     );
                   })}

@@ -492,6 +492,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             totalItems={data.passengersTotal}
             pageSize={data.listPageSize}
             onPageChange={data.setPassengersPage}
+            onDeleteUser={(userId) => data.deleteUserMutation.mutate(userId)}
           />
         );
 
