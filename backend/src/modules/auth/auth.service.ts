@@ -426,8 +426,23 @@ export class AuthService {
       input.phoneLocal ||
       (digits.startsWith("233") ? digits.slice(3) : digits.startsWith("0") ? digits.slice(1) : digits);
     const phoneE164 = input.phoneE164.startsWith("+") ? input.phoneE164 : `+233${phoneLocal}`;
-    const email =
-      input.email && input.email.trim() ? input.email.trim() : `admin.${phoneLocal || Date.now()}@okadago.com`;
+    const email = input.email && input.email.trim() ? input.email.trim() : null;
+
+    const existingPhone = await prisma.user.findFirst({
+      where: { phoneE164, deletedAt: null }
+    });
+    if (existingPhone) {
+      throw new AppError("An account with this phone number already exists.", 409, "PHONE_EXISTS");
+    }
+
+    if (email) {
+      const existingEmail = await prisma.user.findFirst({
+        where: { email, deletedAt: null }
+      });
+      if (existingEmail) {
+        throw new AppError("An account with this email address already exists.", 409, "EMAIL_EXISTS");
+      }
+    }
 
     const user = await prisma.user.create({
       data: {

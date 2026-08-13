@@ -22,6 +22,21 @@ export function setErrorHandler(server: FastifyInstance) {
       });
     }
 
+    const errorCode = (error as { code?: string }).code;
+    if (errorCode === "P2002") {
+      const meta = (error as { meta?: { target?: string[] | string } }).meta;
+      const fields = Array.isArray(meta?.target)
+        ? meta.target.join(", ")
+        : typeof meta?.target === "string"
+        ? meta.target
+        : "field";
+      return reply.status(409).send({
+        code: "DUPLICATE_ENTRY",
+        message: `An account with this ${fields} already exists.`,
+        traceId: request.id
+      });
+    }
+
     const fastifyStatusCode = (error as { statusCode?: number }).statusCode;
     const fastifyCode = (error as { code?: string }).code;
     if (fastifyStatusCode && fastifyStatusCode >= 400 && fastifyStatusCode < 500) {
