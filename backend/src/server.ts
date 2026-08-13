@@ -14,6 +14,18 @@ export function buildServer() {
     }
   });
 
+  server.addContentTypeParser("application/json", { parseAs: "string" }, (_req, body, done) => {
+    if (typeof body !== "string" || body.trim() === "") {
+      done(null, {});
+      return;
+    }
+    try {
+      done(null, JSON.parse(body));
+    } catch (err) {
+      done(err as Error, undefined);
+    }
+  });
+
   void server.register(cors, {
     origin: appConfig.corsOrigin === "*" ? true : appConfig.corsOrigin.split(","),
     methods: ["GET", "HEAD", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"]

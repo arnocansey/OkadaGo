@@ -53,9 +53,10 @@ export async function requestJson<TResponse>(
   }
 ): Promise<TResponse> {
   const requestUrl = apiUrl(path);
+  const hasBody = init?.body !== undefined && init?.body !== null;
   const response = await fetch(requestUrl, {
     headers: {
-      "Content-Type": "application/json",
+      ...(hasBody ? { "Content-Type": "application/json" } : {}),
       ...(init?.token ? { Authorization: `Bearer ${init.token}` } : {}),
       ...(init?.headers ?? {})
     },

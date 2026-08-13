@@ -22,6 +22,16 @@ export function setErrorHandler(server: FastifyInstance) {
       });
     }
 
+    const fastifyStatusCode = (error as { statusCode?: number }).statusCode;
+    const fastifyCode = (error as { code?: string }).code;
+    if (fastifyStatusCode && fastifyStatusCode >= 400 && fastifyStatusCode < 500) {
+      return reply.status(fastifyStatusCode).send({
+        code: fastifyCode || "BAD_REQUEST",
+        message: (error as Error).message,
+        traceId: request.id
+      });
+    }
+
     request.log.error(error);
 
     return reply.status(500).send({
