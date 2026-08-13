@@ -639,7 +639,9 @@ export function MatchingScreen({ tripId, isDelivery, onCancel, onMatched, fare, 
               {rider.rating != null ? (
                 <View style={styles.statChip}>
                   <Star size={12} color="#FFD700" fill="#FFD700" />
-                  <Text style={styles.statText}>{rider.rating.toFixed(1)}</Text>
+                  <Text style={styles.statText}>
+                    {typeof rider.rating === "number" && Number.isFinite(rider.rating) ? rider.rating.toFixed(1) : "5.0"}
+                  </Text>
                 </View>
               ) : null}
               {rider.completedTrips != null ? (

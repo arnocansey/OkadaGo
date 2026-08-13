@@ -285,7 +285,9 @@ export function RiderAssignedSheet({
               {rider.rating != null ? (
                 <View style={s.ratingBadge}>
                   <Star size={12} color={colors.primary} fill={colors.primary} />
-                  <Text style={s.ratingText}>{rider.rating.toFixed(1)}</Text>
+                  <Text style={s.ratingText}>
+                    {typeof rider?.rating === "number" && Number.isFinite(rider.rating) ? rider.rating.toFixed(1) : "5.0"}
+                  </Text>
                 </View>
               ) : null}
               {rider.rating != null && rider.completedTrips != null ? (

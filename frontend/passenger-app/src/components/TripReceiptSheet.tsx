@@ -463,7 +463,7 @@ export function TripReceiptSheet({
         {/* ─── Stats ────────────────────────────────────── */}
         {distanceKm != null || durationMinutes != null ? (
           <View style={s.statsRow}>
-            {distanceKm != null ? (
+            {distanceKm != null && Number.isFinite(distanceKm) ? (
               <View style={s.statItem}>
                 <Navigation size={16} color={colors.primary} />
                 <Text style={s.statValue}>{distanceKm.toFixed(1)} km</Text>

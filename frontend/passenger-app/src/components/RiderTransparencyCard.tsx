@@ -250,7 +250,9 @@ export function RiderTransparencyCard({ rider, matchReason, onCall, style }: Pro
               <Star size={18} color="#FFD700" fill="#FFD700" />
             </View>
             <View style={styles.statContent}>
-              <Text style={styles.statValue}>{rider.rating.toFixed(1)}</Text>
+              <Text style={styles.statValue}>
+                {typeof rider.rating === "number" && Number.isFinite(rider.rating) ? rider.rating.toFixed(1) : "5.0"}
+              </Text>
               <Text style={styles.statLabel}>Rating</Text>
             </View>
           </View>
@@ -287,9 +289,11 @@ export function RiderTransparencyCard({ rider, matchReason, onCall, style }: Pro
             </View>
             <View style={styles.statContent}>
               <Text style={styles.statValue}>
-                {rider.distanceKm < 1
-                  ? `${Math.round(rider.distanceKm * 1000)}m`
-                  : `${rider.distanceKm.toFixed(1)} km`}
+                {typeof rider.distanceKm === "number" && Number.isFinite(rider.distanceKm)
+                  ? rider.distanceKm < 1
+                    ? `${Math.round(rider.distanceKm * 1000)}m`
+                    : `${rider.distanceKm.toFixed(1)} km`
+                  : "—"}
               </Text>
               <Text style={styles.statLabel}>Away from you</Text>
             </View>

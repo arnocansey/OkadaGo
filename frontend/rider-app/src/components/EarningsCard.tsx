@@ -179,21 +179,25 @@ export function EarningsCard({ data, currency = "GHS", onPress }: Props) {
       {/* Earnings Display */}
       <View style={s.earningsRow}>
         <Text style={s.currency}>GH₵</Text>
-        <Text style={s.earningsValue}>{data.today.toFixed(2)}</Text>
+        <Text style={s.earningsValue}>
+          {typeof data?.today === "number" && Number.isFinite(data.today) ? data.today.toFixed(2) : "0.00"}
+        </Text>
       </View>
 
       {/* Quick Stats */}
       <View style={s.statsRow}>
         <View style={s.statItem}>
-          <Text style={s.statValue}>{data.totalTrips}</Text>
+          <Text style={s.statValue}>{data?.totalTrips ?? 0}</Text>
           <Text style={s.statLabel}>Trips</Text>
         </View>
         <View style={s.statItem}>
-          <Text style={s.statValue}>★ {data.avgRating.toFixed(1)}</Text>
+          <Text style={s.statValue}>
+            ★ {typeof data?.avgRating === "number" && Number.isFinite(data.avgRating) ? data.avgRating.toFixed(1) : "5.0"}
+          </Text>
           <Text style={s.statLabel}>Rating</Text>
         </View>
         <View style={s.statItem}>
-          <Text style={s.statValue}>{data.acceptanceRate}%</Text>
+          <Text style={s.statValue}>{data?.acceptanceRate ?? 100}%</Text>
           <Text style={s.statLabel}>Accept</Text>
         </View>
       </View>
@@ -202,11 +206,15 @@ export function EarningsCard({ data, currency = "GHS", onPress }: Props) {
       <View style={s.periodSection}>
         <View style={s.periodRow}>
           <Text style={s.periodLabel}>This Week</Text>
-          <Text style={s.periodValue}>GH₵ {data.thisWeek.toFixed(2)}</Text>
+          <Text style={s.periodValue}>
+            GH₵ {typeof data?.thisWeek === "number" && Number.isFinite(data.thisWeek) ? data.thisWeek.toFixed(2) : "0.00"}
+          </Text>
         </View>
         <View style={s.periodRow}>
           <Text style={s.periodLabel}>This Month</Text>
-          <Text style={s.periodValue}>GH₵ {data.thisMonth.toFixed(2)}</Text>
+          <Text style={s.periodValue}>
+            GH₵ {typeof data?.thisMonth === "number" && Number.isFinite(data.thisMonth) ? data.thisMonth.toFixed(2) : "0.00"}
+          </Text>
         </View>
       </View>
     </Pressable>
@@ -238,6 +246,7 @@ type PerformanceProps = {
  */
 export function PerformanceCard({ data, onPress }: PerformanceProps) {
   const { colors, isDark } = useTheme();
+  const safeRating = typeof data?.rating === "number" && Number.isFinite(data.rating) ? data.rating : 5.0;
 
   const s = useMemo(
     () =>
@@ -328,10 +337,10 @@ export function PerformanceCard({ data, onPress }: PerformanceProps) {
 
       <View style={s.metricsGrid}>
         <View style={s.metricItem}>
-          <Text style={s.metricValue}>★ {data.rating.toFixed(1)}</Text>
+          <Text style={s.metricValue}>★ {safeRating.toFixed(1)}</Text>
           <Text style={s.metricLabel}>Rating</Text>
           <View style={s.metricBar}>
-            <View style={[s.metricBarFill, { width: `${(data.rating / 5) * 100}%` }]} />
+            <View style={[s.metricBarFill, { width: `${(safeRating / 5) * 100}%` }]} />
           </View>
         </View>
 

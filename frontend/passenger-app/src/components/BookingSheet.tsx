@@ -359,7 +359,9 @@ export function BookingSheet({ options, selected, onSelect, onConfirm, loading }
               {featured.rating ? (
                 <View style={s.metaChipRating}>
                   <Star size={11} color={colors.primary} fill={colors.primary} />
-                  <Text style={s.ratingText}>{featured.rating.toFixed(1)}</Text>
+                  <Text style={s.ratingText}>
+                    {typeof featured.rating === "number" && Number.isFinite(featured.rating) ? featured.rating.toFixed(1) : "5.0"}
+                  </Text>
                 </View>
               ) : null}
             </View>
@@ -390,7 +392,9 @@ export function BookingSheet({ options, selected, onSelect, onConfirm, loading }
                     {alt.rating ? (
                       <View style={s.altRating}>
                         <Star size={10} color={colors.primary} fill={colors.primary} />
-                        <Text style={s.altRatingText}>{alt.rating.toFixed(1)}</Text>
+                        <Text style={s.altRatingText}>
+                          {typeof alt.rating === "number" && Number.isFinite(alt.rating) ? alt.rating.toFixed(1) : "5.0"}
+                        </Text>
                       </View>
                     ) : null}
                   </View>

@@ -108,10 +108,12 @@ export function EarningsGoal({
   const [selectedPeriod, setSelectedPeriod] = useState<GoalPeriod>(goalPeriod);
   const [inputAmount, setInputAmount] = useState(goalAmount.toString());
 
-  const progress = Math.min((currentEarnings / goalAmount) * 100, 100);
-  const remaining = Math.max(goalAmount - currentEarnings, 0);
-  const isReached = currentEarnings >= goalAmount;
-  const overAmount = Math.max(currentEarnings - goalAmount, 0);
+  const safeEarnings = typeof currentEarnings === "number" && Number.isFinite(currentEarnings) ? currentEarnings : 0;
+  const safeGoal = typeof goalAmount === "number" && Number.isFinite(goalAmount) && goalAmount > 0 ? goalAmount : 600;
+  const progress = Math.min((safeEarnings / safeGoal) * 100, 100);
+  const remaining = Math.max(safeGoal - safeEarnings, 0);
+  const isReached = safeEarnings >= safeGoal;
+  const overAmount = Math.max(safeEarnings - safeGoal, 0);
 
   const quickAmounts = useMemo(() => {
     if (selectedPeriod === "daily") {
@@ -596,10 +598,10 @@ export function EarningsGoal({
       <View style={s.progressCard}>
         <View style={s.progressHeader}>
           <Text style={s.progressCurrent}>
-            {currency} {currentEarnings.toFixed(0)}
+            {currency} {safeEarnings.toFixed(0)}
           </Text>
           <Text style={s.progressGoal}>
-            / {currency} {goalAmount.toLocaleString()}
+            / {currency} {safeGoal.toLocaleString()}
           </Text>
         </View>
 

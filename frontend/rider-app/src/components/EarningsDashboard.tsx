@@ -119,7 +119,7 @@ export function EarningsDashboard({
 
   // Calculate comparison
   const comparison = useMemo(() => {
-    if (!earnings) {
+    if (!earnings || !earnings.today || !earnings.previous) {
       return {
         total: { value: 0, positive: true },
         trips: { value: 0, positive: true },
@@ -132,18 +132,35 @@ export function EarningsDashboard({
     const current = earnings.today;
     const prev = earnings.previous;
 
-    const totalChange = ((current.total - prev.total) / prev.total) * 100;
-    const tripsChange = current.trips - prev.trips;
-    const hoursChange = current.onlineHours - prev.onlineHours;
-    const avgChange = ((current.avgPerHour - prev.avgPerHour) / prev.avgPerHour) * 100;
-    const tipsChange = current.tips - prev.tips;
-    const bonusesChange = current.bonuses - prev.bonuses;
+    const currentTotal = Number.isFinite(current.total) ? current.total : 0;
+    const prevTotal = Number.isFinite(prev.total) ? prev.total : 0;
+    const totalChange = prevTotal > 0 ? ((currentTotal - prevTotal) / prevTotal) * 100 : 0;
+
+    const currentTrips = Number.isFinite(current.trips) ? current.trips : 0;
+    const prevTrips = Number.isFinite(prev.trips) ? prev.trips : 0;
+    const tripsChange = currentTrips - prevTrips;
+
+    const currentHours = Number.isFinite(current.onlineHours) ? current.onlineHours : 0;
+    const prevHours = Number.isFinite(prev.onlineHours) ? prev.onlineHours : 0;
+    const hoursChange = currentHours - prevHours;
+
+    const currentAvg = Number.isFinite(current.avgPerHour) ? current.avgPerHour : 0;
+    const prevAvg = Number.isFinite(prev.avgPerHour) ? prev.avgPerHour : 0;
+    const avgChange = prevAvg > 0 ? ((currentAvg - prevAvg) / prevAvg) * 100 : 0;
+
+    const currentTips = Number.isFinite(current.tips) ? current.tips : 0;
+    const prevTips = Number.isFinite(prev.tips) ? prev.tips : 0;
+    const tipsChange = currentTips - prevTips;
+
+    const currentBonuses = Number.isFinite(current.bonuses) ? current.bonuses : 0;
+    const prevBonuses = Number.isFinite(prev.bonuses) ? prev.bonuses : 0;
+    const bonusesChange = currentBonuses - prevBonuses;
 
     return {
-      total: { value: totalChange, positive: totalChange >= 0 },
+      total: { value: Number.isFinite(totalChange) ? totalChange : 0, positive: totalChange >= 0 },
       trips: { value: tripsChange, positive: tripsChange >= 0 },
       hours: { value: hoursChange, positive: hoursChange >= 0 },
-      avg: { value: avgChange, positive: avgChange >= 0 },
+      avg: { value: Number.isFinite(avgChange) ? avgChange : 0, positive: avgChange >= 0 },
       tips: { value: tipsChange, positive: tipsChange >= 0 },
       bonuses: { value: bonusesChange, positive: bonusesChange >= 0 },
     };
@@ -675,8 +692,8 @@ export function EarningsDashboard({
           {/* Graph Bars */}
           <View style={s.graphContainer}>
             {graphData.map((value, index) => {
-              const height = ((value - graphMin) / (graphMax - graphMin)) * 100 + 20;
-              const isHighest = value === graphMax;
+              const height = graphMax > graphMin ? Math.min(Math.max(((value - graphMin) / (graphMax - graphMin)) * 80 + 20, 10), 100) : 20;
+              const isHighest = value === graphMax && value > 0;
               return (
                 <View key={index} style={s.graphBarWrapper}>
                   <View
@@ -739,7 +756,7 @@ export function EarningsDashboard({
                   }}
                 >
                   {comparison.trips.positive ? "+" : ""}
-                  {((comparison.trips.value / earnings.previous.trips) * 100).toFixed(0)}%
+                  {(earnings.previous.trips > 0 ? (comparison.trips.value / earnings.previous.trips) * 100 : 0).toFixed(0)}%
                 </Text>
               </View>
             </View>

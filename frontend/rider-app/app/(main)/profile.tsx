@@ -639,7 +639,7 @@ export default function ProfileScreen() {
               <Star size={20} color={brand.primary} fill={brand.primary} />
             </View>
             <Text style={s.statValue}>
-              {riderProfile?.rating?.toFixed(1) ?? "—"}
+              {typeof riderProfile?.rating === "number" && Number.isFinite(riderProfile.rating) ? riderProfile.rating.toFixed(1) : "—"}
             </Text>
             <Text style={s.statLabel}>Rating</Text>
           </View>

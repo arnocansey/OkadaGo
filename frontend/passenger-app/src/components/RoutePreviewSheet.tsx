@@ -241,7 +241,9 @@ export function RoutePreviewSheet({
                 <Navigation size={16} color={colors.primary} />
               </View>
               <View style={s.statTextCol}>
-                <Text style={s.statValue}>{estimate.distanceKm.toFixed(1)} km</Text>
+                <Text style={s.statValue}>
+                  {typeof estimate.distanceKm === "number" && Number.isFinite(estimate.distanceKm) ? estimate.distanceKm.toFixed(1) : "0.0"} km
+                </Text>
                 <Text style={s.statLabel}>Distance</Text>
               </View>
             </View>

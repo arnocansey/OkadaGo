@@ -236,9 +236,9 @@ export function PerformanceCards({ data }: Props) {
         <View style={[s.iconContainer, { backgroundColor: "#F59E0B15" }]}>
           <Star size={18} color="#F59E0B" />
         </View>
-        <Text style={s.value}>{stats.rating.toFixed(2)}</Text>
+        <Text style={s.value}>{typeof stats.rating === "number" && Number.isFinite(stats.rating) ? stats.rating.toFixed(2) : "0.00"}</Text>
         <Text style={s.label}>Rating</Text>
-        {stats.ratingTrend !== undefined && (
+        {typeof stats.ratingTrend === "number" && Number.isFinite(stats.ratingTrend) && (
           <View style={s.trend}>
             <TrendingUp
               size={12}
