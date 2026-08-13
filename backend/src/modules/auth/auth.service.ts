@@ -615,18 +615,20 @@ export class AuthService {
     }
 
     const target = await prisma.user.findFirst({
-      where: { id: userId, role: UserRole.ADMIN, deletedAt: null },
+      where: { id: userId, deletedAt: null },
       include: { adminProfile: true }
     });
-    if (!target?.adminProfile) {
-      throw new AppError("Admin account not found", 404, "ADMIN_NOT_FOUND");
+    if (!target) {
+      throw new AppError("Account not found", 404, "ACCOUNT_NOT_FOUND");
     }
 
-    const remaining = await prisma.user.count({
-      where: { role: UserRole.ADMIN, deletedAt: null, NOT: { id: userId } }
-    });
-    if (remaining < 1) {
-      throw new AppError("Cannot delete the last admin account", 400, "LAST_ADMIN");
+    if (target.role === UserRole.ADMIN) {
+      const remaining = await prisma.user.count({
+        where: { role: UserRole.ADMIN, deletedAt: null, NOT: { id: userId } }
+      });
+      if (remaining < 1) {
+        throw new AppError("Cannot delete the last admin account", 400, "LAST_ADMIN");
+      }
     }
 
     await prisma.$transaction([

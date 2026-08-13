@@ -298,7 +298,7 @@ export function BookView() {
   const ridesQuery = useQuery({
     queryKey: ["rides"],
     queryFn: () => fetchJson<Ride[]>("/rides"),
-    refetchInterval: trackingRideId ? 5_000 : false
+    refetchInterval: trackingRideId ? 2_000 : 3_000
   });
 
   const trackingRide = useMemo(() => {
@@ -356,11 +356,12 @@ export function BookView() {
 
   const bookMutation = useMutation({
     mutationFn: async () => {
-      if (!passengerProfileId || !selectedZone || !pickup || !dropoff) {
+      const pid = passengerProfileId || session?.user.id;
+      if (!pid || !selectedZone || !pickup || !dropoff) {
         throw new Error("Complete pickup and destination before booking.");
       }
       return postJson<{ ride: Ride }, unknown>("/rides/request", {
-        passengerProfileId,
+        passengerProfileId: pid,
         serviceZoneId: selectedZone.id,
         paymentMethod,
         pickup: { address: pickup.label, latitude: pickup.lat, longitude: pickup.lng },
@@ -380,6 +381,7 @@ export function BookView() {
       paxToast.error("Could not book ride", (error as Error).message);
     }
   });
+
 
   useEffect(() => {
     if (pickupSource !== "gps") return;

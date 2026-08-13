@@ -69,6 +69,13 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
     return reply.status(201).send(session);
   });
 
+  server.post("/admin/accounts/create", async (request, reply) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const input = parseBody(request, adminRegisterSchema);
+    const session = await authService.createAdminByAdmin(token, input);
+    return reply.status(201).send(session);
+  });
+
   server.post("/admin/accounts/promote", async (request, reply) => {
     const token = extractBearerToken(request.headers.authorization);
     const input = parseBody(request, adminPromoteSchema);
@@ -77,6 +84,12 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
   });
 
   server.delete("/admin/accounts/:userId", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, adminUserParamsSchema);
+    return authService.softDeleteAdmin(token, params.userId);
+  });
+
+  server.delete("/admin/users/:userId", async (request) => {
     const token = extractBearerToken(request.headers.authorization);
     const params = parseParams(request, adminUserParamsSchema);
     return authService.softDeleteAdmin(token, params.userId);

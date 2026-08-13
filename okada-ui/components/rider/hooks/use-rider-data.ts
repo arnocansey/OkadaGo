@@ -59,6 +59,25 @@ export function useRiderData() {
     [riderRides]
   );
 
+  const incomingRequests = useMemo(() => {
+    if (!rider?.onlineStatus) return [];
+    const riderZoneId = rider.serviceZoneId || rider.serviceZone?.id;
+    return (ridesQuery.data ?? [])
+      .filter((ride) => {
+        const st = (ride.status ?? "").toLowerCase();
+        const isSearching = st === "searching" || st === "requested" || st === "scheduled";
+        const unassigned = !ride.riderId && !ride.rider?.id;
+        const matchesZone = !ride.serviceZoneId || !riderZoneId || ride.serviceZoneId === riderZoneId;
+        return isSearching && unassigned && matchesZone;
+      })
+      .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+  }, [rider?.onlineStatus, rider?.serviceZoneId, rider?.serviceZone?.id, ridesQuery.data]);
+
+  const pendingRequest = useMemo(
+    () => (!activeRide && incomingRequests.length > 0 ? incomingRequests[0] : null),
+    [activeRide, incomingRequests]
+  );
+
   const completedRides = useMemo(
     () => riderRides.filter((ride) => (ride.status ?? "").toLowerCase() === "completed"),
     [riderRides]
@@ -91,6 +110,8 @@ export function useRiderData() {
     rider,
     riderRides,
     activeRide,
+    incomingRequests,
+    pendingRequest,
     completedRides,
     completedCount,
     todayEarnings,
@@ -104,3 +125,4 @@ export function useRiderData() {
     riderCommissionPercent: parseNumber(rider?.commissionPercent) || 12
   };
 }
+

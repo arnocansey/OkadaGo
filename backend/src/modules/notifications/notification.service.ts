@@ -95,11 +95,10 @@ export class NotificationService {
   async markAllNotificationsRead(token: string) {
     const session = await this.getActiveSession(token);
 
-    await prisma.notification.updateMany({
+    const updated = await prisma.notification.updateMany({
       where: {
         userId: session.userId,
         readAt: null,
-        channel: { in: ["PUSH", "IN_APP"] },
       },
       data: {
         readAt: new Date(),
@@ -107,7 +106,7 @@ export class NotificationService {
       },
     });
 
-    return { ok: true };
+    return { ok: true, count: updated.count };
   }
 }
 

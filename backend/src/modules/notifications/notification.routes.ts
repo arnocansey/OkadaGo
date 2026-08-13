@@ -31,14 +31,29 @@ export const notificationRoutes: FastifyPluginAsync = async (server) => {
     return notificationService.listNotifications(token, query);
   });
 
+  server.post("/notifications/read-all", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return notificationService.markAllNotificationsRead(token);
+  });
+
+  server.patch("/notifications/read-all", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return notificationService.markAllNotificationsRead(token);
+  });
+
+  server.post("/notifications/mark-all-read", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return notificationService.markAllNotificationsRead(token);
+  });
+
+  server.patch("/notifications/mark-all-read", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return notificationService.markAllNotificationsRead(token);
+  });
+
   server.patch("/notifications/:notificationId/read", async (request) => {
     const token = extractBearerToken(request.headers.authorization);
     const params = parseParams(request, notificationIdParamsSchema);
     return notificationService.markNotificationRead(token, params.notificationId);
-  });
-
-  server.post("/notifications/read-all", async (request) => {
-    const token = extractBearerToken(request.headers.authorization);
-    return notificationService.markAllNotificationsRead(token);
   });
 };

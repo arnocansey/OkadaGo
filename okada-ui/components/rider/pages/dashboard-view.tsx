@@ -2,8 +2,11 @@
 
 import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { MapPin, Navigation } from "lucide-react";
+import { patchJson } from "@/lib/api";
 import { formatMoney } from "@/lib/currency";
+import { rdrToast } from "@/components/rider/lib/toast";
 import { useGeoLocation } from "@/components/passenger/hooks/use-geo-location";
 import type { MapMarker } from "@/components/passenger/map/interactive-map";
 import { RiderAppFrame } from "@/components/rider/layout/app-frame";
@@ -11,6 +14,7 @@ import { useRiderData } from "@/components/rider/hooks/use-rider-data";
 import { useRiderLocation } from "@/components/rider/hooks/use-rider-location";
 import { ActiveRidePanel, DashboardStats } from "@/components/rider/ui/dashboard-panel";
 import { OnlineStatusControl } from "@/components/rider/ui/online-toggle";
+import { TripRequestModal } from "@/components/rider/ui/trip-request-modal";
 import { DashboardSkeleton } from "@/components/rider/ui/skeletons";
 import {
   ACCRA_CENTER,
@@ -19,6 +23,7 @@ import {
   riderDeficitOfflineThreshold
 } from "@/components/rider/types";
 import { OkadaLoader } from "@/components/ui/OkadaLoader";
+
 
 const RideMap = dynamic(
   () => import("@/components/passenger/map/ride-map").then((m) => m.RideMap),
@@ -103,8 +108,47 @@ export function DashboardView() {
     />
   );
 
+  const queryClient = useQueryClient();
+  const [declinedIds, setDeclinedIds] = useState<Set<string>>(new Set());
+
+  const acceptMutation = useMutation({
+    mutationFn: async (rideId: string) => {
+      if (!data.userId) throw new Error("Please log in to accept rides.");
+      return patchJson(`/rides/${rideId}/status`, {
+        nextStatus: "arriving",
+        actorRole: "rider",
+        actorUserId: data.userId
+      });
+    },
+    onSuccess: async () => {
+      rdrToast.success("Ride accepted! Head to pickup location.");
+      await queryClient.invalidateQueries({ queryKey: ["rides"] });
+      await queryClient.invalidateQueries({ queryKey: ["riders"] });
+    },
+    onError: (error) => {
+      rdrToast.error("Could not accept ride", (error as Error).message);
+    }
+  });
+
+  const activePendingRequest = useMemo(() => {
+    if (!data.pendingRequest) return null;
+    if (declinedIds.has(data.pendingRequest.id)) return null;
+    return data.pendingRequest;
+  }, [data.pendingRequest, declinedIds]);
+
+  const handleDecline = (rideId: string) => {
+    setDeclinedIds((prev) => new Set(prev).add(rideId));
+  };
+
   return (
     <RiderAppFrame fullBleed>
+      <TripRequestModal
+        request={activePendingRequest}
+        onAccept={(id) => acceptMutation.mutate(id)}
+        onDecline={handleDecline}
+        isPending={acceptMutation.isPending}
+        currency={data.currency}
+      />
       <div className="rdr-split">
         <div className="rdr-split-map">
           <RideMap
@@ -217,3 +261,4 @@ export function DashboardView() {
     </RiderAppFrame>
   );
 }
+

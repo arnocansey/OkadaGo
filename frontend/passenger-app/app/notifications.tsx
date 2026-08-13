@@ -49,39 +49,21 @@ function categoryIcon(cat: string, colors: any) {
   }
 }
 
+import { useNotifications } from "@/hooks/useNotifications";
+
 export default function NotificationsScreen() {
   const { session } = useApp();
   const { colors, isDark } = useTheme();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const { items: notifications, loading, unreadCount, refresh, markRead, markAllRead } = useNotifications(session?.token);
   const [filter, setFilter] = useState<string>("all");
 
-  const load = useCallback(async () => {
-    if (!session?.token) return;
-    try {
-      const data = await api<Notification[]>("/notifications", { token: session.token });
-      setNotifications(data);
-    } catch {
-      // Empty
-    } finally {
-      setLoading(false);
-    }
-  }, [session?.token]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
   const onRefresh = async () => {
-    setRefreshing(true);
-    await load();
-    setRefreshing(false);
+    await refresh();
   };
 
   const filtered = useMemo(() => {
     if (filter === "all") return notifications;
-    return notifications.filter((n) => n.category === filter);
+    return notifications.filter((n) => (n.data?.category ?? n.channel?.toLowerCase()) === filter);
   }, [notifications, filter]);
 
   function formatTime(iso: string): string {
@@ -204,10 +186,25 @@ export default function NotificationsScreen() {
         contentContainerStyle={s.content}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
+          <RefreshControl refreshing={loading} onRefresh={onRefresh} tintColor={colors.primary} />
         }
       >
         <ScreenHeader title="Notifications" onBack={() => router.back()} />
+
+        {/* ─── Header Action Row ────────────────────────── */}
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, marginBottom: 12 }}>
+          <Text style={{ fontSize: 13, fontWeight: "600", color: colors.primary }}>
+            {unreadCount > 0 ? `${unreadCount} unread` : "All caught up"}
+          </Text>
+          {unreadCount > 0 ? (
+            <Pressable
+              onPress={() => void markAllRead()}
+              style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: isDark ? "rgba(250,204,21,0.12)" : "rgba(250,204,21,0.1)" }}
+            >
+              <Text style={{ fontSize: 12, fontWeight: "700", color: colors.primary }}>Mark all read</Text>
+            </Pressable>
+          ) : null}
+        </View>
 
         {/* ─── Filter Tabs ──────────────────────────────── */}
         <View style={s.filterRow}>
@@ -245,11 +242,15 @@ export default function NotificationsScreen() {
         ) : (
           <View style={s.notifList}>
             {filtered.map((notif) => {
-              const { icon: Icon, color, bg } = categoryIcon(notif.category, colors);
+              const categoryKey = String(notif.data?.category ?? notif.channel ?? "system").toLowerCase();
+              const { icon: Icon, color, bg } = categoryIcon(categoryKey, colors);
               const isRead = !!notif.readAt;
               return (
-                <View
+                <Pressable
                   key={notif.id}
+                  onPress={() => {
+                    if (!isRead) void markRead(notif.id);
+                  }}
                   style={[s.notifCard, !isRead && s.notifUnread]}
                 >
                   <View style={[s.notifIconWrap, { backgroundColor: bg }]}>
@@ -268,7 +269,7 @@ export default function NotificationsScreen() {
                       {!isRead ? <View style={s.unreadDot} /> : null}
                     </View>
                   </View>
-                </View>
+                </Pressable>
               );
             })}
           </View>

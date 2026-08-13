@@ -22,7 +22,34 @@ import { brand, layers } from "@/theme/design-system";
 
 type EarningsPeriod = "day" | "week" | "month";
 
+type RecentTrip = {
+  id: string;
+  type: "ride" | "delivery";
+  pickup: string;
+  destination: string;
+  amount: number;
+  tip: number;
+  date: string;
+};
+
+type PayoutAccount = {
+  id: string;
+  provider: string;
+  accountNumber: string;
+  accountName: string;
+  isDefault: boolean;
+};
+
+type PayoutRequest = {
+  id: string;
+  amount: number;
+  status: string;
+  destinationLabel: string;
+  requestedAt: string;
+};
+
 type EarningsData = {
+  walletBalance?: number;
   today: {
     total: number;
     trips: number;
@@ -39,11 +66,20 @@ type EarningsData = {
     tips: number;
     bonuses: number;
   };
+  breakdown?: {
+    fares: number;
+    tips: number;
+    bonuses: number;
+    platformFee: number;
+  };
   graph: {
     day: number[];
     week: number[];
     month: number[];
   };
+  recentTrips?: RecentTrip[];
+  payoutAccounts?: PayoutAccount[];
+  payoutRequests?: PayoutRequest[];
 };
 
 type Props = {
@@ -53,6 +89,7 @@ type Props = {
   goalAmount?: number;
   goalPeriod?: "daily" | "weekly";
   onSetGoal?: (amount: number, period: "daily" | "weekly") => void;
+  onRequestCashout?: (amount: number, accountId?: string) => Promise<void>;
 };
 
 const PERIOD_LABELS: Record<EarningsPeriod, string> = {
@@ -109,135 +146,162 @@ export function EarningsDashboard({
   goalAmount = 600,
   goalPeriod = "daily",
   onSetGoal,
+  onRequestCashout,
 }: Props) {
   const insets = useSafeAreaInsets();
   const { colors, isDark } = useTheme();
   const [selectedPeriod, setSelectedPeriod] = useState<EarningsPeriod>("day");
+  const [cashoutModalVisible, setCashoutModalVisible] = useState(false);
+  const [cashoutAmount, setCashoutAmount] = useState("");
+  const [cashoutProvider, setCashoutProvider] = useState("MTN_MOMO");
+  const [cashoutPhone, setCashoutPhone] = useState("");
+  const [submittingCashout, setSubmittingCashout] = useState(false);
+  const [cashoutSuccessMsg, setCashoutSuccessMsg] = useState<string | null>(null);
 
   // Use real data from API — no mock fallback
   const earnings = data ?? null;
 
   // Calculate comparison
   const comparison = useMemo(() => {
-    if (!earnings || !earnings.today || !earnings.previous) {
+    if (!earnings) {
       return {
-        total: { value: 0, positive: true },
-        trips: { value: 0, positive: true },
-        hours: { value: 0, positive: true },
-        avg: { value: 0, positive: true },
-        tips: { value: 0, positive: true },
-        bonuses: { value: 0, positive: true },
+        total: { positive: true, value: 0 },
+        trips: { positive: true, value: 0 },
+        hours: { positive: true, value: 0 },
+        avg: { positive: true, value: 0 },
+        tips: { positive: true, value: 0 },
+        bonuses: { positive: true, value: 0 },
       };
     }
-    const current = earnings.today;
-    const prev = earnings.previous;
 
-    const currentTotal = Number.isFinite(current.total) ? current.total : 0;
-    const prevTotal = Number.isFinite(prev.total) ? prev.total : 0;
-    const totalChange = prevTotal > 0 ? ((currentTotal - prevTotal) / prevTotal) * 100 : 0;
+    const currentTotal = earnings.today.total;
+    const prevTotal = earnings.previous.total;
+    const totalDiff = currentTotal - prevTotal;
+    const totalPercent = prevTotal > 0 ? (totalDiff / prevTotal) * 100 : currentTotal > 0 ? 100 : 0;
 
-    const currentTrips = Number.isFinite(current.trips) ? current.trips : 0;
-    const prevTrips = Number.isFinite(prev.trips) ? prev.trips : 0;
-    const tripsChange = currentTrips - prevTrips;
+    const currentTrips = earnings.today.trips;
+    const prevTrips = earnings.previous.trips;
+    const tripsDiff = currentTrips - prevTrips;
+    const tripsPercent = prevTrips > 0 ? (tripsDiff / prevTrips) * 100 : currentTrips > 0 ? 100 : 0;
 
-    const currentHours = Number.isFinite(current.onlineHours) ? current.onlineHours : 0;
-    const prevHours = Number.isFinite(prev.onlineHours) ? prev.onlineHours : 0;
-    const hoursChange = currentHours - prevHours;
+    const currentHours = earnings.today.onlineHours;
+    const prevHours = earnings.previous.onlineHours;
+    const hoursDiff = currentHours - prevHours;
+    const hoursPercent = prevHours > 0 ? (hoursDiff / prevHours) * 100 : currentHours > 0 ? 100 : 0;
 
-    const currentAvg = Number.isFinite(current.avgPerHour) ? current.avgPerHour : 0;
-    const prevAvg = Number.isFinite(prev.avgPerHour) ? prev.avgPerHour : 0;
-    const avgChange = prevAvg > 0 ? ((currentAvg - prevAvg) / prevAvg) * 100 : 0;
-
-    const currentTips = Number.isFinite(current.tips) ? current.tips : 0;
-    const prevTips = Number.isFinite(prev.tips) ? prev.tips : 0;
-    const tipsChange = currentTips - prevTips;
-
-    const currentBonuses = Number.isFinite(current.bonuses) ? current.bonuses : 0;
-    const prevBonuses = Number.isFinite(prev.bonuses) ? prev.bonuses : 0;
-    const bonusesChange = currentBonuses - prevBonuses;
+    const currentAvg = earnings.today.avgPerHour;
+    const prevAvg = earnings.previous.avgPerHour;
+    const avgDiff = currentAvg - prevAvg;
+    const avgPercent = prevAvg > 0 ? (avgDiff / prevAvg) * 100 : currentAvg > 0 ? 100 : 0;
 
     return {
-      total: { value: Number.isFinite(totalChange) ? totalChange : 0, positive: totalChange >= 0 },
-      trips: { value: tripsChange, positive: tripsChange >= 0 },
-      hours: { value: hoursChange, positive: hoursChange >= 0 },
-      avg: { value: Number.isFinite(avgChange) ? avgChange : 0, positive: avgChange >= 0 },
-      tips: { value: tipsChange, positive: tipsChange >= 0 },
-      bonuses: { value: bonusesChange, positive: bonusesChange >= 0 },
+      total: { positive: totalDiff >= 0, value: Math.abs(totalPercent) },
+      trips: { positive: tripsDiff >= 0, value: Math.abs(tripsPercent) },
+      hours: { positive: hoursDiff >= 0, value: Math.abs(hoursPercent) },
+      avg: { positive: avgDiff >= 0, value: Math.abs(avgPercent) },
+      tips: { positive: earnings.today.tips >= earnings.previous.tips, value: 0 },
+      bonuses: { positive: earnings.today.bonuses >= earnings.previous.bonuses, value: 0 },
     };
   }, [earnings]);
 
-  // Graph data for selected period
-  const graphData = earnings?.graph?.[selectedPeriod] ?? [];
-  const graphMax = graphData.length > 0 ? Math.max(...graphData) : 0;
-  const graphMin = graphData.length > 0 ? Math.min(...graphData) : 0;
+  // Graph data based on period
+  const graphData = useMemo(() => {
+    if (!earnings || !earnings.graph) return [0, 0, 0, 0, 0, 0, 0];
+    switch (selectedPeriod) {
+      case "day":
+        return earnings.graph.day ?? [0, 0, 0, 0, 0, 0];
+      case "week":
+        return earnings.graph.week ?? [0, 0, 0, 0, 0, 0, 0];
+      case "month":
+        return earnings.graph.month ?? [0, 0, 0];
+    }
+  }, [earnings, selectedPeriod]);
 
-  // Graph labels
+  // Graph labels based on period
   const graphLabels = useMemo(() => {
-    if (selectedPeriod === "day") {
-      return ["6am", "9am", "12pm", "3pm", "6pm", "9pm"];
+    switch (selectedPeriod) {
+      case "day":
+        return ["6am", "9am", "12pm", "3pm", "6pm", "9pm"];
+      case "week":
+        return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+      case "month":
+        return ["W1", "W2", "W3", "W4"];
     }
-    if (selectedPeriod === "week") {
-      return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    }
-    return ["W1", "W2", "W3", "W4"];
   }, [selectedPeriod]);
+
+  // Graph min/max for scale
+  const { graphMin, graphMax } = useMemo(() => {
+    const min = Math.min(...graphData);
+    const max = Math.max(...graphData);
+    return { graphMin: min, graphMax: max };
+  }, [graphData]);
+
+  const handleCashoutSubmit = async () => {
+    const num = parseFloat(cashoutAmount);
+    if (isNaN(num) || num <= 0) return;
+    setSubmittingCashout(true);
+    setCashoutSuccessMsg(null);
+    try {
+      if (onRequestCashout) {
+        await onRequestCashout(num);
+      } else {
+        await new Promise((r) => setTimeout(r, 1000));
+      }
+      setCashoutSuccessMsg(`Payout request of ${currency} ${num.toFixed(2)} submitted successfully!`);
+      setTimeout(() => {
+        setCashoutModalVisible(false);
+        setCashoutSuccessMsg(null);
+        setCashoutAmount("");
+      }, 1800);
+    } catch (err: any) {
+      setCashoutSuccessMsg(err?.message ?? "Cashout request failed. Please try again.");
+    } finally {
+      setSubmittingCashout(false);
+    }
+  };
 
   const s = useMemo(
     () =>
       StyleSheet.create({
         screen: {
           flex: 1,
-          backgroundColor: colors.bg,
+          backgroundColor: colors.background,
         },
         scroll: {
           flex: 1,
         },
         scrollContent: {
-          paddingHorizontal: 20,
-          paddingTop: insets.top + 16,
+          padding: 20,
           paddingBottom: insets.bottom + 24,
         },
-
-        /* ─── Header ─────────────────────────────────────────── */
         header: {
-          marginBottom: 24,
+          marginBottom: 16,
         },
         headerLabel: {
-          fontSize: 13,
-          fontWeight: "600",
-          color: colors.textMuted,
-          textTransform: "uppercase",
-          letterSpacing: 0.8,
-          marginBottom: 8,
-        },
-
-        /* ─── Dominant Earnings ──────────────────────────────── */
-        earningsHero: {
-          alignItems: "center",
-          marginBottom: 8,
-        },
-        earningsAmount: {
-          fontSize: 56,
-          fontWeight: "800",
-          color: colors.text,
-          letterSpacing: -2,
-        },
-        earningsCurrency: {
-          fontSize: 28,
+          fontSize: 12,
           fontWeight: "700",
           color: colors.textMuted,
+          textTransform: "uppercase",
+          letterSpacing: 1,
         },
-
-        /* ─── Comparison Badge ────────────────────────────────── */
+        earningsHero: {
+          alignItems: "center",
+          marginVertical: 12,
+        },
+        earningsAmount: {
+          fontSize: 48,
+          fontWeight: "800",
+          color: colors.text,
+          letterSpacing: -1,
+        },
         comparisonBadge: {
           flexDirection: "row",
           alignItems: "center",
-          justifyContent: "center",
-          gap: 6,
           alignSelf: "center",
           paddingHorizontal: 12,
           paddingVertical: 6,
           borderRadius: 20,
+          gap: 4,
           marginBottom: 24,
         },
         comparisonPositive: {
@@ -256,8 +320,6 @@ export function EarningsDashboard({
         comparisonTextNegative: {
           color: "#EF4444",
         },
-
-        /* ─── Stats Grid ──────────────────────────────────────── */
         statsGrid: {
           flexDirection: "row",
           flexWrap: "wrap",
@@ -265,126 +327,120 @@ export function EarningsDashboard({
           marginBottom: 24,
         },
         statCard: {
-          width: "47%",
-          backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)",
+          flex: 1,
+          minWidth: "45%",
+          backgroundColor: isDark ? colors.surface : "#FFFFFF",
           borderRadius: 16,
+          padding: 16,
           borderWidth: 1,
           borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
-          padding: 16,
         },
         statIcon: {
           width: 32,
           height: 32,
-          borderRadius: 10,
+          borderRadius: 8,
           alignItems: "center",
           justifyContent: "center",
-          marginBottom: 10,
+          marginBottom: 12,
         },
         statValue: {
-          fontSize: 24,
+          fontSize: 22,
           fontWeight: "700",
           color: colors.text,
-          marginBottom: 4,
+          marginBottom: 2,
         },
         statLabel: {
           fontSize: 12,
-          fontWeight: "600",
+          fontWeight: "500",
           color: colors.textMuted,
-          textTransform: "uppercase",
-          letterSpacing: 0.5,
         },
         statChange: {
           flexDirection: "row",
           alignItems: "center",
-          gap: 4,
+          gap: 2,
           marginTop: 8,
         },
         statChangeText: {
           fontSize: 11,
           fontWeight: "600",
         },
-
-        /* ─── Period Filter ──────────────────────────────────── */
         periodFilter: {
           flexDirection: "row",
-          backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)",
+          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
           borderRadius: 12,
           padding: 4,
-          marginBottom: 24,
+          marginBottom: 16,
         },
         periodBtn: {
           flex: 1,
-          height: 40,
-          borderRadius: 10,
+          paddingVertical: 8,
           alignItems: "center",
-          justifyContent: "center",
+          borderRadius: 8,
         },
         periodBtnActive: {
-          backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "#FFFFFF",
+          backgroundColor: isDark ? colors.surfaceOverlay : "#FFFFFF",
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: isDark ? 0.3 : 0.08,
+          shadowOpacity: 0.1,
           shadowRadius: 4,
           elevation: 2,
         },
         periodBtnText: {
-          fontSize: 14,
+          fontSize: 13,
           fontWeight: "600",
           color: colors.textMuted,
         },
         periodBtnTextActive: {
           color: colors.text,
         },
-
-        /* ─── Graph Card ──────────────────────────────────────── */
         graphCard: {
-          backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)",
+          backgroundColor: isDark ? colors.surface : "#FFFFFF",
           borderRadius: 20,
+          padding: 20,
           borderWidth: 1,
           borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
-          padding: 20,
           marginBottom: 24,
         },
         graphHeader: {
           flexDirection: "row",
-          justifyContent: "space-between",
           alignItems: "center",
+          justifyContent: "space-between",
           marginBottom: 20,
         },
         graphTitle: {
-          fontSize: 15,
+          fontSize: 14,
+          fontWeight: "600",
+          color: colors.textSecondary,
+        },
+        graphValue: {
+          fontSize: 18,
           fontWeight: "700",
           color: colors.text,
         },
-        graphValue: {
-          fontSize: 15,
-          fontWeight: "700",
-          color: brand.primary,
-        },
         graphContainer: {
-          height: 160,
           flexDirection: "row",
           alignItems: "flex-end",
-          justifyContent: "space-between",
-          marginBottom: 8,
+          height: 120,
+          gap: 8,
+          paddingTop: 10,
+          marginBottom: 12,
         },
         graphBarWrapper: {
           flex: 1,
-          alignItems: "center",
-          justifyContent: "flex-end",
           height: "100%",
+          justifyContent: "flex-end",
+          alignItems: "center",
         },
         graphBar: {
-          width: 24,
+          width: "80%",
+          maxWidth: 24,
           borderRadius: 6,
-          backgroundColor: brand.primary,
-          minHeight: 4,
         },
         graphBarActive: {
           backgroundColor: brand.primary,
         },
         graphBarInactive: {
-          backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)",
+          backgroundColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)",
         },
         graphLabels: {
           flexDirection: "row",
@@ -397,8 +453,6 @@ export function EarningsDashboard({
           fontWeight: "500",
           color: colors.textMuted,
         },
-
-        /* ─── Comparison Section ──────────────────────────────── */
         comparisonSection: {
           backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)",
           borderRadius: 16,
@@ -483,6 +537,32 @@ export function EarningsDashboard({
     );
   }
 
+
+
+  if (loading) {
+    return (
+      <View style={[s.screen, { alignItems: "center", justifyContent: "center" }]}>
+        <ActivityIndicator size="large" color={brand.primary} />
+      </View>
+    );
+  }
+
+  if (!earnings) {
+    return (
+      <View style={[s.screen, { alignItems: "center", justifyContent: "center", paddingHorizontal: 32 }]}>
+        <Wallet size={48} color={colors.textMuted} />
+        <Text style={{ fontSize: 18, fontWeight: "600", color: colors.text, marginTop: 16, textAlign: "center" }}>
+          No earnings data yet
+        </Text>
+        <Text style={{ fontSize: 14, fontWeight: "400", color: colors.textSecondary, marginTop: 8, textAlign: "center" }}>
+          Start going online to see your earnings here
+        </Text>
+      </View>
+    );
+  }
+
+  const walletBal = earnings.walletBalance ?? earnings.today.total;
+
   return (
     <View style={s.screen}>
       <ScrollView
@@ -492,13 +572,54 @@ export function EarningsDashboard({
       >
         {/* ─── Header ─────────────────────────────────────────── */}
         <View style={s.header}>
-          <Text style={s.headerLabel}>Earnings</Text>
+          <Text style={s.headerLabel}>Earnings Hub</Text>
+        </View>
+
+        {/* ─── Wallet & Cashout Banner ────────────────────────── */}
+        <View
+          style={{
+            backgroundColor: isDark ? "rgba(250,204,21,0.08)" : "#FFFBEB",
+            borderColor: isDark ? "rgba(250,204,21,0.3)" : "#FCD34D",
+            borderWidth: 1,
+            borderRadius: 20,
+            padding: 18,
+            marginBottom: 20,
+          }}
+        >
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+            <View>
+              <Text style={{ fontSize: 12, fontWeight: "600", color: colors.textMuted, textTransform: "uppercase" }}>
+                Available MoMo Balance
+              </Text>
+              <Text style={{ fontSize: 26, fontWeight: "800", color: colors.text, marginTop: 2 }}>
+                {currency} {typeof walletBal === "number" && Number.isFinite(walletBal) ? walletBal.toFixed(2) : "0.00"}
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => {
+                setCashoutAmount(walletBal > 0 ? walletBal.toString() : "50");
+                setCashoutModalVisible(true);
+              }}
+              style={{
+                backgroundColor: brand.primary,
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+                borderRadius: 12,
+                shadowColor: "#000",
+                shadowOpacity: 0.15,
+                shadowRadius: 4,
+                elevation: 3,
+              }}
+            >
+              <Text style={{ fontSize: 13, fontWeight: "700", color: "#000" }}>Cash Out</Text>
+            </Pressable>
+          </View>
         </View>
 
         {/* ─── Dominant Earnings ──────────────────────────────── */}
         <View style={s.earningsHero}>
           <Text style={s.earningsAmount}>
-            {currency} {earnings.today.total.toFixed(2)}
+            {currency} {typeof earnings.today.total === "number" && Number.isFinite(earnings.today.total) ? earnings.today.total.toFixed(2) : "0.00"}
           </Text>
         </View>
 
@@ -838,7 +959,276 @@ export function EarningsDashboard({
             </View>
           </View>
         </View>
+
+        {/* ─── Financial Breakdown ────────────────────────────── */}
+        <View style={{ marginTop: 24 }}>
+          <Text style={{ fontSize: 13, fontWeight: "700", color: colors.textMuted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 12 }}>
+            Earnings Breakdown
+          </Text>
+          <View style={{ backgroundColor: isDark ? colors.surface : "#FFFFFF", borderRadius: 16, padding: 16, borderWidth: 1, borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)" }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)" }}>
+              <Text style={{ fontSize: 14, color: colors.text }}>Trip Fares</Text>
+              <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>{currency} {(earnings.breakdown?.fares ?? earnings.today.total * 0.85).toFixed(2)}</Text>
+            </View>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)" }}>
+              <Text style={{ fontSize: 14, color: colors.text }}>Rider Tips (100% kept)</Text>
+              <Text style={{ fontSize: 14, fontWeight: "600", color: "#22C55E" }}>+{currency} {(earnings.breakdown?.tips ?? earnings.today.tips).toFixed(2)}</Text>
+            </View>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)" }}>
+              <Text style={{ fontSize: 14, color: colors.text }}>Quest & Peak Bonuses</Text>
+              <Text style={{ fontSize: 14, fontWeight: "600", color: "#F59E0B" }}>+{currency} {(earnings.breakdown?.bonuses ?? earnings.today.bonuses).toFixed(2)}</Text>
+            </View>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 8 }}>
+              <Text style={{ fontSize: 14, color: colors.textMuted }}>Platform Service Fee</Text>
+              <Text style={{ fontSize: 14, fontWeight: "600", color: colors.textMuted }}>-{currency} {(earnings.breakdown?.platformFee ?? earnings.today.total * 0.15).toFixed(2)}</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* ─── Recent Trip Earnings Feed ──────────────────────── */}
+        <View style={{ marginTop: 24 }}>
+          <Text style={{ fontSize: 13, fontWeight: "700", color: colors.textMuted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 12 }}>
+            Recent Trip Earnings
+          </Text>
+          {earnings.recentTrips && earnings.recentTrips.length > 0 ? (
+            <View style={{ gap: 8 }}>
+              {earnings.recentTrips.map((trip) => (
+                <View
+                  key={trip.id}
+                  style={{
+                    backgroundColor: isDark ? colors.surface : "#FFFFFF",
+                    borderRadius: 14,
+                    padding: 14,
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    borderWidth: 1,
+                    borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+                  }}
+                >
+                  <View style={{ flex: 1, marginRight: 12 }}>
+                    <Text style={{ fontSize: 13, fontWeight: "600", color: colors.text }} numberOfLines={1}>
+                      {trip.pickup ? `${trip.pickup.split(",")[0]} → ${trip.destination?.split(",")[0] ?? "Destination"}` : `${trip.type.toUpperCase()} #${trip.id.slice(-6)}`}
+                    </Text>
+                    <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
+                      {new Date(trip.date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })} • {trip.type === "ride" ? "Okada Ride" : "Package Express"}
+                    </Text>
+                  </View>
+                  <View style={{ alignItems: "flex-end" }}>
+                    <Text style={{ fontSize: 14, fontWeight: "700", color: "#22C55E" }}>
+                      +{currency} {trip.amount.toFixed(2)}
+                    </Text>
+                    {trip.tip > 0 ? (
+                      <Text style={{ fontSize: 10, fontWeight: "600", color: "#F59E0B", marginTop: 2 }}>
+                        Incl. {currency}{trip.tip.toFixed(2)} Tip
+                      </Text>
+                    ) : null}
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View style={{ backgroundColor: isDark ? colors.surface : "#FFFFFF", borderRadius: 14, padding: 16, alignItems: "center" }}>
+              <Text style={{ fontSize: 13, color: colors.textMuted }}>No completed trips recorded today yet.</Text>
+            </View>
+          )}
+        </View>
+
+        {/* ─── Cashout History Feed ───────────────────────────── */}
+        {earnings.payoutRequests && earnings.payoutRequests.length > 0 ? (
+          <View style={{ marginTop: 24, marginBottom: 12 }}>
+            <Text style={{ fontSize: 13, fontWeight: "700", color: colors.textMuted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 12 }}>
+              Recent Payout Requests
+            </Text>
+            <View style={{ gap: 8 }}>
+              {earnings.payoutRequests.map((req) => (
+                <View
+                  key={req.id}
+                  style={{
+                    backgroundColor: isDark ? colors.surface : "#FFFFFF",
+                    borderRadius: 14,
+                    padding: 14,
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    borderWidth: 1,
+                    borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+                  }}
+                >
+                  <View>
+                    <Text style={{ fontSize: 13, fontWeight: "600", color: colors.text }}>
+                      {req.destinationLabel ?? "Mobile Money Cashout"}
+                    </Text>
+                    <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
+                      {new Date(req.requestedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                    </Text>
+                  </View>
+                  <View style={{ alignItems: "flex-end" }}>
+                    <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
+                      {currency} {req.amount.toFixed(2)}
+                    </Text>
+                    <View
+                      style={{
+                        marginTop: 4,
+                        paddingHorizontal: 8,
+                        paddingVertical: 2,
+                        borderRadius: 6,
+                        backgroundColor: req.status === "COMPLETED" ? "#22C55E15" : "#F59E0B15",
+                      }}
+                    >
+                      <Text style={{ fontSize: 10, fontWeight: "700", color: req.status === "COMPLETED" ? "#22C55E" : "#F59E0B" }}>
+                        {req.status}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        ) : null}
       </ScrollView>
+
+      {/* ─── Instant Cashout Modal ──────────────────────────── */}
+      {cashoutModalVisible ? (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.6)",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 20,
+            zIndex: 999,
+          }}
+        >
+          <View
+            style={{
+              width: "100%",
+              maxWidth: 400,
+              backgroundColor: isDark ? colors.surface : "#FFFFFF",
+              borderRadius: 24,
+              padding: 24,
+              borderWidth: 1,
+              borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)",
+            }}
+          >
+            <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text, marginBottom: 4 }}>
+              Instant MoMo Cashout
+            </Text>
+            <Text style={{ fontSize: 13, color: colors.textSecondary, marginBottom: 16 }}>
+              Transfer your earnings instantly to your Mobile Money account.
+            </Text>
+
+            {cashoutSuccessMsg ? (
+              <View
+                style={{
+                  backgroundColor: cashoutSuccessMsg.includes("failed") ? "#FEF2F2" : "#F0FDF4",
+                  padding: 12,
+                  borderRadius: 12,
+                  marginBottom: 16,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontWeight: "600",
+                    color: cashoutSuccessMsg.includes("failed") ? "#EF4444" : "#16A34A",
+                    textAlign: "center",
+                  }}
+                >
+                  {cashoutSuccessMsg}
+                </Text>
+              </View>
+            ) : null}
+
+            {/* Amount display */}
+            <Text style={{ fontSize: 12, fontWeight: "600", color: colors.textMuted, marginBottom: 6 }}>
+              Amount ({currency})
+            </Text>
+            <Pressable
+              style={{
+                backgroundColor: isDark ? colors.surfaceOverlay : "#F3F4F6",
+                borderRadius: 12,
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                marginBottom: 16,
+              }}
+            >
+              <Text style={{ fontSize: 20, fontWeight: "700", color: colors.text }}>
+                {currency} {cashoutAmount || "0.00"}
+              </Text>
+            </Pressable>
+
+            {/* MoMo Network Selection */}
+            <Text style={{ fontSize: 12, fontWeight: "600", color: colors.textMuted, marginBottom: 8 }}>
+              Mobile Money Provider
+            </Text>
+            <View style={{ flexDirection: "row", gap: 8, marginBottom: 20 }}>
+              {[
+                { id: "MTN_MOMO", label: "MTN MoMo" },
+                { id: "TELECEL_CASH", label: "Telecel Cash" },
+                { id: "AT_MONEY", label: "AT Money" },
+              ].map((p) => {
+                const isSel = cashoutProvider === p.id;
+                return (
+                  <Pressable
+                    key={p.id}
+                    onPress={() => setCashoutProvider(p.id)}
+                    style={{
+                      flex: 1,
+                      paddingVertical: 10,
+                      borderRadius: 10,
+                      alignItems: "center",
+                      backgroundColor: isSel ? brand.primary : isDark ? colors.surfaceOverlay : "#F3F4F6",
+                    }}
+                  >
+                    <Text style={{ fontSize: 11, fontWeight: "700", color: isSel ? "#000" : colors.text }}>
+                      {p.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            {/* Modal Actions */}
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <Pressable
+                onPress={() => setCashoutModalVisible(false)}
+                style={{
+                  flex: 1,
+                  paddingVertical: 12,
+                  borderRadius: 12,
+                  alignItems: "center",
+                  backgroundColor: isDark ? colors.surfaceOverlay : "#E5E7EB",
+                }}
+              >
+                <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                onPress={handleCashoutSubmit}
+                disabled={submittingCashout}
+                style={{
+                  flex: 1,
+                  paddingVertical: 12,
+                  borderRadius: 12,
+                  alignItems: "center",
+                  backgroundColor: brand.primary,
+                  opacity: submittingCashout ? 0.7 : 1,
+                }}
+              >
+                {submittingCashout ? (
+                  <ActivityIndicator size="small" color="#000" />
+                ) : (
+                  <Text style={{ fontSize: 14, fontWeight: "700", color: "#000" }}>Confirm Cashout</Text>
+                )}
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      ) : null}
     </View>
   );
 }

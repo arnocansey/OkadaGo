@@ -71,9 +71,13 @@ export function useNotifications(token?: string | null) {
     try {
       await api("/notifications/read-all", { method: "POST", token });
     } catch {
-      await refresh();
+      try {
+        await api("/notifications/read-all", { method: "PATCH", token });
+      } catch {
+        // Keep optimistic state unless next manual refresh
+      }
     }
-  }, [token, refresh]);
+  }, [token]);
 
   return { items, loading, error, unreadCount, refresh, markRead, markAllRead };
 }

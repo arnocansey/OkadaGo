@@ -66,8 +66,28 @@ export function useRiderLocation({
   }, [activeRide, displayIsOnline, riderProfileId]);
 
   const updateAvailability = useMutation({
-    mutationFn: async (onlineStatus: boolean) =>
-      patchJson(`/riders/${riderProfileId}/availability`, { onlineStatus }),
+    mutationFn: async (onlineStatus: boolean) => {
+      let latitude: number | undefined;
+      let longitude: number | undefined;
+      if (typeof navigator !== "undefined" && navigator.geolocation) {
+        try {
+          const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000 });
+          });
+          latitude = pos.coords.latitude;
+          longitude = pos.coords.longitude;
+        } catch {
+          // fallback to Accra default if permission denied or timeout
+          latitude = 5.6037;
+          longitude = -0.187;
+        }
+      }
+      return patchJson(`/riders/${riderProfileId}/availability`, {
+        onlineStatus,
+        latitude,
+        longitude
+      });
+    },
     onMutate: async (onlineStatus) => {
       setAvailabilityOverride(onlineStatus);
       await queryClient.cancelQueries({ queryKey: ["riders"] });

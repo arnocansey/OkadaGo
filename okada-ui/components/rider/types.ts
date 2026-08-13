@@ -10,6 +10,7 @@ export type RideRecord = {
   id: string;
   riderId: string | null;
   rider?: { id: string } | null;
+  serviceZoneId?: string | null;
   status: string;
   pickupAddress: string;
   destinationAddress: string;
@@ -17,6 +18,9 @@ export type RideRecord = {
   pickupLongitude?: string | number | null;
   destinationLatitude?: string | number | null;
   destinationLongitude?: string | number | null;
+  estimatedDistanceKm?: string | number | null;
+  estimatedDurationMinutes?: string | number | null;
+  paymentMethod?: string | null;
   estimatedFare: string | number | null;
   finalFare: string | number | null;
   currency: string;
@@ -37,6 +41,7 @@ export type RiderRecord = {
   commissionPercent: string | number;
   currentLatitude: string | number | null;
   currentLongitude: string | number | null;
+  serviceZoneId?: string | null;
   serviceZone: {
     id: string;
     name: string;

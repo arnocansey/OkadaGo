@@ -1729,7 +1729,8 @@ export function useAdminData(
         invalidateOpsSummary()
       ]);
       addToast("Admin account created", "success");
-    }
+    },
+    onError: (error) => addToast((error as Error).message || "Could not create admin account", "error")
   });
 
   const promotePassengerMutation = useMutation({
@@ -1751,7 +1752,8 @@ export function useAdminData(
         invalidateOpsSummary()
       ]);
       addToast("Passenger promoted to admin", "success");
-    }
+    },
+    onError: (error) => addToast((error as Error).message || "Could not promote passenger", "error")
   });
 
   const deleteAdminMutation = useMutation({

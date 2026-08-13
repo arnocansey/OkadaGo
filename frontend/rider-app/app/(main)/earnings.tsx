@@ -44,61 +44,64 @@ export default function EarningsScreen() {
   const insets = useSafeAreaInsets();
   const { session } = useApp();
   const { colors } = useTheme();
-  const [earnings, setEarnings] = useState<EarningsData | null>(null);
+  const [earnings, setEarnings] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchEarnings() {
-      if (!session?.token) return;
-      setLoading(true);
-      setError(null);
+  const fetchEarnings = async () => {
+    if (!session?.token) return;
+    setLoading(true);
+    setError(null);
 
-      try {
-        const data = await api<EarningsData>("/rider/earnings", {
-          token: session.token,
-        });
-        setEarnings(data);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Could not load earnings.");
-        setEarnings(null);
-      } finally {
-        setLoading(false);
-      }
+    try {
+      const data = await api<any>("/rider/earnings", {
+        token: session.token,
+      });
+      setEarnings(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not load earnings.");
+      setEarnings(null);
+    } finally {
+      setLoading(false);
     }
+  };
 
+  useEffect(() => {
     fetchEarnings();
   }, [session?.token]);
 
+  const handleRequestCashout = async (amount: number) => {
+    if (!session?.token) return;
+    await api("/wallets/rider/payout-requests", {
+      method: "POST",
+      token: session.token,
+      body: { amount },
+    });
+    await fetchEarnings();
+  };
+
   return (
-    <>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Stack.Screen options={{ headerShown: false }} />
       <NavigationHeader title="Earnings" />
-      <ScrollView
-        style={{ flex: 1, backgroundColor: colors.bg }}
-        contentContainerStyle={{
-          padding: 20,
-          paddingBottom: insets.bottom + 24,
-        }}
-        showsVerticalScrollIndicator={false}
-      >
-        {error ? (
+      {error ? (
+        <View style={{ padding: 20 }}>
           <ErrorCard
             message={error}
             onRetry={() => {
-              setLoading(true);
-              setError(null);
+              void fetchEarnings();
             }}
             onDismiss={() => setError(null)}
           />
-        ) : (
-          <EarningsDashboard
-            data={earnings ?? undefined}
-            loading={loading}
-            currency="GH₵"
-          />
-        )}
-      </ScrollView>
-    </>
+        </View>
+      ) : (
+        <EarningsDashboard
+          data={earnings ?? undefined}
+          loading={loading}
+          currency="GH₵"
+          onRequestCashout={handleRequestCashout}
+        />
+      )}
+    </View>
   );
 }
