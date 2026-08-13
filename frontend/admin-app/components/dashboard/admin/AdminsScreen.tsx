@@ -1,8 +1,12 @@
-import { ShieldAlert, UserPlus, CheckCircle, Trash2 } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { ShieldAlert, UserPlus, CheckCircle, Trash2, Plus } from "lucide-react";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { AdminKpiRow } from "./ui/AdminKpiRow";
+import { CreateAdminModal, PromotePassengerModal } from "./ui/AdminAccountModal";
 import type { AdminAccountRecord, PassengerRecord } from "./types";
 import { formatDateTime, statusTone } from "./utils";
 
@@ -57,15 +61,74 @@ export function AdminsScreen({
   isDeleting = false,
   dataLoading = false
 }: AdminsScreenProps) {
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isPromoteModalOpen, setIsPromoteModalOpen] = useState(false);
+
   if (dataLoading) {
     return <AdminPageSkeleton variant="form" kpis={3} rows={6} />;
   }
+
+  const handleCreateSubmit = () => {
+    onCreateAdmin();
+    setIsCreateModalOpen(false);
+  };
+
+  const handlePromoteSubmit = () => {
+    onPromotePassenger();
+    setIsPromoteModalOpen(false);
+  };
+
   return (
     <div className="exact-admin-screen">
-      <AdminPageHeader
-        title="Staff"
-        subtitle="Create and manage OkadaGo Accra operator accounts."
-      />
+      {/* Header with Modal Trigger Buttons */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+        <AdminPageHeader
+          title="Staff & Admins"
+          subtitle="Create, promote, and manage OkadaGo Accra operator accounts and role permissions."
+        />
+        <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+          <button
+            type="button"
+            className="button"
+            onClick={() => setIsPromoteModalOpen(true)}
+            style={{
+              background: "var(--bg-subtle, #222326)",
+              border: "1px solid var(--border, #334155)",
+              color: "#e2e8f0",
+              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "10px 16px",
+              borderRadius: 10,
+              cursor: "pointer"
+            }}
+          >
+            <UserPlus size={16} />
+            Promote Passenger
+          </button>
+          <button
+            type="button"
+            className="button"
+            onClick={() => setIsCreateModalOpen(true)}
+            style={{
+              background: "var(--accent-orange, #f97316)",
+              border: "none",
+              color: "#fff",
+              fontWeight: 700,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "10px 18px",
+              borderRadius: 10,
+              cursor: "pointer"
+            }}
+          >
+            <Plus size={18} />
+            Create Admin Account
+          </button>
+        </div>
+      </div>
 
       <AdminKpiRow
         items={[
@@ -85,7 +148,7 @@ export function AdminsScreen({
           },
           {
             label: "Permission Roles",
-            value: adminRoleEntries.length,
+            value: adminRoleEntries.length || 6,
             hint: "Defined templates",
             icon: <ShieldAlert size={22} />,
             tone: "yellow",
@@ -100,243 +163,137 @@ export function AdminsScreen({
         ]}
       />
 
-      <div className="admin-overview-split">
-        {/* Current Admins */}
-        <div>
-          <article className="admin-reference-card" style={{ marginBottom: 16 }}>
-            <div className="admin-reference-cardhead">
-              <div>
-                <h3>Admin Accounts</h3>
-                <p>All current Accra administrators on the platform.</p>
-              </div>
-            </div>
-            {adminAccounts.length === 0 ? (
-              <EmptyCard title="No admin accounts." body="Create the first admin account using the form below." />
-            ) : (
-              <div className="admin-table-wrapper">
-                <table className="admin-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Title</th>
-                      <th>Phone</th>
-                      <th>Email</th>
-                      <th>Status</th>
-                      <th>Permissions</th>
-                      <th>Created</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {adminAccounts.map((admin) => (
-                      <tr key={admin.id}>
-                        <td><strong>{admin.user.fullName}</strong></td>
-                        <td><small>{admin.title ?? "—"}</small></td>
-                        <td><small>{admin.user.phoneE164}</small></td>
-                        <td><small>{admin.user.email ?? "—"}</small></td>
-                        <td>
-                          <em className={`admin-reference-tag ${statusTone(admin.user.accountStatus)}`}>
-                            {admin.user.accountStatus}
-                          </em>
-                        </td>
-                        <td>
-                          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                            {admin.permissions.slice(0, 3).map((perm) => (
-                              <em key={perm} className="admin-reference-tag neutral" style={{ fontSize: 11 }}>
-                                {perm}
-                              </em>
-                            ))}
-                            {admin.permissions.length > 3 && (
-                              <em className="admin-reference-tag neutral" style={{ fontSize: 11 }}>
-                                +{admin.permissions.length - 3}
-                              </em>
-                            )}
-                          </div>
-                        </td>
-                        <td><small>{formatDateTime(admin.createdAt)}</small></td>
-                        <td>
-                          {onDeleteAdmin ? (
-                            <button
-                              type="button"
-                              className="settings-btn settings-btn--ghost"
-                              disabled={isDeleting}
-                              title="Soft-delete admin"
-                              onClick={() => {
-                                if (window.confirm(`Delete admin ${admin.user.fullName}? This revokes their sessions.`)) {
-                                  onDeleteAdmin(admin.user.id);
-                                }
-                              }}
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          ) : null}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </article>
+      {/* Main Admin Accounts Table */}
+      <article className="admin-reference-card" style={{ marginTop: 20 }}>
+        <div className="admin-reference-cardhead" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <h3 style={{ margin: 0 }}>Admin Accounts Directory</h3>
+            <p style={{ margin: "2px 0 0" }}>All current Accra administrators and staff accounts on OkadaGo.</p>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              type="button"
+              onClick={() => setIsCreateModalOpen(true)}
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "var(--accent-orange, #f97316)",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 4
+              }}
+            >
+              <Plus size={15} /> Add New Admin
+            </button>
+          </div>
         </div>
 
-        <aside className="admin-sidebar-panel">
-          {/* Create new admin */}
-          <article className="admin-reference-card" style={{ marginBottom: 16 }}>
-            <div className="admin-reference-cardhead">
-              <div><h3>Create Admin Account</h3></div>
-            </div>
-            <div className="admin-form">
-              <label>
-                Full Name
-                <input
-                  type="text"
-                  className="admin-input"
-                  value={adminForm.fullName}
-                  onChange={(e) => onAdminFormChange("fullName", e.target.value)}
-                  placeholder="Full name"
-                />
-              </label>
-              <label>
-                Email
-                <input
-                  type="email"
-                  className="admin-input"
-                  value={adminForm.email}
-                  onChange={(e) => onAdminFormChange("email", e.target.value)}
-                  placeholder="Email address"
-                />
-              </label>
-              <label>
-                Phone (E.164)
-                <input
-                  type="tel"
-                  className="admin-input"
-                  value={adminForm.phoneE164}
-                  onChange={(e) => onAdminFormChange("phoneE164", e.target.value)}
-                  placeholder="+233XXXXXXXXX"
-                />
-              </label>
-              <label>
-                Password
-                <input
-                  type="password"
-                  className="admin-input"
-                  value={adminForm.password}
-                  onChange={(e) => onAdminFormChange("password", e.target.value)}
-                  placeholder="Password"
-                />
-              </label>
-              <label>
-                Title / Role
-                <input
-                  type="text"
-                  className="admin-input"
-                  value={adminForm.title}
-                  onChange={(e) => onAdminFormChange("title", e.target.value)}
-                  placeholder="e.g. Operations Manager"
-                />
-              </label>
-              <label>
-                Permissions (comma-separated)
-                <input
-                  type="text"
-                  className="admin-input"
-                  value={adminForm.permissions}
-                  onChange={(e) => onAdminFormChange("permissions", e.target.value)}
-                  placeholder="e.g. rides:read, riders:write"
-                />
-              </label>
-              <button
-                type="button"
-                className="button"
-                disabled={isCreating || !adminForm.fullName || !adminForm.phoneE164}
-                onClick={onCreateAdmin}
-              >
-                {isCreating ? "Creating..." : "Create Admin"}
-              </button>
-            </div>
-          </article>
+        {adminAccounts.length === 0 ? (
+          <EmptyCard
+            title="No admin accounts found."
+            body="Click 'Create Admin Account' above to set up the first administrator."
+          />
+        ) : (
+          <div className="admin-table-wrapper">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Title / Role</th>
+                  <th>Phone</th>
+                  <th>Email</th>
+                  <th>Status</th>
+                  <th>Permissions</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {adminAccounts.map((admin) => (
+                  <tr key={admin.id}>
+                    <td>
+                      <strong>{admin.user.fullName}</strong>
+                    </td>
+                    <td>
+                      <small style={{ fontWeight: 600, color: "#e2e8f0" }}>{admin.title ?? "Administrator"}</small>
+                    </td>
+                    <td>
+                      <small>{admin.user.phoneE164}</small>
+                    </td>
+                    <td>
+                      <small>{admin.user.email ?? "—"}</small>
+                    </td>
+                    <td>
+                      <em className={`admin-reference-tag ${statusTone(admin.user.accountStatus)}`}>
+                        {admin.user.accountStatus}
+                      </em>
+                    </td>
+                    <td>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                        {admin.permissions.slice(0, 3).map((perm) => (
+                          <em key={perm} className="admin-reference-tag neutral" style={{ fontSize: 11 }}>
+                            {perm}
+                          </em>
+                        ))}
+                        {admin.permissions.length > 3 && (
+                          <em className="admin-reference-tag neutral" style={{ fontSize: 11 }}>
+                            +{admin.permissions.length - 3}
+                          </em>
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      <small>{formatDateTime(admin.createdAt)}</small>
+                    </td>
+                    <td>
+                      {onDeleteAdmin ? (
+                        <button
+                          type="button"
+                          className="settings-btn settings-btn--ghost"
+                          disabled={isDeleting}
+                          title="Soft-delete admin account"
+                          onClick={() => {
+                            if (window.confirm(`Delete admin account for ${admin.user.fullName}? This revokes their access.`)) {
+                              onDeleteAdmin(admin.user.id);
+                            }
+                          }}
+                        >
+                          <Trash2 size={14} style={{ color: "#ef4444" }} />
+                        </button>
+                      ) : null}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </article>
 
-          {/* Promote passenger */}
-          <article className="admin-reference-card">
-            <div className="admin-reference-cardhead">
-              <div><h3>Promote Passenger</h3><p>Elevate an existing user to admin.</p></div>
-            </div>
-            <div className="admin-form">
-              <label>
-                Passenger User ID
-                <select
-                  className="admin-input"
-                  value={promoteForm.passengerUserId}
-                  onChange={(e) => onPromoteFormChange("passengerUserId", e.target.value)}
-                >
-                  <option value="">Select a passenger...</option>
-                  {eligiblePassengers.map((p) => (
-                    <option key={p.userId} value={p.userId}>
-                      {p.user.fullName} ({p.user.phoneE164})
-                    </option>
-                  ))}
-                </select>
-              </label>
-              {selectedPassenger && (
-                <div className="admin-promote-preview">
-                  <strong>{selectedPassenger.user.fullName}</strong>
-                  <small>{selectedPassenger.user.phoneE164} · {selectedPassenger.user.email}</small>
-                </div>
-              )}
-              <label>
-                New Email (optional)
-                <input
-                  type="email"
-                  className="admin-input"
-                  value={promoteForm.email}
-                  onChange={(e) => onPromoteFormChange("email", e.target.value)}
-                  placeholder="Admin email"
-                />
-              </label>
-              <label>
-                New Password
-                <input
-                  type="password"
-                  className="admin-input"
-                  value={promoteForm.password}
-                  onChange={(e) => onPromoteFormChange("password", e.target.value)}
-                  placeholder="New admin password"
-                />
-              </label>
-              <label>
-                Title
-                <input
-                  type="text"
-                  className="admin-input"
-                  value={promoteForm.title}
-                  onChange={(e) => onPromoteFormChange("title", e.target.value)}
-                  placeholder="e.g. Finance Officer"
-                />
-              </label>
-              <label>
-                Permissions (comma-separated)
-                <input
-                  type="text"
-                  className="admin-input"
-                  value={promoteForm.permissions}
-                  onChange={(e) => onPromoteFormChange("permissions", e.target.value)}
-                  placeholder="e.g. finance:read"
-                />
-              </label>
-              <button
-                type="button"
-                className="button"
-                disabled={isPromoting || !promoteForm.passengerUserId || !promoteForm.password}
-                onClick={onPromotePassenger}
-              >
-                {isPromoting ? "Promoting..." : "Promote to Admin"}
-              </button>
-            </div>
-          </article>
-        </aside>
-      </div>
+      {/* Create Admin Modal Popup */}
+      <CreateAdminModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        form={adminForm}
+        onChange={onAdminFormChange}
+        onSubmit={handleCreateSubmit}
+        isSubmitting={isCreating}
+      />
+
+      {/* Promote Passenger Modal Popup */}
+      <PromotePassengerModal
+        isOpen={isPromoteModalOpen}
+        onClose={() => setIsPromoteModalOpen(false)}
+        form={promoteForm}
+        eligiblePassengers={eligiblePassengers}
+        selectedPassenger={selectedPassenger}
+        onChange={onPromoteFormChange}
+        onSubmit={handlePromoteSubmit}
+        isSubmitting={isPromoting}
+      />
     </div>
   );
 }
