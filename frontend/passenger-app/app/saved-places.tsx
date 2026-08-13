@@ -1,206 +1,311 @@
-import { Stack, router } from "expo-router";
+import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Home, Pencil, Trash2, Briefcase } from "lucide-react-native";
+import {
+  Briefcase,
+  Church,
+  GraduationCap,
+  Home,
+  MapPin,
+  Pencil,
+  Plus,
+  X,
+} from "lucide-react-native";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { Input } from "@/components/ui/Input";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
-import { useUserLocation } from "@/hooks/useUserLocation";
 import { api } from "@/lib/api";
-import { spacing } from "@/theme/tokens";
-import type { LocationResult, SavedPlace } from "@/types";
 
-const LABEL_PRESETS = [
-  { id: "Home", icon: Home },
-  { id: "Work", icon: Briefcase },
-] as const;
+type SavedPlace = {
+  id: string;
+  label: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  instruction?: string;
+  icon: string;
+};
+
+const PLACE_TYPES = [
+  { key: "home", label: "Home", icon: Home, color: "#3B82F6", bg: "#EFF6FF" },
+  { key: "work", label: "Work", icon: Briefcase, color: "#F59E0B", bg: "#FFFBEB" },
+  { key: "school", label: "School", icon: GraduationCap, color: "#22C55E", bg: "#F0FDF4" },
+  { key: "church", label: "Church", icon: Church, color: "#A855F7", bg: "#FAF5FF" },
+  { key: "custom", label: "Custom", icon: MapPin, color: "#6B7280", bg: "#F9FAFB" },
+];
+
+function getIcon(key: string) {
+  return PLACE_TYPES.find((p) => p.key === key) ?? PLACE_TYPES[4];
+}
 
 export default function SavedPlacesScreen() {
   const { session } = useApp();
-  const { colors, typography, stackHeaderOptions } = useTheme();
-  const { latitude, longitude } = useUserLocation();
+  const { colors, isDark } = useTheme();
   const [places, setPlaces] = useState<SavedPlace[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [label, setLabel] = useState("Home");
-  const [address, setAddress] = useState("");
-  const [notes, setNotes] = useState("");
-
-  const styles = useMemo(
-    () =>
-      StyleSheet.create({
-        screen: { flex: 1, backgroundColor: colors.background },
-        content: { padding: spacing.xl, gap: spacing.lg, paddingBottom: spacing.xxxl },
-        row: { flexDirection: "row", alignItems: "center", gap: spacing.lg },
-        body: { flex: 1 },
-        title: { ...typography.bodySemibold, color: colors.text },
-        meta: { ...typography.caption, color: colors.textMuted, marginTop: 2 },
-        presetRow: { flexDirection: "row", gap: spacing.sm },
-        preset: {
-          flexDirection: "row",
-          alignItems: "center",
-          gap: spacing.xs,
-          paddingHorizontal: spacing.md,
-          paddingVertical: spacing.sm,
-          borderRadius: 12,
-          borderWidth: 1,
-          borderColor: colors.border,
-        },
-        presetActive: { borderColor: colors.primary, backgroundColor: colors.primaryLight },
-      }),
-    [colors, typography],
-  );
+  const [editing, setEditing] = useState<SavedPlace | null>(null);
+  const [editAddress, setEditAddress] = useState("");
+  const [editInstruction, setEditInstruction] = useState("");
 
   const load = useCallback(async () => {
     if (!session?.token) return;
-    setLoading(true);
     try {
-      setPlaces(await api<SavedPlace[]>("/places/saved", { token: session.token }));
+      const data = await api<SavedPlace[]>("/saved-places", { token: session.token });
+      setPlaces(data);
     } catch {
-      setPlaces([]);
+      // Empty state
     } finally {
       setLoading(false);
     }
   }, [session?.token]);
 
   useEffect(() => {
-    void load();
+    load();
   }, [load]);
 
-  function resetForm() {
-    setEditingId(null);
-    setLabel("Home");
-    setAddress("");
-    setNotes("");
-  }
-
-  function startEdit(place: SavedPlace) {
-    setEditingId(place.id);
-    setLabel(place.label);
-    setAddress(place.address);
-    setNotes(place.notes ?? "");
-  }
-
-  async function resolveCoords() {
-    if (!session?.token || !address.trim()) {
-      return { latitude, longitude };
-    }
-    try {
-      const result = await api<LocationResult>(
-        `/bootstrap/forward-geocode?q=${encodeURIComponent(address.trim())}`,
-        { token: session.token },
-      );
-      return { latitude: result.latitude, longitude: result.longitude };
-    } catch {
-      return { latitude, longitude };
-    }
-  }
-
   async function savePlace() {
-    if (!session?.token || !label.trim() || !address.trim()) return;
-    setSaving(true);
+    if (!session?.token || !editing) return;
+    if (!editAddress.trim()) {
+      Alert.alert("Address required", "Please enter an address.");
+      return;
+    }
     try {
-      const coords = await resolveCoords();
-      const body = {
-        label: label.trim(),
-        address: address.trim(),
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-        notes: notes.trim() || undefined,
-      };
-      if (editingId) {
-        await api(`/places/saved/${editingId}`, { method: "PATCH", token: session.token, body });
-      } else {
-        await api("/places/saved", { method: "POST", token: session.token, body });
-      }
-      resetForm();
+      await api(`/saved-places/${editing.id}`, {
+        method: "PATCH",
+        token: session.token,
+        body: { address: editAddress.trim(), instruction: editInstruction.trim() || null },
+      });
+      setEditing(null);
       await load();
     } catch (e) {
       Alert.alert("Save failed", e instanceof Error ? e.message : "Could not save place.");
-    } finally {
-      setSaving(false);
     }
   }
 
-  async function removePlace(placeId: string) {
-    if (!session?.token) return;
-    Alert.alert("Delete place", "Remove this saved place?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () => {
-          void api(`/places/saved/${placeId}`, { method: "DELETE", token: session.token })
-            .then(load)
-            .catch((e) => Alert.alert("Delete failed", e instanceof Error ? e.message : "Could not delete place."));
+  const s = useMemo(
+    () =>
+      StyleSheet.create({
+        screen: { flex: 1, backgroundColor: colors.background },
+        scroll: { flex: 1 },
+        content: { padding: 20, paddingBottom: 40 },
+
+        /* ─── Place Card ──────────────────────────────── */
+        placeCard: {
+          backgroundColor: isDark ? colors.surface : "#FFFFFF",
+          borderRadius: 14,
+          padding: 16,
+          marginBottom: 10,
+          borderWidth: 1,
+          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
         },
-      },
-    ]);
-  }
+        placeRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 12,
+        },
+        placeIcon: {
+          width: 40,
+          height: 40,
+          borderRadius: 12,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        placeInfo: {
+          flex: 1,
+        },
+        placeLabel: {
+          fontSize: 15,
+          fontWeight: "600",
+          color: colors.text,
+        },
+        placeAddress: {
+          fontSize: 13,
+          color: colors.textSecondary,
+          marginTop: 2,
+        },
+        placeInstruction: {
+          fontSize: 12,
+          color: colors.textMuted,
+          marginTop: 2,
+          fontStyle: "italic",
+        },
+        editBtn: {
+          width: 32,
+          height: 32,
+          borderRadius: 8,
+          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          alignItems: "center",
+          justifyContent: "center",
+        },
+
+        /* ─── Edit Modal ──────────────────────────────── */
+        modalOverlay: {
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.5)",
+          justifyContent: "center",
+          padding: 20,
+        },
+        modalCard: {
+          backgroundColor: isDark ? colors.surface : "#FFFFFF",
+          borderRadius: 20,
+          padding: 24,
+        },
+        modalTitle: {
+          fontSize: 18,
+          fontWeight: "700",
+          color: colors.text,
+          marginBottom: 16,
+        },
+        modalInput: {
+          borderWidth: 1,
+          borderColor: colors.border,
+          borderRadius: 12,
+          padding: 12,
+          fontSize: 14,
+          color: colors.text,
+          backgroundColor: isDark ? colors.surfaceOverlay : "#F8F9FA",
+          marginBottom: 12,
+        },
+        modalActions: {
+          flexDirection: "row",
+          gap: 10,
+          marginTop: 8,
+        },
+      }),
+    [colors, isDark],
+  );
 
   return (
-    <>
-      <Stack.Screen options={{ headerShown: true, title: "Saved places", ...stackHeaderOptions }} />
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 88 : 0}
+    <SafeAreaView style={s.screen}>
+      <ScrollView
+        style={s.scroll}
+        contentContainerStyle={s.content}
+        showsVerticalScrollIndicator={false}
       >
-        <SafeAreaView style={styles.screen} edges={["bottom"]}>
-          <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Card stacked>
-            <Text style={styles.title}>{editingId ? "Edit place" : "Add place"}</Text>
-            <View style={[styles.presetRow, { marginBottom: spacing.sm }]}>
-              {LABEL_PRESETS.map(({ id, icon: Icon }) => (
-                <Pressable
-                  key={id}
-                  style={[styles.preset, label === id && styles.presetActive]}
-                  onPress={() => setLabel(id)}
-                >
-                  <Icon size={14} color={label === id ? colors.primary : colors.textMuted} />
-                  <Text style={styles.meta}>{id}</Text>
-                </Pressable>
-              ))}
-            </View>
-            <Input label="Label" value={label} onChangeText={setLabel} placeholder="Home" />
-            <Input label="Address" value={address} onChangeText={setAddress} placeholder="Ring Road, Accra" multiline />
-            <Input label="Notes" value={notes} onChangeText={setNotes} placeholder="Optional" />
-            <Button label={editingId ? "Update place" : "Save place"} loading={saving} onPress={() => void savePlace()} fullWidth />
-            {editingId ? <Button label="Cancel edit" variant="ghost" onPress={resetForm} fullWidth /> : null}
-          </Card>
+        <ScreenHeader title="Saved Places" onBack={() => router.back()} />
 
-          {loading ? (
-            <Text style={styles.meta}>Loading places…</Text>
-          ) : places.length === 0 ? (
-            <EmptyState title="No saved places" message="Save your home, work, or favourite spots for quick access." />
-          ) : (
-            places.map((place) => (
-              <Card key={place.id} stacked>
-                <View style={styles.row}>
-                  <View style={styles.body}>
-                    <Text style={styles.title}>{place.label}</Text>
-                    <Text style={styles.meta}>{place.address}</Text>
+        {places.length === 0 && !loading ? (
+          <View style={{ alignItems: "center", marginTop: 60 }}>
+            <MapPin size={40} color={colors.primary} />
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "600",
+                color: colors.text,
+                marginTop: 12,
+              }}
+            >
+              No saved places yet
+            </Text>
+            <Text
+              style={{
+                fontSize: 13,
+                color: colors.textSecondary,
+                marginTop: 4,
+                textAlign: "center",
+              }}
+            >
+              Save your favorite destinations for quick access.
+            </Text>
+          </View>
+        ) : (
+          places.map((place) => {
+            const type = getIcon(place.icon);
+            const Icon = type.icon;
+            return (
+              <View key={place.id} style={s.placeCard}>
+                <View style={s.placeRow}>
+                  <View style={[s.placeIcon, { backgroundColor: type.bg }]}>
+                    <Icon size={18} color={type.color} />
                   </View>
-                  <Pressable onPress={() => startEdit(place)} hitSlop={12}>
-                    <Pencil size={18} color={colors.primary} />
-                  </Pressable>
-                  <Pressable onPress={() => void removePlace(place.id)} hitSlop={12}>
-                    <Trash2 size={18} color={colors.danger} />
+                  <View style={s.placeInfo}>
+                    <Text style={s.placeLabel}>{type.label}</Text>
+                    <Text style={s.placeAddress} numberOfLines={1}>
+                      {place.address || "No address set"}
+                    </Text>
+                    {place.instruction ? (
+                      <Text style={s.placeInstruction} numberOfLines={1}>
+                        {place.instruction}
+                      </Text>
+                    ) : null}
+                  </View>
+                  <Pressable
+                    style={s.editBtn}
+                    onPress={() => {
+                      setEditing(place);
+                      setEditAddress(place.address);
+                      setEditInstruction(place.instruction ?? "");
+                    }}
+                  >
+                    <Pencil size={14} color={colors.textSecondary} />
                   </Pressable>
                 </View>
-              </Card>
-            ))
-          )}
+              </View>
+            );
+          })
+        )}
+      </ScrollView>
 
-          <Button label="Back to profile" variant="outline" onPress={() => router.back()} fullWidth />
-          </ScrollView>
-        </SafeAreaView>
-      </KeyboardAvoidingView>
-    </>
+      {/* ─── Edit Modal ──────────────────────────────── */}
+      {editing ? (
+        <View style={s.modalOverlay}>
+          <Pressable style={{ flex: 1 }} onPress={() => setEditing(null)} />
+          <View style={s.modalCard}>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 16,
+              }}
+            >
+              <Text style={s.modalTitle}>
+                Edit {getIcon(editing.icon).label}
+              </Text>
+              <Pressable onPress={() => setEditing(null)}>
+                <X size={20} color={colors.textMuted} />
+              </Pressable>
+            </View>
+            <TextInput
+              style={s.modalInput}
+              value={editAddress}
+              onChangeText={setEditAddress}
+              placeholder="Address"
+              placeholderTextColor={colors.textMuted}
+            />
+            <TextInput
+              style={s.modalInput}
+              value={editInstruction}
+              onChangeText={setEditInstruction}
+              placeholder="Pickup instruction (optional)"
+              placeholderTextColor={colors.textMuted}
+            />
+            <View style={s.modalActions}>
+              <Button
+                label="Cancel"
+                variant="outline"
+                onPress={() => setEditing(null)}
+                style={{ flex: 1 }}
+              />
+              <Button label="Save" onPress={savePlace} style={{ flex: 1 }} />
+            </View>
+          </View>
+        </View>
+      ) : null}
+    </SafeAreaView>
   );
 }

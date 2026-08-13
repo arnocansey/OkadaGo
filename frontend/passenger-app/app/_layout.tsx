@@ -9,6 +9,7 @@ import { AppProvider } from "@/context/AppContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 import { ToastProvider } from "@/context/ToastContext";
+import { NetworkBanner } from "@/components/ui/NetworkBanner";
 import "@/i18n";
 
 import { WebContainer } from "@/components/WebContainer";
@@ -26,7 +27,15 @@ function RootNavigator() {
   return (
     <WebContainer>
       <StatusBar style={isDark ? "light" : "dark"} />
-      <Stack screenOptions={{ headerShown: false, ...stackHeaderOptions }} />
+      <NetworkBanner />
+      <Stack screenOptions={{ headerShown: false, ...stackHeaderOptions }}>
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(main)" />
+        <Stack.Screen name="ride" />
+        <Stack.Screen name="saved-places" />
+        <Stack.Screen name="notifications" />
+        <Stack.Screen name="support" />
+      </Stack>
       {!splashDone ? <AnimatedSplash onFinish={() => setSplashDone(true)} /> : null}
     </WebContainer>
   );

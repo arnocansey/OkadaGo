@@ -29,6 +29,7 @@ export default function MainLayout() {
         <Tabs.Screen name="index" options={{ title: "Home" }} />
         <Tabs.Screen name="trips" options={{ title: "Trips" }} />
         <Tabs.Screen name="wallet" options={{ title: "Wallet" }} />
+        <Tabs.Screen name="gopoints" options={{ title: "GoPoints" }} />
         <Tabs.Screen name="profile" options={{ title: "Profile" }} />
       </Tabs>
     </Animated.View>

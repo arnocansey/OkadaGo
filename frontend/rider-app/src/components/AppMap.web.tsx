@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
-import { Crosshair, MapPin } from "lucide-react-native";
+import { Crosshair, MapPin, Navigation } from "lucide-react-native";
 import { useTheme } from "@/context/ThemeContext";
 import { ACCRA_REGION, radius, shadows, spacing } from "@/theme/tokens";
 
@@ -27,6 +27,7 @@ type Props = {
 export function AppMap({
   region = ACCRA_REGION,
   markers = [],
+  autoCenterOnLocation = false,
   showCenterButton = false,
   centerButtonInset,
   style,
@@ -39,6 +40,8 @@ export function AppMap({
     setActiveRegion(region);
   }, [region]);
 
+  const hasLocation = Boolean(region && region.latitude && region.longitude);
+
   return (
     <View style={[styles.wrap, { backgroundColor: isDark ? "#121A28" : "#E2E8F0" }, style]}>
       {/* Web Vector Grid Map Simulation */}
@@ -48,32 +51,57 @@ export function AppMap({
         <View style={[styles.roadSecondary, { backgroundColor: isDark ? "#1A2333" : "#D1D5DB" }]} />
 
         {/* Map Location Badge */}
-        <View style={[styles.locationBadge, { backgroundColor: isDark ? "rgba(15, 23, 42, 0.9)" : "rgba(255, 255, 255, 0.9)", borderColor: colors.border }]}>
-          <MapPin size={14} color={colors.primary} />
-          <Text style={[styles.locationText, { color: colors.text }]}>Accra · Live Dispatch</Text>
+        <View
+          style={[
+            styles.locationBadge,
+            {
+              backgroundColor: isDark ? "rgba(15, 23, 42, 0.9)" : "rgba(255, 255, 255, 0.9)",
+              borderColor: colors.border,
+            },
+          ]}
+        >
+          <Navigation size={14} color={colors.primary} />
+          <Text style={[styles.locationText, { color: colors.text }]}>
+            Accra · {hasLocation ? `${region.latitude.toFixed(4)}, ${region.longitude.toFixed(4)}` : "Live Dispatch"}
+          </Text>
         </View>
 
-        {/* Map Markers */}
-        {markers.map((m, index) => (
-          <View
-            key={m.id || index}
-            style={[
-              styles.markerPin,
-              {
-                backgroundColor: m.pinColor || colors.primary,
-                top: `${40 + index * 12}%` as any,
-                left: `${35 + index * 20}%` as any,
-              },
-            ]}
-          >
-            <MapPin size={16} color="#FFFFFF" />
-            {m.title ? (
-              <View style={[styles.markerCallout, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <Text style={[styles.calloutText, { color: colors.text }]}>{m.title}</Text>
-              </View>
-            ) : null}
+        {/* Current Location Rider Marker (Center Marker) */}
+        {hasLocation ? (
+          <View style={styles.riderLocationContainer} pointerEvents="none">
+            <View style={[styles.riderPulseHalo, { backgroundColor: isDark ? "rgba(250, 204, 21, 0.25)" : "rgba(234, 179, 8, 0.25)" }]} />
+            <View style={[styles.riderPinBadge, { backgroundColor: colors.primary }]}>
+              <Navigation size={16} color="#000000" fill="#000000" style={{ transform: [{ rotate: "45deg" }] }} />
+            </View>
+            <View style={[styles.markerCallout, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Text style={[styles.calloutText, { color: colors.text }]}>Your Location (Rider)</Text>
+            </View>
           </View>
-        ))}
+        ) : null}
+
+        {/* Additional Map Markers */}
+        {markers
+          .filter((m) => m.id !== "rider-current-location")
+          .map((m, index) => (
+            <View
+              key={m.id || index}
+              style={[
+                styles.markerPin,
+                {
+                  backgroundColor: m.pinColor || colors.primary,
+                  top: `${30 + index * 18}%` as any,
+                  left: `${25 + index * 30}%` as any,
+                },
+              ]}
+            >
+              <MapPin size={16} color="#FFFFFF" />
+              {m.title ? (
+                <View style={[styles.markerCallout, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <Text style={[styles.calloutText, { color: colors.text }]}>{m.title}</Text>
+                </View>
+              ) : null}
+            </View>
+          ))}
 
         {children}
       </View>
@@ -152,6 +180,34 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
   },
+  riderLocationContainer: {
+    position: "absolute",
+    top: "48%",
+    left: "50%",
+    marginLeft: -18,
+    marginTop: -18,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 20,
+  },
+  riderPulseHalo: {
+    position: "absolute",
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+  riderPinBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 8,
+  },
   markerPin: {
     position: "absolute",
     width: 32,
@@ -167,15 +223,20 @@ const styles = StyleSheet.create({
   },
   markerCallout: {
     position: "absolute",
-    bottom: 38,
+    bottom: 42,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: radius.sm,
     borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   calloutText: {
     fontSize: 11,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   centerButton: {
     position: "absolute",
@@ -185,6 +246,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 20,
+    zIndex: 25,
   },
 });

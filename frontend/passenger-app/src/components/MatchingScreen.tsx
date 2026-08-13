@@ -8,8 +8,9 @@ import {
   Text,
   View,
 } from "react-native";
-import MapViewBase, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
-import { Phone, Star, X } from "lucide-react-native";
+import { AppMap } from "@/components/AppMap";
+import { MapPin, Phone, Star, X } from "lucide-react-native";
+import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/context/ThemeContext";
 import { Avatar } from "@/components/ui/Avatar";
@@ -58,6 +59,10 @@ type Props = {
   isDelivery?: boolean;
   onCancel: () => void;
   onMatched: (trip: TripData) => void;
+  /** Fare to display during searching state */
+  fare?: string;
+  /** Destination address to display during searching state */
+  destinationAddress?: string;
 };
 
 function MotorcycleDot({ index, total, animValue }: { index: number; total: number; animValue: Animated.Value }) {
@@ -157,7 +162,7 @@ function PulseRing({ index, delay }: { index: number; delay: number }) {
  * while searching. On match, the floating status card morphs into
  * the rider profile card.
  */
-export function MatchingScreen({ tripId, isDelivery, onCancel, onMatched }: Props) {
+export function MatchingScreen({ tripId, isDelivery, onCancel, onMatched, fare, destinationAddress }: Props) {
   const insets = useSafeAreaInsets();
   const { colors, isDark } = useTheme();
 
@@ -213,6 +218,7 @@ export function MatchingScreen({ tripId, isDelivery, onCancel, onMatched }: Prop
         setTrip(data);
         if (data.status === "assigned" || data.status === "arriving") {
           setMatched(true);
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           // Animate card expansion
           Animated.parallel([
             Animated.timing(cardHeight, {
@@ -336,9 +342,52 @@ export function MatchingScreen({ tripId, isDelivery, onCancel, onMatched }: Prop
         },
         cancelBtn: {
           marginLeft: "auto",
-          padding: 6,
-          borderRadius: 20,
+          padding: 12,
+          borderRadius: 22,
           backgroundColor: colors.surfaceOverlay,
+        },
+
+        /* ─── Searching Details ──────────────────────────── */
+        detailsRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 8,
+          marginTop: 10,
+          paddingTop: 10,
+          borderTopWidth: 1,
+          borderTopColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+        },
+        destRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 6,
+          flex: 1,
+        },
+        destDot: {
+          width: 6,
+          height: 6,
+          borderRadius: 3,
+          backgroundColor: colors.danger,
+        },
+        destText: {
+          fontSize: 13,
+          fontWeight: "500",
+          color: colors.textSecondary,
+          flex: 1,
+        },
+        farePill: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 4,
+          paddingHorizontal: 10,
+          paddingVertical: 4,
+          borderRadius: 8,
+          backgroundColor: colors.primaryLight,
+        },
+        fareText: {
+          fontSize: 13,
+          fontWeight: "700",
+          color: colors.primary,
         },
 
         /* ─── Matched Rider Card ────────────────────────── */
@@ -483,31 +532,17 @@ export function MatchingScreen({ tripId, isDelivery, onCancel, onMatched }: Prop
       {/* Map Background */}
       {hasKey ? (
         <View style={styles.mapWrap}>
-          <MapViewBase
+          <AppMap
             style={StyleSheet.absoluteFill}
-            provider={PROVIDER_GOOGLE}
-            initialRegion={{
+            region={{
               latitude: pickupLat || ACCRA_REGION.latitude,
               longitude: pickupLon || ACCRA_REGION.longitude,
               latitudeDelta: 0.015,
               longitudeDelta: 0.015,
             }}
-            customMapStyle={isDark ? mapDarkStyle : undefined}
-            showsUserLocation
-            showsMyLocationButton={false}
-          >
-            {routeCoordinates?.length ? (
-              <Polyline coordinates={routeCoordinates} strokeColor={colors.mapRoute} strokeWidth={3} />
-            ) : null}
-            {markers.map((m) => (
-              <Marker
-                key={m.id}
-                coordinate={{ latitude: m.latitude, longitude: m.longitude }}
-                title={m.title}
-                pinColor={m.pinColor}
-              />
-            ))}
-          </MapViewBase>
+            routeCoordinates={routeCoordinates}
+            markers={markers}
+          />
         </View>
       ) : (
         <View style={[styles.mapWrap, { backgroundColor: colors.surface }]} />
@@ -665,10 +700,27 @@ export function MatchingScreen({ tripId, isDelivery, onCancel, onMatched }: Prop
                 ]}
               />
               <Text style={styles.statusText}>Finding your rider...</Text>
-              <Pressable style={styles.cancelBtn} onPress={onCancel}>
+              <Pressable style={styles.cancelBtn} onPress={onCancel} hitSlop={8} accessibilityLabel="Cancel ride" accessibilityRole="button">
                 <X size={18} color={colors.textSecondary} />
               </Pressable>
             </View>
+            {(fare || destinationAddress) ? (
+              <View style={styles.detailsRow}>
+                {destinationAddress ? (
+                  <View style={styles.destRow}>
+                    <View style={styles.destDot} />
+                    <Text style={styles.destText} numberOfLines={1}>
+                      {destinationAddress}
+                    </Text>
+                  </View>
+                ) : null}
+                {fare ? (
+                  <View style={styles.farePill}>
+                    <Text style={styles.fareText}>{fare}</Text>
+                  </View>
+                ) : null}
+              </View>
+            ) : null}
           </Animated.View>
         )}
       </View>

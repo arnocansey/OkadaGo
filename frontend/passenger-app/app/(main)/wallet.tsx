@@ -1,38 +1,60 @@
+import { router } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react-native";
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  CreditCard,
+  Gift,
+  Smartphone,
+  Plus,
+  Wallet,
+} from "lucide-react-native";
 import { Badge } from "@/components/ui/Badge";
-import { BalanceHero } from "@/components/ui/BalanceHero";
-import { Card } from "@/components/ui/Card";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { SkeletonList } from "@/components/ui/Skeleton";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { ScreenHeader } from "@/components/ui/ScreenHeader";
+import { SkeletonList } from "@/components/ui/Skeleton";
 import { PaystackCheckout } from "@/components/PaystackCheckout";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useToast } from "@/context/ToastContext";
 import { api, compactDate, money } from "@/lib/api";
-import { spacing } from "@/theme/tokens";
 import type { WalletTransaction } from "@/types";
 
 function txStatusBadge(tx: WalletTransaction) {
   const status = (tx.status ?? "").toUpperCase();
   if (status === "PENDING") return <Badge label="Pending" tone="warning" />;
   if (status === "FAILED") return <Badge label="Failed" tone="danger" />;
-  if (status === "POSTED") return <Badge label="Completed" tone="success" />;
+  if (status === "POSTED") return <Badge label="Done" tone="success" />;
   return null;
+}
+
+function txIconBg(tx: WalletTransaction, colors: any) {
+  const desc = (tx.description ?? tx.type ?? "").toLowerCase();
+  if (desc.includes("promo") || desc.includes("bonus") || desc.includes("credit"))
+    return { bg: colors.primaryLight, icon: <Gift size={16} color={colors.primary} /> };
+  if (desc.includes("momo") || desc.includes("mobile"))
+    return { bg: "#E0F2FE", icon: <Smartphone size={16} color="#0284C7" /> };
+  return tx.direction === "debit"
+    ? { bg: colors.dangerLight, icon: <ArrowUpRight size={16} color={colors.danger} /> }
+    : { bg: colors.primaryLight, icon: <ArrowDownLeft size={16} color={colors.primary} /> };
 }
 
 export default function WalletScreen() {
   const { session, wallets, transactions, loading, refresh } = useApp();
-  const { colors, typography } = useTheme();
+  const { colors, typography, isDark } = useTheme();
   const { showToast } = useToast();
   const wallet = wallets[0];
-  const [topUpAmount, setTopUpAmount] = useState("20");
-  const [topUpLoading, setTopUpLoading] = useState(false);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -41,45 +63,9 @@ export default function WalletScreen() {
     await refresh();
     setRefreshing(false);
   }, [refresh]);
-  const styles = useMemo(
-    () =>
-      StyleSheet.create({
-        screen: { flex: 1, backgroundColor: colors.background },
-        content: { padding: spacing.xl, gap: spacing.lg, paddingBottom: spacing.xxxl },
-        section: { ...typography.h3, color: colors.text },
-        topUpRow: { flexDirection: "row", gap: spacing.sm, alignItems: "flex-end" },
-        topUpInput: { flex: 1 },
-        tx: {
-          flexDirection: "row",
-          alignItems: "center",
-          gap: spacing.md,
-          paddingVertical: spacing.md,
-          paddingHorizontal: spacing.lg,
-        },
-        txPending: { backgroundColor: colors.warningLight },
-        txBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
-        txIcon: {
-          width: 36,
-          height: 36,
-          borderRadius: 18,
-          alignItems: "center",
-          justifyContent: "center",
-        },
-        creditIcon: { backgroundColor: colors.primaryLight },
-        debitIcon: { backgroundColor: colors.dangerLight },
-        txTitle: { ...typography.bodyMedium, color: colors.text },
-        txDate: { ...typography.caption, color: colors.textMuted, marginTop: spacing.xs },
-        txAmount: { ...typography.bodySemibold, color: colors.primary },
-        debit: { color: colors.danger },
-        badgeWrap: { marginTop: spacing.sm },
-        retryHint: { ...typography.caption, color: colors.primary, marginTop: spacing.xs },
-      }),
-    [colors, typography],
-  );
 
   async function initiateTopUp(amount: number) {
     if (!session?.token || !wallet) return;
-    setTopUpLoading(true);
     try {
       const result = await api<{ authorizationUrl: string }>("/wallets/top-up/paystack/initialize", {
         method: "POST",
@@ -93,32 +79,8 @@ export default function WalletScreen() {
       });
       setCheckoutUrl(result.authorizationUrl);
     } catch (e) {
-      Alert.alert("Top-up failed", e instanceof Error ? e.message : "Could not start Paystack checkout.");
-    } finally {
-      setTopUpLoading(false);
+      Alert.alert("Top-up failed", e instanceof Error ? e.message : "Could not start checkout.");
     }
-  }
-
-  async function topUp() {
-    const amount = Number(topUpAmount);
-    if (!Number.isFinite(amount) || amount <= 0) {
-      Alert.alert("Invalid amount", "Enter a valid top-up amount.");
-      return;
-    }
-    await initiateTopUp(amount);
-  }
-
-  function retryPendingTx(tx: WalletTransaction) {
-    const amount = Number(tx.amount);
-    if (!Number.isFinite(amount) || amount <= 0) return;
-    Alert.alert(
-      "Retry payment",
-      `Re-initiate a top-up of ${money(amount, tx.currency)}?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Continue", onPress: () => initiateTopUp(amount) },
-      ],
-    );
   }
 
   async function handleCheckoutSuccess(reference: string) {
@@ -127,93 +89,257 @@ export default function WalletScreen() {
     await refresh();
   }
 
-  function handleCheckoutCancel() {
-    setCheckoutUrl(null);
-  }
+  const s = useMemo(
+    () =>
+      StyleSheet.create({
+        screen: { flex: 1, backgroundColor: colors.background },
+        scroll: { flex: 1 },
+        content: { paddingBottom: 40 },
 
-  const isPending = (tx: WalletTransaction) => (tx.status ?? "").toUpperCase() === "PENDING";
+        /* ─── Balance Hero ──────────────────────────────── */
+        balanceCard: {
+          marginHorizontal: 20,
+          marginTop: 4,
+          marginBottom: 20,
+          backgroundColor: isDark ? colors.surface : "#FFFFFF",
+          borderRadius: 20,
+          padding: 24,
+          borderWidth: 1,
+          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: isDark ? 0.3 : 0.06,
+          shadowRadius: 12,
+          elevation: 4,
+        },
+        balanceLabel: {
+          fontSize: 13,
+          fontWeight: "600",
+          color: colors.textMuted,
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
+        },
+        balanceAmount: {
+          fontSize: 36,
+          fontWeight: "800",
+          color: colors.text,
+          marginTop: 4,
+        },
+        balanceHint: {
+          fontSize: 13,
+          color: colors.textSecondary,
+          marginTop: 4,
+        },
+
+        /* ─── Quick Actions ─────────────────────────────── */
+        actionsRow: {
+          flexDirection: "row",
+          paddingHorizontal: 20,
+          gap: 10,
+          marginBottom: 24,
+        },
+        actionBtn: {
+          flex: 1,
+          backgroundColor: isDark ? colors.surface : "#FFFFFF",
+          borderRadius: 14,
+          padding: 14,
+          alignItems: "center",
+          gap: 8,
+          borderWidth: 1,
+          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+        },
+        actionIcon: {
+          width: 40,
+          height: 40,
+          borderRadius: 12,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        actionLabel: {
+          fontSize: 12,
+          fontWeight: "600",
+          color: colors.text,
+          textAlign: "center",
+        },
+
+        /* ─── Section ───────────────────────────────────── */
+        sectionHeader: {
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          paddingHorizontal: 20,
+          marginBottom: 10,
+        },
+        sectionTitle: {
+          fontSize: 15,
+          fontWeight: "700",
+          color: colors.text,
+        },
+        sectionLink: {
+          fontSize: 13,
+          fontWeight: "600",
+          color: colors.primary,
+        },
+
+        /* ─── Transaction Row ───────────────────────────── */
+        txCard: {
+          marginHorizontal: 20,
+          backgroundColor: isDark ? colors.surface : "#FFFFFF",
+          borderRadius: 14,
+          borderWidth: 1,
+          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          overflow: "hidden",
+        },
+        txRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          padding: 14,
+          gap: 12,
+        },
+        txBorder: {
+          borderTopWidth: StyleSheet.hairlineWidth,
+          borderTopColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+        },
+        txIconWrap: {
+          width: 36,
+          height: 36,
+          borderRadius: 10,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        txContent: {
+          flex: 1,
+        },
+        txDesc: {
+          fontSize: 14,
+          fontWeight: "500",
+          color: colors.text,
+        },
+        txDate: {
+          fontSize: 12,
+          color: colors.textMuted,
+          marginTop: 2,
+        },
+        txRight: {
+          alignItems: "flex-end",
+          gap: 4,
+        },
+        txAmount: {
+          fontSize: 15,
+          fontWeight: "700",
+          color: colors.text,
+        },
+        txDebit: {
+          color: colors.danger,
+        },
+      }),
+    [colors, isDark],
+  );
+
+  const recentTx = transactions.slice(0, 15);
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={s.screen}>
       <PaystackCheckout
         authorizationUrl={checkoutUrl ?? ""}
         visible={!!checkoutUrl}
         onSuccess={handleCheckoutSuccess}
-        onCancel={handleCheckoutCancel}
+        onCancel={() => setCheckoutUrl(null)}
       />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}>
-        <ScreenHeader title="Wallet" />
+      <ScrollView
+        style={s.scroll}
+        contentContainerStyle={s.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
+        }
+      >
+        <ScreenHeader title="Wallet" onBack={() => router.replace("/(main)")} />
 
-        <BalanceHero
-          label="Available balance"
-          amount={money(wallet?.availableBalance, wallet?.currency ?? "GHS")}
-          hint={wallet?.lockedBalance ? `Locked: ${money(wallet.lockedBalance, wallet.currency)}` : undefined}
-        />
+        {/* ─── Balance Card ──────────────────────────────── */}
+        <View style={s.balanceCard}>
+          <Text style={s.balanceLabel}>Available balance</Text>
+          <Text style={s.balanceAmount}>
+            {money(wallet?.availableBalance, wallet?.currency ?? "GHS")}
+          </Text>
+          {wallet?.lockedBalance ? (
+            <Text style={s.balanceHint}>
+              Locked: {money(wallet.lockedBalance, wallet.currency)}
+            </Text>
+          ) : null}
+        </View>
 
-        <Card>
-          <Text style={styles.section}>Top up via Paystack</Text>
-          <View style={styles.topUpRow}>
-            <View style={styles.topUpInput}>
-              <Input
-                label="Amount"
-                value={topUpAmount}
-                onChangeText={setTopUpAmount}
-                keyboardType="decimal-pad"
-                placeholder="20"
-              />
+        {/* ─── Quick Actions ─────────────────────────────── */}
+        <View style={s.actionsRow}>
+          <Pressable style={s.actionBtn} onPress={() => initiateTopUp(20)} accessibilityRole="button" accessibilityLabel="Add money to wallet">
+            <View style={[s.actionIcon, { backgroundColor: colors.primaryLight }]}>
+              <Plus size={20} color={colors.primary} />
             </View>
-            <Button label="Add" loading={topUpLoading} onPress={topUp} size="md" />
-          </View>
-        </Card>
+            <Text style={s.actionLabel}>Add Money</Text>
+          </Pressable>
+          <Pressable
+            style={s.actionBtn}
+            onPress={() => router.push("/ride/book")}
+            accessibilityRole="button"
+            accessibilityLabel="Pay for ride"
+          >
+            <View style={[s.actionIcon, { backgroundColor: colors.infoLight }]}>
+              <Wallet size={20} color={colors.info} />
+            </View>
+            <Text style={s.actionLabel}>Pay for Ride</Text>
+          </Pressable>
+          <Pressable style={s.actionBtn} onPress={() => initiateTopUp(0)} accessibilityRole="button" accessibilityLabel="Top up wallet">
+            <View style={[s.actionIcon, { backgroundColor: colors.warningLight }]}>
+              <CreditCard size={20} color={colors.warning} />
+            </View>
+            <Text style={s.actionLabel}>Top Up</Text>
+          </Pressable>
+        </View>
 
-        <Text style={styles.section}>Recent transactions</Text>
-        {loading && transactions.length === 0 ? (
+        {/* ─── Transactions ──────────────────────────────── */}
+        <View style={s.sectionHeader}>
+          <Text style={s.sectionTitle}>Transactions</Text>
+          {transactions.length > 15 ? (
+            <Text style={s.sectionLink}>View all</Text>
+          ) : null}
+        </View>
+
+        {loading && recentTx.length === 0 ? (
           <SkeletonList count={3} />
-        ) : transactions.length === 0 ? (
-          <EmptyState title="No transactions" message="Your wallet activity will appear here." />
+        ) : recentTx.length === 0 ? (
+          <EmptyState
+            title="No transactions"
+            message="Your wallet activity will appear here."
+          />
         ) : (
-          <Card>
-            {transactions.slice(0, 20).map((tx, i) => {
-              const pending = isPending(tx);
-              const content = (
+          <View style={s.txCard}>
+            {recentTx.map((tx, i) => {
+              const { bg, icon } = txIconBg(tx, colors);
+              return (
                 <View
                   key={tx.id}
-                  style={[
-                    styles.tx,
-                    pending && styles.txPending,
-                    i < Math.min(transactions.length, 20) - 1 && styles.txBorder,
-                  ]}
+                  style={[s.txRow, i > 0 && s.txBorder]}
                 >
-                  <View style={[styles.txIcon, tx.direction === "debit" ? styles.debitIcon : styles.creditIcon]}>
-                    {tx.direction === "debit"
-                      ? <ArrowUpRight size={16} color={colors.danger} />
-                      : <ArrowDownLeft size={16} color={colors.primary} />
-                    }
+                  <View style={[s.txIconWrap, { backgroundColor: bg }]}>{icon}</View>
+                  <View style={s.txContent}>
+                    <Text style={s.txDesc} numberOfLines={1}>
+                      {tx.description ?? tx.type}
+                    </Text>
+                    <Text style={s.txDate}>{compactDate(tx.createdAt)}</Text>
                   </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.txTitle}>{tx.description ?? tx.type}</Text>
-                    <Text style={styles.txDate}>{compactDate(tx.createdAt)}</Text>
-                    <View style={styles.badgeWrap}>{txStatusBadge(tx)}</View>
-                    {pending && tx.direction === "credit" ? (
-                      <Text style={styles.retryHint}>Tap to complete payment</Text>
-                    ) : null}
+                  <View style={s.txRight}>
+                    <Text
+                      style={[s.txAmount, tx.direction === "debit" && s.txDebit]}
+                    >
+                      {tx.direction === "debit" ? "-" : "+"}
+                      {money(tx.amount, tx.currency)}
+                    </Text>
+                    {txStatusBadge(tx)}
                   </View>
-                  <Text style={[styles.txAmount, tx.direction === "debit" && styles.debit]}>
-                    {tx.direction === "debit" ? "-" : "+"}{money(tx.amount, tx.currency)}
-                  </Text>
                 </View>
               );
-
-              if (pending && tx.direction === "credit") {
-                return (
-                  <Pressable key={tx.id} onPress={() => retryPendingTx(tx)}>
-                    {content}
-                  </Pressable>
-                );
-              }
-              return content;
             })}
-          </Card>
+          </View>
         )}
       </ScrollView>
     </SafeAreaView>

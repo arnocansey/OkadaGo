@@ -40,6 +40,8 @@ export function Input({ label, hint, error, style, ...rest }: Props) {
       <TextInput
         {...rest}
         placeholderTextColor={colors.textMuted}
+        accessibilityLabel={rest.accessibilityLabel ?? label}
+        accessibilityHint={error ?? hint}
         style={[styles.input, error ? styles.inputError : null, style]}
       />
       {error ? <Text style={styles.error}>{error}</Text> : hint ? <Text style={styles.hint}>{hint}</Text> : null}

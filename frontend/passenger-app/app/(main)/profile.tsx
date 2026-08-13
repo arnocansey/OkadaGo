@@ -1,21 +1,38 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import {
+  Alert,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Moon, Sun, Camera, Globe, ChevronRight } from "lucide-react-native";
+import {
+  Bell,
+  ChevronRight,
+  CreditCard,
+  Globe,
+  HelpCircle,
+  Home,
+  LogOut,
+  MapPin,
+  Moon,
+  Phone,
+  Shield,
+  Sun,
+  User,
+} from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
-import { useTranslation } from "react-i18next";
 import { Avatar } from "@/components/ui/Avatar";
-import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { Input } from "@/components/ui/Input";
 import { ScreenHeader } from "@/components/ui/ScreenHeader";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/lib/api";
-import { radius, spacing } from "@/theme/tokens";
 
 type PassengerSettings = {
   fullName: string;
@@ -26,322 +43,419 @@ type PassengerSettings = {
   referralCode?: string | null;
 };
 
+function Row({
+  icon: Icon,
+  iconBg,
+  label,
+  value,
+  onPress,
+  colors,
+  isDark,
+}: {
+  icon: any;
+  iconBg: string;
+  label: string;
+  value?: string;
+  onPress: () => void;
+  colors: any;
+  isDark: boolean;
+}) {
+  return (
+    <Pressable
+      style={({ pressed }) => ({
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        gap: 12,
+        opacity: pressed ? 0.6 : 1,
+      })}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={value ? `${label}, ${value}` : label}
+    >
+      <View
+        style={{
+          width: 32,
+          height: 32,
+          borderRadius: 8,
+          backgroundColor: iconBg,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Icon size={16} color={colors.text} />
+      </View>
+      <Text style={{ flex: 1, fontSize: 15, fontWeight: "500", color: colors.text }}>
+        {label}
+      </Text>
+      {value ? (
+        <Text style={{ fontSize: 13, color: colors.textSecondary }}>{value}</Text>
+      ) : null}
+      <ChevronRight size={16} color={colors.textMuted} />
+    </Pressable>
+  );
+}
+
 export default function ProfileScreen() {
-  const { session, signOut, zones, refreshSession } = useApp();
-  const { colors, typography, isDark, setTheme } = useTheme();
-  const { t } = useTranslation();
+  const { session, signOut, refreshSession } = useApp();
+  const { colors, isDark, setTheme } = useTheme();
   const user = session!.user;
   const [settings, setSettings] = useState<PassengerSettings | null>(null);
-  const [friendCode, setFriendCode] = useState("");
-  const [applyingReferral, setApplyingReferral] = useState(false);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadSettings = useCallback(async () => {
+    if (!session?.token) return;
+    try {
+      const data = await api<PassengerSettings>(`/passengers/users/${user.id}`, { token: session.token });
+      setSettings(data);
+    } catch {
+      // silently fail
+    }
+  }, [session?.token, user.id]);
 
   useFocusEffect(
     useCallback(() => {
-      void refreshSession();
-    }, [refreshSession]),
+      loadSettings();
+    }, [loadSettings]),
   );
 
-  useEffect(() => {
-    if (!session?.token) return;
-    api<PassengerSettings>("/auth/passenger/settings", { token: session.token })
-      .then(setSettings)
-      .catch(() => setSettings(null));
-  }, [session?.token, session?.user.fullName, session?.user.email]);
-
-  const styles = useMemo(
-    () =>
-      StyleSheet.create({
-        screen: { flex: 1, backgroundColor: colors.background },
-        content: { padding: spacing.xl, gap: spacing.lg, paddingBottom: spacing.xxxl },
-        header: { alignItems: "center", gap: spacing.sm, paddingVertical: spacing.lg },
-        name: { ...typography.h2 },
-        phone: { ...typography.body, color: colors.textSecondary },
-        infoCard: { padding: 0, overflow: "hidden" },
-        infoRow: {
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          paddingHorizontal: spacing.lg,
-          paddingVertical: spacing.lg,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border,
-        },
-        noBorder: { borderBottomWidth: 0 },
-        infoLabel: { ...typography.caption, color: colors.textMuted },
-        infoValue: { ...typography.bodySemibold, color: colors.text },
-        sectionTitle: { ...typography.bodySemibold, color: colors.text },
-        sectionHint: { ...typography.caption, color: colors.textMuted },
-        languageHeader: {
-          flexDirection: "row",
-          alignItems: "center",
-          gap: spacing.sm,
-          paddingHorizontal: spacing.lg,
-          paddingTop: spacing.lg,
-          paddingBottom: spacing.sm,
-        },
-        themeCard: { padding: 0, overflow: "hidden" },
-        themeRow: {
-          flexDirection: "row",
-          alignItems: "center",
-          gap: spacing.md,
-          padding: spacing.lg,
-        },
-        themeIcon: {
-          width: 40,
-          height: 40,
-          borderRadius: radius.md,
-          alignItems: "center",
-          justifyContent: "center",
-        },
-        lightIconBg: { backgroundColor: colors.accentLight },
-        darkIconBg: { backgroundColor: colors.borderStrong },
-        themeLabel: { ...typography.bodySemibold, color: colors.text },
-        themeHint: { ...typography.caption, color: colors.textMuted, marginTop: 2 },
-        avatarWrap: { position: "relative" },
-        cameraBtn: {
-          position: "absolute",
-          bottom: 0,
-          right: 0,
-          width: 32,
-          height: 32,
-          borderRadius: 16,
-          backgroundColor: colors.primary,
-          alignItems: "center",
-          justifyContent: "center",
-          borderWidth: 2,
-          borderColor: colors.background,
-        },
-        linkRow: {
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          paddingVertical: spacing.md,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border,
-        },
-        linkRowLast: { borderBottomWidth: 0 },
-        linkLabel: { ...typography.bodyMedium, color: colors.text, flex: 1 },
-      }),
-    [colors, typography],
-  );
-
-  async function pickAndUploadAvatar() {
-    if (!session?.token) return;
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permission needed", "Allow photo access to change your profile picture.");
-      return;
-    }
+  async function pickAvatar() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.7,
+      quality: 0.8,
     });
-    if (result.canceled || !result.assets?.[0]) return;
-
-    setUploadingAvatar(true);
+    if (result.canceled || !session?.token) return;
+    const asset = result.assets[0];
+    const form = new FormData();
+    form.append("avatar", {
+      uri: asset.uri,
+      name: "avatar.jpg",
+      type: "image/jpeg",
+    } as any);
     try {
-      const asset = result.assets[0];
-      const response = await fetch(asset.uri);
-      const blob = await response.blob();
-      const base64 = await new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(blob);
-      });
-
-      const data = await api<{ token: string; expiresAt: string; user: typeof session.user }>("/auth/avatar", {
+      await api(`/passengers/users/${user.id}/avatar`, {
         method: "POST",
         token: session.token,
-        body: { imageBase64: base64 },
+        body: form,
       });
-      refreshSession();
-      Alert.alert("Photo updated", "Your profile photo was saved.");
+      await refreshSession();
     } catch (e) {
-      Alert.alert("Upload failed", e instanceof Error ? e.message : "Could not update photo.");
-    } finally {
-      setUploadingAvatar(false);
+      Alert.alert("Upload failed", e instanceof Error ? e.message : "Could not upload avatar.");
     }
   }
 
-  async function takePhotoAndUpload() {
-    if (!session?.token) return;
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permission needed", "Allow camera access to take a profile photo.");
-      return;
-    }
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.7,
-    });
-    if (result.canceled || !result.assets?.[0]) return;
+  const s = useMemo(
+    () =>
+      StyleSheet.create({
+        screen: { flex: 1, backgroundColor: colors.background },
+        scroll: { flex: 1 },
+        content: { paddingBottom: 40 },
 
-    setUploadingAvatar(true);
-    try {
-      const asset = result.assets[0];
-      const response = await fetch(asset.uri);
-      const blob = await response.blob();
-      const base64 = await new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(blob);
-      });
+        /* ─── Profile Header ──────────────────────────── */
+        headerCard: {
+          marginHorizontal: 20,
+          marginTop: 4,
+          marginBottom: 20,
+          backgroundColor: isDark ? colors.surface : "#FFFFFF",
+          borderRadius: 20,
+          padding: 20,
+          alignItems: "center",
+          borderWidth: 1,
+          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+        },
+        avatarWrap: { marginBottom: 12 },
+        profileName: {
+          fontSize: 20,
+          fontWeight: "700",
+          color: colors.text,
+        },
+        profilePhone: {
+          fontSize: 14,
+          color: colors.textSecondary,
+          marginTop: 2,
+        },
+        verifiedBadge: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 4,
+          marginTop: 6,
+          paddingHorizontal: 10,
+          paddingVertical: 4,
+          borderRadius: 12,
+          backgroundColor: colors.successLight,
+        },
+        verifiedText: {
+          fontSize: 11,
+          fontWeight: "600",
+          color: "#22C55E",
+        },
 
-      await api("/auth/avatar", {
-        method: "POST",
-        token: session.token,
-        body: { imageBase64: base64 },
-      });
-      refreshSession();
-      Alert.alert("Photo updated", "Your profile photo was saved.");
-    } catch (e) {
-      Alert.alert("Upload failed", e instanceof Error ? e.message : "Could not update photo.");
-    } finally {
-      setUploadingAvatar(false);
-    }
-  }
+        /* ─── Section Groups ───────────────────────────── */
+        group: {
+          marginHorizontal: 20,
+          marginBottom: 16,
+          backgroundColor: isDark ? colors.surface : "#FFFFFF",
+          borderRadius: 14,
+          borderWidth: 1,
+          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          overflow: "hidden",
+        },
+        groupBorder: {
+          borderTopWidth: StyleSheet.hairlineWidth,
+          borderTopColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+        },
+        groupLabel: {
+          fontSize: 12,
+          fontWeight: "600",
+          color: colors.textMuted,
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
+          paddingHorizontal: 16,
+          paddingTop: 12,
+          paddingBottom: 6,
+        },
 
-  function showAvatarOptions() {
-    Alert.alert(t("profile.changePhoto"), t("profile.choosePhotoOption"), [
-      { text: t("common.takePhoto"), onPress: takePhotoAndUpload },
-      { text: t("common.chooseFromLibrary"), onPress: pickAndUploadAvatar },
-      { text: t("common.cancel"), style: "cancel" },
-    ]);
-  }
+        /* ─── Dark Mode Row ────────────────────────────── */
+        toggleRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 16,
+          paddingVertical: 14,
+          gap: 12,
+        },
+        toggleLabel: {
+          flex: 1,
+          fontSize: 15,
+          fontWeight: "500",
+          color: colors.text,
+        },
 
-  async function applyReferral() {
-    if (!session || !friendCode.trim()) return;
-    setApplyingReferral(true);
-    try {
-      await api("/referrals/apply", {
-        method: "POST",
-        token: session.token,
-        body: { referralCode: friendCode.trim() },
-      });
-      Alert.alert("Referral applied", "Your referral code was linked successfully.");
-      setFriendCode("");
-    } catch (e) {
-      Alert.alert("Referral failed", e instanceof Error ? e.message : "Could not apply referral code.");
-    } finally {
-      setApplyingReferral(false);
-    }
-  }
+        /* ─── Logout ────────────────────────────────────── */
+        logoutRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 16,
+          paddingVertical: 14,
+          gap: 12,
+        },
+        logoutLabel: {
+          fontSize: 15,
+          fontWeight: "500",
+          color: colors.danger,
+        },
+      }),
+    [colors, isDark],
+  );
+
+  const iconBg = (c: string) => c;
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <ScreenHeader title={t("nav.profile")} />
-        <View style={styles.header}>
-          <View style={styles.avatarWrap}>
-            <Avatar name={user.fullName} size={80} imageUri={user.avatarUrl ?? undefined} />
-            <Pressable style={styles.cameraBtn} onPress={showAvatarOptions} disabled={uploadingAvatar} hitSlop={8} accessibilityLabel="Change profile photo" accessibilityRole="button">
-              <Camera size={14} color={colors.textOnPrimary} />
-            </Pressable>
-          </View>
-          <Text style={styles.name}>{user.fullName}</Text>
-          <Text style={styles.phone}>{user.phoneE164}</Text>
+    <SafeAreaView style={s.screen}>
+      <ScrollView
+        style={s.scroll}
+        contentContainerStyle={s.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={async () => {
+              setRefreshing(true);
+              await loadSettings();
+              setRefreshing(false);
+            }}
+            tintColor={colors.primary}
+          />
+        }
+      >
+        <ScreenHeader title="Profile" onBack={() => router.replace("/(main)")} />
+
+        {/* ─── Profile Header ──────────────────────────── */}
+        <View style={s.headerCard}>
+          <Pressable style={s.avatarWrap} onPress={pickAvatar}>
+            <Avatar name={user.fullName} size={72} imageUri={user.avatarUrl ?? undefined} />
+          </Pressable>
+          <Text style={s.profileName}>{user.fullName}</Text>
+          <Text style={s.profilePhone}>{settings?.phoneE164 ?? ""}</Text>
+          {user.isPhoneVerified ? (
+            <View style={s.verifiedBadge}>
+              <Shield size={12} color="#22C55E" />
+              <Text style={s.verifiedText}>Verified</Text>
+            </View>
+          ) : null}
         </View>
 
-        <Card style={styles.infoCard} padded={false}>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>{t("profile.preferredCurrency")}</Text>
-            <Text style={styles.infoValue}>{user.preferredCurrency}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>{t("profile.serviceZone")}</Text>
-            <Text style={styles.infoValue}>{zones[0]?.name ?? "Accra"}</Text>
-          </View>
-          <View style={[styles.infoRow, styles.noBorder]}>
-            <Text style={styles.infoLabel}>{t("profile.referralCode")}</Text>
-            <Text style={styles.infoValue}>{settings?.referralCode ?? "—"}</Text>
-          </View>
-        </Card>
+        {/* ─── Account ──────────────────────────────────── */}
+        <Text style={s.groupLabel}>Account</Text>
+        <View style={s.group}>
+          <Row
+            icon={User}
+            iconBg="#EFF6FF"
+            label="Edit profile"
+            onPress={() => router.push("/edit-profile")}
+            colors={colors}
+            isDark={isDark}
+          />
+          <View style={s.groupBorder} />
+          <Row
+            icon={Phone}
+            iconBg="#F0FDF4"
+            label="Phone number"
+            value={settings?.phoneE164}
+            onPress={() => router.push("/edit-profile")}
+            colors={colors}
+            isDark={isDark}
+          />
+          <View style={s.groupBorder} />
+          <Row
+            icon={Home}
+            iconBg="#FEF3C7"
+            label="Saved places"
+            onPress={() => router.push("/saved-places")}
+            colors={colors}
+            isDark={isDark}
+          />
+        </View>
 
-        <Card stacked>
-          <Text style={styles.sectionTitle}>{t("profile.safetyAccount")}</Text>
-          {(
-            [
-              { label: t("profile.notifications"), href: "/notifications" },
-              { label: t("profile.editProfile"), href: "/edit-profile" },
-              { label: t("profile.emergencyContacts"), href: "/emergency-contacts" },
-              { label: t("profile.savedPlaces"), href: "/saved-places" },
-              { label: t("profile.supportTickets"), href: "/support" },
-              ...(user.isPhoneVerified === false
-                ? [{ label: t("profile.verifyPhone"), href: "/(auth)/verify-phone" }]
-                : []),
-            ] as Array<{ label: string; href: string }>
-          ).map((item, index, arr) => (
-            <Pressable
-              key={item.href}
-              style={[styles.linkRow, index === arr.length - 1 && styles.linkRowLast]}
-              onPress={() => router.push(item.href as never)}
+        {/* ─── Payments ─────────────────────────────────── */}
+        <Text style={s.groupLabel}>Payments</Text>
+        <View style={s.group}>
+          <Row
+            icon={CreditCard}
+            iconBg="#EDE9FE"
+            label="Payment methods"
+            onPress={() => router.push("/wallet")}
+            colors={colors}
+            isDark={isDark}
+          />
+          <View style={s.groupBorder} />
+          <Row
+            icon={Globe}
+            iconBg="#F0FDF4"
+            label="Currency"
+            value={settings?.preferredCurrency ?? "GHS"}
+            onPress={() => router.push("/edit-profile")}
+            colors={colors}
+            isDark={isDark}
+          />
+        </View>
+
+        {/* ─── Safety ───────────────────────────────────── */}
+        <Text style={s.groupLabel}>Safety</Text>
+        <View style={s.group}>
+          <Row
+            icon={Shield}
+            iconBg="#FEF2F2"
+            label="Emergency contacts"
+            onPress={() => router.push("/emergency-contacts")}
+            colors={colors}
+            isDark={isDark}
+          />
+          <View style={s.groupBorder} />
+          <Row
+            icon={MapPin}
+            iconBg="#EFF6FF"
+            label="Trusted contacts"
+            onPress={() => {}}
+            colors={colors}
+            isDark={isDark}
+          />
+        </View>
+
+        {/* ─── Notifications ────────────────────────────── */}
+        <Text style={s.groupLabel}>Notifications</Text>
+        <View style={s.group}>
+          <Row
+            icon={Bell}
+            iconBg="#FEF3C7"
+            label="Notification settings"
+            onPress={() => router.push("/notifications")}
+            colors={colors}
+            isDark={isDark}
+          />
+        </View>
+
+        {/* ─── Support ──────────────────────────────────── */}
+        <Text style={s.groupLabel}>Support</Text>
+        <View style={s.group}>
+          <Row
+            icon={HelpCircle}
+            iconBg="#EDE9FE"
+            label="Help center"
+            onPress={() => router.push("/support")}
+            colors={colors}
+            isDark={isDark}
+          />
+        </View>
+
+        {/* ─── Preferences ──────────────────────────────── */}
+        <Text style={s.groupLabel}>Preferences</Text>
+        <View style={s.group}>
+          <View style={s.toggleRow}>
+            <View
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
-              <Text style={styles.linkLabel}>{item.label}</Text>
-              <ChevronRight size={18} color={colors.textMuted} />
-            </Pressable>
-          ))}
-        </Card>
-
-        <Card stacked>
-          <Text style={styles.sectionTitle}>{t("profile.friendCodeTitle")}</Text>
-          <Text style={styles.sectionHint}>{t("profile.friendCodeHint")}</Text>
-          <Input label={t("profile.referralCodeLabel")} value={friendCode} onChangeText={setFriendCode} autoCapitalize="characters" />
-          <Button label={t("profile.applyReferral")} loading={applyingReferral} onPress={applyReferral} fullWidth />
-        </Card>
-
-        <Card style={styles.themeCard} padded={false}>
-          <View style={styles.themeRow}>
-            <View style={[styles.themeIcon, isDark ? styles.darkIconBg : styles.lightIconBg]}>
-              {isDark ? <Moon size={18} color={colors.text} /> : <Sun size={18} color={colors.primary} />}
+              {isDark ? (
+                <Moon size={16} color={colors.primary} />
+              ) : (
+                <Sun size={16} color="#D97706" />
+              )}
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.themeLabel}>{isDark ? t("profile.darkMode") : t("profile.lightMode")}</Text>
-              <Text style={styles.themeHint}>{t("profile.toggleAppearance")}</Text>
-            </View>
+            <Text style={s.toggleLabel}>Dark mode</Text>
             <Switch
               value={isDark}
-              onValueChange={(enabled) => setTheme(enabled ? "dark" : "light")}
-              trackColor={{ true: colors.primary, false: colors.border }}
-              thumbColor={isDark ? colors.primary : colors.surface}
+              onValueChange={(v) => setTheme(v ? "dark" : "light")}
+              trackColor={{ false: "#D1D5DB", true: colors.primary }}
+              thumbColor="#FFFFFF"
             />
           </View>
-        </Card>
+        </View>
 
-        <Card stacked padded={false}>
-          <View style={styles.languageHeader}>
-            <Globe size={16} color={colors.primary} />
-            <Text style={styles.sectionTitle}>{t("language.title")}</Text>
-          </View>
-          <LanguageSwitcher />
-        </Card>
-
-        <Button
-          label={t("profile.signOut")}
-          variant="outline"
-          fullWidth
-          onPress={() => setShowLogoutConfirm(true)}
-        />
-
-        <ConfirmDialog
-          visible={showLogoutConfirm}
-          title="Sign out"
-          message="Are you sure you want to sign out? You'll need to log in again to access your account."
-          confirmLabel="Sign out"
-          cancelLabel={t("common.cancel")}
-          destructive
-          onConfirm={async () => {
-            setShowLogoutConfirm(false);
-            await signOut();
-            router.replace("/(auth)/login");
-          }}
-          onCancel={() => setShowLogoutConfirm(false)}
-        />
+        {/* ─── Logout ────────────────────────────────────── */}
+        <View style={s.group}>
+          <Pressable
+            style={s.logoutRow}
+            onPress={() => setShowLogoutConfirm(true)}
+          >
+            <View
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                backgroundColor: colors.dangerLight,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <LogOut size={16} color={colors.danger} />
+            </View>
+            <Text style={s.logoutLabel}>Sign out</Text>
+          </Pressable>
+        </View>
       </ScrollView>
+
+      <ConfirmDialog
+        visible={showLogoutConfirm}
+        title="Sign out?"
+        message="You'll need to sign in again to use the app."
+        confirmLabel="Sign out"
+        destructive
+        onConfirm={() => {
+          setShowLogoutConfirm(false);
+          signOut();
+        }}
+        onCancel={() => setShowLogoutConfirm(false)}
+      />
     </SafeAreaView>
   );
 }

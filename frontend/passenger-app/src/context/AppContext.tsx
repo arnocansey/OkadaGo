@@ -86,30 +86,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const patch = data as Ride;
       setRides((prev) => prev.map((r) => (r.id === patch.id ? { ...r, ...patch } : r)));
       refresh();
-
-      const status = (patch.status ?? "").toLowerCase();
-      if (["assigned", "arriving"].includes(status) || patch.rider) {
-        try {
-          router.push({ pathname: "/ride/track/[id]", params: { id: patch.id, kind: "ride" } });
-        } catch {
-          // ignore navigation error if unmounted
-        }
-      }
     };
 
     const onDeliveryUpdate = (data: unknown) => {
       const patch = data as Delivery;
       setDeliveries((prev) => prev.map((d) => (d.id === patch.id ? { ...d, ...patch } : d)));
       refresh();
-
-      const status = (patch.status ?? "").toLowerCase();
-      if (["assigned", "arriving"].includes(status) || patch.rider) {
-        try {
-          router.push({ pathname: "/ride/track/[id]", params: { id: patch.id, kind: "delivery" } });
-        } catch {
-          // ignore navigation error if unmounted
-        }
-      }
     };
 
     const onRiderLocation = (data: unknown) => {

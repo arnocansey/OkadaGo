@@ -1,12 +1,11 @@
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Clock, ArrowRight } from "lucide-react-native";
+import { ArrowRight, Clock, Star } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/context/ThemeContext";
 import { StandardBike } from "@/components/vehicles/StandardBike";
 import { ExpressBike } from "@/components/vehicles/ExpressBike";
 import { CargoTrike } from "@/components/vehicles/CargoTrike";
-import { space, radii, type, layout } from "@/theme/design-system";
 
 export type RideType = "standard" | "express" | "cargo";
 
@@ -17,6 +16,8 @@ type RideOption = {
   benefit: string;
   fare?: string;
   eta?: string;
+  rating?: number;
+  recommended?: boolean;
 };
 
 type Props = {
@@ -25,56 +26,47 @@ type Props = {
   onSelect: (id: RideType) => void;
   onConfirm: () => void;
   loading?: boolean;
-  currency?: string;
 };
-
-const CATEGORY_TABS: Array<{ id: RideType; label: string }> = [
-  { id: "standard", label: "OkadaGo" },
-  { id: "express", label: "OkadaX" },
-  { id: "cargo", label: "Cargo" },
-];
 
 function getVehicle(id: RideType, size: "featured" | "compact") {
   const featured = size === "featured";
   switch (id) {
     case "standard":
-      return <StandardBike width={featured ? 160 : 56} height={featured ? 112 : 40} />;
+      return <StandardBike width={featured ? 140 : 48} height={featured ? 100 : 34} />;
     case "express":
-      return <ExpressBike width={featured ? 160 : 56} height={featured ? 112 : 40} />;
+      return <ExpressBike width={featured ? 140 : 48} height={featured ? 100 : 34} />;
     case "cargo":
-      return <CargoTrike width={featured ? 180 : 64} height={featured ? 124 : 44} />;
+      return <CargoTrike width={featured ? 160 : 56} height={featured ? 110 : 38} />;
   }
 }
 
 /**
- * BookingSheet — Compact bottom-sheet ride selector.
+ * BookingSheet v2 — Ride selection bottom sheet
  *
- * Layout (inside bottom ~50% of screen):
- * ┌──────────────────────────────────┐
- * │  ─── handle ───                  │
- * │                                  │
- * │  [OkadaGo] [OkadaX] [Cargo]     │  ← horizontal category tabs
- * │                                  │
- * │  ┌──────────────────────────┐   │
- * │  │  🏍️  OkadaGo             │   │  ← featured card (selected ride)
- * │  │      Standard motorcycle  │   │
- * │  │  ⏱ 8 min  ●  Affordable  │   │
- * │  │              GHS 24.50    │   │
- * │  └──────────────────────────┘   │
- * │                                  │
- * │  ── Other options ──────────────│
- * │  🏍️ OkadaX   ~6 min  Fast  ₵30│  ← compact rows
- * │  🚚 Cargo    ~10 min  Load ₵22│
- * │                                  │
- * │  ┌──────────────────────────┐   │
- * │  │     Continue  →          │   │  ← fixed CTA
- * │  └──────────────────────────┘   │
- * └──────────────────────────────────┘
+ * ┌──────────────────────────────────────┐
+ * │  ─── handle ───                      │
+ * │                                      │
+ * │  ┌──────────────────────────────┐   │
+ * │  │  🏍️  OkadaGo    ⭐ 4.8      │   │  ← Featured card (recommended)
+ * │  │      Standard motorcycle      │   │
+ * │  │  ⏱ 8 min   ● Affordable     │   │
+ * │  │              GHS 24.50       │   │
+ * │  └──────────────────────────────┘   │
+ * │                                      │
+ * │  Other options                       │
+ * │  ┌──────────────────────────────┐   │
+ * │  │ 🏍️ OkadaX  ⏱6min  Fast  ₵30│   │  ← Compact row
+ * │  │ 🚚 Cargo   ⏱10min Load  ₵22│   │
+ * │  └──────────────────────────────┘   │
+ * │                                      │
+ * │  ┌──────────────────────────────┐   │
+ * │  │      Continue  →             │   │  ← Fixed CTA
+ * │  └──────────────────────────────┘   │
+ * └──────────────────────────────────────┘
  */
 export function BookingSheet({ options, selected, onSelect, onConfirm, loading }: Props) {
   const insets = useSafeAreaInsets();
   const { colors, isDark } = useTheme();
-  const scrollRef = useRef<ScrollView>(null);
 
   const featured = options.find((o) => o.id === selected);
   const alternatives = options.filter((o) => o.id !== selected);
@@ -89,14 +81,14 @@ export function BookingSheet({ options, selected, onSelect, onConfirm, loading }
           right: 0,
           maxHeight: "55%",
           backgroundColor: isDark ? colors.surface : "#FFFFFF",
-          borderTopLeftRadius: radii.sheet,
-          borderTopRightRadius: radii.sheet,
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -6 },
           shadowOpacity: isDark ? 0.5 : 0.12,
           shadowRadius: 20,
           elevation: 12,
-          paddingBottom: insets.bottom || space[4],
+          paddingBottom: insets.bottom || 16,
         },
         handle: {
           alignSelf: "center",
@@ -104,130 +96,132 @@ export function BookingSheet({ options, selected, onSelect, onConfirm, loading }
           height: 4,
           borderRadius: 2,
           backgroundColor: isDark ? colors.borderStrong : "#D1D5DB",
-          marginTop: space[3],
-          marginBottom: space[2],
+          marginTop: 12,
+          marginBottom: 12,
         },
         inner: {
           flex: 1,
-          paddingHorizontal: layout.sheetPadding,
-        },
-
-        /* ─── Category Tabs ─────────────────────────────── */
-        tabRow: {
-          flexDirection: "row",
-          gap: space[2],
-          marginBottom: space[3],
-        },
-        tab: {
-          paddingHorizontal: space[4],
-          paddingVertical: space[2],
-          borderRadius: radii.pill,
-          backgroundColor: isDark ? colors.surfaceOverlay : "#F1F3F5",
-        },
-        tabActive: {
-          backgroundColor: colors.primary,
-        },
-        tabText: {
-          ...type.captionEmphasis,
-          color: isDark ? colors.textSecondary : "#495057",
-        },
-        tabTextActive: {
-          color: "#000000",
+          paddingHorizontal: 20,
         },
 
         /* ─── Featured Card ─────────────────────────────── */
         featuredCard: {
           backgroundColor: isDark ? colors.surfaceRaised : "#FAFAFA",
-          borderRadius: radii.card,
+          borderRadius: 18,
           borderWidth: 2,
           borderColor: colors.primary,
-          padding: space[4],
-          marginBottom: space[3],
+          padding: 16,
+          marginBottom: 16,
         },
         featuredTop: {
           flexDirection: "row",
           alignItems: "center",
-          gap: space[3],
+          gap: 14,
         },
         featuredVehicle: {
-          width: 72,
-          height: 56,
+          width: 64,
+          height: 48,
           alignItems: "center",
           justifyContent: "center",
-          borderRadius: radii.md,
+          borderRadius: 12,
           backgroundColor: isDark ? "rgba(250,204,21,0.08)" : "rgba(250,204,21,0.06)",
         },
         featuredInfo: {
           flex: 1,
         },
+        featuredNameRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 6,
+        },
         featuredName: {
-          ...type.title,
+          fontSize: 17,
+          fontWeight: "700",
           color: colors.text,
         },
+        featuredBadge: {
+          fontSize: 10,
+          fontWeight: "700",
+          color: colors.primary,
+          backgroundColor: isDark ? "rgba(250,204,21,0.12)" : "rgba(250,204,21,0.15)",
+          paddingHorizontal: 6,
+          paddingVertical: 2,
+          borderRadius: 4,
+          overflow: "hidden",
+          textTransform: "uppercase",
+          letterSpacing: 0.4,
+        },
         featuredSubtitle: {
-          ...type.caption,
+          fontSize: 13,
           color: colors.textMuted,
-          marginTop: 1,
+          marginTop: 2,
         },
         featuredFareWrap: {
           alignItems: "flex-end",
         },
         featuredFare: {
-          ...type.title,
+          fontSize: 20,
+          fontWeight: "700",
           color: colors.primary,
         },
         featuredFareLabel: {
-          ...type.micro,
+          fontSize: 11,
           color: colors.textMuted,
         },
         featuredMeta: {
           flexDirection: "row",
           alignItems: "center",
-          gap: space[3],
-          marginTop: space[3],
+          gap: 8,
+          marginTop: 12,
         },
         metaChip: {
           flexDirection: "row",
           alignItems: "center",
-          gap: space[1],
-          paddingHorizontal: space[2],
+          gap: 4,
+          paddingHorizontal: 8,
           paddingVertical: 4,
-          borderRadius: radii.sm,
+          borderRadius: 6,
           backgroundColor: isDark ? colors.surfaceOverlay : "#F1F3F5",
         },
         metaChipText: {
-          ...type.micro,
+          fontSize: 12,
+          fontWeight: "500",
           color: colors.textSecondary,
         },
-
-        /* ─── Section Divider ───────────────────────────── */
-        dividerRow: {
+        metaChipRating: {
           flexDirection: "row",
           alignItems: "center",
-          gap: space[3],
-          marginBottom: space[2],
+          gap: 3,
+          paddingHorizontal: 8,
+          paddingVertical: 4,
+          borderRadius: 6,
+          backgroundColor: isDark ? "rgba(250,204,21,0.08)" : "rgba(250,204,21,0.08)",
         },
-        dividerLine: {
-          flex: 1,
-          height: 1,
-          backgroundColor: colors.border,
+        ratingText: {
+          fontSize: 12,
+          fontWeight: "600",
+          color: colors.primary,
         },
-        dividerText: {
-          ...type.micro,
+
+        /* ─── Section Label ─────────────────────────────── */
+        sectionLabel: {
+          fontSize: 12,
+          fontWeight: "600",
           color: colors.textMuted,
           textTransform: "uppercase",
           letterSpacing: 0.5,
+          marginBottom: 8,
         },
 
-        /* ─── Compact Alternative Rows ──────────────────── */
+        /* ─── Compact Alternative Row ───────────────────── */
         altRow: {
           flexDirection: "row",
           alignItems: "center",
-          paddingVertical: space[3],
-          paddingHorizontal: space[3],
-          borderRadius: radii.md,
+          paddingVertical: 12,
+          paddingHorizontal: 14,
+          borderRadius: 14,
           backgroundColor: isDark ? colors.surfaceOverlay : "#F8F9FA",
-          marginBottom: space[2],
+          marginBottom: 8,
           borderWidth: 1.5,
           borderColor: "transparent",
         },
@@ -236,21 +230,27 @@ export function BookingSheet({ options, selected, onSelect, onConfirm, loading }
           backgroundColor: isDark ? "rgba(250,204,21,0.06)" : "rgba(250,204,21,0.04)",
         },
         altVehicle: {
-          width: 52,
-          height: 36,
+          width: 44,
+          height: 32,
           alignItems: "center",
           justifyContent: "center",
-          marginRight: space[3],
+          marginRight: 12,
         },
         altInfo: {
           flex: 1,
         },
+        altNameRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 6,
+        },
         altName: {
-          ...type.bodyEmphasis,
+          fontSize: 15,
+          fontWeight: "600",
           color: colors.text,
         },
         altBenefit: {
-          ...type.micro,
+          fontSize: 12,
           color: colors.textMuted,
           marginTop: 1,
         },
@@ -259,27 +259,39 @@ export function BookingSheet({ options, selected, onSelect, onConfirm, loading }
           gap: 2,
         },
         altEta: {
-          ...type.micro,
+          fontSize: 12,
+          fontWeight: "500",
           color: colors.textSecondary,
         },
         altFare: {
-          ...type.bodyEmphasis,
+          fontSize: 15,
+          fontWeight: "700",
           color: colors.text,
+        },
+        altRating: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 2,
+        },
+        altRatingText: {
+          fontSize: 11,
+          fontWeight: "600",
+          color: colors.primary,
         },
 
         /* ─── Continue CTA ──────────────────────────────── */
         ctaWrap: {
-          paddingHorizontal: layout.sheetPadding,
-          paddingTop: space[3],
-          paddingBottom: insets.bottom ? 0 : space[3],
+          paddingHorizontal: 20,
+          paddingTop: 8,
+          paddingBottom: insets.bottom ? 0 : 12,
         },
         ctaBtn: {
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
-          gap: space[2],
+          gap: 8,
           height: 56,
-          borderRadius: radii.lg,
+          borderRadius: 16,
           backgroundColor: colors.primary,
           shadowColor: colors.primary,
           shadowOffset: { width: 0, height: 4 },
@@ -288,7 +300,8 @@ export function BookingSheet({ options, selected, onSelect, onConfirm, loading }
           elevation: 8,
         },
         ctaLabel: {
-          ...type.bodyEmphasis,
+          fontSize: 16,
+          fontWeight: "700",
           color: "#000000",
         },
         ctaDisabled: {
@@ -303,32 +316,11 @@ export function BookingSheet({ options, selected, onSelect, onConfirm, loading }
       <View style={s.handle} />
 
       <ScrollView
-        ref={scrollRef}
         style={s.inner}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Category Tabs */}
-        <View style={s.tabRow}>
-          {CATEGORY_TABS.map((tab) => {
-            const isActive = selected === tab.id;
-            return (
-              <Pressable
-                key={tab.id}
-                style={[s.tab, isActive && s.tabActive]}
-                onPress={() => onSelect(tab.id)}
-                accessibilityRole="tab"
-                accessibilityState={{ selected: isActive }}
-              >
-                <Text style={[s.tabText, isActive && s.tabTextActive]}>
-                  {tab.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        {/* Featured Card — Selected Ride */}
+        {/* ─── Featured Card — Recommended Ride ─────────── */}
         {featured ? (
           <Pressable
             style={s.featuredCard}
@@ -341,7 +333,10 @@ export function BookingSheet({ options, selected, onSelect, onConfirm, loading }
                 {getVehicle(featured.id, "compact")}
               </View>
               <View style={s.featuredInfo}>
-                <Text style={s.featuredName}>{featured.label}</Text>
+                <View style={s.featuredNameRow}>
+                  <Text style={s.featuredName}>{featured.label}</Text>
+                  <Text style={s.featuredBadge}>Recommended</Text>
+                </View>
                 <Text style={s.featuredSubtitle}>{featured.subtitle}</Text>
               </View>
               {featured.fare ? (
@@ -361,23 +356,27 @@ export function BookingSheet({ options, selected, onSelect, onConfirm, loading }
               <View style={s.metaChip}>
                 <Text style={s.metaChipText}>{featured.benefit}</Text>
               </View>
+              {featured.rating ? (
+                <View style={s.metaChipRating}>
+                  <Star size={11} color={colors.primary} fill={colors.primary} />
+                  <Text style={s.ratingText}>{featured.rating.toFixed(1)}</Text>
+                </View>
+              ) : null}
             </View>
           </Pressable>
         ) : null}
 
-        {/* Other Options */}
+        {/* ─── Other Options ────────────────────────────── */}
         {alternatives.length > 0 ? (
           <>
-            <View style={s.dividerRow}>
-              <View style={s.dividerLine} />
-              <Text style={s.dividerText}>Other options</Text>
-              <View style={s.dividerLine} />
-            </View>
-
+            <Text style={s.sectionLabel}>Other options</Text>
             {alternatives.map((alt) => (
               <Pressable
                 key={alt.id}
-                style={s.altRow}
+                style={({ pressed }) => [
+                  s.altRow,
+                  pressed && s.altRowActive,
+                ]}
                 onPress={() => onSelect(alt.id)}
                 accessibilityRole="radio"
                 accessibilityState={{ checked: false }}
@@ -386,7 +385,15 @@ export function BookingSheet({ options, selected, onSelect, onConfirm, loading }
                   {getVehicle(alt.id, "compact")}
                 </View>
                 <View style={s.altInfo}>
-                  <Text style={s.altName}>{alt.label}</Text>
+                  <View style={s.altNameRow}>
+                    <Text style={s.altName}>{alt.label}</Text>
+                    {alt.rating ? (
+                      <View style={s.altRating}>
+                        <Star size={10} color={colors.primary} fill={colors.primary} />
+                        <Text style={s.altRatingText}>{alt.rating.toFixed(1)}</Text>
+                      </View>
+                    ) : null}
+                  </View>
                   <Text style={s.altBenefit}>{alt.benefit}</Text>
                 </View>
                 <View style={s.altRight}>
@@ -398,11 +405,11 @@ export function BookingSheet({ options, selected, onSelect, onConfirm, loading }
           </>
         ) : null}
 
-        {/* Spacer for scroll content */}
-        <View style={{ height: space[2] }} />
+        {/* Spacer */}
+        <View style={{ height: 8 }} />
       </ScrollView>
 
-      {/* Fixed Continue CTA */}
+      {/* ─── Fixed Continue CTA ─────────────────────────── */}
       <View style={s.ctaWrap}>
         <Pressable
           style={[s.ctaBtn, loading && s.ctaDisabled]}

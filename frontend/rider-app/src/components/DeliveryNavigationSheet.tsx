@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Box,
   CheckCircle2,
+  ChevronLeft,
   Clock,
   ClipboardCheck,
   MapPin,
@@ -26,12 +27,14 @@ import {
   Weight,
 } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
+import { router } from "expo-router";
 import { AppMap } from "@/components/AppMap";
 import { PackageVerificationSheet } from "@/components/PackageVerificationSheet";
 import { DeliveryCompletionSheet } from "@/components/DeliveryCompletionSheet";
 import { SafetyCenter } from "@/components/SafetyCenter";
 import { useTheme } from "@/context/ThemeContext";
 import { useLiveRoutePreview } from "@/hooks/useLiveRoutePreview";
+import { useUserLocation } from "@/hooks/useUserLocation";
 import { api } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
 import { openGoogleMapsNavigation, openWazeNavigation } from "@/lib/navigation";
@@ -183,8 +186,19 @@ export function DeliveryNavigationSheet({
     true,
   );
 
+  const { latitude: riderLat, longitude: riderLng } = useUserLocation();
+
   const markers = useMemo(() => {
     const m = [];
+    if (riderLat && riderLng) {
+      m.push({
+        id: "rider-current-location",
+        latitude: riderLat,
+        longitude: riderLng,
+        title: "Your Location",
+        pinColor: brand.primary,
+      });
+    }
     if (delivery.pickupLatitude && delivery.pickupLongitude) {
       m.push({
         id: "pickup",
@@ -208,7 +222,7 @@ export function DeliveryNavigationSheet({
       });
     }
     return m;
-  }, [delivery, isDeliveryPhase, isAtDropoff, colors]);
+  }, [riderLat, riderLng, delivery, isDeliveryPhase, isAtDropoff, colors]);
 
   const earnings = delivery.riderEarnings ?? delivery.estimatedFee ?? 0;
   const currency = delivery.currency ?? "GH₵";
@@ -677,6 +691,29 @@ export function DeliveryNavigationSheet({
           color: colors.textSecondary,
         },
 
+        /* ─── Back Button ─────────────────────────────────────────── */
+        backWrap: {
+          position: "absolute",
+          top: insets.top + 12,
+          left: 16,
+          zIndex: layers.floatingAction,
+        },
+        backBtn: {
+          width: 44,
+          height: 44,
+          borderRadius: 22,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: isDark ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.9)",
+          borderWidth: 1,
+          borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.2,
+          shadowRadius: 8,
+          elevation: 4,
+        },
+
         /* ─── Safety Button ─────────────────────────────────────────── */
         sosWrap: {
           position: "absolute",
@@ -724,6 +761,17 @@ export function DeliveryNavigationSheet({
           showCenterButton
           centerButtonInset={{ bottom: 16, right: 16 }}
         />
+
+        {/* Back Button */}
+        <View style={s.backWrap}>
+          <Pressable
+            style={s.backBtn}
+            onPress={() => router.back()}
+            accessibilityLabel="Go back"
+          >
+            <ChevronLeft size={22} color={colors.text} />
+          </Pressable>
+        </View>
 
         {/* Safety Center Button */}
         <View style={s.sosWrap}>

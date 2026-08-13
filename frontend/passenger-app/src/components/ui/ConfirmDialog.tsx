@@ -71,7 +71,7 @@ export function ConfirmDialog({
   return (
     <Modal visible={visible} transparent animationType="fade" statusBarTranslucent onRequestClose={onCancel}>
       <Pressable style={styles.overlay} onPress={onCancel}>
-        <Pressable style={styles.dialog} onPress={(e) => e.stopPropagation()}>
+        <Pressable style={styles.dialog} onPress={(e) => e.stopPropagation()} accessibilityRole="alert">
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.message}>{message}</Text>
           <View style={styles.actions}>

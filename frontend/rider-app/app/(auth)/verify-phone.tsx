@@ -1,8 +1,8 @@
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ShieldCheck } from "lucide-react-native";
+import { ChevronLeft, ShieldCheck } from "lucide-react-native";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useApp } from "@/context/AppContext";
@@ -24,6 +24,20 @@ export default function VerifyPhoneScreen() {
     () =>
       StyleSheet.create({
         screen: { flex: 1, backgroundColor: colors.background },
+        topBar: {
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: spacing.md,
+          paddingVertical: spacing.sm,
+        },
+        backBtn: {
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: colors.surfaceOverlay,
+        },
         content: { padding: spacing.xxl, gap: spacing.xl },
         actions: { gap: spacing.md },
         hero: { alignItems: "center", gap: spacing.md, paddingVertical: spacing.lg },
@@ -83,6 +97,11 @@ export default function VerifyPhoneScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
+      <View style={styles.topBar}>
+        <Pressable style={styles.backBtn} onPress={() => router.back()} accessibilityLabel="Go back">
+          <ChevronLeft size={20} color={colors.text} />
+        </Pressable>
+      </View>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.hero}>

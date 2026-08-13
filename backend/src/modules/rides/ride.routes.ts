@@ -55,6 +55,34 @@ export const rideRoutes: FastifyPluginAsync = async (server) => {
     return rideService.listRideLocations(params.rideId, query.limit);
   });
 
+  server.get("/rides/:rideId/share", async (request) => {
+    const params = parseParams(request, rideIdParamsSchema);
+    const ride = await rideService.getRide(params.rideId);
+    return {
+      id: ride.id,
+      status: ride.status,
+      pickupAddress: ride.pickupAddress,
+      destinationAddress: ride.destinationAddress,
+      pickupLatitude: ride.pickupLatitude,
+      pickupLongitude: ride.pickupLongitude,
+      destinationLatitude: ride.destinationLatitude,
+      destinationLongitude: ride.destinationLongitude,
+      estimatedFare: ride.estimatedFare,
+      estimatedDurationMinutes: ride.estimatedDurationMinutes,
+      rider: ride.rider
+        ? {
+            id: ride.rider.id,
+            ratingAverage: ride.rider.ratingAverage,
+            user: {
+              fullName: ride.rider.user.fullName,
+              avatarUrl: ride.rider.user.avatarUrl,
+            },
+          }
+        : null,
+      shareableUrl: `https://okadago-backend.onrender.com/v1/rides/${ride.id}/share`,
+    };
+  });
+
   server.post("/rides/:rideId/location", async (request) => {
     const params = parseParams(request, rideIdParamsSchema);
     const input = parseBody(request, rideLocationUpdateSchema);

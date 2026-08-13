@@ -4,11 +4,12 @@ import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Clock,
+  CreditCard,
   Home,
-  MapPin,
   Navigation,
   Package,
   Search,
+  Star,
   User,
 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
@@ -22,47 +23,42 @@ import { MAP_SHEET_CENTER_INSET } from "@/components/ui/MapBottomSheet";
 import type { HomeService, SavedPlace } from "@/types";
 
 /**
- * OkadaGo Passenger Home Screen
+ * OkadaGo Passenger Home Screen — v2
  *
- * Layout:
+ * 390 × 844 viewport
+ *
  * ┌─────────────────────────────────┐
- * │ [Logo]            [Profile]     │ ← Safe area top
- * │─────────────────────────────────│
+ * │ [Logo]                [Avatar]  │ ← Safe area top
  * │                                 │
  * │       FULL-SCREEN MAP           │
  * │                                 │
  * │  ┌───────────────────────────┐  │
- * │  │  🔍 Where are you going?  │  │ ← Floating search card
+ * │  │  ● Current location       │  │
+ * │  │  │                        │  │ ← Floating search card
+ * │  │  ▼ Where are you going?   │  │
+ * │  │                           │  │
+ * │  │ [Go Now][Send][Schedule]  │  │ ← Quick actions
+ * │  │ [Saved Places]            │  │
  * │  └───────────────────────────┘  │
- * │  [Go Now] [Delivery] [Schedule] │ ← Compact quick actions
- * │  [Saved Places]                 │
- * │                                 │
- * │                                 │
- * │         [ 🏍️ GO ]              │ ← Primary action (lower)
  * │                                 │
  * │  ┌─────────────────────────┐    │
- * │  │ 🏠  📦  📍  👤          │    │ ← Floating nav dock
+ * │  │ 🏠   📋   💳   👤      │    │ ← Floating nav dock
  * │  └─────────────────────────┘    │
  * └─────────────────────────────────┘
- *
- * Search overlay:
- * - Dimmed backdrop (map visible but darkened)
- * - Pickup + Destination fields with route indicator
- * - Grouped cards: Recent, Saved, Autocomplete suggestions
- * - Keyboard-aware layout
  */
 export default function HomeScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { session, activeRide, activeDelivery } = useApp();
   const { colors, isDark } = useTheme();
-  const { latitude, longitude, hasFix } = useUserLocation();
+  const { latitude, longitude, loading: locationLoading, hasFix } = useUserLocation();
   const [savedPlaces, setSavedPlaces] = useState<SavedPlace[]>([]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [recentDestinations, setRecentDestinations] = useState<
     Array<{ address: string; latitude: number; longitude: number; label?: string }>
   >([]);
 
+  /* ─── Fetch saved places ──────────────────────────────────── */
   useEffect(() => {
     if (!session?.token) return;
     api<SavedPlace[]>("/places/saved", { token: session.token })
@@ -70,6 +66,7 @@ export default function HomeScreen() {
       .catch(() => setSavedPlaces([]));
   }, [session?.token]);
 
+  /* ─── Active trip pulse ───────────────────────────────────── */
   const pulseAnim = useRef(new Animated.Value(1)).current;
   useEffect(() => {
     if (!activeRide && !activeDelivery) return;
@@ -83,6 +80,7 @@ export default function HomeScreen() {
     return () => loop.stop();
   }, [Boolean(activeRide), Boolean(activeDelivery)]);
 
+  /* ─── Handlers ────────────────────────────────────────────── */
   const handleQuickAction = useCallback((action: HomeService) => {
     if (action === "food") {
       router.push("/food");
@@ -97,14 +95,12 @@ export default function HomeScreen() {
   const handleSelectDestination = useCallback(
     (dest: { address: string; latitude: number; longitude: number }) => {
       setSearchOpen(false);
-      // Add to recent destinations
       setRecentDestinations((prev) => {
         const filtered = prev.filter(
           (r) => !(r.latitude === dest.latitude && r.longitude === dest.longitude),
         );
         return [dest, ...filtered].slice(0, 8);
       });
-      // Navigate to booking
       router.push({
         pathname: "/ride/book",
         params: {
@@ -135,15 +131,20 @@ export default function HomeScreen() {
     [],
   );
 
+  /* ─── User initials for avatar ────────────────────────────── */
+  const userInitial = useMemo(() => {
+    const name = session?.user?.fullName;
+    if (name) return name.charAt(0).toUpperCase();
+    return "U";
+  }, [session?.user?.fullName]);
+
+  /* ─── Styles ──────────────────────────────────────────────── */
   const s = useMemo(
     () =>
       StyleSheet.create({
-        screen: {
-          flex: 1,
-          backgroundColor: colors.bg,
-        },
+        screen: { flex: 1, backgroundColor: colors.bg },
 
-        /* ─── Top Bar ──────────────────────────────────────────── */
+        /* ─── Top Bar ──────────────────────────────────────── */
         topBar: {
           position: "absolute",
           top: insets.top + 8,
@@ -160,34 +161,44 @@ export default function HomeScreen() {
           gap: 8,
         },
         logoMark: {
-          width: 32,
-          height: 32,
-          borderRadius: 8,
+          width: 34,
+          height: 34,
+          borderRadius: 10,
           backgroundColor: colors.primary,
           alignItems: "center",
           justifyContent: "center",
         },
-        logoText: {
-          fontSize: 16,
+        logoMarkText: {
+          fontSize: 15,
+          fontWeight: "800",
+          color: colors.textOnPrimary,
+        },
+        logoWordmark: {
+          fontSize: 17,
           fontWeight: "700",
           color: colors.text,
           letterSpacing: -0.3,
         },
-        profileBtn: {
-          width: 40,
-          height: 40,
-          borderRadius: 20,
-          backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)",
+        avatarBtn: {
+          width: 42,
+          height: 42,
+          borderRadius: 21,
+          backgroundColor: colors.primaryLight,
           alignItems: "center",
           justifyContent: "center",
-          borderWidth: 1.5,
-          borderColor: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)",
+          borderWidth: 2,
+          borderColor: colors.primary,
+        },
+        avatarInitial: {
+          fontSize: 16,
+          fontWeight: "700",
+          color: colors.primary,
         },
 
-        /* ─── Active Trip Banner ────────────────────────────────── */
+        /* ─── Active Trip Banner ───────────────────────────── */
         activeTripWrap: {
           position: "absolute",
-          top: insets.top + 60,
+          top: insets.top + 64,
           left: 16,
           right: 16,
           zIndex: 20,
@@ -228,51 +239,94 @@ export default function HomeScreen() {
           fontWeight: "300",
         },
 
-        /* ─── Floating Search Card ──────────────────────────────── */
+        /* ─── Floating Search Card ─────────────────────────── */
         searchCard: {
           position: "absolute",
-          top: insets.top + 60,
+          top: insets.top + 64,
           left: 16,
           right: 16,
           zIndex: 15,
         },
         searchCardInner: {
-          backgroundColor: isDark ? "rgba(17, 24, 39, 0.95)" : "rgba(255, 255, 255, 0.95)",
+          backgroundColor: isDark ? "rgba(17, 24, 39, 0.96)" : "rgba(255, 255, 255, 0.96)",
           borderRadius: 20,
-          padding: 16,
+          padding: 14,
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: 6 },
-          shadowOpacity: isDark ? 0.4 : 0.15,
-          shadowRadius: 16,
-          elevation: 8,
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: isDark ? 0.5 : 0.18,
+          shadowRadius: 20,
+          elevation: 10,
           borderWidth: 1,
           borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
         },
-        searchField: {
+
+        /* ─── Pickup Row ───────────────────────────────────── */
+        pickupRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 12,
+          marginBottom: 4,
+        },
+        pickupDot: {
+          width: 10,
+          height: 10,
+          borderRadius: 5,
+          backgroundColor: colors.primary,
+        },
+        pickupText: {
+          flex: 1,
+          fontSize: 13,
+          fontWeight: "500",
+          color: colors.textSecondary,
+        },
+        pickupLabel: {
+          fontSize: 11,
+          fontWeight: "600",
+          color: colors.textMuted,
+          textTransform: "uppercase",
+          letterSpacing: 0.4,
+        },
+
+        /* ─── Route Indicator ──────────────────────────────── */
+        routeLine: {
+          flexDirection: "row",
+          alignItems: "center",
+          paddingLeft: 4,
+          height: 24,
+        },
+        routeDash: {
+          width: 2,
+          height: 16,
+          borderRadius: 1,
+          backgroundColor: colors.border,
+        },
+
+        /* ─── Destination Field ────────────────────────────── */
+        destField: {
           flexDirection: "row",
           alignItems: "center",
           gap: 12,
           backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
           borderRadius: 14,
-          paddingHorizontal: 16,
+          paddingHorizontal: 14,
           paddingVertical: 14,
         },
-        searchIcon: {
-          width: 20,
-          height: 20,
-          borderRadius: 10,
-          backgroundColor: colors.primary,
-          alignItems: "center",
-          justifyContent: "center",
+        destIcon: {
+          width: 10,
+          height: 10,
+          borderRadius: 5,
+          borderWidth: 2,
+          borderColor: colors.danger,
+          backgroundColor: "transparent",
         },
-        searchText: {
+        destText: {
           flex: 1,
           fontSize: 16,
           fontWeight: "500",
           color: colors.textMuted,
         },
 
-        /* ─── Quick Actions Row ─────────────────────────────────── */
+        /* ─── Quick Actions ────────────────────────────────── */
         quickActions: {
           flexDirection: "row",
           gap: 8,
@@ -283,7 +337,7 @@ export default function HomeScreen() {
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
-          gap: 6,
+          gap: 5,
           paddingVertical: 10,
           borderRadius: 12,
           backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
@@ -302,41 +356,10 @@ export default function HomeScreen() {
           color: colors.primary,
         },
 
-        /* ─── Primary Go Button ─────────────────────────────────── */
-        goButtonWrap: {
-          position: "absolute",
-          bottom: insets.bottom + 100,
-          left: 0,
-          right: 0,
-          alignItems: "center",
-          zIndex: 15,
-        },
-        goButton: {
-          width: 120,
-          height: 56,
-          borderRadius: 28,
-          backgroundColor: colors.primary,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 8,
-          shadowColor: colors.primary,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.4,
-          shadowRadius: 12,
-          elevation: 8,
-        },
-        goButtonText: {
-          fontSize: 18,
-          fontWeight: "700",
-          color: colors.textOnPrimary,
-          letterSpacing: 0.5,
-        },
-
-        /* ─── Floating Nav Dock ─────────────────────────────────── */
+        /* ─── Floating Nav Dock ────────────────────────────── */
         navDock: {
           position: "absolute",
-          bottom: insets.bottom + 16,
+          bottom: insets.bottom + 12,
           left: 16,
           right: 16,
           zIndex: 20,
@@ -345,24 +368,25 @@ export default function HomeScreen() {
           flexDirection: "row",
           justifyContent: "space-around",
           alignItems: "center",
-          backgroundColor: isDark ? "rgba(17, 24, 39, 0.95)" : "rgba(255, 255, 255, 0.95)",
+          backgroundColor: isDark ? "rgba(17, 24, 39, 0.96)" : "rgba(255, 255, 255, 0.96)",
           borderRadius: 24,
-          paddingVertical: 12,
+          paddingVertical: 10,
           paddingHorizontal: 8,
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: 6 },
-          shadowOpacity: isDark ? 0.4 : 0.15,
-          shadowRadius: 16,
-          elevation: 8,
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: isDark ? 0.5 : 0.18,
+          shadowRadius: 20,
+          elevation: 10,
           borderWidth: 1,
           borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
         },
         navItem: {
           alignItems: "center",
           justifyContent: "center",
-          width: 48,
-          height: 48,
-          borderRadius: 24,
+          width: 56,
+          height: 44,
+          borderRadius: 14,
+          gap: 3,
         },
         navItemActive: {
           backgroundColor: isDark ? "rgba(250, 204, 21, 0.15)" : "rgba(250, 204, 21, 0.1)",
@@ -371,7 +395,6 @@ export default function HomeScreen() {
           fontSize: 10,
           fontWeight: "600",
           color: colors.textMuted,
-          marginTop: 4,
         },
         navLabelActive: {
           color: colors.primary,
@@ -382,7 +405,7 @@ export default function HomeScreen() {
 
   return (
     <View style={s.screen}>
-      {/* ─── Full-Screen Map ────────────────────────────────────── */}
+      {/* ─── Full-Screen Map ──────────────────────────────────── */}
       <AppMap
         region={{
           latitude,
@@ -395,25 +418,25 @@ export default function HomeScreen() {
         centerButtonInset={{ bottom: MAP_SHEET_CENTER_INSET + 80, right: 16 }}
       />
 
-      {/* ─── Top Bar: Logo + Profile ───────────────────────────── */}
+      {/* ─── Top Bar: Logo + Avatar ───────────────────────────── */}
       <View style={s.topBar} pointerEvents="box-none">
         <View style={s.logo}>
           <View style={s.logoMark}>
-            <Text style={{ fontSize: 16, fontWeight: "800", color: colors.textOnPrimary }}>O</Text>
+            <Text style={s.logoMarkText}>O</Text>
           </View>
-          <Text style={s.logoText}>OkadaGo</Text>
+          <Text style={s.logoWordmark}>OkadaGo</Text>
         </View>
         <Pressable
-          style={s.profileBtn}
+          style={s.avatarBtn}
           onPress={() => router.push("/(main)/profile")}
           accessibilityRole="button"
           accessibilityLabel="Profile"
         >
-          <User size={20} color={colors.text} />
+          <Text style={s.avatarInitial}>{userInitial}</Text>
         </Pressable>
       </View>
 
-      {/* ─── Active Trip Banner ─────────────────────────────────── */}
+      {/* ─── Active Trip Banner ───────────────────────────────── */}
       {(activeRide || activeDelivery) && (
         <View style={s.activeTripWrap} pointerEvents="box-none">
           <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
@@ -442,50 +465,66 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* ─── Floating Search Card ───────────────────────────────── */}
+      {/* ─── Floating Search Card ─────────────────────────────── */}
       {!activeRide && !activeDelivery && (
         <View style={s.searchCard}>
           <View style={s.searchCardInner}>
+            {/* Pickup */}
+            <View style={s.pickupRow}>
+              <View style={s.pickupDot} />
+              <Text style={s.pickupText} numberOfLines={1}>
+                {hasFix ? "Current location" : locationLoading ? "Finding location..." : "Accra, Ghana"}
+              </Text>
+              <Text style={s.pickupLabel}>Pickup</Text>
+            </View>
+
+            {/* Route indicator */}
+            <View style={s.routeLine}>
+              <View style={s.routeDash} />
+              <View style={[s.routeDash, { height: 6, marginTop: 2 }]} />
+              <View style={[s.routeDash, { height: 4, marginTop: 2 }]} />
+            </View>
+
+            {/* Destination field */}
             <Pressable
-              style={s.searchField}
+              style={s.destField}
               onPress={() => setSearchOpen(true)}
               accessibilityRole="search"
               accessibilityLabel="Search destination"
             >
-              <View style={s.searchIcon}>
-                <Search size={14} color={colors.textOnPrimary} />
-              </View>
-              <Text style={s.searchText}>Where are you going?</Text>
+              <View style={s.destIcon} />
+              <Text style={s.destText}>Where are you going?</Text>
+              <Search size={18} color={colors.textMuted} />
             </Pressable>
 
-            {/* ─── Quick Actions ──────────────────────────────── */}
+            {/* Quick actions */}
             <View style={s.quickActions}>
               <Pressable
                 style={[s.quickAction, s.quickActionActive]}
                 onPress={() => handleQuickAction("ride")}
               >
-                <Navigation size={14} color={colors.primary} />
+                <Navigation size={13} color={colors.primary} />
                 <Text style={[s.quickActionText, s.quickActionTextActive]}>Go Now</Text>
               </Pressable>
               <Pressable
                 style={s.quickAction}
                 onPress={() => handleQuickAction("send")}
               >
-                <Package size={14} color={colors.textMuted} />
-                <Text style={s.quickActionText}>Delivery</Text>
+                <Package size={13} color={colors.textMuted} />
+                <Text style={s.quickActionText}>Send</Text>
               </Pressable>
               <Pressable
                 style={s.quickAction}
                 onPress={() => router.push({ pathname: "/ride/book", params: { mode: "ride", schedule: "true" } })}
               >
-                <Clock size={14} color={colors.textMuted} />
+                <Clock size={13} color={colors.textMuted} />
                 <Text style={s.quickActionText}>Schedule</Text>
               </Pressable>
               <Pressable
                 style={s.quickAction}
                 onPress={() => setSearchOpen(true)}
               >
-                <Home size={14} color={colors.textMuted} />
+                <Home size={13} color={colors.textMuted} />
                 <Text style={s.quickActionText}>Saved</Text>
               </Pressable>
             </View>
@@ -493,55 +532,49 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* ─── Primary Go Button (Lower Portion) ──────────────────── */}
-      {!activeRide && !activeDelivery && (
-        <View style={s.goButtonWrap}>
-          <Pressable
-            style={s.goButton}
-            onPress={() => setSearchOpen(true)}
-            accessibilityRole="button"
-            accessibilityLabel="Go"
-          >
-            <Text style={s.goButtonText}>GO</Text>
-          </Pressable>
-        </View>
-      )}
-
-      {/* ─── Floating Navigation Dock ───────────────────────────── */}
+      {/* ─── Floating Navigation Dock ─────────────────────────── */}
       <View style={s.navDock}>
         <View style={s.navDockInner}>
           <Pressable style={[s.navItem, s.navItemActive]} accessibilityLabel="Home">
-            <Home size={22} color={colors.primary} />
+            <Home size={20} color={colors.primary} />
             <Text style={[s.navLabel, s.navLabelActive]}>Home</Text>
           </Pressable>
           <Pressable
             style={s.navItem}
             onPress={() => router.push("/(main)/trips")}
-            accessibilityLabel="Orders"
+            accessibilityLabel="Trips"
           >
-            <Package size={22} color={colors.textMuted} />
-            <Text style={s.navLabel}>Orders</Text>
+            <Clock size={20} color={colors.textMuted} />
+            <Text style={s.navLabel}>Trips</Text>
           </Pressable>
           <Pressable
             style={s.navItem}
-            onPress={() => router.push("/notifications")}
-            accessibilityLabel="Notifications"
+            onPress={() => router.push("/(main)/wallet")}
+            accessibilityLabel="Wallet"
           >
-            <MapPin size={22} color={colors.textMuted} />
-            <Text style={s.navLabel}>Activity</Text>
+            <CreditCard size={20} color={colors.textMuted} />
+            <Text style={s.navLabel}>Wallet</Text>
+          </Pressable>
+          <Pressable
+            style={s.navItem}
+            onPress={() => router.push("/(main)/gopoints")}
+            accessibilityLabel="GoPoints"
+          >
+            <Star size={20} color={colors.textMuted} />
+            <Text style={s.navLabel}>Points</Text>
           </Pressable>
           <Pressable
             style={s.navItem}
             onPress={() => router.push("/(main)/profile")}
             accessibilityLabel="Profile"
           >
-            <User size={22} color={colors.textMuted} />
+            <User size={20} color={colors.textMuted} />
             <Text style={s.navLabel}>Profile</Text>
           </Pressable>
         </View>
       </View>
 
-      {/* ─── Destination Search Sheet ───────────────────────────── */}
+      {/* ─── Destination Search Sheet ─────────────────────────── */}
       <DestinationSearchSheet
         visible={searchOpen}
         onClose={() => setSearchOpen(false)}

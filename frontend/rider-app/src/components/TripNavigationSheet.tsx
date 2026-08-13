@@ -13,6 +13,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   CheckCircle2,
+  ChevronLeft,
   Clock,
   MapPin,
   MessageCircle,
@@ -22,12 +23,14 @@ import {
   ShieldAlert,
   Zap,
 } from "lucide-react-native";
+import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { AppMap } from "@/components/AppMap";
 import { PinVerificationSheet } from "@/components/PinVerificationSheet";
 import { SafetyCenter } from "@/components/SafetyCenter";
 import { useTheme } from "@/context/ThemeContext";
 import { useLiveRoutePreview } from "@/hooks/useLiveRoutePreview";
+import { useUserLocation } from "@/hooks/useUserLocation";
 import { api } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
 import { openGoogleMapsNavigation, openWazeNavigation } from "@/lib/navigation";
@@ -152,8 +155,19 @@ export function TripNavigationSheet({
     }
   }, [status]);
 
+  const { latitude: riderLat, longitude: riderLng } = useUserLocation();
+
   const markers = useMemo(() => {
     const m = [];
+    if (riderLat && riderLng) {
+      m.push({
+        id: "rider-current-location",
+        latitude: riderLat,
+        longitude: riderLng,
+        title: "Your Location",
+        pinColor: brand.primary,
+      });
+    }
     if (trip.pickupLatitude && trip.pickupLongitude) {
       m.push({
         id: "pickup",
@@ -173,7 +187,7 @@ export function TripNavigationSheet({
       });
     }
     return m;
-  }, [trip, isTripPhase, colors]);
+  }, [riderLat, riderLng, trip, isTripPhase, colors]);
 
   function handleAction() {
     if (isArrived) {
@@ -465,6 +479,29 @@ export function TripNavigationSheet({
           color: colors.textSecondary,
         },
 
+        /* ─── Back Button ─────────────────────────────────────────── */
+        backWrap: {
+          position: "absolute",
+          top: insets.top + 12,
+          left: 16,
+          zIndex: layers.floatingAction,
+        },
+        backBtn: {
+          width: 44,
+          height: 44,
+          borderRadius: 22,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: isDark ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.9)",
+          borderWidth: 1,
+          borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.2,
+          shadowRadius: 8,
+          elevation: 4,
+        },
+
         /* ─── Safety Button ─────────────────────────────────────────── */
         sosWrap: {
           position: "absolute",
@@ -510,6 +547,17 @@ export function TripNavigationSheet({
           showCenterButton
           centerButtonInset={{ bottom: 16, right: 16 }}
         />
+
+        {/* Back Button */}
+        <View style={s.backWrap}>
+          <Pressable
+            style={s.backBtn}
+            onPress={() => router.back()}
+            accessibilityLabel="Go back"
+          >
+            <ChevronLeft size={22} color={colors.text} />
+          </Pressable>
+        </View>
 
         {/* Safety Center Button */}
         <View style={s.sosWrap}>

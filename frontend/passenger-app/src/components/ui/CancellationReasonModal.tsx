@@ -8,6 +8,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import * as Haptics from "expo-haptics";
 import { useTheme } from "@/context/ThemeContext";
 import { radius, shadows, spacing } from "@/theme/tokens";
 import { Button } from "./Button";
@@ -51,6 +52,7 @@ export function CancellationReasonModal({
 
   const handleConfirm = async () => {
     if (!finalReasonText || loading) return;
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     await onConfirm(finalReasonText);
     setSelectedReasonId(null);
     setCustomReason("");
@@ -103,7 +105,7 @@ export function CancellationReasonModal({
       marginBottom: spacing.md,
     },
     closeBtn: {
-      padding: spacing.xs,
+      padding: spacing.md,
       borderRadius: radius.md,
       backgroundColor: colors.surface,
     },
@@ -184,7 +186,7 @@ export function CancellationReasonModal({
               <AlertTriangle size={22} color={colors.danger} />
               <Text style={styles.title}>Cancel {tripType === "ride" ? "Ride" : "Delivery"}</Text>
             </View>
-            <Pressable style={styles.closeBtn} onPress={handleClose}>
+            <Pressable style={styles.closeBtn} onPress={handleClose} hitSlop={10} accessibilityLabel="Close" accessibilityRole="button">
               <X size={20} color={colors.textMuted} />
             </Pressable>
           </View>
@@ -201,6 +203,9 @@ export function CancellationReasonModal({
                   key={item.id}
                   style={[styles.optionCard, isSelected && styles.optionCardSelected]}
                   onPress={() => setSelectedReasonId(item.id)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: isSelected }}
+                  accessibilityLabel={item.label}
                 >
                   <Text style={styles.optionIcon}>{item.icon}</Text>
                   <Text

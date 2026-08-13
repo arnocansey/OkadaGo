@@ -45,17 +45,26 @@ export const walletRoutes: FastifyPluginAsync = async (server) => {
     return walletService.validatePayoutEligibility(input);
   });
 
+  server.get("/rider/earnings", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return walletService.getRiderEarnings(token);
+  });
+
   server.get("/wallets/rider/payout-requests", async (request) => {
     const token = extractBearerToken(request.headers.authorization);
     return walletService.listCurrentRiderPayoutRequests(token);
   });
 
-  server.post("/wallets/rider/payout-requests", async (request, reply) => {
-    const token = extractBearerToken(request.headers.authorization);
-    const input = parseBody(request, riderPayoutRequestSchema);
-    const result = await walletService.createCurrentRiderPayoutRequest(token, input);
-    return reply.status(201).send(result);
-  });
+  server.post(
+    "/wallets/rider/payout-requests",
+    { config: { rateLimit: { max: 10, timeWindow: "1 hour" } } },
+    async (request, reply) => {
+      const token = extractBearerToken(request.headers.authorization);
+      const input = parseBody(request, riderPayoutRequestSchema);
+      const result = await walletService.createCurrentRiderPayoutRequest(token, input);
+      return reply.status(201).send(result);
+    },
+  );
 
   server.get("/wallets/rider/payout-accounts", async (request) => {
     const token = extractBearerToken(request.headers.authorization);
@@ -87,12 +96,16 @@ export const walletRoutes: FastifyPluginAsync = async (server) => {
     return reply.status(201).send(result);
   });
 
-  server.post("/wallets/top-up/paystack/initialize", async (request, reply) => {
-    const token = extractBearerToken(request.headers.authorization);
-    const input = parseBody(request, walletPaystackInitializeSchema);
-    const result = await walletService.initializePaystackTopUp(token, input);
-    return reply.status(201).send(result);
-  });
+  server.post(
+    "/wallets/top-up/paystack/initialize",
+    { config: { rateLimit: { max: 15, timeWindow: "1 hour" } } },
+    async (request, reply) => {
+      const token = extractBearerToken(request.headers.authorization);
+      const input = parseBody(request, walletPaystackInitializeSchema);
+      const result = await walletService.initializePaystackTopUp(token, input);
+      return reply.status(201).send(result);
+    },
+  );
 
   server.get("/wallets/top-up/paystack/callback", async (request, reply) => {
     const query = parseQuery(request, walletPaystackCallbackQuerySchema);

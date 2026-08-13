@@ -85,6 +85,19 @@ export default function RiderHome() {
 
   const locationPing = hasFix ? { latitude, longitude, isMocked } : undefined;
 
+  const riderMarkers = useMemo(() => {
+    if (!latitude || !longitude) return [];
+    return [
+      {
+        id: "rider-current-location",
+        latitude,
+        longitude,
+        title: "Your Location",
+        pinColor: brand.primary,
+      },
+    ];
+  }, [latitude, longitude]);
+
   useEffect(() => {
     const interval = setInterval(() => refresh(), 15000);
     return () => clearInterval(interval);
@@ -524,6 +537,7 @@ export default function RiderHome() {
             latitudeDelta: 0.04,
             longitudeDelta: 0.04,
           }}
+          markers={riderMarkers}
           autoCenterOnLocation={hasFix}
           showCenterButton
           centerButtonInset={{ bottom: 160, right: 16 }}

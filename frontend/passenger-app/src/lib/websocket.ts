@@ -53,6 +53,10 @@ export class PassengerWebSocketService {
     if (index > -1) list.splice(index, 1);
   }
 
+  send(event: string, data?: unknown): void {
+    this.socket?.emit(event, data);
+  }
+
   private emit(event: string, data: unknown): void {
     for (const callback of this.listeners.get(event) ?? []) callback(data);
   }

@@ -77,6 +77,7 @@ export default function RequestScreen() {
       duration: 20000,
       useNativeDriver: false,
     });
+    requestAlarm.start();
     animation.start();
 
     const timer = setInterval(() => {

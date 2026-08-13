@@ -101,6 +101,9 @@ export function Button({
     <Pressable
       {...rest}
       disabled={isDisabled}
+      accessibilityRole="button"
+      accessibilityLabel={rest.accessibilityLabel ?? label}
+      accessibilityState={{ disabled: isDisabled }}
       onPress={(e) => {
         if (!isDisabled) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         onPress?.(e);

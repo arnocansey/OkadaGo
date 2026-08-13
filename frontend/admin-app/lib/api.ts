@@ -4,11 +4,7 @@ function resolveDefaultApiBaseUrl() {
     return configured;
   }
 
-  if (process.env.NODE_ENV === "development") {
-    return "http://localhost:4000/v1";
-  }
-
-  return "";
+  return "https://okadago-backend.onrender.com/v1";
 }
 
 const defaultApiBaseUrl = resolveDefaultApiBaseUrl();

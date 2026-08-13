@@ -22,6 +22,13 @@ import { SkeletonList } from "@/components/ui/Skeleton";
 import { Input } from "@/components/ui/Input";
 import { CancellationReasonModal } from "@/components/ui/CancellationReasonModal";
 import { RiderTransparencyCard } from "@/components/RiderTransparencyCard";
+import { RiderAssignedSheet } from "@/components/RiderAssignedSheet";
+import { RiderArrivedSheet } from "@/components/RiderArrivedSheet";
+import { ActiveTripSheet } from "@/components/ActiveTripSheet";
+import { SafetyCenter } from "@/components/SafetyCenter";
+import { TripCompletedSheet } from "@/components/TripCompletedSheet";
+import { RateRiderSheet } from "@/components/RateRiderSheet";
+import { TripReceiptSheet } from "@/components/TripReceiptSheet";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useToast } from "@/context/ToastContext";
@@ -86,6 +93,10 @@ export default function TrackScreen() {
       StyleSheet.create({
         screen: { flex: 1, backgroundColor: colors.background },
         map: { height: "35%" as unknown as number },
+        mapAssigned: { height: "66%" as unknown as number },
+        mapActive: { height: "70%" as unknown as number },
+        mapCompleted: { height: "40%" as unknown as number },
+        assignedBody: { flex: 1 },
         body: { padding: spacing.xl, gap: spacing.lg, paddingBottom: spacing.xxxl },
         header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
         fare: { ...typography.h3, color: colors.text },
@@ -127,14 +138,21 @@ export default function TrackScreen() {
     [colors, typography],
   );
 
-  const isRide = kind !== "delivery";
-  const trip = isRide ? rides.find((r) => r.id === id) : deliveries.find((d) => d.id === id);
+  const rideMatch = rides.find((r) => r.id === id);
+  const deliveryMatch = deliveries.find((d) => d.id === id);
+  const isRide = kind === "delivery" ? false : Boolean(rideMatch) || !deliveryMatch;
+  const trip = isRide ? rideMatch : deliveryMatch;
   const [cancelling, setCancelling] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [rating, setRating] = useState(5);
   const [review, setReview] = useState("");
   const [ratingLoading, setRatingLoading] = useState(false);
   const [safetyLoading, setSafetyLoading] = useState(false);
+  const [showSafetyCenter, setShowSafetyCenter] = useState(false);
+  const [showRatingSection, setShowRatingSection] = useState(false);
+  const [showReceiptSection, setShowReceiptSection] = useState(false);
+  const [showRatingSheet, setShowRatingSheet] = useState(false);
+  const [showReceiptSheet, setShowReceiptSheet] = useState(false);
   const [safetyContacts, setSafetyContacts] = useState<SafetyOverview["contacts"]>([]);
   const [stops, setStops] = useState<DeliveryStop[]>([]);
 
@@ -165,8 +183,13 @@ export default function TrackScreen() {
   }, [trip, isRide, colors, rides, deliveries]);
 
   const status = trip?.status ?? "searching";
-  const isActiveTrip = ACTIVE_STATUSES.includes(status.toLowerCase());
-  const isSearching = status.toLowerCase() === "searching";
+  const statusLower = status.toLowerCase();
+  const isActiveTrip = ACTIVE_STATUSES.includes(statusLower);
+  const isSearching = statusLower === "searching";
+  const isAssigned = ["assigned", "arriving"].includes(statusLower);
+  const isArrived = statusLower === "arrived";
+  const isActive = ["started", "picked_up", "in_transit"].includes(statusLower);
+  const isCompleted = isRide ? statusLower === "completed" : statusLower === "delivered";
   const [showMatching, setShowMatching] = useState(isSearching);
   const rideTrip = isRide && trip ? (trip as (typeof rides)[0]) : null;
   const riderLat = Number(trip?.rider?.currentLatitude ?? rideTrip?.pickupLatitude ?? 0);
@@ -431,7 +454,7 @@ export default function TrackScreen() {
     await Linking.openURL(`tel:${primary.phoneE164}`);
   }
 
-  async function submitRating() {
+  async function submitRating(score: number, tags: string[] = []) {
     if (!session || !trip) return;
     setRatingLoading(true);
     try {
@@ -439,9 +462,14 @@ export default function TrackScreen() {
       await api(endpoint, {
         method: "POST",
         token: session.token,
-        body: { score: rating, review: review.trim() || undefined },
+        body: {
+          score,
+          review: review.trim() || undefined,
+          tags: tags.length > 0 ? tags : undefined,
+        },
       });
       showToast("Your rating was submitted.", "success");
+      setShowRatingSheet(false);
       await refresh();
     } catch (e) {
       Alert.alert("Rating failed", e instanceof Error ? e.message : "Could not submit rating.");
@@ -455,7 +483,17 @@ export default function TrackScreen() {
       <Stack.Screen
         options={{
           headerShown: true,
-          title: showMatching ? "Finding rider" : "Track trip",
+          title: showMatching
+            ? "Finding rider"
+            : isCompleted
+              ? "Trip completed"
+              : isArrived
+                ? "Rider has arrived"
+                : isActive
+                  ? "On the way"
+                  : isAssigned
+                    ? "Rider en route"
+                    : "Track trip",
           ...stackHeaderOptions,
         }}
       />
@@ -466,7 +504,124 @@ export default function TrackScreen() {
           tripId={trip.id}
           onCancel={handleCancelMatching}
           onMatched={handleMatched}
+          fare={money(
+            isRide
+              ? (trip as (typeof rides)[0]).finalFare ?? (trip as (typeof rides)[0]).estimatedFare
+              : (trip as (typeof deliveries)[0]).finalFee ?? (trip as (typeof deliveries)[0]).estimatedFee,
+            trip.currency,
+          )}
+          destinationAddress={dropoffAddress}
         />
+      ) : isArrived && trip?.rider?.user?.fullName ? (
+        /* ─── Rider Arrived View ────────────────────────── */
+        <View style={styles.screen}>
+          <AppMap
+            style={[styles.map, styles.mapAssigned]}
+            markers={markers}
+            fitToMarkers
+          />
+          <RiderArrivedSheet
+            rider={{
+              name: trip.rider.user.fullName,
+              avatarUrl: trip.rider.user.avatarUrl,
+              vehicle: trip.rider.vehicle,
+            }}
+            tripPin={null}
+            onCall={riderPhone ? () => Linking.openURL(`tel:${riderPhone}`) : () => {}}
+            onSafety={() => setShowSafetyCenter(true)}
+            onConfirm={() => {}}
+          />
+        </View>
+      ) : isActive && trip?.rider?.user?.fullName ? (
+        /* ─── Active Trip View ─────────────────────────── */
+        <View style={styles.screen}>
+          <AppMap
+            style={[styles.map, styles.mapActive]}
+            markers={markers}
+            routeCoordinates={livePreview?.route?.map(([lng, lat]) => ({ latitude: lat, longitude: lng }))}
+            fitToMarkers
+          />
+          <ActiveTripSheet
+            rider={{
+              name: trip.rider.user.fullName,
+              avatarUrl: trip.rider.user.avatarUrl,
+              vehicle: trip.rider.vehicle,
+            }}
+            destinationAddress={dropoffAddress}
+            etaMinutes={livePreview?.durationMinutes}
+            distanceKm={livePreview?.distanceKm}
+            progress={(() => {
+              if (!livePreview) return 0;
+              const total = livePreview.distanceKm;
+              if (total <= 0) return 0;
+              const rLat = Number(trip.rider?.currentLatitude ?? 0);
+              const rLon = Number(trip.rider?.currentLongitude ?? 0);
+              if (!rLat || !rLon) return 0;
+              const R = 6371;
+              const dLat = ((destLat - rLat) * Math.PI) / 180;
+              const dLon = ((destLon - rLon) * Math.PI) / 180;
+              const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos((rLat * Math.PI) / 180) *
+                  Math.cos((destLat * Math.PI) / 180) *
+                  Math.sin(dLon / 2) *
+                  Math.sin(dLon / 2);
+              const remaining = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+              return Math.max(0, Math.min(1, 1 - remaining / total));
+            })()}
+            onCall={riderPhone ? () => Linking.openURL(`tel:${riderPhone}`) : () => {}}
+            onChat={() => {}}
+            onSafety={() => setShowSafetyCenter(true)}
+          />
+        </View>
+      ) : isAssigned && trip?.rider?.user?.fullName ? (
+        /* ─── Rider Assigned View ────────────────────────── */
+        <View style={styles.screen}>
+          <AppMap
+            style={[styles.map, styles.mapAssigned]}
+            markers={markers}
+            fitToMarkers
+          />
+          <RiderAssignedSheet
+            rider={{
+              name: trip.rider.user.fullName,
+              avatarUrl: trip.rider.user.avatarUrl,
+              rating: trip.rider.ratingAverage != null ? Number(trip.rider.ratingAverage) : null,
+              completedTrips: trip.rider.completedTrips,
+              phoneE164: (trip.rider.user as { phoneE164?: string } | undefined)?.phoneE164,
+              vehicle: trip.rider.vehicle,
+            }}
+            tripPin={null}
+            eta={livePreview ? `~${Math.round(livePreview.durationMinutes)} min` : undefined}
+            onCall={riderPhone ? () => Linking.openURL(`tel:${riderPhone}`) : () => {}}
+            onChat={() => {}}
+            onSafety={() => setShowSafetyCenter(true)}
+          />
+        </View>
+      ) : isCompleted && trip?.rider?.user?.fullName ? (
+        /* ─── Trip Completed View ──────────────────────── */
+        <View style={styles.screen}>
+          <AppMap
+            style={[styles.map, styles.mapCompleted]}
+            markers={markers}
+            fitToMarkers
+          />
+          <TripCompletedSheet
+            destinationAddress={dropoffAddress}
+            fare={money(
+              isRide
+                ? (trip as (typeof rides)[0]).finalFare ?? (trip as (typeof rides)[0]).estimatedFare
+                : (trip as (typeof deliveries)[0]).finalFee ?? (trip as (typeof deliveries)[0]).estimatedFee,
+              trip.currency,
+            )}
+            onRate={() => {
+              setShowRatingSheet(true);
+            }}
+            onReceipt={() => {
+              setShowReceiptSheet(true);
+            }}
+          />
+        </View>
       ) : (
         <View style={styles.screen}>
           <AppMap style={styles.map} markers={markers} fitToMarkers />
@@ -624,7 +779,7 @@ export default function TrackScreen() {
                 onChangeText={setReview}
                 placeholder={isRide ? "How was your trip?" : "How was your delivery?"}
               />
-              <Button label="Submit rating" loading={ratingLoading} onPress={submitRating} fullWidth />
+              <Button label="Submit rating" loading={ratingLoading} onPress={() => submitRating(rating, [])} fullWidth />
             </Card>
           ) : null}
 
@@ -670,6 +825,54 @@ export default function TrackScreen() {
             setCancelling(false);
           }
         }}
+      />
+
+      <SafetyCenter
+        visible={showSafetyCenter}
+        onClose={() => setShowSafetyCenter(false)}
+        tripId={trip?.id}
+        rider={
+          trip?.rider?.user?.fullName
+            ? {
+                name: trip.rider.user.fullName,
+                phone: (trip.rider.user as { phoneE164?: string } | undefined)?.phoneE164,
+                vehicle: trip.rider.vehicle,
+              }
+            : undefined
+        }
+        contacts={safetyContacts ?? []}
+        onShareTrip={shareTrip}
+        onReportIssue={reportSos}
+      />
+
+      <RateRiderSheet
+        visible={showRatingSheet}
+        riderName={trip?.rider?.user?.fullName ?? "Your rider"}
+        riderAvatar={trip?.rider?.user?.avatarUrl}
+        onSubmit={(score, tags) => submitRating(score, tags)}
+        onSkip={() => setShowRatingSheet(false)}
+        loading={ratingLoading}
+      />
+
+      <TripReceiptSheet
+        visible={showReceiptSheet}
+        tripId={trip?.id ?? ""}
+        fare={money(
+          isRide
+            ? (trip as (typeof rides)[0])?.finalFare ?? (trip as (typeof rides)[0])?.estimatedFare
+            : (trip as (typeof deliveries)[0])?.finalFee ?? (trip as (typeof deliveries)[0])?.estimatedFee,
+          trip?.currency,
+        )}
+        currency={trip?.currency}
+        pickupAddress={pickupAddress}
+        destinationAddress={dropoffAddress}
+        riderName={trip?.rider?.user?.fullName ?? "Your rider"}
+        riderAvatar={trip?.rider?.user?.avatarUrl}
+        vehicle={trip?.rider?.vehicle}
+        paymentMethod={isRide ? (trip as (typeof rides)[0])?.paymentMethod : (trip as (typeof deliveries)[0])?.paymentMethod}
+        completedAt={isRide ? (trip as (typeof rides)[0])?.completedAt : (trip as (typeof deliveries)[0])?.completedAt}
+        createdAt={trip?.createdAt}
+        onDone={() => setShowReceiptSheet(false)}
       />
     </>
   );

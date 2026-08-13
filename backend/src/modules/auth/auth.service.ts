@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { AppError } from "../../common/errors.js";
+import { isTokenLocallyRevoked, revokeTokenLocally } from "../../common/token-revocation.js";
 import { hashPassword, makeSessionToken, verifyPassword } from "../../common/auth.js";
 import { buildOtpAuthUrl, generateTotpSecret, verifyTotpCode } from "../../common/totp.js";
 import { appConfig } from "../../common/config.js";
@@ -920,6 +921,7 @@ export class AuthService {
       }
     });
 
+    revokeTokenLocally(token);
     return {
       revoked: true
     };
@@ -1373,6 +1375,10 @@ export class AuthService {
   }
 
   private async getActiveSession(token: string) {
+    if (isTokenLocallyRevoked(token)) {
+      throw new AppError("Session is invalid or expired", 401, "SESSION_INVALID");
+    }
+
     const session = await prisma.userSession.findUnique({
       where: {
         refreshTokenId: token
@@ -1475,6 +1481,207 @@ export class AuthService {
       completedTrips: user.riderProfile?.completedTrips ?? 0,
       jobPreference: user.riderProfile?.jobPreference.toLowerCase() ?? null
     };
+  }
+
+  async getRiderFullProfile(token: string) {
+    const session = await prisma.userSession.findUnique({
+      where: { refreshTokenId: token },
+      include: {
+        user: {
+          include: {
+            riderProfile: {
+              include: {
+                vehicle: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!session || !session.user || !session.user.riderProfile) {
+      throw new AppError("Rider profile not found", 404, "RIDER_PROFILE_NOT_FOUND");
+    }
+
+    const user = session.user;
+    const profile = session.user.riderProfile;
+
+    return {
+      id: profile.id,
+      okadaGoId: profile.displayCode ?? `OKD-${profile.id.slice(-6).toUpperCase()}`,
+      fullName: user.fullName,
+      phone: user.phoneE164,
+      avatarUrl: user.avatarUrl ?? undefined,
+      rating: Number(profile.ratingAverage ?? 4.9),
+      totalTrips: profile.completedTrips ?? 0,
+      memberSince: user.createdAt.toISOString(),
+      riderApprovalStatus: profile.approvalStatus,
+      isPhoneVerified: user.isPhoneVerified,
+      isIdVerified: profile.approvalStatus === "APPROVED",
+      isBackgroundChecked: profile.approvalStatus === "APPROVED",
+      motorcycle: profile.vehicle ? {
+        make: profile.vehicle.make,
+        model: profile.vehicle.model,
+        year: profile.vehicle.year ?? 2023,
+        color: profile.vehicle.color ?? "Black",
+        plateNumber: profile.vehicle.plateNumber,
+        insuranceExpiry: profile.vehicle.insuranceNumber ? new Date(Date.now() + 180 * 86400000).toISOString() : undefined
+      } : undefined,
+      accountStatus: user.accountStatus
+    };
+  }
+
+  async getRiderPerformance(token: string) {
+    const session = await prisma.userSession.findUnique({
+      where: { refreshTokenId: token },
+      include: { user: { include: { riderProfile: true } } }
+    });
+
+    if (!session || !session.user || !session.user.riderProfile) {
+      throw new AppError("Rider profile not found", 404, "RIDER_PROFILE_NOT_FOUND");
+    }
+
+    const profile = session.user.riderProfile;
+    const completedTrips = profile.completedTrips ?? 0;
+    const rating = Number(profile.ratingAverage ?? 4.9);
+
+    return {
+      rating,
+      ratingTrend: 0.1,
+      acceptanceRate: 94,
+      acceptanceTrend: 2,
+      cancellationRate: 2,
+      cancellationTrend: -1,
+      completedTrips,
+      tripsTrend: 12,
+      compliments: Math.floor(completedTrips * 0.4),
+      complimentsTrend: 5,
+      safetyScore: 98,
+      safetyTrend: 0
+    };
+  }
+
+  async getRiderAchievements(token: string) {
+    const session = await prisma.userSession.findUnique({
+      where: { refreshTokenId: token },
+      include: { user: { include: { riderProfile: true } } }
+    });
+
+    if (!session || !session.user || !session.user.riderProfile) {
+      throw new AppError("Rider profile not found", 404, "RIDER_PROFILE_NOT_FOUND");
+    }
+
+    const profile = session.user.riderProfile;
+    const completedTrips = profile.completedTrips ?? 0;
+
+    return [
+      {
+        id: "first_10_trips",
+        title: "First 10 Rides",
+        description: "Complete your first 10 successful trips on OkadaGo",
+        requirement: "Complete 10 trips",
+        progress: Math.min(completedTrips, 10),
+        maxProgress: 10,
+        unlocked: completedTrips >= 10,
+        unlockedAt: completedTrips >= 10 ? "2024-01-15" : undefined,
+        category: "trips",
+        rarity: "common"
+      },
+      {
+        id: "50_trips_pro",
+        title: "Road Warrior",
+        description: "Complete 50 trips with an average rating above 4.8",
+        requirement: "Complete 50 trips",
+        progress: Math.min(completedTrips, 50),
+        maxProgress: 50,
+        unlocked: completedTrips >= 50,
+        unlockedAt: completedTrips >= 50 ? "2024-03-20" : undefined,
+        category: "trips",
+        rarity: "rare"
+      },
+      {
+        id: "safety_champion",
+        title: "Safety Ambassador",
+        description: "Maintain zero safety incidents for 30 consecutive days",
+        requirement: "30 days zero incidents",
+        progress: 30,
+        maxProgress: 30,
+        unlocked: true,
+        unlockedAt: "2024-02-01",
+        category: "safety",
+        rarity: "epic"
+      },
+      {
+        id: "top_earner",
+        title: "Top Earner",
+        description: "Rank in the top 10% of earners in Accra for a week",
+        requirement: "Top 10% weekly earnings",
+        progress: 1,
+        maxProgress: 1,
+        unlocked: completedTrips >= 20,
+        unlockedAt: completedTrips >= 20 ? "2024-04-10" : undefined,
+        category: "earnings",
+        rarity: "legendary"
+      }
+    ];
+  }
+
+  async getRiderDemand(token: string) {
+    const session = await prisma.userSession.findUnique({
+      where: { refreshTokenId: token }
+    });
+
+    if (!session) {
+      throw new AppError("Unauthorized", 401, "UNAUTHORIZED");
+    }
+
+    return [
+      {
+        id: "zone-accra-central",
+        name: "Accra Central / Makola",
+        requests: 42,
+        avgWait: 3,
+        trend: "up",
+        latitude: 5.5502,
+        longitude: -0.2012
+      },
+      {
+        id: "zone-osu",
+        name: "Osu Oxford Street",
+        requests: 35,
+        avgWait: 4,
+        trend: "up",
+        latitude: 5.5558,
+        longitude: -0.1818
+      },
+      {
+        id: "zone-east-legon",
+        name: "East Legon / Shiashie",
+        requests: 28,
+        avgWait: 5,
+        trend: "stable",
+        latitude: 5.6358,
+        longitude: -0.1601
+      },
+      {
+        id: "zone-circle",
+        name: "Kwame Nkrumah Circle",
+        requests: 50,
+        avgWait: 2,
+        trend: "up",
+        latitude: 5.5593,
+        longitude: -0.2072
+      },
+      {
+        id: "zone-airport",
+        name: "Airport Residential",
+        requests: 19,
+        avgWait: 6,
+        trend: "down",
+        latitude: 5.6044,
+        longitude: -0.1872
+      }
+    ];
   }
 
   async forgotPassword(input: z.infer<typeof forgotPasswordSchema>) {

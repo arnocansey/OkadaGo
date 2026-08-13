@@ -17,7 +17,10 @@ import { Chip } from "@/components/ui/Chip";
 import { Input } from "@/components/ui/Input";
 import { BookingSheet } from "@/components/BookingSheet";
 import type { RideType as BookingRideType } from "@/components/BookingSheet";
-import { radius, spacing } from "@/theme/tokens";
+import { RoutePreviewSheet } from "@/components/RoutePreviewSheet";
+import { PaymentSelectionSheet } from "@/components/PaymentSelectionSheet";
+import { spacing, radius } from "@/theme/tokens";
+import { BookingProgress } from "@/components/ui/BookingProgress";
 import type { LocationResult, PaymentMethod, PlaceSuggestion, RoutePreview, SavedPlace, ServiceZone } from "@/types";
 
 const FALLBACK_DEST = { latitude: 5.556, longitude: -0.182 };
@@ -271,6 +274,8 @@ export default function BookRideScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [scheduleOption, setScheduleOption] = useState<ScheduleOptionId>("now");
+  const [showBookingSheet, setShowBookingSheet] = useState(false);
+  const [showPaymentSheet, setShowPaymentSheet] = useState(false);
   const scheduledForDate = useMemo(() => computeScheduledFor(scheduleOption), [scheduleOption]);
   const isSearching = pickupFocused || destinationFocused;
   const activeMapHeight = pinDropTarget
@@ -278,6 +283,29 @@ export default function BookRideScreen() {
     : isSearching
       ? 0
       : mapHeight;
+
+  /* ─── Booking step (for progress bar) ────────────────────── */
+  const BOOKING_LABELS = isDelivery
+    ? ["Route", "Package", "Payment", "Confirm"]
+    : ["Route", "Ride", "Payment", "Confirm"];
+  const bookingStep = showPaymentSheet ? 3 : showBookingSheet ? 2 : destSelected && estimate ? 1 : 1;
+
+  /* ─── Inline validation: can the user submit? ─────────────── */
+  const canSubmit = Boolean(
+    destination.trim() &&
+    destSelected &&
+    hasPickupCoords &&
+    (!isDelivery || (recipientName.trim() && recipientPhone.trim())),
+  );
+  const validationHint = !destination.trim()
+    ? "Set a destination to continue"
+    : !hasPickupCoords
+      ? "Waiting for pickup location…"
+      : isDelivery && !recipientName.trim()
+        ? "Enter recipient name"
+        : isDelivery && !recipientPhone.trim()
+          ? "Enter recipient phone"
+          : "";
 
   const pickupAutocomplete = useAddressAutocomplete({
     token: session?.token,
@@ -312,6 +340,8 @@ export default function BookRideScreen() {
       setDestination(resolved.address);
       setDestCoords({ latitude: resolved.latitude, longitude: resolved.longitude });
       setDestSelected(true);
+      setShowBookingSheet(false);
+      setShowPaymentSheet(false);
       destinationAutocomplete.clearSuggestions();
       setDestinationFocused(false);
     } catch (e) {
@@ -322,6 +352,8 @@ export default function BookRideScreen() {
   async function dropDestinationPin(coordinate: { latitude: number; longitude: number }) {
     setDestCoords(coordinate);
     setDestSelected(true);
+    setShowBookingSheet(false);
+      setShowPaymentSheet(false);
     setDestination("Resolving address…");
     if (!session?.token) return;
     try {
@@ -404,6 +436,8 @@ export default function BookRideScreen() {
           longitude: Number(place.longitude),
         });
         setDestSelected(true);
+        setShowBookingSheet(false);
+      setShowPaymentSheet(false);
       })
       .catch(() => undefined);
   }, [session?.token, placeId]);
@@ -411,6 +445,8 @@ export default function BookRideScreen() {
   useEffect(() => {
     if (!destParam) return;
     setDestination(destParam);
+    setShowBookingSheet(false);
+      setShowPaymentSheet(false);
     if (destLat && destLng) {
       setDestCoords({ latitude: parseFloat(destLat), longitude: parseFloat(destLng) });
       setDestSelected(true);
@@ -676,6 +712,15 @@ export default function BookRideScreen() {
             </View>
           )}
 
+          {/* ─── Step indicator ─────────────────────────────── */}
+          {!isSearching && (
+            <BookingProgress
+              currentStep={bookingStep}
+              totalSteps={isDelivery ? 4 : 3}
+              labels={isDelivery ? BOOKING_LABELS : BOOKING_LABELS.slice(0, 3)}
+            />
+          )}
+
           <ScrollView
             style={styles.formSection}
             contentContainerStyle={styles.content}
@@ -926,36 +971,69 @@ export default function BookRideScreen() {
             ) : null}
 
             {error ? <Text style={styles.error}>{error}</Text> : null}
+            {!error && validationHint ? <Text style={{ ...typography.caption, color: colors.textMuted }}>{validationHint}</Text> : null}
             {isDelivery ? (
               <Button
                 label={t("book.requestDelivery")}
                 loading={loading}
                 onPress={submit}
                 fullWidth
-                disabled={!destination.trim() || !hasPickupCoords || pickupLocationLoading || pickupResolving}
+                disabled={!canSubmit || loading || pickupLocationLoading || pickupResolving}
               />
             ) : null}
           </View>
         </ScrollView>
 
-        {/* Ride mode: BookingSheet overlay at bottom of screen */}
+        {/* Route Preview → Ride Selection → Payment flow */}
         {!isDelivery ? (
-          <BookingSheet
-            options={rideTypeOptions.map((option) => ({
-              id: option.id as BookingRideType,
-              label: option.label,
-              subtitle: option.sub,
-              benefit: option.benefits[0] ?? "",
-              fare: fareByType[option.id] ? money(fareByType[option.id], zones[0]?.currency) : undefined,
-              eta: estimate
-                ? `~${Math.round(estimate.durationMinutes * (option.id === "express" ? 0.8 : option.id === "cargo" ? 1.2 : 1))} min`
-                : undefined,
-            }))}
-            selected={rideType}
-            onSelect={(id) => setRideType(id)}
-            onConfirm={submit}
-            loading={loading}
-          />
+          <>
+            {/* Step 1: Route preview with "Choose Ride" CTA */}
+            {!showBookingSheet && !showPaymentSheet && estimate && destSelected && (
+              <RoutePreviewSheet
+                pickupAddress={pickupSubmitAddress.trim() || pickup}
+                destinationAddress={destination}
+                estimate={estimate}
+                onChooseRide={() => setShowBookingSheet(true)}
+              />
+            )}
+
+            {/* Step 2: Ride selection with "Continue" CTA */}
+            {showBookingSheet && !showPaymentSheet && (
+              <BookingSheet
+                options={rideTypeOptions.map((option) => ({
+                  id: option.id as BookingRideType,
+                  label: option.label,
+                  subtitle: option.sub,
+                  benefit: option.benefits[0] ?? "",
+                  fare: fareByType[option.id] ? money(fareByType[option.id], zones[0]?.currency) : undefined,
+                  eta: estimate
+                    ? `~${Math.round(estimate.durationMinutes * (option.id === "express" ? 0.8 : option.id === "cargo" ? 1.2 : 1))} min`
+                    : undefined,
+                  rating: option.id === "standard" ? 4.8 : option.id === "express" ? 4.9 : undefined,
+                  recommended: option.id === "standard",
+                }))}
+                selected={rideType}
+                onSelect={(id) => setRideType(id)}
+                onConfirm={() => {
+                  setShowBookingSheet(false);
+      setShowPaymentSheet(false);
+                  setShowPaymentSheet(true);
+                }}
+                loading={loading}
+              />
+            )}
+
+            {/* Step 3: Payment selection with "Confirm Ride" CTA */}
+            {showPaymentSheet && (
+              <PaymentSelectionSheet
+                fare={money(Math.max(0, estimatedFare - promoDiscount), zones[0]?.currency)}
+                selected={paymentMethod}
+                onSelect={setPaymentMethod}
+                onConfirm={submit}
+                loading={loading}
+              />
+            )}
+          </>
         ) : null}
         </SafeAreaView>
       </KeyboardAvoidingView>

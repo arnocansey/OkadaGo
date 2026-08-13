@@ -161,20 +161,48 @@ export const authRoutes: FastifyPluginAsync = async (server) => {
     return authService.updateRiderVehicle(token, input);
   });
 
+  server.get("/auth/rider/profile", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return authService.getRiderFullProfile(token);
+  });
+
+  server.get("/rider/performance", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return authService.getRiderPerformance(token);
+  });
+
+  server.get("/rider/achievements", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return authService.getRiderAchievements(token);
+  });
+
+  server.get("/rider/demand", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return authService.getRiderDemand(token);
+  });
+
   server.post("/auth/logout", async (request) => {
     const token = extractBearerToken(request.headers.authorization);
     return authService.logout(token);
   });
 
-  server.post("/auth/otp/request", async (request) => {
-    const input = parseBody(request, otpRequestSchema);
-    return authService.requestPhoneOtp(input);
-  });
+  server.post(
+    "/auth/otp/request",
+    { config: { rateLimit: { max: 10, timeWindow: "1 hour" } } },
+    async (request) => {
+      const input = parseBody(request, otpRequestSchema);
+      return authService.requestPhoneOtp(input);
+    },
+  );
 
-  server.post("/auth/otp/verify", async (request) => {
-    const input = parseBody(request, otpVerifySchema);
-    return authService.verifyPhoneOtp(input);
-  });
+  server.post(
+    "/auth/otp/verify",
+    { config: { rateLimit: { max: 10, timeWindow: "1 hour" } } },
+    async (request) => {
+      const input = parseBody(request, otpVerifySchema);
+      return authService.verifyPhoneOtp(input);
+    },
+  );
 
   server.post("/auth/avatar", async (request) => {
     const token = extractBearerToken(request.headers.authorization);

@@ -8,10 +8,11 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ArrowDown, Circle, MapPin, Search, X } from "lucide-react-native";
+import { Briefcase, Clock, Home, MapPin, Search, Star, X } from "lucide-react-native";
 import { useTheme } from "@/context/ThemeContext";
 import { useAddressAutocomplete } from "@/hooks/useAddressAutocomplete";
 import type { PlaceSuggestion, SavedPlace } from "@/types";
@@ -36,15 +37,31 @@ type Props = {
   }>;
 };
 
+/** Map saved-place label to an icon */
+function placeIcon(label: string) {
+  const l = label.toLowerCase();
+  if (l.includes("home")) return Home;
+  if (l.includes("work") || l.includes("office") || l.includes("company")) return Briefcase;
+  if (l.includes("favourite") || l.includes("favorite")) return Star;
+  return MapPin;
+}
+
+/** Popular locations shown when there's no search query */
+const POPULAR_LOCATIONS = [
+  { id: "1", label: "Kotoka Airport", address: "Kotoka International Airport, Accra", latitude: 5.6054, longitude: -0.1668 },
+  { id: "2", label: "Accra Mall", address: "Accra Mall, Tetteh Quarshie Interchange", latitude: 5.6456, longitude: -0.1770 },
+  { id: "3", label: "Osu Oxford Street", address: "Osu, Oxford Street, Accra", latitude: 5.5577, longitude: -0.1780 },
+  { id: "4", label: "Legon Campus", address: "University of Ghana, Legon", latitude: 5.6502, longitude: -0.1864 },
+];
+
 /**
- * DestinationSearchSheet
+ * DestinationSearchSheet v2
  *
- * Full-screen search with semi-transparent backdrop (map dimmed behind).
- * - Pickup field (current location, read-only)
- * - Destination field (autofocus, editable)
- * - Connecting route indicator between fields
- * - Grouped destination cards (Recent, Saved, Suggestions)
- * - Keyboard-aware: KeyboardAvoidingView keeps inputs visible
+ * Full-screen search overlay with:
+ * - Pickup + Destination connected fields at top
+ * - Route indicator between fields
+ * - Recent, Saved, Popular sections as compact rows
+ * - Continue button always accessible above keyboard
  */
 export function DestinationSearchSheet({
   visible,
@@ -58,10 +75,16 @@ export function DestinationSearchSheet({
 }: Props) {
   const insets = useSafeAreaInsets();
   const { colors, isDark } = useTheme();
+  const destInputRef = useRef<TextInput>(null);
 
   const [pickupQuery] = useState("Current location");
   const [destinationQuery, setDestinationQuery] = useState("");
   const [destinationFocused, setDestinationFocused] = useState(true);
+  const [selectedDest, setSelectedDest] = useState<{
+    address: string;
+    latitude: number;
+    longitude: number;
+  } | null>(null);
 
   const destinationAutocomplete = useAddressAutocomplete({
     token: sessionToken,
@@ -71,9 +94,12 @@ export function DestinationSearchSheet({
   });
 
   useEffect(() => {
-    if (!visible) {
+    if (visible) {
+      setTimeout(() => destInputRef.current?.focus(), 300);
+    } else {
       setDestinationQuery("");
       setDestinationFocused(true);
+      setSelectedDest(null);
       destinationAutocomplete.clearSuggestions();
     }
   }, [visible]);
@@ -83,17 +109,19 @@ export function DestinationSearchSheet({
       Keyboard.dismiss();
       try {
         const resolved = await destinationAutocomplete.resolveSuggestion(suggestion);
-        onSelectDestination({
+        setSelectedDest({
           address: resolved.address,
           latitude: resolved.latitude,
           longitude: resolved.longitude,
         });
+        setDestinationQuery(resolved.address);
       } catch {
-        onSelectDestination({
+        setSelectedDest({
           address: suggestion.name,
           latitude: suggestion.latitude ?? userLocation?.latitude ?? 0,
           longitude: suggestion.longitude ?? userLocation?.longitude ?? 0,
         });
+        setDestinationQuery(suggestion.name);
       }
     },
     [destinationAutocomplete, onSelectDestination, userLocation],
@@ -115,19 +143,33 @@ export function DestinationSearchSheet({
     [onSelectDestination],
   );
 
+  const handleSelectPopular = useCallback(
+    (loc: { address: string; latitude: number; longitude: number }) => {
+      Keyboard.dismiss();
+      onSelectDestination(loc);
+    },
+    [onSelectDestination],
+  );
+
+  const handleContinue = useCallback(() => {
+    if (selectedDest) {
+      onSelectDestination(selectedDest);
+    }
+  }, [selectedDest, onSelectDestination]);
+
   const suggestions = destinationAutocomplete.suggestions;
   const isLoading = destinationAutocomplete.loading;
   const error = destinationAutocomplete.error;
 
-  const showSuggestions = destinationFocused && (isLoading || error || suggestions.length > 0);
-  const hasContent = showSuggestions || recentDestinations.length > 0 || savedPlaces.length > 0;
+  const showSuggestions = destinationFocused && destinationQuery.length > 0 && (isLoading || error || suggestions.length > 0);
+  const showDefaultContent = !showSuggestions && destinationQuery.length === 0;
 
   const s = useMemo(
     () =>
       StyleSheet.create({
         backdrop: {
           ...StyleSheet.absoluteFillObject,
-          backgroundColor: "rgba(0,0,0,0.55)",
+          backgroundColor: "rgba(0,0,0,0.6)",
           zIndex: 100,
         },
         sheet: {
@@ -143,7 +185,7 @@ export function DestinationSearchSheet({
           paddingTop: insets.top,
         },
 
-        /* ─── Header ──────────────────────────────────────────── */
+        /* ─── Header ──────────────────────────────────────── */
         header: {
           flexDirection: "row",
           alignItems: "center",
@@ -166,24 +208,25 @@ export function DestinationSearchSheet({
           color: colors.text,
         },
 
-        /* ─── Fields Card ─────────────────────────────────────── */
+        /* ─── Fields Card ─────────────────────────────────── */
         fieldsCard: {
           marginHorizontal: 16,
+          marginBottom: 12,
           backgroundColor: isDark ? "rgba(17, 24, 39, 0.97)" : "rgba(255, 255, 255, 0.97)",
-          borderRadius: 20,
-          padding: 16,
+          borderRadius: 16,
+          padding: 14,
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: 6 },
-          shadowOpacity: isDark ? 0.5 : 0.18,
-          shadowRadius: 16,
-          elevation: 8,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: isDark ? 0.4 : 0.12,
+          shadowRadius: 12,
+          elevation: 6,
           borderWidth: 1,
           borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
         },
         fieldRow: {
           flexDirection: "row",
           alignItems: "center",
-          gap: 12,
+          gap: 10,
         },
         fieldDot: {
           width: 10,
@@ -191,7 +234,7 @@ export function DestinationSearchSheet({
           borderRadius: 5,
           backgroundColor: colors.primary,
         },
-        fieldDotDestination: {
+        fieldDotDest: {
           backgroundColor: colors.danger,
         },
         fieldInput: {
@@ -199,157 +242,177 @@ export function DestinationSearchSheet({
           fontSize: 15,
           fontWeight: "500",
           color: colors.text,
-          paddingVertical: 12,
+          paddingVertical: 10,
         },
         fieldInputPlaceholder: {
           color: colors.textMuted,
         },
         fieldClearBtn: {
-          width: 24,
-          height: 24,
-          borderRadius: 12,
+          width: 22,
+          height: 22,
+          borderRadius: 11,
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)",
         },
 
-        /* ─── Route Indicator ─────────────────────────────────── */
-        routeIndicator: {
+        /* ─── Route Indicator ─────────────────────────────── */
+        routeLine: {
           flexDirection: "row",
           alignItems: "center",
-          paddingVertical: 4,
+          paddingVertical: 2,
           paddingLeft: 4,
+          gap: 3,
         },
-        routeLine: {
+        routeDash: {
           width: 2,
-          height: 20,
-          backgroundColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)",
           borderRadius: 1,
-        },
-        routeArrow: {
-          marginLeft: -1,
+          backgroundColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)",
         },
 
-        /* ─── Suggestions List ────────────────────────────────── */
-        suggestionsArea: {
+        /* ─── Scroll Content ──────────────────────────────── */
+        scrollArea: {
           flex: 1,
-          marginTop: 12,
           marginHorizontal: 16,
         },
         sectionLabel: {
-          fontSize: 12,
-          fontWeight: "600",
+          fontSize: 11,
+          fontWeight: "700",
           color: colors.textMuted,
           textTransform: "uppercase",
           letterSpacing: 0.6,
-          marginBottom: 8,
+          marginBottom: 6,
+          marginTop: 14,
           paddingHorizontal: 4,
         },
-        suggestionCard: {
+        sectionLabelFirst: {
+          marginTop: 0,
+        },
+
+        /* ─── Compact Row ─────────────────────────────────── */
+        row: {
           flexDirection: "row",
           alignItems: "center",
-          gap: 12,
-          backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)",
-          borderRadius: 14,
-          paddingHorizontal: 14,
-          paddingVertical: 12,
-          marginBottom: 8,
+          gap: 10,
+          paddingVertical: 10,
+          paddingHorizontal: 12,
+          borderRadius: 12,
+          marginBottom: 4,
         },
-        suggestionCardActive: {
-          backgroundColor: isDark ? "rgba(250, 204, 21, 0.1)" : "rgba(250, 204, 21, 0.08)",
-          borderWidth: 1,
-          borderColor: colors.primary,
+        rowPressed: {
+          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
         },
-        suggestionIcon: {
+        rowIcon: {
           width: 32,
           height: 32,
-          borderRadius: 16,
+          borderRadius: 10,
           backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
           alignItems: "center",
           justifyContent: "center",
         },
-        suggestionBody: {
+        rowIconSaved: {
+          backgroundColor: isDark ? "rgba(250, 204, 21, 0.1)" : "rgba(250, 204, 21, 0.08)",
+        },
+        rowBody: {
           flex: 1,
         },
-        suggestionName: {
+        rowName: {
           fontSize: 14,
           fontWeight: "600",
           color: colors.text,
         },
-        suggestionAddress: {
+        rowAddress: {
           fontSize: 12,
           color: colors.textMuted,
-          marginTop: 2,
+          marginTop: 1,
         },
+
+        /* ─── Loading ─────────────────────────────────────── */
         loadingRow: {
           flexDirection: "row",
           alignItems: "center",
           gap: 10,
-          paddingHorizontal: 14,
-          paddingVertical: 14,
+          paddingVertical: 12,
+          paddingHorizontal: 12,
         },
         loadingText: {
           fontSize: 13,
           color: colors.textMuted,
         },
 
-        /* ─── Saved Places Grid ───────────────────────────────── */
-        savedGrid: {
-          flexDirection: "row",
-          flexWrap: "wrap",
-          gap: 8,
-          marginBottom: 8,
-        },
-        savedCard: {
-          width: "48%",
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 10,
-          backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)",
-          borderRadius: 14,
-          paddingHorizontal: 12,
+        /* ─── Error ───────────────────────────────────────── */
+        errorRow: {
           paddingVertical: 12,
+          paddingHorizontal: 12,
+          borderRadius: 12,
+          borderWidth: 1,
+          borderColor: colors.danger,
+          marginBottom: 4,
         },
-        savedIcon: {
-          width: 28,
-          height: 28,
+        errorText: {
+          fontSize: 13,
+          color: colors.danger,
+        },
+
+        /* ─── Empty State ─────────────────────────────────── */
+        emptyState: {
+          alignItems: "center",
+          paddingTop: 48,
+          gap: 8,
+        },
+        emptyText: {
+          fontSize: 14,
+          color: colors.textMuted,
+        },
+
+        /* ─── Bottom Bar (Continue) ───────────────────────── */
+        bottomBar: {
+          paddingHorizontal: 16,
+          paddingTop: 12,
+          paddingBottom: insets.bottom + 12,
+          backgroundColor: isDark ? "rgba(17, 24, 39, 0.97)" : "rgba(255, 255, 255, 0.97)",
+          borderTopWidth: 1,
+          borderTopColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+        },
+        continueBtn: {
+          height: 52,
           borderRadius: 14,
-          backgroundColor: isDark ? "rgba(250, 204, 21, 0.1)" : "rgba(250, 204, 21, 0.08)",
+          backgroundColor: selectedDest ? colors.primary : isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
           alignItems: "center",
           justifyContent: "center",
         },
-        savedBody: {
-          flex: 1,
+        continueBtnEnabled: {
+          backgroundColor: colors.primary,
+          shadowColor: colors.primary,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 10,
+          elevation: 6,
         },
-        savedLabel: {
-          fontSize: 13,
-          fontWeight: "600",
-          color: colors.text,
-        },
-        savedAddress: {
-          fontSize: 11,
-          color: colors.textMuted,
-          marginTop: 1,
+        continueText: {
+          fontSize: 16,
+          fontWeight: "700",
+          color: selectedDest ? colors.textOnPrimary : colors.textMuted,
         },
       }),
-    [colors, isDark, insets],
+    [colors, isDark, insets, selectedDest],
   );
 
   if (!visible) return null;
 
   return (
     <>
-      {/* ─── Dimmed backdrop (map visible but darkened) ─────────── */}
+      {/* ─── Dimmed backdrop ─────────────────────────────────── */}
       <Pressable style={s.backdrop} onPress={onClose} />
 
-      {/* ─── Search sheet ──────────────────────────────────────── */}
+      {/* ─── Full-screen sheet ───────────────────────────────── */}
       <KeyboardAvoidingView
         style={s.sheet}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
       >
         <View style={s.container}>
-          {/* ─── Header ───────────────────────────────────────── */}
+          {/* ─── Header ──────────────────────────────────── */}
           <View style={s.header}>
             <Pressable style={s.backBtn} onPress={onClose} accessibilityLabel="Close search">
               <X size={18} color={colors.text} />
@@ -357,9 +420,9 @@ export function DestinationSearchSheet({
             <Text style={s.headerTitle}>Set destination</Text>
           </View>
 
-          {/* ─── Pickup + Destination fields ──────────────────── */}
+          {/* ─── Pickup + Destination Fields ─────────────── */}
           <View style={s.fieldsCard}>
-            {/* Pickup field (read-only) */}
+            {/* Pickup */}
             <View style={s.fieldRow}>
               <View style={s.fieldDot} />
               <Text style={[s.fieldInput, { color: colors.textSecondary }]}>
@@ -367,29 +430,40 @@ export function DestinationSearchSheet({
               </Text>
             </View>
 
-            {/* Route indicator (dotted line + arrow) */}
-            <View style={s.routeIndicator}>
-              <View style={s.routeLine} />
+            {/* Route indicator */}
+            <View style={s.routeLine}>
+              <View style={[s.routeDash, { height: 14 }]} />
+              <View style={[s.routeDash, { height: 8 }]} />
+              <View style={[s.routeDash, { height: 4 }]} />
             </View>
 
-            {/* Destination field (editable, autofocus) */}
+            {/* Destination */}
             <View style={s.fieldRow}>
-              <View style={[s.fieldDot, s.fieldDotDestination]} />
-              <Text
-                style={[
-                  s.fieldInput,
-                  !destinationQuery && s.fieldInputPlaceholder,
-                ]}
-                onPress={() => setDestinationFocused(true)}
-              >
-                {destinationQuery || "Where are you going?"}
-              </Text>
+              <View style={[s.fieldDot, s.fieldDotDest]} />
+              <TextInput
+                ref={destInputRef}
+                style={[s.fieldInput, !destinationQuery && s.fieldInputPlaceholder]}
+                value={destinationQuery}
+                onChangeText={(text) => {
+                  setDestinationQuery(text);
+                  setSelectedDest(null);
+                }}
+                onFocus={() => setDestinationFocused(true)}
+                placeholder="Where are you going?"
+                placeholderTextColor={colors.textMuted}
+                autoFocus
+                returnKeyType="search"
+                autoCapitalize="words"
+                autoCorrect={false}
+              />
               {destinationQuery.length > 0 ? (
                 <Pressable
                   style={s.fieldClearBtn}
                   onPress={() => {
                     setDestinationQuery("");
+                    setSelectedDest(null);
                     destinationAutocomplete.clearSuggestions();
+                    destInputRef.current?.focus();
                   }}
                   accessibilityLabel="Clear destination"
                 >
@@ -399,26 +473,26 @@ export function DestinationSearchSheet({
             </View>
           </View>
 
-          {/* ─── Suggestions / Results ─────────────────────────── */}
+          {/* ─── Scrollable Content ──────────────────────── */}
           <ScrollView
-            style={s.suggestionsArea}
+            style={s.scrollArea}
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
-            contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+            contentContainerStyle={{ paddingBottom: 20 }}
           >
             {/* Autocomplete suggestions */}
             {showSuggestions && (
               <>
-                <Text style={s.sectionLabel}>Results</Text>
+                <Text style={[s.sectionLabel, s.sectionLabelFirst]}>Results</Text>
                 {isLoading && (
                   <View style={s.loadingRow}>
                     <ActivityIndicator size="small" color={colors.primary} />
-                    <Text style={s.loadingText}>Searching places…</Text>
+                    <Text style={s.loadingText}>Searching places...</Text>
                   </View>
                 )}
                 {error && (
-                  <View style={[s.suggestionCard, { borderColor: colors.danger, borderWidth: 1 }]}>
-                    <Text style={{ fontSize: 13, color: colors.danger }}>{error}</Text>
+                  <View style={s.errorRow}>
+                    <Text style={s.errorText}>{error}</Text>
                   </View>
                 )}
                 {!isLoading &&
@@ -426,17 +500,17 @@ export function DestinationSearchSheet({
                   suggestions.map((suggestion) => (
                     <Pressable
                       key={suggestion.placeId}
-                      style={s.suggestionCard}
+                      style={({ pressed }) => [s.row, pressed && s.rowPressed]}
                       onPress={() => handleSelectSuggestion(suggestion)}
                     >
-                      <View style={s.suggestionIcon}>
+                      <View style={s.rowIcon}>
                         <MapPin size={16} color={colors.primary} />
                       </View>
-                      <View style={s.suggestionBody}>
-                        <Text style={s.suggestionName} numberOfLines={1}>
+                      <View style={s.rowBody}>
+                        <Text style={s.rowName} numberOfLines={1}>
                           {suggestion.name}
                         </Text>
-                        <Text style={s.suggestionAddress} numberOfLines={1}>
+                        <Text style={s.rowAddress} numberOfLines={1}>
                           {suggestion.fullAddress}
                         </Text>
                       </View>
@@ -445,72 +519,113 @@ export function DestinationSearchSheet({
               </>
             )}
 
-            {/* Recent destinations (grouped) */}
-            {!showSuggestions && recentDestinations.length > 0 && (
+            {/* Default content: Recent + Saved + Popular */}
+            {showDefaultContent && (
               <>
-                <Text style={s.sectionLabel}>Recent</Text>
-                {recentDestinations.slice(0, 5).map((dest, i) => (
+                {/* Recent */}
+                {recentDestinations.length > 0 && (
+                  <>
+                    <Text style={[s.sectionLabel, s.sectionLabelFirst]}>Recent</Text>
+                    {recentDestinations.slice(0, 5).map((dest, i) => (
+                      <Pressable
+                        key={`${dest.latitude}-${dest.longitude}-${i}`}
+                        style={({ pressed }) => [s.row, pressed && s.rowPressed]}
+                        onPress={() => handleSelectRecent(dest)}
+                      >
+                        <View style={s.rowIcon}>
+                          <Clock size={16} color={colors.textSecondary} />
+                        </View>
+                        <View style={s.rowBody}>
+                          <Text style={s.rowName} numberOfLines={1}>
+                            {dest.label || dest.address}
+                          </Text>
+                          <Text style={s.rowAddress} numberOfLines={1}>
+                            {dest.address}
+                          </Text>
+                        </View>
+                      </Pressable>
+                    ))}
+                  </>
+                )}
+
+                {/* Saved Places */}
+                {savedPlaces.length > 0 && (
+                  <>
+                    <Text style={[s.sectionLabel, recentDestinations.length === 0 && s.sectionLabelFirst]}>
+                      Saved Places
+                    </Text>
+                    {savedPlaces.slice(0, 6).map((place) => {
+                      const Icon = placeIcon(place.label);
+                      return (
+                        <Pressable
+                          key={place.id}
+                          style={({ pressed }) => [s.row, pressed && s.rowPressed]}
+                          onPress={() => handleSelectSaved(place)}
+                        >
+                          <View style={[s.rowIcon, s.rowIconSaved]}>
+                            <Icon size={16} color={colors.primary} />
+                          </View>
+                          <View style={s.rowBody}>
+                            <Text style={s.rowName} numberOfLines={1}>
+                              {place.label}
+                            </Text>
+                            <Text style={s.rowAddress} numberOfLines={1}>
+                              {place.address}
+                            </Text>
+                          </View>
+                        </Pressable>
+                      );
+                    })}
+                  </>
+                )}
+
+                {/* Popular Locations */}
+                <Text style={[s.sectionLabel, recentDestinations.length === 0 && savedPlaces.length === 0 && s.sectionLabelFirst]}>
+                  Popular in Accra
+                </Text>
+                {POPULAR_LOCATIONS.map((loc) => (
                   <Pressable
-                    key={`${dest.latitude}-${dest.longitude}-${i}`}
-                    style={s.suggestionCard}
-                    onPress={() => handleSelectRecent(dest)}
+                    key={loc.id}
+                    style={({ pressed }) => [s.row, pressed && s.rowPressed]}
+                    onPress={() => handleSelectPopular(loc)}
                   >
-                    <View style={s.suggestionIcon}>
-                      <MapPin size={16} color={colors.textSecondary} />
+                    <View style={s.rowIcon}>
+                      <MapPin size={16} color={colors.accent} />
                     </View>
-                    <View style={s.suggestionBody}>
-                      <Text style={s.suggestionName} numberOfLines={1}>
-                        {dest.label || dest.address}
+                    <View style={s.rowBody}>
+                      <Text style={s.rowName} numberOfLines={1}>
+                        {loc.label}
                       </Text>
-                      <Text style={s.suggestionAddress} numberOfLines={1}>
-                        {dest.address}
+                      <Text style={s.rowAddress} numberOfLines={1}>
+                        {loc.address}
                       </Text>
                     </View>
                   </Pressable>
                 ))}
+
+                {/* Empty state */}
+                {recentDestinations.length === 0 && savedPlaces.length === 0 && (
+                  <View style={s.emptyState}>
+                    <Search size={28} color={colors.textMuted} />
+                    <Text style={s.emptyText}>Start typing to search destinations</Text>
+                  </View>
+                )}
               </>
             )}
-
-            {/* Saved places (2-column grid) */}
-            {!showSuggestions && savedPlaces.length > 0 && (
-              <>
-                <Text style={[s.sectionLabel, { marginTop: 16 }]}>Saved places</Text>
-                <View style={s.savedGrid}>
-                  {savedPlaces.slice(0, 6).map((place) => (
-                    <Pressable
-                      key={place.id}
-                      style={s.savedCard}
-                      onPress={() => handleSelectSaved(place)}
-                    >
-                      <View style={s.savedIcon}>
-                        <MapPin size={14} color={colors.primary} />
-                      </View>
-                      <View style={s.savedBody}>
-                        <Text style={s.savedLabel} numberOfLines={1}>
-                          {place.label}
-                        </Text>
-                        <Text style={s.savedAddress} numberOfLines={1}>
-                          {place.address}
-                        </Text>
-                      </View>
-                    </Pressable>
-                  ))}
-                </View>
-              </>
-            )}
-
-            {/* Empty state */}
-            {!showSuggestions &&
-              recentDestinations.length === 0 &&
-              savedPlaces.length === 0 && (
-                <View style={{ alignItems: "center", paddingTop: 40, gap: 8 }}>
-                  <Search size={28} color={colors.textMuted} />
-                  <Text style={{ fontSize: 14, color: colors.textMuted }}>
-                    Start typing to search destinations
-                  </Text>
-                </View>
-              )}
           </ScrollView>
+
+          {/* ─── Continue Button (always above keyboard) ──── */}
+          <View style={s.bottomBar}>
+            <Pressable
+              style={[s.continueBtn, selectedDest && s.continueBtnEnabled]}
+              onPress={handleContinue}
+              disabled={!selectedDest}
+              accessibilityRole="button"
+              accessibilityLabel="Continue to booking"
+            >
+              <Text style={s.continueText}>Continue</Text>
+            </Pressable>
+          </View>
         </View>
       </KeyboardAvoidingView>
     </>
