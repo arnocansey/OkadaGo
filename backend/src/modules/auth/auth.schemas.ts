@@ -47,9 +47,9 @@ export const riderSignupSchema = z.object({
 
 export const adminRegisterSchema = z.object({
   fullName: z.string().min(2).max(160),
-  email: z.string().email(),
-  phoneCountryCode: z.string().min(1).max(6),
-  phoneLocal: z.string().min(4).max(20),
+  email: z.string().email().or(z.literal("")).optional(),
+  phoneCountryCode: z.string().min(1).max(6).optional(),
+  phoneLocal: z.string().min(1).max(20).optional(),
   phoneE164: z.string().min(8).max(24),
   preferredCurrency: z.enum(["GHS", "NGN"]).default("GHS"),
   password: passwordSchema,
@@ -60,7 +60,7 @@ export const adminRegisterSchema = z.object({
 
 export const adminPromoteSchema = z.object({
   passengerUserId: z.string().cuid(),
-  email: z.string().email(),
+  email: z.string().email().or(z.literal("")).optional(),
   password: passwordSchema,
   title: z.string().max(120).optional(),
   permissions: z.array(z.string().min(1).max(120)).default([])

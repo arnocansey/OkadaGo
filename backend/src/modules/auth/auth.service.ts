@@ -420,19 +420,27 @@ export class AuthService {
 
   private async createAdminAccount(input: AdminRegisterInput) {
     const passwordHash = await hashPassword(input.password);
+    const digits = input.phoneE164.replace(/\D/g, "");
+    const phoneCountryCode = input.phoneCountryCode || "+233";
+    const phoneLocal =
+      input.phoneLocal ||
+      (digits.startsWith("233") ? digits.slice(3) : digits.startsWith("0") ? digits.slice(1) : digits);
+    const phoneE164 = input.phoneE164.startsWith("+") ? input.phoneE164 : `+233${phoneLocal}`;
+    const email =
+      input.email && input.email.trim() ? input.email.trim() : `admin.${phoneLocal || Date.now()}@okadago.com`;
 
     const user = await prisma.user.create({
       data: {
         role: UserRole.ADMIN,
         accountStatus: AccountStatus.ACTIVE,
         fullName: input.fullName,
-        email: input.email,
-        phoneCountryCode: input.phoneCountryCode,
-        phoneLocal: input.phoneLocal,
-        phoneE164: input.phoneE164,
+        email,
+        phoneCountryCode,
+        phoneLocal,
+        phoneE164,
         passwordHash,
-        preferredCurrency: input.preferredCurrency,
-        isPhoneVerified: false,
+        preferredCurrency: input.preferredCurrency ?? "GHS",
+        isPhoneVerified: true,
         isEmailVerified: true,
         adminProfile: {
           create: {

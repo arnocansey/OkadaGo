@@ -32,16 +32,18 @@ export async function fetchListJson<T>(path: string): Promise<T[]> {
   return unwrapListResponse(payload);
 }
 
-export async function postJson<TResponse, TBody>(path: string, body: TBody): Promise<TResponse> {
+export async function postJson<TResponse, TBody>(path: string, body: TBody, token?: string | null): Promise<TResponse> {
   return requestJson<TResponse>(path, {
     method: "POST",
+    token,
     body: JSON.stringify(body)
   });
 }
 
-export async function patchJson<TResponse, TBody>(path: string, body: TBody): Promise<TResponse> {
+export async function patchJson<TResponse, TBody>(path: string, body: TBody, token?: string | null): Promise<TResponse> {
   return requestJson<TResponse>(path, {
     method: "PATCH",
+    token,
     body: JSON.stringify(body)
   });
 }
@@ -67,8 +69,20 @@ export async function requestJson<TResponse>(
 
   if (!response.ok) {
     if (contentType.includes("application/json")) {
-      const payload = (await response.json()) as { message?: string };
-      throw new Error(payload.message || `Request failed with status ${response.status}`);
+      const payload = (await response.json()) as {
+        message?: string;
+        details?: { fieldErrors?: Record<string, string[]> };
+      };
+      let message = payload.message || `Request failed with status ${response.status}`;
+      if (payload.details?.fieldErrors) {
+        const detailsStr = Object.entries(payload.details.fieldErrors)
+          .map(([field, errs]) => `${field}: ${Array.isArray(errs) ? errs.join(", ") : String(errs)}`)
+          .join("; ");
+        if (detailsStr) {
+          message += `: ${detailsStr}`;
+        }
+      }
+      throw new Error(message);
     }
 
     if (contentType.includes("text/html")) {

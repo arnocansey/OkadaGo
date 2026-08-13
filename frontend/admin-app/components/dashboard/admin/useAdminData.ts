@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { Bike, Package, Users, CreditCard, Star, Tag, MapPin, Bell, User } from "lucide-react";
 
-import { apiUrl, requestJson } from "@/lib/api";
+import { apiUrl, requestJson, postJson } from "@/lib/api";
 import { parseNumber, shortDate } from "./utils";
 import { useAdminToast } from "./AdminToast";
 import { needsForScreen } from "./adminQueryNeeds";
@@ -1713,15 +1713,35 @@ export function useAdminData(
   });
 
   const createAdminMutation = useMutation({
-    mutationFn: async () =>
-      requestJson("/admin/accounts/create", {
-        method: "POST",
-        token,
-        body: JSON.stringify({
-          ...adminForm,
-          permissions: adminForm.permissions.split(",").map((p) => p.trim()).filter(Boolean)
-        })
-      }),
+    mutationFn: async () => {
+      const rawPhone = adminForm.phoneE164.trim();
+      const digits = rawPhone.replace(/\D/g, "");
+      const phoneLocal =
+        adminForm.phoneLocal.trim() ||
+        (digits.startsWith("233") ? digits.slice(3) : digits.startsWith("0") ? digits.slice(1) : digits);
+      const phoneCountryCode = adminForm.phoneCountryCode.trim() || "+233";
+      const phoneE164 = rawPhone.startsWith("+") ? rawPhone : `+233${phoneLocal}`;
+      const email = adminForm.email.trim() ? adminForm.email.trim() : `admin.${phoneLocal || Date.now()}@okadago.com`;
+
+      return postJson(
+        "/admin/accounts/create",
+        {
+          fullName: adminForm.fullName.trim(),
+          email,
+          phoneCountryCode,
+          phoneLocal,
+          phoneE164,
+          preferredCurrency: adminForm.preferredCurrency || "GHS",
+          password: adminForm.password,
+          title: adminForm.title || undefined,
+          permissions: adminForm.permissions
+            .split(",")
+            .map((p) => p.trim())
+            .filter(Boolean)
+        },
+        token
+      );
+    },
     onSuccess: async () => {
       setAdminForm({ fullName: "", email: "", phoneCountryCode: "+233", phoneLocal: "", phoneE164: "", preferredCurrency: "GHS", password: "", title: "", permissions: "" });
       await Promise.all([
@@ -1734,15 +1754,23 @@ export function useAdminData(
   });
 
   const promotePassengerMutation = useMutation({
-    mutationFn: async () =>
-      requestJson("/admin/accounts/promote", {
-        method: "POST",
-        token,
-        body: JSON.stringify({
-          ...promoteForm,
-          permissions: promoteForm.permissions.split(",").map((p) => p.trim()).filter(Boolean)
-        })
-      }),
+    mutationFn: async () => {
+      const email = promoteForm.email.trim() ? promoteForm.email.trim() : undefined;
+      return postJson(
+        "/admin/accounts/promote",
+        {
+          passengerUserId: promoteForm.passengerUserId,
+          email,
+          password: promoteForm.password,
+          title: promoteForm.title || undefined,
+          permissions: promoteForm.permissions
+            .split(",")
+            .map((p) => p.trim())
+            .filter(Boolean)
+        },
+        token
+      );
+    },
     onSuccess: async () => {
       setPromoteForm({ passengerUserId: "", email: "", password: "", title: "", permissions: "" });
       await Promise.all([
