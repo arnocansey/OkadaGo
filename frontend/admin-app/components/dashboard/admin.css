@@ -7686,3 +7686,356 @@ html[data-theme="dark"] .admin-toast--info {
   background: var(--bg-surface, rgba(255, 255, 255, 0.06));
   color: var(--text-secondary);
 }
+
+/* ═══════════════════════════════════════════
+   SETTINGS MANAGEMENT — Unified Settings Page
+   ═══════════════════════════════════════════ */
+
+.mgmt-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 24px 32px;
+  min-height: 100%;
+}
+
+/* ── Tabs ── */
+.mgmt-settings-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+  padding-bottom: 0;
+}
+
+.mgmt-settings-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.mgmt-settings-tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-surface, rgba(255, 255, 255, 0.03));
+}
+
+.mgmt-settings-tab.active {
+  color: var(--accent-orange);
+  border-bottom-color: var(--accent-orange);
+}
+
+/* ── Content ── */
+.mgmt-settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mgmt-settings-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mgmt-settings-card {
+  background: var(--bg-card, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+
+.mgmt-settings-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.mgmt-settings-card-title svg {
+  color: var(--accent-orange);
+}
+
+/* ── Fields ── */
+.mgmt-settings-field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.mgmt-settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.mgmt-settings-field.full {
+  grid-column: 1 / -1;
+}
+
+.mgmt-settings-field span {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.mgmt-settings-field input,
+.mgmt-settings-field select {
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  background: var(--bg-surface, rgba(255, 255, 255, 0.04));
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.mgmt-settings-field input:focus,
+.mgmt-settings-field select:focus {
+  border-color: var(--accent-orange);
+}
+
+.mgmt-settings-field input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mgmt-settings-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 10px;
+}
+
+.mgmt-settings-empty {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  padding: 16px 0;
+}
+
+/* ── Toggles ── */
+.mgmt-settings-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mgmt-settings-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.04));
+  cursor: pointer;
+}
+
+.mgmt-settings-toggle-row:last-child {
+  border-bottom: none;
+}
+
+.mgmt-settings-toggle-label {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mgmt-settings-toggle {
+  width: 38px;
+  height: 20px;
+  border-radius: 10px;
+  border: none;
+  background: var(--bg-surface, rgba(255, 255, 255, 0.12));
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+  padding: 0;
+}
+
+.mgmt-settings-toggle.on {
+  background: var(--accent-orange);
+}
+
+.mgmt-settings-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 0.2s;
+}
+
+.mgmt-settings-toggle.on .mgmt-settings-toggle-thumb {
+  transform: translateX(18px);
+}
+
+/* ── Sessions ── */
+.mgmt-settings-sessions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mgmt-settings-session {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--bg-surface, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.04));
+  transition: border-color 0.15s;
+}
+
+.mgmt-settings-session.current {
+  border-color: var(--accent-orange);
+}
+
+.mgmt-settings-session-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--bg-surface, rgba(255, 255, 255, 0.06));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.mgmt-settings-session.current .mgmt-settings-session-icon {
+  background: rgba(255, 107, 0, 0.1);
+  color: var(--accent-orange);
+}
+
+.mgmt-settings-session-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.mgmt-settings-session-info strong {
+  font-size: 0.78rem;
+  color: var(--text-primary);
+}
+
+.mgmt-settings-session-info span {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* ── Integrations ── */
+.mgmt-settings-integrations {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mgmt-settings-integration {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--bg-surface, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.04));
+}
+
+.mgmt-settings-integration-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.mgmt-settings-integration-info strong {
+  font-size: 0.78rem;
+  color: var(--text-primary);
+}
+
+.mgmt-settings-integration-info span {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.mgmt-settings-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.mgmt-settings-badge.success {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}
+
+.mgmt-settings-badge.neutral {
+  background: var(--bg-surface, rgba(255, 255, 255, 0.06));
+  color: var(--text-secondary);
+}
+
+/* ── Actions ── */
+.mgmt-settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.mgmt-settings-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.mgmt-settings-btn:hover {
+  background: var(--bg-surface, rgba(255, 255, 255, 0.06));
+  color: var(--text-primary);
+}
+
+.mgmt-settings-btn.primary {
+  background: var(--accent-orange);
+  border-color: var(--accent-orange);
+  color: #000;
+  font-weight: 600;
+}
+
+.mgmt-settings-btn.primary:hover {
+  filter: brightness(1.1);
+}
+
+.mgmt-settings-btn.primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mgmt-settings-btn.small {
+  padding: 4px 8px;
+  font-size: 0.7rem;
+}

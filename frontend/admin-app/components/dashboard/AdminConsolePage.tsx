@@ -137,6 +137,10 @@ const RidersManagementScreen = dynamic(
   () => import("./admin/RidersManagementScreen").then((m) => m.RidersManagementScreen),
   { loading: screenFallback }
 );
+const SettingsManagementScreen = dynamic(
+  () => import("./admin/SettingsManagementScreen").then((m) => m.SettingsManagementScreen),
+  { loading: screenFallback }
+);
 const AccountSecurityScreen = dynamic(
   () => import("./admin/AccountSecurityScreen").then((m) => m.AccountSecurityScreen),
   { loading: screenFallback }
@@ -705,55 +709,57 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
 
       case "settings":
         return (
-          <SettingsScreen
+          <SettingsManagementScreen
             adminCurrency={data.adminCurrency}
             dataLoading={data.platformSettingsPending}
             platformSettings={data.platformSettings}
             onSaveSettings={(settings) => data.saveSettingsMutation.mutate(settings)}
             settingsSaving={data.saveSettingsMutation.isPending}
+            token={token}
           />
         );
 
       case "companyProfile":
         return (
-          <CompanyProfileScreen
-            dataLoading={data.platformSettingsPending || data.userStatsPending || data.adminAccountsPending}
+          <SettingsManagementScreen
+            adminCurrency={data.adminCurrency}
+            dataLoading={data.platformSettingsPending}
             platformSettings={data.platformSettings}
             onSaveSettings={(settings) => data.saveSettingsMutation.mutate(settings)}
             settingsSaving={data.saveSettingsMutation.isPending}
             token={token}
-            adminCount={data.adminAccounts.length}
-            riderCount={data.userStats?.riders.total ?? data.ridersTotal}
-            passengerCount={data.userStats?.passengers.total ?? data.passengersTotal}
           />
         );
 
       case "accountSecurity":
         return (
-          <AccountSecurityScreen
+          <SettingsManagementScreen
+            adminCurrency={data.adminCurrency}
             dataLoading={data.platformSettingsPending}
-            token={token}
             platformSettings={data.platformSettings}
             onSaveSettings={(settings) => data.saveSettingsMutation.mutate(settings)}
+            settingsSaving={data.saveSettingsMutation.isPending}
+            token={token}
           />
         );
 
       case "notificationSettings":
         return (
-          <NotificationSettingsScreen
+          <SettingsManagementScreen
+            adminCurrency={data.adminCurrency}
             dataLoading={data.platformSettingsPending}
             platformSettings={data.platformSettings}
             onSaveSettings={(settings) => data.saveSettingsMutation.mutate(settings)}
             settingsSaving={data.saveSettingsMutation.isPending}
+            token={token}
           />
         );
 
       case "paymentMethods":
         return (
-          <PaymentMethodsScreen
-            dataLoading={data.walletTxPending || data.platformSettingsPending}
+          <SettingsManagementScreen
             adminCurrency={data.adminCurrency}
-            walletTransactions={data.walletTransactions}
+            dataLoading={data.platformSettingsPending}
             platformSettings={data.platformSettings}
             onSaveSettings={(settings) => data.saveSettingsMutation.mutate(settings)}
             settingsSaving={data.saveSettingsMutation.isPending}
@@ -762,15 +768,26 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
         );
 
       case "integrations":
-        return <IntegrationsScreen />;
-
-      case "taxesCompliance":
         return (
-          <TaxesComplianceScreen
+          <SettingsManagementScreen
+            adminCurrency={data.adminCurrency}
             dataLoading={data.platformSettingsPending}
             platformSettings={data.platformSettings}
             onSaveSettings={(settings) => data.saveSettingsMutation.mutate(settings)}
             settingsSaving={data.saveSettingsMutation.isPending}
+            token={token}
+          />
+        );
+
+      case "taxesCompliance":
+        return (
+          <SettingsManagementScreen
+            adminCurrency={data.adminCurrency}
+            dataLoading={data.platformSettingsPending}
+            platformSettings={data.platformSettings}
+            onSaveSettings={(settings) => data.saveSettingsMutation.mutate(settings)}
+            settingsSaving={data.saveSettingsMutation.isPending}
+            token={token}
           />
         );
 
