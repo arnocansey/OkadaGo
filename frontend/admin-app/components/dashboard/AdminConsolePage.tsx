@@ -133,6 +133,10 @@ const DeliveriesManagementScreen = dynamic(
   () => import("./admin/DeliveriesManagementScreen").then((m) => m.DeliveriesManagementScreen),
   { loading: screenFallback }
 );
+const RidersManagementScreen = dynamic(
+  () => import("./admin/RidersManagementScreen").then((m) => m.RidersManagementScreen),
+  { loading: screenFallback }
+);
 const AccountSecurityScreen = dynamic(
   () => import("./admin/AccountSecurityScreen").then((m) => m.AccountSecurityScreen),
   { loading: screenFallback }
@@ -275,57 +279,17 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
 
       case "riders":
         return (
-          <>
-            <RidersScreen
-              riders={data.riders}
-              ridersTotal={data.userStats?.riders.total ?? data.ridersTotal}
-              activeRiders={data.activeRiders}
-              ridersWithCoords={data.ridersWithCoords}
-              mapMarkers={data.mapMarkers}
-              rideZoneSnapshot={data.rideZoneSnapshot}
-              riderCitySnapshot={data.riderCitySnapshot}
-              riderZoneSnapshot={data.riderZoneSnapshot}
-              vehicleCount={data.vehicleCount}
-              onboardingPipeline={{
-                total: data.userStats?.riders.total ?? data.ridersTotal,
-                signedUp: data.userStats?.riders.total ?? data.ridersTotal,
-                hasVehicle: data.riders.filter((r) => r.vehicle != null).length,
-                hasZone: data.riders.filter((r) => r.serviceZone != null).length,
-                verified:
-                  data.userStats?.riders.verified ??
-                  data.riders.filter((r) => (r.approvalStatus ?? "").toUpperCase() === "APPROVED").length,
-                pending: data.userStats?.riders.pending,
-                active: data.activeRiders.length
-              }}
-              onBulkApprove={(ids) =>
-                ids.forEach((id) => {
-                  const rider = data.riders.find((r) => r.id === id);
-                  if (rider) setSelectedRider(rider);
-                })
-              }
-              onBulkSuspend={(ids) =>
-                ids.forEach((id) => {
-                  const rider = data.riders.find((r) => r.id === id);
-                  if (rider) setSelectedRider(rider);
-                })
-              }
-              dataLoading={data.dataLoading}
-              page={data.ridersPage}
-              pageSize={data.listPageSize}
-              onPageChange={data.setRidersPage}
-            />
-            {selectedRider && (
-              <RiderProfileModal
-                rider={selectedRider}
-                rides={data.rides}
-                walletTransactions={data.walletTransactions}
-                payoutRequests={data.payoutRequests}
-                ratings={data.ratings}
-                adminCurrency={data.adminCurrency}
-                onClose={() => setSelectedRider(null)}
-              />
-            )}
-          </>
+          <RidersManagementScreen
+            riders={data.riders}
+            ridersTotal={data.userStats?.riders.total ?? data.ridersTotal}
+            activeRiders={data.activeRiders}
+            suspendedRiders={data.suspendedRiders}
+            userStats={data.userStats}
+            ridersPage={data.ridersPage}
+            listPageSize={data.listPageSize}
+            onRidersPageChange={data.setRidersPage}
+            dataLoading={data.dataLoading}
+          />
         );
 
       case "riderVerification":

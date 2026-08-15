@@ -168,6 +168,11 @@ export type RiderRecord = {
   suspendedAt?: string | null;
   suspensionReason?: string | null;
   suspensionEndsAt?: string | null;
+  ratingAverage?: number | string | null;
+  completedTrips?: number | null;
+  acceptanceRate?: number | string | null;
+  cancellationRate?: number | string | null;
+  totalEarnings?: number | string | null;
   serviceZone: {
     id: string;
     name: string;
