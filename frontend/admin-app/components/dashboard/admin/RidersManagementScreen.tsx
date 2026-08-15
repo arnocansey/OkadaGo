@@ -199,6 +199,7 @@ export function RidersManagementScreen({
                 <th>Status</th>
                 <th>Verification</th>
                 <th>Registered</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -261,6 +262,11 @@ export function RidersManagementScreen({
                     </td>
                     <td>
                       <span className="rd-mgmt-date">{formatDateTime(rider.createdAt ?? "")}</span>
+                    </td>
+                    <td>
+                      <Link href={`/riders/${rider.id}`} className="del-mgmt-view">
+                        View
+                      </Link>
                     </td>
                   </tr>
                 );

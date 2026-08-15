@@ -173,6 +173,7 @@ export type RiderRecord = {
   acceptanceRate?: number | string | null;
   cancellationRate?: number | string | null;
   totalEarnings?: number | string | null;
+  commissionPercent?: number | string | null;
   serviceZone: {
     id: string;
     name: string;
