@@ -29,6 +29,10 @@ const RequestDashboardScreen = dynamic(
   () => import("./admin/RequestDashboardScreen").then((m) => m.RequestDashboardScreen),
   { loading: screenFallback }
 );
+const RidesScreen = dynamic(
+  () => import("./admin/RidesScreen").then((m) => m.RidesScreen),
+  { loading: screenFallback }
+);
 const DeliveriesScreen = dynamic(
   () => import("./admin/DeliveriesScreen").then((m) => m.DeliveriesScreen),
   { loading: screenFallback }
@@ -237,31 +241,14 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
 
       case "rides":
         return (
-          <RequestDashboardScreen
+          <RidesScreen
             rides={data.rides}
-            deliveries={data.deliveries}
             adminCurrency={data.adminCurrency}
-            requestTab={data.requestTab}
-            onTabChange={data.setRequestTab}
-            requestStatusView={data.requestStatusView}
-            onStatusViewChange={data.setRequestStatusView}
-            visibleRequestCards={data.visibleRequestCards}
-            visibleDeliveryRequestCards={data.visibleDeliveryRequestCards}
-            activeRequestCounts={data.rideStatusGroups}
-            requestPeakBuckets={data.requestPeakBuckets}
-            requestPeakMax={data.requestPeakMax}
-            onRideAction={(rideId, action) => data.rideRequestActionMutation.mutate({ rideId, action })}
-            onDeliveryAction={(deliveryId, action) => data.deliveryRequestActionMutation.mutate({ deliveryId, action })}
-            isMutating={data.rideRequestActionMutation.isPending || data.deliveryRequestActionMutation.isPending}
-            dataLoading={data.dataLoading}
-            ridesPage={data.ridesPage}
             ridesTotal={data.ridesTotal}
+            ridesPage={data.ridesPage}
             ridesPageSize={data.ridesPageSize}
             onRidesPageChange={data.setRidesPage}
-            deliveriesPage={data.deliveriesPage}
-            deliveriesTotal={data.deliveriesTotal}
-            deliveriesPageSize={data.deliveriesPageSize}
-            onDeliveriesPageChange={data.setDeliveriesPage}
+            dataLoading={data.dataLoading}
           />
         );
 

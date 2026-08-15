@@ -42,26 +42,61 @@ export type AdminConsoleScreen =
 export type RideRecord = {
   id: string;
   status: string;
+  paymentMethod?: string | null;
+  cancellationParty?: string | null;
+  cancellationReason?: string | null;
+  scheduledFor?: string | null;
+  requestedAt?: string;
+  assignedAt?: string | null;
+  riderArrivedAt?: string | null;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  cancelledAt?: string | null;
   pickupAddress: string;
-  destinationAddress: string;
   pickupLatitude?: string | number | null;
   pickupLongitude?: string | number | null;
-  currency: string;
+  destinationAddress: string;
+  destinationLatitude?: string | number | null;
+  destinationLongitude?: string | number | null;
+  estimatedDistanceKm?: string | number | null;
+  actualDistanceKm?: string | number | null;
+  estimatedDurationMinutes?: number | null;
+  actualDurationMinutes?: number | null;
   estimatedFare: string | number | null;
   finalFare: string | number | null;
   promoDiscount: string | number | null;
   referralDiscount: string | number | null;
+  surgeAmount: string | number | null;
+  waitingAmount: string | number | null;
+  cancellationFee: string | number | null;
+  riderEarnings: string | number | null;
   platformCommission: string | number | null;
+  currency: string;
+  notes?: string | null;
   createdAt: string;
   passenger: {
+    id?: string;
     user: {
       fullName: string;
+      phoneE164?: string;
+      email?: string | null;
     };
   };
   rider: {
+    id?: string;
+    displayCode?: string;
     user: {
       fullName: string;
     };
+    vehicle?: {
+      make: string;
+      model: string;
+      plateNumber: string;
+      vehicleType?: string;
+    } | null;
+    serviceZone?: {
+      name: string;
+    } | null;
   } | null;
   serviceZone?: {
     id: string;
