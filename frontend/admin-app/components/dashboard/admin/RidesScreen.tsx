@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { OperationsMap } from "@/components/maps/operations-map";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageSkeleton } from "./AdminSkeleton";
@@ -27,7 +28,8 @@ import {
   Phone,
   Truck,
   Star,
-  Route
+  Route,
+  Eye
 } from "lucide-react";
 
 /* ── Types ────────────────────────────────────────────────────────────────── */
@@ -232,7 +234,6 @@ export function RidesScreen({
                 <tr
                   key={ride.id}
                   className={selectedRide?.id === ride.id ? "selected" : ""}
-                  onClick={() => setSelectedRide(ride)}
                 >
                   <td>
                     <code className="rides-mgmt-id">{ride.id.slice(0, 8)}</code>
@@ -273,7 +274,9 @@ export function RidesScreen({
                     <span className="rides-mgmt-date">{formatDateTime(ride.createdAt)}</span>
                   </td>
                   <td>
-                    <ChevronRight size={14} className="rides-mgmt-chevron" />
+                    <Link href={`/rides/${ride.id}`} className="rides-mgmt-view-btn">
+                      <Eye size={14} /> View
+                    </Link>
                   </td>
                 </tr>
               ))}
