@@ -129,6 +129,10 @@ const CompanyProfileScreen = dynamic(
   () => import("./admin/CompanyProfileScreen").then((m) => m.CompanyProfileScreen),
   { loading: screenFallback }
 );
+const DeliveriesManagementScreen = dynamic(
+  () => import("./admin/DeliveriesManagementScreen").then((m) => m.DeliveriesManagementScreen),
+  { loading: screenFallback }
+);
 const AccountSecurityScreen = dynamic(
   () => import("./admin/AccountSecurityScreen").then((m) => m.AccountSecurityScreen),
   { loading: screenFallback }
@@ -254,19 +258,18 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
 
       case "deliveries":
         return (
-          <DeliveriesScreen
+          <DeliveriesManagementScreen
             deliveries={data.deliveries}
             completedDeliveries={data.completedDeliveries}
             cancelledDeliveries={data.cancelledDeliveries}
             activeDeliveries={data.activeDeliveries}
             deliveryRevenue={data.deliveryRevenue}
-            deliveryCommission={data.completedDeliveries.reduce((sum, d) => sum + parseNumber(d.platformCommission), 0)}
             adminCurrency={data.adminCurrency}
+            deliveriesTotal={data.deliveriesTotal}
+            deliveriesPage={data.deliveriesPage}
+            deliveriesPageSize={data.deliveriesPageSize}
+            onDeliveriesPageChange={data.setDeliveriesPage}
             dataLoading={data.dataLoading}
-            page={data.deliveriesPage}
-            totalItems={data.deliveriesTotal}
-            pageSize={data.deliveriesPageSize}
-            onPageChange={data.setDeliveriesPage}
           />
         );
 
