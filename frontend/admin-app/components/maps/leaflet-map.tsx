@@ -25,7 +25,8 @@ export type MapMarkerVariant =
   | "driverOnline"
   | "driverTrip"
   | "driverIdle"
-  | "passenger";
+  | "passenger"
+  | "incident";
 
 export interface LeafletMapMarker {
   id: string;
@@ -101,6 +102,12 @@ const ICONS: Record<string, L.DivIcon> = {
     html: '<div class="leaflet-marker passenger"></div>',
     iconSize: [24, 24],
     iconAnchor: [12, 12]
+  }),
+  incident: L.divIcon({
+    className: "leaflet-custom-icon",
+    html: '<div class="leaflet-marker incident"></div>',
+    iconSize: [18, 18],
+    iconAnchor: [9, 18]
   })
 };
 

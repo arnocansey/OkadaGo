@@ -731,10 +731,10 @@ main {
 .leaflet-marker.driver {
   width: 14px;
   height: 14px;
-  background: var(--accent-orange, #ff6b00);
+  background: #3b82f6;
   border: 2px solid #fff;
   box-shadow:
-    0 0 0 4px color-mix(in srgb, var(--accent-orange, #ff6b00) 28%, transparent),
+    0 0 0 4px color-mix(in srgb, #3b82f6 28%, transparent),
     0 6px 14px rgba(0, 0, 0, 0.35);
 }
 
@@ -770,6 +770,18 @@ main {
 
 .leaflet-marker.passenger {
   background: #22c55e;
+}
+
+.leaflet-marker.incident {
+  width: 16px;
+  height: 16px;
+  background: #ef4444;
+  border: 2px solid #fff;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, #ef4444 28%, transparent),
+    0 6px 14px rgba(0, 0, 0, 0.35);
 }
 
 .map-fallback {

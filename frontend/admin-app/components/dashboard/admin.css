@@ -5554,10 +5554,11 @@ html[data-theme="dark"] .admin-toast--info {
   flex-shrink: 0;
 }
 
-.liveops-dot-trip { background: var(--accent-orange); }
-.liveops-dot-delivery { background: #a855f7; }
+.liveops-dot-trip { background: #facc15; }
+.liveops-dot-delivery { background: #3b82f6; }
 .liveops-dot-online { background: #22c55e; }
 .liveops-dot-offline { background: #6b7280; }
+.liveops-dot-incident { background: #ef4444; }
 
 /* ── Detail panel (overlay on map) ── */
 .liveops-detail-panel {

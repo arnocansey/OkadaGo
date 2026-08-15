@@ -280,16 +280,16 @@ export function LiveOperationsScreen({
         {/* Map legend */}
         <div className="liveops-legend">
           <span className="liveops-legend-item">
+            <i className="liveops-dot liveops-dot-online" /> Available <strong>{categoryCounts.online}</strong>
+          </span>
+          <span className="liveops-legend-item">
             <i className="liveops-dot liveops-dot-trip" /> On Trip <strong>{categoryCounts.onTrip}</strong>
           </span>
           <span className="liveops-legend-item">
             <i className="liveops-dot liveops-dot-delivery" /> Delivery <strong>{categoryCounts.delivery}</strong>
           </span>
           <span className="liveops-legend-item">
-            <i className="liveops-dot liveops-dot-online" /> Available <strong>{categoryCounts.online}</strong>
-          </span>
-          <span className="liveops-legend-item">
-            <i className="liveops-dot liveops-dot-offline" /> Offline <strong>{categoryCounts.offline}</strong>
+            <i className="liveops-dot liveops-dot-incident" /> Incident <strong>{openIncidents.length}</strong>
           </span>
         </div>
 
@@ -532,7 +532,7 @@ export function LiveOperationsScreen({
         {/* Incidents */}
         <section className="liveops-section">
           <div className="liveops-section-header">
-            <AlertTriangle size={14} />
+            <AlertTriangle size={14} style={{ color: "#ef4444" }} />
             <h4>Incidents</h4>
             <span className="liveops-count danger">{openIncidents.length}</span>
           </div>
