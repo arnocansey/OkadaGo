@@ -5489,3 +5489,468 @@ html[data-theme="dark"] .admin-toast--info {
   justify-content: center;
   padding: 24px;
 }
+
+/* ═══════════════════════════════════════════
+   LIVE OPERATIONS — Map-dominant 65/35 Layout
+   ═══════════════════════════════════════════ */
+
+.liveops {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 0;
+  height: calc(100vh - 120px);
+  min-height: 560px;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+}
+
+/* ── Map area ── */
+.liveops-map {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.liveops-map-inner {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Map legend ── */
+.liveops-legend {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  z-index: 500;
+  display: flex;
+  gap: 12px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--bg-card, rgba(15, 17, 23, 0.92));
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+}
+
+.liveops-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.liveops-legend-item strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.liveops-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.liveops-dot-trip { background: var(--accent-orange); }
+.liveops-dot-delivery { background: #a855f7; }
+.liveops-dot-online { background: #22c55e; }
+.liveops-dot-offline { background: #6b7280; }
+
+/* ── Detail panel (overlay on map) ── */
+.liveops-detail-panel {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 600;
+  width: 320px;
+  max-height: calc(100% - 24px);
+  overflow-y: auto;
+  border-radius: 10px;
+  background: var(--bg-card, rgba(15, 17, 23, 0.95));
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: liveops-panel-in 0.2s ease-out;
+}
+
+@keyframes liveops-panel-in {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.liveops-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+}
+
+.liveops-detail-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent-orange);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.liveops-detail-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.liveops-detail-icon.ride { background: rgba(255, 107, 0, 0.12); color: var(--accent-orange); }
+.liveops-detail-icon.delivery { background: rgba(168, 85, 247, 0.12); color: #a855f7; }
+
+.liveops-detail-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.liveops-detail-header-text h3 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.liveops-detail-code {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+.liveops-detail-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: var(--bg-surface, rgba(255, 255, 255, 0.06));
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.liveops-detail-close:hover {
+  background: var(--bg-surface-hover, rgba(255, 255, 255, 0.1));
+  color: var(--text-primary);
+}
+
+.liveops-detail-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+}
+
+.liveops-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.liveops-status-badge.online { background: rgba(34, 197, 94, 0.12); color: #22c55e; }
+.liveops-status-badge.offline { background: rgba(107, 114, 128, 0.12); color: #6b7280; }
+.liveops-status-badge.success { background: rgba(34, 197, 94, 0.12); color: #22c55e; }
+.liveops-status-badge.warning { background: rgba(250, 204, 21, 0.12); color: #facc15; }
+.liveops-status-badge.danger { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+.liveops-status-badge.neutral { background: var(--bg-surface, rgba(255, 255, 255, 0.06)); color: var(--text-secondary); }
+
+.liveops-detail-amount {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-left: auto;
+}
+
+.liveops-detail-route {
+  padding: 0 16px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.liveops-route-point {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  padding: 4px 0;
+}
+
+.liveops-route-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.liveops-route-dot.pickup { background: #22c55e; }
+.liveops-route-dot.destination { background: var(--accent-orange); }
+
+.liveops-route-line {
+  width: 1px;
+  height: 12px;
+  background: var(--border-color, rgba(255, 255, 255, 0.1));
+  margin-left: 3.5px;
+}
+
+.liveops-detail-fields {
+  padding: 0 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.liveops-detail-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.liveops-detail-field svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.liveops-detail-actions {
+  display: flex;
+  gap: 6px;
+  padding: 0 16px 14px;
+}
+
+.liveops-detail-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  background: var(--bg-surface, rgba(255, 255, 255, 0.04));
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.liveops-detail-btn:hover {
+  background: var(--bg-surface-hover, rgba(255, 255, 255, 0.08));
+  color: var(--text-primary);
+}
+
+.liveops-detail-btn.primary {
+  background: var(--accent-orange);
+  border-color: var(--accent-orange);
+  color: #fff;
+}
+
+.liveops-detail-btn.primary:hover {
+  opacity: 0.9;
+  color: #fff;
+}
+
+/* ── Operations Panel (right side) ── */
+.liveops-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow-y: auto;
+  border-left: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+  background: var(--bg-card, rgba(255, 255, 255, 0.02));
+}
+
+.liveops-section {
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.04));
+}
+
+.liveops-section:last-child {
+  border-bottom: none;
+}
+
+.liveops-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg-card, rgba(255, 255, 255, 0.02));
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.04));
+}
+
+.liveops-section-header svg {
+  color: var(--text-muted);
+}
+
+.liveops-section-header h4 {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.liveops-count {
+  margin-left: auto;
+  padding: 1px 7px;
+  border-radius: 10px;
+  background: rgba(255, 107, 0, 0.12);
+  color: var(--accent-orange);
+  font-size: 0.68rem;
+  font-weight: 700;
+  min-width: 22px;
+  text-align: center;
+}
+
+.liveops-count.warning {
+  background: rgba(250, 204, 21, 0.12);
+  color: #facc15;
+}
+
+.liveops-count.danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+
+.liveops-count.muted {
+  background: rgba(107, 114, 128, 0.12);
+  color: #6b7280;
+}
+
+.liveops-section-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.liveops-empty {
+  padding: 12px 16px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.liveops-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s;
+  width: 100%;
+  font-family: inherit;
+}
+
+.liveops-item:hover {
+  background: var(--bg-surface-hover, rgba(255, 255, 255, 0.04));
+}
+
+.liveops-item.selected {
+  background: rgba(255, 107, 0, 0.06);
+  border-left: 2px solid var(--accent-orange);
+}
+
+.liveops-item-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.liveops-item-main strong {
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.liveops-item-main small {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.liveops-item-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.liveops-tag {
+  font-size: 0.62rem;
+  font-weight: 600;
+  font-style: normal;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.liveops-tag.success { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.liveops-tag.warning { background: rgba(250, 204, 21, 0.1); color: #facc15; }
+.liveops-tag.danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.liveops-tag.neutral { background: var(--bg-surface, rgba(255, 255, 255, 0.06)); color: var(--text-secondary); }
+
+.liveops-view-all,
+.liveops-more {
+  display: block;
+  padding: 6px 16px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--accent-orange);
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  transition: opacity 0.15s;
+  font-family: inherit;
+}
+
+.liveops-view-all:hover,
+.liveops-more:hover {
+  opacity: 0.8;
+}

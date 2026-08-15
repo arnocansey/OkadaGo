@@ -21,6 +21,10 @@ const DashboardScreen = dynamic(
   () => import("./admin/DashboardScreen").then((m) => m.DashboardScreen),
   { loading: screenFallback }
 );
+const LiveOperationsScreen = dynamic(
+  () => import("./admin/LiveOperationsScreen").then((m) => m.LiveOperationsScreen),
+  { loading: screenFallback }
+);
 const RequestDashboardScreen = dynamic(
   () => import("./admin/RequestDashboardScreen").then((m) => m.RequestDashboardScreen),
   { loading: screenFallback }
@@ -211,6 +215,22 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             vehicleCount={data.vehicleCount}
             dashboardDateRange={data.dashboardDateRange}
             onDateRangeChange={data.setDashboardDateRange}
+            dataLoading={data.dataLoading}
+          />
+        );
+
+      case "liveOperations":
+        return (
+          <LiveOperationsScreen
+            adminCurrency={data.adminCurrency}
+            ridersWithCoords={data.ridersWithCoords}
+            activeRiders={data.activeRiders}
+            mapMarkers={data.mapMarkers}
+            rides={data.rides}
+            deliveries={data.deliveries}
+            incidents={data.incidents}
+            liveOnlineCount={data.liveOnlineCount}
+            vehicleCount={data.vehicleCount}
             dataLoading={data.dataLoading}
           />
         );
