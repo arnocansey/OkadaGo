@@ -2048,6 +2048,11 @@ export function useAdminData(
       { label: "Riders online", value: `${liveOnlineCount}` },
       { label: "Revenue", value: `${adminCurrency} ${totalDashboardRevenue.toFixed(0)}` }
     ],
+    liveOperations: [
+      { label: "Active trips", value: `${opsSummary?.rides.active ?? activeRides.length}` },
+      { label: "Riders online", value: `${liveOnlineCount}` },
+      { label: "GPS tracked", value: `${liveSnapshot?.riders?.length ?? ridersWithCoords.length}` }
+    ],
     rides: [
       { label: "Total rides", value: `${opsSummary?.rides.totalInRange ?? ridesTotal}` },
       { label: "Completed", value: `${opsSummary?.rides.completedInRange ?? completedRides.length}` },
@@ -2110,6 +2115,10 @@ export function useAdminData(
       { label: "Revenue", value: `${adminCurrency} ${totalRevenue.toFixed(0)}` },
       { label: "Pending payouts", value: `${pendingPayoutRequests.length}` }
     ],
+    pricing: [
+      { label: "Active zones", value: `${zones.filter((z) => z.isActive).length}` },
+      { label: "Total zones", value: `${zones.length}` }
+    ],
     ratings: [
       { label: "Ratings", value: `${ratings.length}` },
       { label: "Avg score", value: `${riderRatingAverage.toFixed(1)} ★` }
@@ -2117,6 +2126,10 @@ export function useAdminData(
     promotions: [
       { label: "Promo rides", value: `${promoAdjustedTrips.length}` },
       { label: "Promo spend", value: `${adminCurrency} ${promoSpend.toFixed(0)}` }
+    ],
+    wallet: [
+      { label: "Transactions", value: `${walletTransactions.length}` },
+      { label: "Total volume", value: `${adminCurrency} ${walletTransactions.reduce((sum, tx) => sum + (tx.direction === "credit" ? Math.abs(Number(tx.amount)) : 0), 0).toFixed(0)}` }
     ],
     zones: [
       { label: "Active zones", value: `${zones.filter((z) => z.isActive).length}` },
@@ -2129,6 +2142,11 @@ export function useAdminData(
     sosIncidents: [
       { label: "Open SOS", value: `${openSosCount}` },
       { label: "Total incidents", value: `${incidents.length}` }
+    ],
+    analytics: [
+      { label: "Revenue", value: `${adminCurrency} ${totalRevenue.toFixed(0)}` },
+      { label: "Rides", value: `${rides.length}` },
+      { label: "Deliveries", value: `${deliveries.length}` }
     ],
     notifications: [
       { label: "Scheduled", value: `${scheduledBroadcasts.length}` },

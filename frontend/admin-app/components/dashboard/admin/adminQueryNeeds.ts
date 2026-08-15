@@ -31,6 +31,7 @@ const SHELL_NEEDS: AdminQueryNeed[] = ["opsSummary"];
 
 const SCREEN_EXTRA: Record<AdminConsoleScreen, AdminQueryNeed[]> = {
   dashboard: ["liveStream", "zones"],
+  liveOperations: ["liveStream", "zones", "rides", "riders"],
   rides: ["rides"],
   deliveries: ["deliveries"],
   riders: ["riders", "liveStream", "zones"],
@@ -45,11 +46,14 @@ const SCREEN_EXTRA: Record<AdminConsoleScreen, AdminQueryNeed[]> = {
   riderSuspensions: ["riders", "auditLogs"],
   passengers: ["passengers", "userStats"],
   payments: ["financeSummary", "walletTx", "payout"],
+  pricing: ["zones", "rides"],
   ratings: ["ratings"],
   promotions: ["rides", "zones"],
+  wallet: ["walletTx", "payout"],
   zones: ["zones", "riders", "rides"],
   supportTickets: ["supportTickets"],
   sosIncidents: ["incidents", "liveStream"],
+  analytics: ["financeSummary", "rides", "deliveries", "riders"],
   notifications: ["scheduledBroadcasts", "opsJobStatus"],
   reports: ["financeSummary"],
   auditLogs: ["auditLogs", "adminAccounts"],

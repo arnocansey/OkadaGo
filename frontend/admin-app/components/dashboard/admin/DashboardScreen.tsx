@@ -1,10 +1,9 @@
-import { Download, Bike, MapPin, TrendingUp, Users, Package } from "lucide-react";
+import { Download, Bike, MapPin, TrendingUp, Users, Package, DollarSign, Activity, Clock, Star } from "lucide-react";
 import Link from "next/link";
 import { OperationsMap } from "@/components/maps/operations-map";
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageSkeleton } from "./AdminSkeleton";
-import { AdminPageHeader } from "./ui/AdminPageHeader";
 import type { RideRecord } from "./types";
 import { parseNumber, formatDateTime, statusTone, ACCRA_MAP_CENTER, ACCRA_MAP_ZOOM_CITY, ACCRA_MAP_ZOOM_METRO } from "./utils";
 
@@ -95,6 +94,37 @@ export function DashboardScreen({
     return <AdminPageSkeleton variant="dashboard" kpis={4} />;
   }
 
+  const kpiCards = [
+    {
+      label: "Total Revenue",
+      value: formatMoney(adminCurrency, totalDashboardRevenue),
+      trend: `${rideRevenuePercent}% rides · ${deliveryRevenuePercent}% deliveries`,
+      icon: DollarSign,
+      tone: "success"
+    },
+    {
+      label: "Active Rides",
+      value: dashboardMetrics.find((m) => m.label.includes("Active"))?.value ?? "0",
+      trend: "Live right now",
+      icon: Bike,
+      tone: "info"
+    },
+    {
+      label: "Active Riders",
+      value: `${activeRiders.length}`,
+      trend: `of ${vehicleCount} registered`,
+      icon: Users,
+      tone: "warning"
+    },
+    {
+      label: "Active Passengers",
+      value: dashboardMetrics.find((m) => m.label.includes("Passenger"))?.value ?? "0",
+      trend: "Currently riding",
+      icon: Activity,
+      tone: "accent"
+    }
+  ];
+
   const activeRequests = [
     ...recentRideRequests.slice(0, 4).map((ride) => ({
       id: ride.id,
@@ -120,164 +150,217 @@ export function DashboardScreen({
   ].slice(0, 6);
 
   return (
-    <div className="exact-admin-dashboard">
-      <AdminPageHeader
-        title="Overview"
-        subtitle="Live metrics and fleet status across Accra operations."
-        actions={
-          <div className="admin-screen-toolbar">
-            <label className="admin-btn-ghost" style={{ gap: 6, fontSize: "0.78rem" }}>
-              From
-              <input
-                type="date"
-                className="admin-input-sm"
-                value={dashboardDateRange.from}
-                onChange={(e) => onDateRangeChange({ ...dashboardDateRange, from: e.target.value })}
-                style={{ marginLeft: 6, fontSize: "0.78rem" }}
-              />
-            </label>
-            <label className="admin-btn-ghost" style={{ gap: 6, fontSize: "0.78rem" }}>
-              To
-              <input
-                type="date"
-                className="admin-input-sm"
-                value={dashboardDateRange.to}
-                onChange={(e) => onDateRangeChange({ ...dashboardDateRange, to: e.target.value })}
-                style={{ marginLeft: 6, fontSize: "0.78rem" }}
-              />
-            </label>
-            {(dashboardDateRange.from || dashboardDateRange.to) && (
-              <button
-                type="button"
-                className="admin-btn-ghost"
-                onClick={() => onDateRangeChange({ from: "", to: "" })}
-                style={{ fontSize: "0.78rem" }}
-              >
-                Reset
-              </button>
-            )}
-            <a className="admin-btn-primary" href="/reports" style={{ fontSize: "0.78rem" }}>
-              <Download size={13} />
-              Export Report
-            </a>
-          </div>
-        }
-      />
+    <div className="ops-dashboard">
+      {/* ── Top bar ── */}
+      <div className="ops-dashboard-header">
+        <div>
+          <h1 className="ops-dashboard-title">Dashboard</h1>
+          <p className="ops-dashboard-subtitle">Real-time overview of OkadaGo platform operations</p>
+        </div>
+        <div className="ops-dashboard-actions">
+          <label className="ops-date-input">
+            <span>From</span>
+            <input
+              type="date"
+              value={dashboardDateRange.from}
+              onChange={(e) => onDateRangeChange({ ...dashboardDateRange, from: e.target.value })}
+            />
+          </label>
+          <label className="ops-date-input">
+            <span>To</span>
+            <input
+              type="date"
+              value={dashboardDateRange.to}
+              onChange={(e) => onDateRangeChange({ ...dashboardDateRange, to: e.target.value })}
+            />
+          </label>
+          {(dashboardDateRange.from || dashboardDateRange.to) && (
+            <button
+              type="button"
+              className="ops-btn-ghost"
+              onClick={() => onDateRangeChange({ from: "", to: "" })}
+            >
+              Reset
+            </button>
+          )}
+          <a className="ops-btn-export" href="/reports">
+            <Download size={14} />
+            Export
+          </a>
+        </div>
+      </div>
 
-      <section className="admin-kpi-grid" aria-label="Admin dashboard metrics">
-        {dashboardMetrics.slice(0, 4).map((metric) => {
-          const Icon = metric.icon;
+      {/* ── KPI Row ── */}
+      <section className="ops-kpi-row">
+        {kpiCards.map((kpi) => {
+          const Icon = kpi.icon;
           return (
-            <article key={metric.label} className="admin-reference-kpi">
-              <div className={`admin-reference-kpi-icon ${metric.tone}`}>
-                <Icon size={18} />
+            <article key={kpi.label} className={`ops-kpi-card ops-kpi-${kpi.tone}`}>
+              <div className="ops-kpi-icon">
+                <Icon size={20} />
               </div>
-              <div>
-                <span>{metric.label}</span>
-                <strong>{metric.value}</strong>
-                <small>{metric.trend}</small>
+              <div className="ops-kpi-body">
+                <span className="ops-kpi-label">{kpi.label}</span>
+                <strong className="ops-kpi-value">{kpi.value}</strong>
+                <small className="ops-kpi-trend">{kpi.trend}</small>
               </div>
             </article>
           );
         })}
       </section>
 
-      <section className="admin-overview-split admin-overview-split--fleet">
-        <article className="admin-reference-card admin-overview-map">
-          <div className="admin-overview-map-head">
-            <div className="admin-overview-map-title">
-              <MapPin size={16} aria-hidden />
+      {/* ── Main split: Map + Activity Feed ── */}
+      <section className="ops-main-split">
+        {/* Live Operations Map */}
+        <article className="ops-card ops-map-card">
+          <div className="ops-card-header">
+            <div className="ops-card-header-left">
+              <MapPin size={16} />
               <div>
-                <h3>Live Fleet Map</h3>
-                <p>Accra dispatch coverage</p>
+                <h3>Live Operations Map</h3>
+                <p>Fleet positions across Accra</p>
               </div>
             </div>
-            <div className="admin-overview-map-meta">
-              <span className="admin-map-pill">
-                <i className="online" /> Online {activeRiders.length}
+            <div className="ops-map-meta">
+              <span className="ops-pill ops-pill-online">
+                <i className="ops-dot-green" /> Online {activeRiders.length}
               </span>
-              <span className="admin-map-pill">
-                <i className="gps" /> GPS {mapMarkers.length}
+              <span className="ops-pill">
+                <i className="ops-dot-blue" /> GPS {mapMarkers.length}
               </span>
-              <span className="admin-map-pill muted">Vehicles {vehicleCount}</span>
-              <Link href="/riders/activity-tracking" className="admin-btn-secondary admin-overview-map-link" style={{ fontSize: "0.75rem", padding: "6px 12px" }}>
-                Open live view
+              <span className="ops-pill ops-pill-muted">Vehicles {vehicleCount}</span>
+              <Link href="/riders/activity-tracking" className="ops-btn-sm">
+                Live View
               </Link>
             </div>
           </div>
-          <div className="admin-reference-map">
+          <div className="ops-map-container">
             <OperationsMap
-              className="admin-fleet-map"
+              className="ops-fleet-map"
               basemap="auto"
               emptyPlacement="bottom"
               center={ACCRA_MAP_CENTER}
               zoom={mapMarkers.length > 0 ? ACCRA_MAP_ZOOM_METRO : ACCRA_MAP_ZOOM_CITY}
               markers={mapMarkers}
               showFitAll
-              emptyTitle="Waiting for Accra GPS pings"
-              emptyDescription="Turn a rider online with location on — markers appear here automatically."
+              emptyTitle="Waiting for GPS pings"
+              emptyDescription="Riders will appear here when they go online."
             />
           </div>
         </article>
 
-        <article className="admin-reference-card admin-overview-queue">
-          <div className="admin-reference-cardhead">
-            <div>
-              <h3>Active Requests</h3>
-              <p>Newest rides and deliveries in the queue.</p>
+        {/* Real-Time Activity Feed */}
+        <article className="ops-card ops-activity-card">
+          <div className="ops-card-header">
+            <div className="ops-card-header-left">
+              <Activity size={16} />
+              <div>
+                <h3>Activity Feed</h3>
+                <p>Live platform events</p>
+              </div>
             </div>
-            <a href="/requests" style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--accent-orange)", textDecoration: "none" }}>View all</a>
+            <span className="ops-live-badge">
+              <i className="ops-pulse" /> Live
+            </span>
           </div>
-          {activeRequests.length === 0 ? (
-            <div className="admin-overview-queue-empty">
-              <EmptyCard title="No active requests." body="New passenger requests will show up here live." />
+          {liveActivityItems.length === 0 ? (
+            <div className="ops-empty-state">
+              <EmptyCard title="No recent activity" body="Events will appear here in real time." />
             </div>
           ) : (
-            <div className="admin-active-requests">
-              {activeRequests.map((item) => (
-                <div key={`${item.kind}-${item.id}`} className="admin-active-request-item">
-                  <div className="admin-active-request-meta">
-                    <strong>{item.kind}</strong>
-                    <em className={`admin-reference-tag ${statusTone(item.status)}`}>{item.status}</em>
-                  </div>
-                  <small>{item.title}</small>
-                  <div className="admin-active-request-meta">
-                    <small>{item.passenger}</small>
-                    <small style={{ fontWeight: 700, color: "var(--text-primary)" }}>{item.amount}</small>
-                  </div>
-                  <small style={{ color: "var(--text-muted)" }}>{formatDateTime(item.createdAt)}</small>
-                </div>
-              ))}
-            </div>
+            <ul className="ops-activity-list">
+              {liveActivityItems.slice(0, 8).map((item) => {
+                const Icon = item.icon;
+                return (
+                  <li key={item.id} className="ops-activity-item">
+                    <div className={`ops-activity-icon ops-activity-${item.tone}`}>
+                      <Icon size={14} />
+                    </div>
+                    <div className="ops-activity-content">
+                      <strong>{item.title}</strong>
+                      <small>{item.body}</small>
+                    </div>
+                    <span className="ops-activity-time">{item.meta}</span>
+                  </li>
+                );
+              })}
+            </ul>
           )}
         </article>
       </section>
 
-      <section className="admin-reference-grid-3">
-        <article className="admin-reference-card admin-reference-overview">
-          <div className="admin-reference-cardhead">
-            <div>
-              <h3>Weekly Volume</h3>
-              <p>Last 7 days from live ride records.</p>
+      {/* ── Bottom row: Revenue, Ride Volume, Delivery Volume ── */}
+      <section className="ops-bottom-split">
+        {/* Revenue Analytics */}
+        <article className="ops-card ops-revenue-card">
+          <div className="ops-card-header">
+            <div className="ops-card-header-left">
+              <DollarSign size={16} />
+              <div>
+                <h3>Revenue Analytics</h3>
+                <p>{formatMoney(adminCurrency, totalDashboardRevenue)} total captured</p>
+              </div>
             </div>
-            <span style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text-secondary)" }}>This week</span>
           </div>
-          <div className="admin-reference-legend">
-            <span><i className="black" /> Ride requests</span>
-            <span><i className="yellow" /> Completed rides</span>
+          <div className="ops-revenue-body">
+            <div
+              className="ops-revenue-donut"
+              style={{
+                background:
+                  totalDashboardRevenue === 0
+                    ? "var(--bg-surface-2)"
+                    : `conic-gradient(var(--text-primary) 0 ${rideRevenuePercent}%, var(--accent-yellow) ${rideRevenuePercent}% 100%)`
+              }}
+            >
+              <div>
+                <span>Total</span>
+                <strong>{formatMoney(adminCurrency, totalDashboardRevenue)}</strong>
+              </div>
+            </div>
+            <ul className="ops-revenue-list">
+              <li>
+                <i className="ops-dot-dark" />
+                <span>Ride Revenue</span>
+                <strong>{formatMoney(adminCurrency, rideRevenue)}</strong>
+                <small>{rideRevenuePercent}%</small>
+              </li>
+              <li>
+                <i className="ops-dot-yellow" />
+                <span>Delivery Revenue</span>
+                <strong>{formatMoney(adminCurrency, deliveryRevenue)}</strong>
+                <small>{deliveryRevenuePercent}%</small>
+              </li>
+            </ul>
           </div>
-          <div className="admin-reference-bars">
+        </article>
+
+        {/* Ride Volume */}
+        <article className="ops-card ops-volume-card">
+          <div className="ops-card-header">
+            <div className="ops-card-header-left">
+              <Bike size={16} />
+              <div>
+                <h3>Ride Volume</h3>
+                <p>Last 7 days from live records</p>
+              </div>
+            </div>
+          </div>
+          <div className="ops-volume-legend">
+            <span><i className="ops-bar-dark" /> Requests</span>
+            <span><i className="ops-bar-yellow" /> Completed</span>
+          </div>
+          <div className="ops-volume-bars">
             {weeklyRideBuckets.map((bucket) => (
-              <div key={bucket.key} className="admin-reference-bar-day">
-                <div className="admin-reference-bar-track">
+              <div key={bucket.key} className="ops-volume-day">
+                <div className="ops-volume-track">
                   <i
-                    className="rides"
+                    className="ops-bar-rides"
                     style={{
                       height: bucket.rides === 0 ? 0 : `${Math.max(8, (bucket.rides / weeklyRideMax) * 100)}%`
                     }}
                   />
                   <i
-                    className="completed"
+                    className="ops-bar-completed"
                     style={{
                       height:
                         bucket.completed === 0
@@ -292,74 +375,53 @@ export function DashboardScreen({
           </div>
         </article>
 
-        <article className="admin-reference-card admin-reference-revenue">
-          <div className="admin-reference-cardhead">
-            <div>
-              <h3>Revenue Overview</h3>
-              <p>{formatMoney(adminCurrency, totalDashboardRevenue)} captured.</p>
-            </div>
-            <span style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text-secondary)" }}>This week</span>
-          </div>
-          <div className="admin-reference-revenue-body">
-            <div
-              className="admin-reference-donut"
-              style={{
-                background:
-                  totalDashboardRevenue === 0
-                    ? "var(--bg-surface-2)"
-                    : `conic-gradient(var(--text-primary) 0 ${rideRevenuePercent}%, var(--accent-yellow) ${rideRevenuePercent}% 100%)`
-              }}
-            >
+        {/* Delivery Volume */}
+        <article className="ops-card ops-volume-card">
+          <div className="ops-card-header">
+            <div className="ops-card-header-left">
+              <Package size={16} />
               <div>
-                <span>Total</span>
-                <strong>{formatMoney(adminCurrency, totalDashboardRevenue)}</strong>
+                <h3>Delivery Volume</h3>
+                <p>Cargo and package deliveries</p>
               </div>
             </div>
-            <ul className="admin-reference-revenue-list">
-              <li>
-                <i className="black" />
-                <span>Ride Revenue</span>
-                <strong>{formatMoney(adminCurrency, rideRevenue)}</strong>
-                <small>{rideRevenuePercent}%</small>
-              </li>
-              <li>
-                <i className="yellow" />
-                <span>Delivery Revenue</span>
-                <strong>{formatMoney(adminCurrency, deliveryRevenue)}</strong>
-                <small>{deliveryRevenuePercent}%</small>
-              </li>
-            </ul>
           </div>
-        </article>
-
-        <article className="admin-reference-card admin-reference-activity-card">
-          <div className="admin-reference-cardhead">
-            <div>
-              <h3>Live Activity</h3>
-              <p>Recent operational events.</p>
+          <div className="ops-delivery-stats">
+            <div className="ops-delivery-stat">
+              <span className="ops-delivery-stat-value">{deliveries.length}</span>
+              <span className="ops-delivery-stat-label">Total Deliveries</span>
+            </div>
+            <div className="ops-delivery-stat">
+              <span className="ops-delivery-stat-value">
+                {deliveries.filter((d) => d.status === "completed" || d.status === "delivered").length}
+              </span>
+              <span className="ops-delivery-stat-label">Completed</span>
+            </div>
+            <div className="ops-delivery-stat">
+              <span className="ops-delivery-stat-value">
+                {deliveries.filter((d) => d.status === "in_transit" || d.status === "picked_up").length}
+              </span>
+              <span className="ops-delivery-stat-label">In Transit</span>
             </div>
           </div>
-          {liveActivityItems.length === 0 ? (
-            <EmptyCard title="No recent activity." body="Platform events will appear here as they happen." />
-          ) : (
-            <ul className="admin-reference-activity">
-              {liveActivityItems.slice(0, 6).map((item) => {
-                const Icon = item.icon;
-                return (
-                  <li key={item.id} className="admin-reference-activity-row">
-                    <div className={`admin-reference-activity-icon ${item.tone}`}>
-                      <Icon size={13} />
-                    </div>
-                    <div>
-                      <strong>{item.title}</strong>
-                      <small>{item.body}</small>
-                    </div>
-                    <span className="admin-reference-meta">{item.meta}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+          <div className="ops-delivery-list">
+            {deliveries.slice(0, 4).map((delivery) => (
+              <div key={delivery.id} className="ops-delivery-item">
+                <div className="ops-delivery-item-header">
+                  <em className={`ops-status-tag ops-status-${statusTone(delivery.status)}`}>
+                    {delivery.status}
+                  </em>
+                  <small>{formatDateTime(delivery.createdAt)}</small>
+                </div>
+                <small className="ops-delivery-route">
+                  {delivery.pickupAddress} → {delivery.dropoffAddress}
+                </small>
+              </div>
+            ))}
+            {deliveries.length === 0 && (
+              <div className="ops-empty-inline">No deliveries yet</div>
+            )}
+          </div>
         </article>
       </section>
     </div>

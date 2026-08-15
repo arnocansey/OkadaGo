@@ -2,6 +2,7 @@ import { LayoutDashboard } from "lucide-react";
 
 export type AdminConsoleScreen =
   | "dashboard"
+  | "liveOperations"
   | "rides"
   | "deliveries"
   | "riders"
@@ -16,14 +17,15 @@ export type AdminConsoleScreen =
   | "riderSuspensions"
   | "passengers"
   | "payments"
-  | "ratings"
+  | "pricing"
   | "promotions"
+  | "wallet"
   | "zones"
   | "supportTickets"
   | "sosIncidents"
-  | "notifications"
+  | "analytics"
   | "reports"
-  | "auditLogs"
+  | "notifications"
   | "settings"
   | "companyProfile"
   | "accountSecurity"
@@ -32,8 +34,10 @@ export type AdminConsoleScreen =
   | "integrations"
   | "taxesCompliance"
   | "settingsNotifications"
+  | "auditLogs"
   | "admins"
-  | "escalationRules";
+  | "escalationRules"
+  | "ratings";
 
 export type RideRecord = {
   id: string;
@@ -234,7 +238,7 @@ export type AdminNavItem = {
   href: string;
   icon: typeof LayoutDashboard;
   screen: AdminConsoleScreen;
-  group: "home" | "operations" | "people" | "management" | "system" | "main" | "finance";
+  group: "home" | "operations" | "people" | "management" | "system" | "main" | "finance" | string;
   hint: string;
   badge?: string;
   children?: Array<{
