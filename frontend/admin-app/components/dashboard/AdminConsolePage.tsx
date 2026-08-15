@@ -141,6 +141,10 @@ const SettingsManagementScreen = dynamic(
   () => import("./admin/SettingsManagementScreen").then((m) => m.SettingsManagementScreen),
   { loading: screenFallback }
 );
+const RiderVerificationCenter = dynamic(
+  () => import("./admin/RiderVerificationCenter").then((m) => m.RiderVerificationCenter),
+  { loading: screenFallback }
+);
 const AccountSecurityScreen = dynamic(
   () => import("./admin/AccountSecurityScreen").then((m) => m.AccountSecurityScreen),
   { loading: screenFallback }
@@ -298,14 +302,14 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
 
       case "riderVerification":
         return (
-          <RiderVerificationScreen
+          <RiderVerificationCenter
             riderVerificationRows={data.riderVerificationRows}
             riderVerificationStats={data.riderVerificationStats}
+            riderDocuments={data.riderDocuments}
             onRiderApproval={(id, action, reason) =>
               data.riderApprovalMutation.mutate({ riderProfileId: id, action, reason })
             }
             onRequestInfo={(id, message) => data.requestRiderInfoMutation.mutate({ riderProfileId: id, message })}
-            onExportCsv={() => void data.downloadServerCsv("riders")}
             isMutating={data.riderApprovalMutation.isPending || data.requestRiderInfoMutation.isPending}
             dataLoading={data.dataLoading}
           />

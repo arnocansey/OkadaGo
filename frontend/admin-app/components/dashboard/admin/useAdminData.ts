@@ -2337,6 +2337,7 @@ export function useAdminData(
     adminAccounts, adminRoleEntries, adminModules, zones, auditLogs,
     supportTickets, escalationRules, scheduledBroadcasts, opsJobStatus,
     platformSettings,
+    riderDocuments,
     liveSos, liveOpsConnected, liveOpsTimestamp,
     opsSummary,
     financeSummary,
