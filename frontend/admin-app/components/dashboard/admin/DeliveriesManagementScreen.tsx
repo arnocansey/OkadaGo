@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Search, X, Package, Truck, CheckCircle, XCircle, Clock, DollarSign, MapPin, AlertTriangle } from "lucide-react";
+import Link from "next/link";
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
 import { AdminPageSkeleton } from "./AdminSkeleton";
@@ -185,6 +186,7 @@ export function DeliveriesManagementScreen({
                 <th>Fare</th>
                 <th>Status</th>
                 <th>Date</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -229,6 +231,11 @@ export function DeliveriesManagementScreen({
                   </td>
                   <td>
                     <span className="del-mgmt-date">{formatDateTime(delivery.createdAt)}</span>
+                  </td>
+                  <td>
+                    <Link href={`/deliveries/${delivery.id}`} className="del-mgmt-view">
+                      View
+                    </Link>
                   </td>
                 </tr>
               ))}
