@@ -45,9 +45,9 @@ export function IntegrationsScreen() {
 
       <AdminKpiRow
         items={[
-          { label: "Integrations", value: integrations.length, hint: "Tracked services", icon: <Plug size={22} />, tone: "yellow" },
-          { label: "Connected", value: connectedCount, hint: "Configured in this environment", icon: <CheckCircle2 size={22} />, tone: "green" },
-          { label: "Needs attention", value: integrations.length - connectedCount, hint: "Missing keys or base URL", icon: <XCircle size={22} />, tone: "red" }
+          { label: "Integrations", value: integrations.length, hint: "Tracked services", icon: <Plug size={18} />, tone: "yellow" },
+          { label: "Connected", value: connectedCount, hint: "Configured in this environment", icon: <CheckCircle2 size={18} />, tone: "green" },
+          { label: "Needs attention", value: integrations.length - connectedCount, hint: "Missing keys or base URL", icon: <XCircle size={18} />, tone: "red" }
         ]}
       />
 

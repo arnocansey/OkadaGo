@@ -311,21 +311,21 @@ export function RiderSuspensionsScreen({
             label: "Total Suspended",
             value: suspendedRiders.length,
             hint: `${fleetShare}% of Accra fleet`,
-            icon: <Shield size={22} />,
+            icon: <Shield size={18} />,
             tone: "red",
           },
           {
             label: "Currently Suspended",
             value: activeCount,
             hint: "Active restrictions",
-            icon: <Clock size={22} />,
+            icon: <Clock size={18} />,
             tone: "yellow",
           },
           {
             label: "Timed Expired",
             value: expiredCount,
             hint: "End date passed",
-            icon: <AlertTriangle size={22} />,
+            icon: <AlertTriangle size={18} />,
             tone: "neutral",
           },
         ]}
@@ -355,7 +355,7 @@ export function RiderSuspensionsScreen({
 
           <div className="admin-filter-bar">
             <label className="admin-filter-search">
-              <Search size={14} aria-hidden />
+              <Search size={13} aria-hidden />
               <input
                 type="search"
                 placeholder="Search rider..."
@@ -565,8 +565,8 @@ export function RiderSuspensionsScreen({
                   type="button"
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  className="admin-btn-secondary"
-                  style={{ opacity: currentPage === 1 ? 0.5 : 1 }}
+                className="admin-btn-secondary"
+                style={{ opacity: currentPage === 1 ? 0.5 : 1, fontSize: "0.78rem" }}
                 >
                   ‹ Prev
                 </button>
@@ -574,8 +574,8 @@ export function RiderSuspensionsScreen({
                   type="button"
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  className="admin-btn-secondary"
-                  style={{ opacity: currentPage === totalPages ? 0.5 : 1 }}
+                className="admin-btn-secondary"
+                style={{ opacity: currentPage === totalPages ? 0.5 : 1, fontSize: "0.78rem" }}
                 >
                   Next ›
                 </button>
@@ -708,18 +708,18 @@ export function RiderSuspensionsScreen({
                 onClick={handleSendWarning}
                 disabled={isMutating}
                 className="admin-btn-secondary"
-                style={{ flex: 1, justifyContent: "center", gap: 6, opacity: isMutating ? 0.6 : 1 }}
+                style={{ flex: 1, justifyContent: "center", gap: 6, opacity: isMutating ? 0.6 : 1, fontSize: "0.78rem" }}
               >
-                <Mail size={14} />
+                <Mail size={13} />
                 Send Warning
               </button>
               <button
                 type="button"
                 onClick={handleAddNote}
                 className="admin-btn-secondary"
-                style={{ flex: 1, justifyContent: "center", gap: 6 }}
+                style={{ flex: 1, justifyContent: "center", gap: 6, fontSize: "0.78rem" }}
               >
-                <ClipboardList size={14} />
+                <ClipboardList size={13} />
                 Add Note
               </button>
             </div>
@@ -750,6 +750,7 @@ export function RiderSuspensionsScreen({
                     type="button"
                     className="admin-btn-primary"
                     disabled={addingNote || noteDraft.trim().length < 2}
+                    style={{ fontSize: "0.78rem" }}
                     onClick={() => {
                       addNote(noteDraft.trim());
                       setNoteDraft("");
@@ -760,6 +761,7 @@ export function RiderSuspensionsScreen({
                   <button
                     type="button"
                     className="admin-btn-secondary"
+                    style={{ fontSize: "0.78rem" }}
                     onClick={() => { setNoteOpen(false); setNoteDraft(""); }}
                   >
                     Cancel

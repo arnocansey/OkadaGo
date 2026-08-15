@@ -111,11 +111,11 @@ export function RiderWalletScreen({
 
       <AdminKpiRow
         items={[
-          { label: "Wallet Balance", value: formatMoney(adminCurrency, riderWalletAvailableBalance), hint: "Available to use", icon: <Wallet size={22} />, tone: "green" },
-          { label: "Total Earnings", value: formatMoney(adminCurrency, riderWalletCredits), hint: "All credits received", icon: <TrendingUp size={22} />, tone: "yellow" },
-          { label: "Total Payouts", value: formatMoney(adminCurrency, riderWalletDebits), hint: "All debits processed", icon: <TrendingDown size={22} />, tone: "yellow" },
-          { label: "Pending Payouts", value: formatMoney(adminCurrency, Math.max(pendingBalance, 0)), hint: "Awaiting settlement", icon: <ArrowUpDown size={22} />, tone: "yellow" },
-          { label: "Locked Balance", value: formatMoney(adminCurrency, riderWalletLockedBalance), hint: "Held for disputes", icon: <Lock size={22} />, tone: "red" },
+          { label: "Wallet Balance", value: formatMoney(adminCurrency, riderWalletAvailableBalance), hint: "Available to use", icon: <Wallet size={18} />, tone: "green" },
+          { label: "Total Earnings", value: formatMoney(adminCurrency, riderWalletCredits), hint: "All credits received", icon: <TrendingUp size={18} />, tone: "yellow" },
+          { label: "Total Payouts", value: formatMoney(adminCurrency, riderWalletDebits), hint: "All debits processed", icon: <TrendingDown size={18} />, tone: "yellow" },
+          { label: "Pending Payouts", value: formatMoney(adminCurrency, Math.max(pendingBalance, 0)), hint: "Awaiting settlement", icon: <ArrowUpDown size={18} />, tone: "yellow" },
+          { label: "Locked Balance", value: formatMoney(adminCurrency, riderWalletLockedBalance), hint: "Held for disputes", icon: <Lock size={18} />, tone: "red" },
         ]}
       />
 
@@ -141,7 +141,7 @@ export function RiderWalletScreen({
                 key={action.label}
                 type="button"
                 className={action.className}
-                style={{ width: "100%", justifyContent: "flex-start" }}
+                style={{ width: "100%", justifyContent: "flex-start", fontSize: "0.78rem" }}
                 onClick={() => addToast(action.msg, "info")}
               >
                 {action.icon}
@@ -199,15 +199,15 @@ export function RiderWalletScreen({
               </text>
             </svg>
             <ul className="admin-summary-list">
-              <li>
+              <li style={{ transition: "border-color 0.15s, background 0.15s" }}>
                 <span>Available</span>
                 <strong>{availablePct.toFixed(1)}%</strong>
               </li>
-              <li>
+              <li style={{ transition: "border-color 0.15s, background 0.15s" }}>
                 <span>Locked</span>
                 <strong>{lockedPct.toFixed(1)}%</strong>
               </li>
-              <li>
+              <li style={{ transition: "border-color 0.15s, background 0.15s" }}>
                 <span>Pending</span>
                 <strong>{pendingPct.toFixed(1)}%</strong>
               </li>
@@ -236,19 +236,19 @@ export function RiderWalletScreen({
             <button
               type="button"
               className="admin-btn-primary"
-              style={{ width: "100%", justifyContent: "center" }}
+              style={{ width: "100%", justifyContent: "center", fontSize: "0.78rem" }}
               onClick={() => addToast("Bonus ledger is not a separate API — use wallet transactions", "info")}
             >
-              <Eye size={14} />
+              <Eye size={13} />
               View All Bonuses
             </button>
             <button
               type="button"
               className="admin-btn-secondary"
-              style={{ width: "100%", justifyContent: "center" }}
+              style={{ width: "100%", justifyContent: "center", fontSize: "0.78rem" }}
               onClick={() => addToast("Full history is already listed in the ledger below", "info")}
             >
-              <History size={14} />
+              <History size={13} />
               View All Transactions
             </button>
           </div>
@@ -354,7 +354,7 @@ export function RiderWalletScreen({
                           </em>
                         </td>
                         <td>
-                          <code style={{ fontSize: 11 }}>
+                          <code style={{ fontSize: 10 }}>
                             {t.reference?.slice(-12) ?? "N/A"}
                           </code>
                         </td>
@@ -379,7 +379,7 @@ export function RiderWalletScreen({
                   disabled={currentPage <= 1}
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 >
-                  <ChevronLeft size={14} />
+                  <ChevronLeft size={13} />
                 </button>
                 <button
                   type="button"
@@ -387,7 +387,7 @@ export function RiderWalletScreen({
                   disabled={currentPage >= totalPages}
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 >
-                  <ChevronRight size={14} />
+                  <ChevronRight size={13} />
                 </button>
               </div>
             </div>
@@ -409,7 +409,7 @@ export function RiderWalletScreen({
             ) : (
               <ul className="admin-summary-list">
                 {recentActivity.map((t) => (
-                  <li key={t.id}>
+                  <li key={t.id} style={{ transition: "border-color 0.15s, background 0.15s" }}>
                     <span>
                       {t.wallet.user.fullName}
                       <small style={{ display: "block" }}>

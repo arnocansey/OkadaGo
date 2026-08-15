@@ -380,7 +380,7 @@ export function RequestDashboardScreen({
                             disabled={isMutating}
                             onClick={() => onRideAction(ride.id, "accept")}
                           >
-                            <CheckCircle size={14} />
+                            <CheckCircle size={13} />
                             Accept
                           </button>
                           <button
@@ -389,7 +389,7 @@ export function RequestDashboardScreen({
                             disabled={isMutating}
                             onClick={() => onRideAction(ride.id, "decline")}
                           >
-                            <XCircle size={14} />
+                            <XCircle size={13} />
                             Decline
                           </button>
                         </div>
@@ -477,7 +477,7 @@ export function RequestDashboardScreen({
                             disabled={isMutating}
                             onClick={() => onDeliveryAction(delivery.id, "accept")}
                           >
-                            <CheckCircle size={14} />
+                            <CheckCircle size={13} />
                             Accept
                           </button>
                           <button
@@ -486,7 +486,7 @@ export function RequestDashboardScreen({
                             disabled={isMutating}
                             onClick={() => onDeliveryAction(delivery.id, "decline")}
                           >
-                            <XCircle size={14} />
+                            <XCircle size={13} />
                             Decline
                           </button>
                         </div>
@@ -569,15 +569,16 @@ export function RequestDashboardScreen({
             {selectedCount} {activeTab === "rides" ? "ride" : "delivery"}
             {selectedCount !== 1 ? "s" : ""} selected
           </span>
-          <button type="button" className="admin-btn-primary" onClick={handleBulkAccept}>
-            <CheckCircle size={14} /> Accept Selected
+          <button type="button" className="admin-btn-primary" style={{ fontSize: "0.78rem" }} onClick={handleBulkAccept}>
+            <CheckCircle size={13} /> Accept Selected
           </button>
-          <button type="button" className="admin-btn-secondary" onClick={handleBulkDecline}>
-            <XCircle size={14} /> Decline Selected
+          <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.78rem" }} onClick={handleBulkDecline}>
+            <XCircle size={13} /> Decline Selected
           </button>
           <button
             type="button"
             className="admin-btn-secondary"
+            style={{ fontSize: "0.78rem" }}
             onClick={() => {
               setSelectedRideIds(new Set());
               setSelectedDeliveryIds(new Set());

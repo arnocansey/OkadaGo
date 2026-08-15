@@ -170,10 +170,10 @@ export function RiderComplaintsScreen({
 
       <AdminKpiRow
         items={[
-          { label: "Open", value: riderComplaintOpen.length, hint: "Require first response", icon: <AlertTriangle size={22} />, tone: "red" },
-          { label: "In Progress", value: riderComplaintInProgress.length, hint: "Being actioned", icon: <Clock size={22} />, tone: "yellow" },
-          { label: "Resolved", value: totalResolved, hint: "Closed complaints", icon: <CheckCircle size={22} />, tone: "green" },
-          { label: "Satisfaction", value: `${satisfactionRate}%`, hint: "Positive resolution rate", icon: <ThumbsUp size={22} />, tone: "yellow" },
+          { label: "Open", value: riderComplaintOpen.length, hint: "Require first response", icon: <AlertTriangle size={18} />, tone: "red" },
+          { label: "In Progress", value: riderComplaintInProgress.length, hint: "Being actioned", icon: <Clock size={18} />, tone: "yellow" },
+          { label: "Resolved", value: totalResolved, hint: "Closed complaints", icon: <CheckCircle size={18} />, tone: "green" },
+          { label: "Satisfaction", value: `${satisfactionRate}%`, hint: "Positive resolution rate", icon: <ThumbsUp size={18} />, tone: "yellow" },
         ]}
       />
 
@@ -365,7 +365,7 @@ export function RiderComplaintsScreen({
                     fontSize: 12,
                   }}
                 >
-                  <ChevronLeft size={14} />
+                   <ChevronLeft size={13} />
                 </button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                   <button
@@ -399,7 +399,7 @@ export function RiderComplaintsScreen({
                     fontSize: 12,
                   }}
                 >
-                  <ChevronRight size={14} />
+                   <ChevronRight size={13} />
                 </button>
               </div>
             </div>
@@ -569,20 +569,22 @@ export function RiderComplaintsScreen({
                   type="button"
                   className="admin-btn-secondary"
                   disabled={isMutating}
+                  style={{ fontSize: "0.78rem" }}
                   onClick={() => {
                     onIncidentAction(detailComplaint.id, "UNDER_REVIEW");
                   }}
                 >
-                  <MessageSquare size={14} />
+                  <MessageSquare size={13} />
                   Mark Under Review
                 </button>
                 <button
                   type="button"
                   className="admin-btn-secondary"
                   disabled={!token}
+                  style={{ fontSize: "0.78rem" }}
                   onClick={() => setNoteOpen((open) => !open)}
                 >
-                  <StickyNote size={14} />
+                  <StickyNote size={13} />
                   Note
                 </button>
               </div>
@@ -591,20 +593,22 @@ export function RiderComplaintsScreen({
                   type="button"
                   className="admin-btn-secondary"
                   disabled={!onIncidentAssign || adminAccounts.length === 0}
+                  style={{ fontSize: "0.78rem" }}
                   onClick={() => setAssignOpen((open) => !open)}
                 >
-                  <UserCheck size={14} />
+                  <UserCheck size={13} />
                   Assign
                 </button>
                 <button
                   type="button"
                   className="admin-btn-primary"
                   disabled={isMutating}
+                  style={{ fontSize: "0.78rem" }}
                   onClick={() => {
                     onIncidentAction(detailComplaint.id, "RESOLVED");
                   }}
                 >
-                  <CheckCircle size={14} />
+                  <CheckCircle size={13} />
                   Resolve
                 </button>
               </div>
@@ -612,10 +616,10 @@ export function RiderComplaintsScreen({
                 type="button"
                 className="admin-btn-secondary"
                 disabled={isMutating}
+                style={{ width: "100%", justifyContent: "center", fontSize: "0.78rem" }}
                 onClick={() => {
                   onIncidentAction(detailComplaint.id, "CLOSED");
                 }}
-                style={{ width: "100%", justifyContent: "center" }}
               >
                 Close Complaint
               </button>
@@ -642,6 +646,7 @@ export function RiderComplaintsScreen({
                   type="button"
                   className="admin-btn-primary"
                   disabled={!assigneeId || isMutating}
+                  style={{ fontSize: "0.78rem" }}
                   onClick={() => {
                     if (onIncidentAssign && assigneeId) {
                       onIncidentAssign(detailComplaint.id, assigneeId);
@@ -650,7 +655,7 @@ export function RiderComplaintsScreen({
                     }
                   }}
                 >
-                  <UserCheck size={14} /> Assign
+                  <UserCheck size={13} /> Assign
                 </button>
               </div>
             )}
@@ -682,16 +687,18 @@ export function RiderComplaintsScreen({
                     type="button"
                     className="admin-btn-primary"
                     disabled={addingNote || noteDraft.trim().length < 2}
+                    style={{ fontSize: "0.78rem" }}
                     onClick={() => {
                       addNote(noteDraft.trim());
                       setNoteDraft("");
                     }}
                   >
-                    <StickyNote size={14} /> Save Note
+                    <StickyNote size={13} /> Save Note
                   </button>
                   <button
                     type="button"
                     className="admin-btn-secondary"
+                    style={{ fontSize: "0.78rem" }}
                     onClick={() => { setNoteOpen(false); setNoteDraft(""); }}
                   >
                     Cancel

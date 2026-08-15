@@ -72,7 +72,7 @@ export function ZoneManagementScreen({
       <section className="admin-kpi-grid">
         <article className="admin-reference-kpi">
           <div className="admin-reference-kpi-icon green">
-            <Globe size={22} />
+            <Globe size={18} />
           </div>
           <div>
             <span>Total Zones</span>
@@ -82,7 +82,7 @@ export function ZoneManagementScreen({
         </article>
         <article className="admin-reference-kpi">
           <div className="admin-reference-kpi-icon yellow">
-            <Globe size={22} />
+            <Globe size={18} />
           </div>
           <div>
             <span>Active Zones</span>
@@ -92,7 +92,7 @@ export function ZoneManagementScreen({
         </article>
         <article className="admin-reference-kpi">
           <div className="admin-reference-kpi-icon red">
-            <Globe size={22} />
+            <Globe size={18} />
           </div>
           <div>
             <span>Inactive Zones</span>
@@ -102,7 +102,7 @@ export function ZoneManagementScreen({
         </article>
         <article className="admin-reference-kpi">
           <div className="admin-reference-kpi-icon yellow">
-            <MapPin size={22} />
+            <MapPin size={18} />
           </div>
           <div>
             <span>Zones with Riders</span>

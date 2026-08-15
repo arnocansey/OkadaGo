@@ -519,11 +519,11 @@ export function RiderVerificationScreen({
 
       <AdminKpiRow
         items={[
-          { label: "Pending", value: riderVerificationStats.pending, hint: "Awaiting review", icon: <Clock size={22} />, tone: "yellow" },
-          { label: "Under Review", value: riderVerificationStats.underReview, hint: "In verification", icon: <Eye size={22} />, tone: "yellow" },
-          { label: "Approved", value: riderVerificationStats.approved, hint: "Fully verified", icon: <CheckCircle size={22} />, tone: "green" },
-          { label: "Rejected", value: riderVerificationStats.rejected, hint: "Declined", icon: <XCircle size={22} />, tone: "red" },
-          { label: "Applied Today", value: riderVerificationStats.today, hint: "New applicants", icon: <BadgeCheck size={22} />, tone: "neutral" }
+          { label: "Pending", value: riderVerificationStats.pending, hint: "Awaiting review", icon: <Clock size={18} />, tone: "yellow" },
+          { label: "Under Review", value: riderVerificationStats.underReview, hint: "In verification", icon: <Eye size={18} />, tone: "yellow" },
+          { label: "Approved", value: riderVerificationStats.approved, hint: "Fully verified", icon: <CheckCircle size={18} />, tone: "green" },
+          { label: "Rejected", value: riderVerificationStats.rejected, hint: "Declined", icon: <XCircle size={18} />, tone: "red" },
+          { label: "Applied Today", value: riderVerificationStats.today, hint: "New applicants", icon: <BadgeCheck size={18} />, tone: "neutral" }
         ]}
       />
 
@@ -1039,7 +1039,7 @@ export function RiderVerificationScreen({
                     disabled={isMutating}
                     onClick={() => handleSendRequestInfo(selectedRow.rider.id)}
                   >
-                    <MessageSquare size={14} /> Send Request
+                    <MessageSquare size={13} /> Send Request
                   </button>
                   <button
                     style={S.btn("outline")}

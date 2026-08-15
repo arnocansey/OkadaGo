@@ -236,12 +236,12 @@ export function ReportsScreen({
               <option value={30}>Last 30 days</option>
               <option value={90}>Last 90 days</option>
             </select>
-            <button type="button" className="admin-btn-primary" onClick={exportPlatformSummary}>
-              <Download size={14} /> Export Report
+            <button type="button" className="admin-btn-primary" style={{ fontSize: "0.78rem" }} onClick={exportPlatformSummary}>
+              <Download size={13} /> Export Report
             </button>
             {onServerExport ? (
-              <button type="button" className="admin-btn-secondary" onClick={() => onServerExport("rides")}>
-                <Download size={14} /> Full rides CSV
+              <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.78rem" }} onClick={() => onServerExport("rides")}>
+                <Download size={13} /> Full rides CSV
               </button>
             ) : null}
           </div>
@@ -254,28 +254,28 @@ export function ReportsScreen({
             label: "Revenue (7d)",
             value: formatMoney(adminCurrency, totalRevenue7d),
             hint: `${formatMoney(adminCurrency, totalRevenue30d)} last 30 days`,
-            icon: <TrendingUp size={22} />,
+            icon: <TrendingUp size={18} />,
             tone: "green"
           },
           {
             label: "Rides (7d)",
             value: totalRides7d,
             hint: `${completionRate}% completion rate`,
-            icon: <Bike size={22} />,
+            icon: <Bike size={18} />,
             tone: "yellow"
           },
           {
             label: "Deliveries (7d)",
             value: totalDeliveries7d,
             hint: `${deliveryCompletionRate}% delivery rate`,
-            icon: <Package size={22} />,
+            icon: <Package size={18} />,
             tone: "yellow"
           },
           {
             label: "Registered Users",
             value: riderCount + passengerCount,
             hint: `${passengerCount} passengers · ${riderCount} riders`,
-            icon: <Users size={22} />,
+            icon: <Users size={18} />,
             tone: "green"
           }
         ]}
@@ -413,8 +413,8 @@ export function ReportsScreen({
                 <h3>Platform Summary</h3>
                 <p>Commission and volume in Ghana cedis.</p>
               </div>
-              <button type="button" className="admin-btn-secondary" onClick={exportPlatformSummary}>
-                <Download size={14} /> Export CSV
+              <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.78rem" }} onClick={exportPlatformSummary}>
+                <Download size={13} /> Export CSV
               </button>
             </div>
             <div className="admin-table-wrapper">

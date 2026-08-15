@@ -110,8 +110,8 @@ export function AuditLogsScreen({
               ))}
             </select>
             {onServerExport ? (
-              <button type="button" className="admin-btn-secondary" onClick={onServerExport}>
-                <Download size={14} /> Export full CSV
+              <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.78rem" }} onClick={onServerExport}>
+                <Download size={13} /> Export full CSV
               </button>
             ) : null}
           </div>
@@ -120,10 +120,10 @@ export function AuditLogsScreen({
 
       <AdminKpiRow
         items={[
-          { label: "Total Events", value: logs.length, hint: "Admin actions logged", icon: <ClipboardList size={22} />, tone: "yellow" },
-          { label: "Entities Affected", value: entities.length, hint: "Resource types", icon: <Shield size={22} />, tone: "green" },
-          { label: "Admin Actors", value: totalAdmins, hint: "Active operators", icon: <User size={22} />, tone: "yellow" },
-          { label: "Action Types", value: Object.keys(actionCounts).length, hint: "Distinct operations", icon: <ClipboardList size={22} />, tone: "yellow" }
+          { label: "Total Events", value: logs.length, hint: "Admin actions logged", icon: <ClipboardList size={18} />, tone: "yellow" },
+          { label: "Entities Affected", value: entities.length, hint: "Resource types", icon: <Shield size={18} />, tone: "green" },
+          { label: "Admin Actors", value: totalAdmins, hint: "Active operators", icon: <User size={18} />, tone: "yellow" },
+          { label: "Action Types", value: Object.keys(actionCounts).length, hint: "Distinct operations", icon: <ClipboardList size={18} />, tone: "yellow" }
         ]}
       />
 
@@ -209,8 +209,8 @@ export function AuditLogsScreen({
                   <h3>Event Details</h3>
                   <p>{formatDateTime(selectedLog.createdAt)}</p>
                 </div>
-                <button type="button" className="admin-btn-secondary" onClick={() => setSelectedLogId(null)} aria-label="Close">
-                  <X size={14} />
+                <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.78rem" }} onClick={() => setSelectedLogId(null)} aria-label="Close">
+                  <X size={13} />
                 </button>
               </div>
               <ul className="admin-summary-list">

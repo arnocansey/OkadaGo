@@ -285,19 +285,19 @@ export function RiderPayoutsScreen({
         title="Rider Payouts"
         subtitle="Approve and settle Accra MoMo and bank payout requests in Ghana cedis."
         actions={
-          <button type="button" className="admin-btn-primary" onClick={handleExportCsv}>
-            <Download size={14} /> Export CSV
+          <button type="button" className="admin-btn-primary" style={{ fontSize: "0.78rem" }} onClick={handleExportCsv}>
+            <Download size={13} /> Export CSV
           </button>
         }
       />
 
       <AdminKpiRow
         items={[
-          { label: "Ready for Payout", value: formatMoney(adminCurrency, totalRiderPayoutValue), hint: "All requests in GHS", icon: <DollarSign size={22} />, tone: "yellow" },
-          { label: "Requested", value: requestedRiderPayouts.length, hint: "Awaiting review", icon: <Clock size={22} />, tone: "yellow" },
-          { label: "Processing", value: processingCount, hint: "In progress", icon: <Cog size={22} />, tone: "neutral" },
-          { label: "Paid", value: paidRiderPayouts.length, hint: "Successfully settled", icon: <CheckCircle size={22} />, tone: "green" },
-          { label: "Failed", value: failedRiderPayouts.length, hint: "Requires follow-up", icon: <XCircle size={22} />, tone: "red" },
+          { label: "Ready for Payout", value: formatMoney(adminCurrency, totalRiderPayoutValue), hint: "All requests in GHS", icon: <DollarSign size={18} />, tone: "yellow" },
+          { label: "Requested", value: requestedRiderPayouts.length, hint: "Awaiting review", icon: <Clock size={18} />, tone: "yellow" },
+          { label: "Processing", value: processingCount, hint: "In progress", icon: <Cog size={18} />, tone: "neutral" },
+          { label: "Paid", value: paidRiderPayouts.length, hint: "Successfully settled", icon: <CheckCircle size={18} />, tone: "green" },
+          { label: "Failed", value: failedRiderPayouts.length, hint: "Requires follow-up", icon: <XCircle size={18} />, tone: "red" },
         ]}
       />
 
@@ -552,7 +552,7 @@ export function RiderPayoutsScreen({
                   justifyContent: "center",
                 }}
               >
-                <X size={14} />
+                <X size={13} />
               </button>
             </div>
 
@@ -735,7 +735,7 @@ export function RiderPayoutsScreen({
                       cursor: isMutating ? "not-allowed" : "pointer",
                     }}
                   >
-                    <CheckCircle size={14} /> Approve
+                    <CheckCircle size={13} /> Approve
                   </button>
               )}
               {canPayoutAction(selectedDetail.status, "reject") && (
@@ -779,7 +779,7 @@ export function RiderPayoutsScreen({
                       cursor: isMutating ? "not-allowed" : "pointer",
                     }}
                   >
-                    <Cog size={14} />{" "}
+                    <Cog size={13} />{" "}
                     {selectedDetail.method.toUpperCase() === "MOBILE_MONEY"
                       ? "Start disbursement"
                       : "Mark Processing"}
@@ -800,7 +800,7 @@ export function RiderPayoutsScreen({
                     cursor: isMutating ? "not-allowed" : "pointer",
                   }}
                 >
-                  <CheckCircle size={14} /> Mark Paid
+                  <CheckCircle size={13} /> Mark Paid
                 </button>
               )}
             </div>

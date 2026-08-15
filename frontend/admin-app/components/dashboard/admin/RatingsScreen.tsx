@@ -106,8 +106,8 @@ export function RatingsScreen({
         subtitle="Passenger scores and reviews on completed Accra rides."
         actions={
           <div className="admin-screen-toolbar">
-            <button type="button" className="admin-btn-primary" onClick={handleExport}>
-              <Download size={14} /> Export CSV
+            <button type="button" className="admin-btn-primary" style={{ fontSize: "0.78rem" }} onClick={handleExport}>
+              <Download size={13} /> Export CSV
             </button>
           </div>
         }
@@ -119,28 +119,28 @@ export function RatingsScreen({
             label: "Total Ratings",
             value: ratings.length,
             hint: `${withReview.length} with review text`,
-            icon: <Star size={22} />,
+            icon: <Star size={18} />,
             tone: "yellow",
           },
           {
             label: "Average Score",
             value: `${riderRatingAverage.toFixed(1)} ★`,
             hint: "Platform-wide",
-            icon: <Star size={22} />,
+            icon: <Star size={18} />,
             tone: "green",
           },
           {
             label: "Incidents",
             value: incidents.length,
             hint: "All severity levels",
-            icon: <AlertTriangle size={22} />,
+            icon: <AlertTriangle size={18} />,
             tone: "red",
           },
           {
             label: "5-Star Ratings",
             value: fiveStarCount,
             hint: "Top scores",
-            icon: <Star size={22} />,
+            icon: <Star size={18} />,
             tone: "green",
           },
         ]}

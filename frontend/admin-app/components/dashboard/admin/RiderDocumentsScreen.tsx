@@ -119,28 +119,28 @@ export function RiderDocumentsScreen({
             label: "Total Documents",
             value: riderDocumentStats.total,
             hint: "All rider files",
-            icon: <ClipboardList size={22} />,
+            icon: <ClipboardList size={18} />,
             tone: "yellow",
           },
           {
             label: "Compliant",
             value: riderDocumentStats.compliant,
             hint: "Valid for Accra ops",
-            icon: <CheckCircle size={22} />,
+            icon: <CheckCircle size={18} />,
             tone: "green",
           },
           {
             label: "Expiring Soon",
             value: riderDocumentStats.expiringSoon,
             hint: "Renewal needed",
-            icon: <AlertTriangle size={22} />,
+            icon: <AlertTriangle size={18} />,
             tone: "yellow",
           },
           {
             label: "Expired",
             value: riderDocumentStats.expired,
             hint: `${riderDocumentStats.missing} missing`,
-            icon: <XCircle size={22} />,
+            icon: <XCircle size={18} />,
             tone: "red",
           },
         ]}
@@ -164,7 +164,7 @@ export function RiderDocumentsScreen({
 
       <div className="admin-filter-bar">
         <label className="admin-filter-search">
-          <Search size={14} aria-hidden />
+          <Search size={13} aria-hidden />
           <input
             type="search"
             placeholder="Search by name, code, phone, or doc number..."

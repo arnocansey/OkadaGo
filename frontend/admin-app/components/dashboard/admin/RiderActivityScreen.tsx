@@ -306,11 +306,11 @@ export function RiderActivityScreen({
 
         <AdminKpiRow
           items={[
-            { label: "Online Riders", value: activeRidersCount, hint: "Currently dispatching", icon: <Wifi size={22} />, tone: "green" },
-            { label: "GPS Located", value: ridersWithCoordsCount, hint: "With live coordinates", icon: <MapPin size={22} />, tone: "yellow" },
-            { label: "Active Trips", value: activeTripsCount, hint: "In motion now", icon: <Navigation size={22} />, tone: "yellow" },
-            { label: "Total Riders", value: activityRows.length, hint: "All registered", icon: <Users size={22} />, tone: "neutral" },
-            { label: "Total Activity", value: activityRows.reduce((s, r) => s + r.rideCount, 0), hint: "Lifetime trips", icon: <Activity size={22} />, tone: "yellow" },
+            { label: "Online Riders", value: activeRidersCount, hint: "Currently dispatching", icon: <Wifi size={18} />, tone: "green" },
+            { label: "GPS Located", value: ridersWithCoordsCount, hint: "With live coordinates", icon: <MapPin size={18} />, tone: "yellow" },
+            { label: "Active Trips", value: activeTripsCount, hint: "In motion now", icon: <Navigation size={18} />, tone: "yellow" },
+            { label: "Total Riders", value: activityRows.length, hint: "All registered", icon: <Users size={18} />, tone: "neutral" },
+            { label: "Total Activity", value: activityRows.reduce((s, r) => s + r.rideCount, 0), hint: "Lifetime trips", icon: <Activity size={18} />, tone: "yellow" },
           ]}
         />
 
@@ -325,11 +325,11 @@ export function RiderActivityScreen({
                 addToast(`Switched to ${tab}`, "info");
               }}
             >
-              {tab === "Live Map" && <MapPin size={14} />}
-              {tab === "Rider Activity Feed" && <Activity size={14} />}
-              {tab === "Status History" && <History size={14} />}
-              {tab === "Geofence Zones" && <Layers size={14} />}
-              {tab === "Heatmap" && <Zap size={14} />}
+              {tab === "Live Map" && <MapPin size={13} />}
+              {tab === "Rider Activity Feed" && <Activity size={13} />}
+              {tab === "Status History" && <History size={13} />}
+              {tab === "Geofence Zones" && <Layers size={13} />}
+              {tab === "Heatmap" && <Zap size={13} />}
               {tab}
             </button>
           ))}
@@ -406,7 +406,7 @@ export function RiderActivityScreen({
                       onMouseEnter={(e) => (e.currentTarget.style.background = D.surfaceHover)}
                       onMouseLeave={(e) => (e.currentTarget.style.background = D.surfaceAlt)}
                     >
-                      <Eye size={12} /> Refresh
+                      <Eye size={13} /> Refresh
                     </button>
                   </div>
                 </div>
@@ -822,7 +822,7 @@ export function RiderActivityScreen({
                               onMouseEnter={(e) => (e.currentTarget.style.background = "var(--accent-hover)")}
                               onMouseLeave={(e) => (e.currentTarget.style.background = D.blueBg)}
                             >
-                              <Eye size={12} /> View
+                               <Eye size={13} /> View
                             </button>
                           </td>
                         </tr>
@@ -858,7 +858,7 @@ export function RiderActivityScreen({
                         opacity: currentPage === 1 ? 0.4 : 1,
                       }}
                     >
-                      <ChevronLeft size={14} />
+                       <ChevronLeft size={13} />
                     </button>
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
                       <button
@@ -886,7 +886,7 @@ export function RiderActivityScreen({
                         opacity: currentPage === totalPages ? 0.4 : 1,
                       }}
                     >
-                      <ChevronRight size={14} />
+                       <ChevronRight size={13} />
                     </button>
                   </div>
                 </div>
@@ -969,7 +969,7 @@ export function RiderActivityScreen({
                   onMouseEnter={(e) => (e.currentTarget.style.background = D.surfaceHover)}
                   onMouseLeave={(e) => (e.currentTarget.style.background = D.surfaceAlt)}
                 >
-                  <Activity size={12} /> Refresh
+                      <Activity size={13} /> Refresh
                 </button>
               </div>
             </div>
@@ -1137,7 +1137,7 @@ export function RiderActivityScreen({
               onMouseEnter={(e) => (e.currentTarget.style.background = D.surfaceHover)}
               onMouseLeave={(e) => (e.currentTarget.style.background = D.surfaceAlt)}
             >
-              <Activity size={12} /> Refresh
+              <Activity size={13} /> Refresh
             </button>
           </div>
           {timelineEvents.length === 0 ? (

@@ -78,7 +78,7 @@ const EscalationRulesScreen: FC<EscalationRulesScreenProps> = ({
         title="Escalation Rules"
         subtitle="Ticket escalation paths and SLA thresholds for Accra ops."
         actions={
-          <button type="button" className="admin-btn-primary" onClick={() => setShowForm((v) => !v)}>
+          <button type="button" className="admin-btn-primary" style={{ fontSize: "0.78rem" }} onClick={() => setShowForm((v) => !v)}>
             {showForm ? "Close form" : "Create Rule"}
           </button>
         }
@@ -133,7 +133,7 @@ const EscalationRulesScreen: FC<EscalationRulesScreenProps> = ({
             </label>
           </div>
           <div className="admin-page-header-actions" style={{ marginTop: 16 }}>
-            <button type="button" className="admin-btn-primary" disabled={isMutating} onClick={submit}>
+            <button type="button" className="admin-btn-primary" style={{ fontSize: "0.78rem" }} disabled={isMutating} onClick={submit}>
               Save rule
             </button>
           </div>
@@ -191,6 +191,7 @@ const EscalationRulesScreen: FC<EscalationRulesScreenProps> = ({
                         <button
                           type="button"
                           className={rule.enabled ? "admin-btn-primary" : "admin-btn-secondary"}
+                          style={{ fontSize: "0.78rem" }}
                           disabled={isMutating}
                           onClick={() => onToggleRule(rule.id, !rule.enabled)}
                         >

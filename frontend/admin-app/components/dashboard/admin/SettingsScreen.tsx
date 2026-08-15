@@ -129,16 +129,17 @@ export function SettingsScreen({
       ]}
       actions={
         <>
-          <button type="button" className="settings-btn settings-btn--ghost" onClick={handleReset}>
-            <RotateCcw size={14} /> Reset
+          <button type="button" className="settings-btn settings-btn--ghost" onClick={handleReset} style={{ fontSize: "0.78rem" }}>
+            <RotateCcw size={13} /> Reset
           </button>
           <button
             type="button"
             className="settings-btn settings-btn--primary"
             disabled={settingsSaving}
             onClick={handleSave}
+            style={{ fontSize: "0.78rem" }}
           >
-            <Save size={14} /> Save Changes
+            <Save size={13} /> Save Changes
           </button>
         </>
       }
@@ -235,30 +236,10 @@ export function SettingsScreen({
                 <button
                   type="button"
                   aria-label={label}
+                  className={`settings-toggle ${toggles[key] ? "on" : ""}`}
                   onClick={() => setToggles((prev) => ({ ...prev, [key]: !prev[key] }))}
-                  style={{
-                    width: 44,
-                    height: 24,
-                    borderRadius: 12,
-                    border: "none",
-                    cursor: "pointer",
-                    position: "relative",
-                    background: toggles[key] ? "var(--color-success)" : "color-mix(in srgb, var(--bg-card) 85%, var(--text-primary))",
-                    transition: "background 0.2s"
-                  }}
                 >
-                  <span
-                    style={{
-                      position: "absolute",
-                      top: 3,
-                      left: toggles[key] ? 23 : 3,
-                      width: 18,
-                      height: 18,
-                      borderRadius: "50%",
-                      background: "#fff",
-                      transition: "left 0.2s"
-                    }}
-                  />
+                  <span className="settings-toggle-thumb" />
                 </button>
               </div>
             ))}
@@ -267,7 +248,7 @@ export function SettingsScreen({
 
         <div className="settings-stack">
           <SettingsCard title="More settings" subtitle="Open dedicated screens for account, company, and billing prefs.">
-            <div className="settings-stack" style={{ gap: 10 }}>
+            <div className="settings-stack" style={{ gap: 8 }}>
               {QUICK_LINKS.map(({ href, label, desc, icon: Icon }) => (
                 <Link
                   key={href}
@@ -275,28 +256,30 @@ export function SettingsScreen({
                   className="settings-row"
                   style={{
                     border: "1px solid var(--border-color)",
-                    borderRadius: 12,
-                    padding: 12,
+                    borderRadius: 10,
+                    padding: "10px 12px",
                     textDecoration: "none",
-                    color: "inherit"
+                    color: "inherit",
+                    transition: "border-color 0.15s, background 0.15s"
                   }}
                 >
-                  <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                  <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                     <div
                       style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 10,
-                        background: "color-mix(in srgb, var(--accent-yellow) 16%, transparent)",
+                        width: 32,
+                        height: 32,
+                        borderRadius: 8,
+                        background: "color-mix(in srgb, var(--accent-yellow) 14%, transparent)",
                         display: "grid",
-                        placeItems: "center"
+                        placeItems: "center",
+                        flexShrink: 0
                       }}
                     >
-                      <Icon size={16} color="var(--accent-yellow)" />
+                      <Icon size={15} color="var(--accent-yellow)" />
                     </div>
                     <div>
-                      <div className="settings-row-label">{label}</div>
-                      <div className="settings-row-meta">{desc}</div>
+                      <div className="settings-row-label" style={{ fontSize: "0.82rem", fontWeight: 600 }}>{label}</div>
+                      <div className="settings-row-meta" style={{ fontSize: "0.72rem" }}>{desc}</div>
                     </div>
                   </div>
                 </Link>

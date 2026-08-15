@@ -1,4 +1,4 @@
-import { Download, Bike, MapPin } from "lucide-react";
+import { Download, Bike, MapPin, TrendingUp, Users, Package } from "lucide-react";
 import Link from "next/link";
 import { OperationsMap } from "@/components/maps/operations-map";
 import { formatMoney } from "@/lib/currency";
@@ -126,24 +126,24 @@ export function DashboardScreen({
         subtitle="Live metrics and fleet status across Accra operations."
         actions={
           <div className="admin-screen-toolbar">
-            <label className="admin-btn-ghost">
+            <label className="admin-btn-ghost" style={{ gap: 6, fontSize: "0.78rem" }}>
               From
               <input
                 type="date"
                 className="admin-input-sm"
                 value={dashboardDateRange.from}
                 onChange={(e) => onDateRangeChange({ ...dashboardDateRange, from: e.target.value })}
-                style={{ marginLeft: 8 }}
+                style={{ marginLeft: 6, fontSize: "0.78rem" }}
               />
             </label>
-            <label className="admin-btn-ghost">
+            <label className="admin-btn-ghost" style={{ gap: 6, fontSize: "0.78rem" }}>
               To
               <input
                 type="date"
                 className="admin-input-sm"
                 value={dashboardDateRange.to}
                 onChange={(e) => onDateRangeChange({ ...dashboardDateRange, to: e.target.value })}
-                style={{ marginLeft: 8 }}
+                style={{ marginLeft: 6, fontSize: "0.78rem" }}
               />
             </label>
             {(dashboardDateRange.from || dashboardDateRange.to) && (
@@ -151,12 +151,13 @@ export function DashboardScreen({
                 type="button"
                 className="admin-btn-ghost"
                 onClick={() => onDateRangeChange({ from: "", to: "" })}
+                style={{ fontSize: "0.78rem" }}
               >
                 Reset
               </button>
             )}
-            <a className="admin-btn-primary" href="/reports">
-              <Download size={14} />
+            <a className="admin-btn-primary" href="/reports" style={{ fontSize: "0.78rem" }}>
+              <Download size={13} />
               Export Report
             </a>
           </div>
@@ -169,7 +170,7 @@ export function DashboardScreen({
           return (
             <article key={metric.label} className="admin-reference-kpi">
               <div className={`admin-reference-kpi-icon ${metric.tone}`}>
-                <Icon size={20} />
+                <Icon size={18} />
               </div>
               <div>
                 <span>{metric.label}</span>
@@ -185,7 +186,7 @@ export function DashboardScreen({
         <article className="admin-reference-card admin-overview-map">
           <div className="admin-overview-map-head">
             <div className="admin-overview-map-title">
-              <MapPin size={18} aria-hidden />
+              <MapPin size={16} aria-hidden />
               <div>
                 <h3>Live Fleet Map</h3>
                 <p>Accra dispatch coverage</p>
@@ -199,7 +200,7 @@ export function DashboardScreen({
                 <i className="gps" /> GPS {mapMarkers.length}
               </span>
               <span className="admin-map-pill muted">Vehicles {vehicleCount}</span>
-              <Link href="/riders/activity-tracking" className="admin-btn-secondary admin-overview-map-link">
+              <Link href="/riders/activity-tracking" className="admin-btn-secondary admin-overview-map-link" style={{ fontSize: "0.75rem", padding: "6px 12px" }}>
                 Open live view
               </Link>
             </div>
@@ -225,7 +226,7 @@ export function DashboardScreen({
               <h3>Active Requests</h3>
               <p>Newest rides and deliveries in the queue.</p>
             </div>
-            <a href="/requests">View all</a>
+            <a href="/requests" style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--accent-orange)", textDecoration: "none" }}>View all</a>
           </div>
           {activeRequests.length === 0 ? (
             <div className="admin-overview-queue-empty">
@@ -242,9 +243,9 @@ export function DashboardScreen({
                   <small>{item.title}</small>
                   <div className="admin-active-request-meta">
                     <small>{item.passenger}</small>
-                    <small>{item.amount}</small>
+                    <small style={{ fontWeight: 700, color: "var(--text-primary)" }}>{item.amount}</small>
                   </div>
-                  <small>{formatDateTime(item.createdAt)}</small>
+                  <small style={{ color: "var(--text-muted)" }}>{formatDateTime(item.createdAt)}</small>
                 </div>
               ))}
             </div>
@@ -259,7 +260,7 @@ export function DashboardScreen({
               <h3>Weekly Volume</h3>
               <p>Last 7 days from live ride records.</p>
             </div>
-            <span>This week</span>
+            <span style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text-secondary)" }}>This week</span>
           </div>
           <div className="admin-reference-legend">
             <span><i className="black" /> Ride requests</span>
@@ -297,7 +298,7 @@ export function DashboardScreen({
               <h3>Revenue Overview</h3>
               <p>{formatMoney(adminCurrency, totalDashboardRevenue)} captured.</p>
             </div>
-            <span>This week</span>
+            <span style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text-secondary)" }}>This week</span>
           </div>
           <div className="admin-reference-revenue-body">
             <div
@@ -347,7 +348,7 @@ export function DashboardScreen({
                 return (
                   <li key={item.id} className="admin-reference-activity-row">
                     <div className={`admin-reference-activity-icon ${item.tone}`}>
-                      <Icon size={14} />
+                      <Icon size={13} />
                     </div>
                     <div>
                       <strong>{item.title}</strong>

@@ -829,7 +829,7 @@ export function AccountSecurityScreen({
       <div className="settings-stack">
         <SettingsCard title="2FA Status">
           <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12 }}>
-            {totpEnabled ? <ShieldCheck size={22} color="var(--color-success)" /> : <ShieldAlert size={22} color="var(--accent-yellow)" />}
+            {totpEnabled ? <ShieldCheck size={18} color="var(--color-success)" /> : <ShieldAlert size={18} color="var(--accent-yellow)" />}
             <div>
               <div className="settings-row-label">2FA is currently {totpEnabled ? "Enabled" : "Disabled"}.</div>
               <div className="settings-row-meta">Authenticator App</div>

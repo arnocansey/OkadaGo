@@ -95,9 +95,9 @@ export function TaxesComplianceScreen({
 
       <AdminKpiRow
         items={[
-          { label: "Jurisdiction", value: "Ghana", hint: "GRA reference", icon: <Scale size={22} />, tone: "yellow" },
-          { label: "VAT stack", value: "15%+", hint: "VAT + levies", icon: <Percent size={22} />, tone: "yellow" },
-          { label: "Filing API", value: "Not connected", hint: "No live GRA sync", icon: <FileText size={22} />, tone: "neutral" }
+          { label: "Jurisdiction", value: "Ghana", hint: "GRA reference", icon: <Scale size={18} />, tone: "yellow" },
+          { label: "VAT stack", value: "15%+", hint: "VAT + levies", icon: <Percent size={18} />, tone: "yellow" },
+          { label: "Filing API", value: "Not connected", hint: "No live GRA sync", icon: <FileText size={18} />, tone: "neutral" }
         ]}
       />
 
@@ -158,7 +158,7 @@ export function TaxesComplianceScreen({
             placeholder="Accountant contacts, filing calendar reminders, etc."
           />
         </label>
-        <button type="button" className="admin-btn-primary" onClick={saveProfile} disabled={settingsSaving}>
+        <button type="button" className="admin-btn-primary" style={{ fontSize: "0.78rem" }} onClick={saveProfile} disabled={settingsSaving}>
           <Building2 size={15} /> {settingsSaving ? "Saving…" : onSaveSettings ? "Save tax profile" : "Save local tax profile"}
         </button>
       </article>

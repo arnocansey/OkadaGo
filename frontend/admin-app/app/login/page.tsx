@@ -1,9 +1,9 @@
-import { AuthPages } from "@/okada-ui/screens/okada-auth/AuthPages";
+import { AdminLoginScreen } from "@/components/auth/AdminLoginScreen";
 
 export const metadata = {
   title: "Admin Login | OkadaGo"
 };
 
 export default function AdminLoginPage() {
-  return <AuthPages initialAuthState="login" audience="admin" />;
+  return <AdminLoginScreen />;
 }

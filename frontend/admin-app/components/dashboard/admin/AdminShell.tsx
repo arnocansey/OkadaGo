@@ -551,14 +551,14 @@ export function AdminShell({
             <div className="exact-admin-top-actions">
               <button
                 type="button"
-                className="exact-admin-menu-button"
+                className="exact-admin-theme-toggle"
                 onClick={toggleTheme}
                 title="Toggle theme"
               >
-                {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
+                {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
               </button>
-              <a href="/notifications" className="exact-admin-menu-button" title="Alerts" aria-label="Alerts">
-                <Bell size={18} />
+              <a href="/notifications" className="exact-admin-notification-btn" title="Alerts" aria-label="Alerts">
+                <Bell size={16} />
               </a>
               <div className="exact-admin-top-profile">
                 <div className="exact-avatar">{initials || "OG"}</div>

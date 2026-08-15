@@ -455,11 +455,11 @@ export function RiderPerformanceScreen({
 
       <AdminKpiRow
         items={[
-          { label: "Completed Trips", value: completedTrips.toLocaleString(), hint: `${activeTrips} in progress`, icon: <Bike size={22} />, tone: "green" },
-          { label: "Active Trips", value: activeTrips.toLocaleString(), hint: "Currently in progress", icon: <Activity size={22} />, tone: "yellow" },
-          { label: "Avg. Rating", value: averageRating.toFixed(1), hint: `${ratedRiders.length} rated riders`, icon: <Star size={22} />, tone: "yellow" },
-          { label: "Total Earnings", value: formatMoney(adminCurrency, totalEarnings), hint: "Net after commission", icon: <DollarSign size={22} />, tone: "yellow" },
-          { label: "Earning Riders", value: earningRiders, hint: "With positive earnings", icon: <Users size={22} />, tone: "neutral" },
+          { label: "Completed Trips", value: completedTrips.toLocaleString(), hint: `${activeTrips} in progress`, icon: <Bike size={18} />, tone: "green" },
+          { label: "Active Trips", value: activeTrips.toLocaleString(), hint: "Currently in progress", icon: <Activity size={18} />, tone: "yellow" },
+          { label: "Avg. Rating", value: averageRating.toFixed(1), hint: `${ratedRiders.length} rated riders`, icon: <Star size={18} />, tone: "yellow" },
+          { label: "Total Earnings", value: formatMoney(adminCurrency, totalEarnings), hint: "Net after commission", icon: <DollarSign size={18} />, tone: "yellow" },
+          { label: "Earning Riders", value: earningRiders, hint: "With positive earnings", icon: <Users size={18} />, tone: "neutral" },
         ]}
       />
 
@@ -470,11 +470,11 @@ export function RiderPerformanceScreen({
             <p>12-month trend across key metrics</p>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <button type="button" className="admin-btn-secondary" onClick={handleRefresh}>
-              <BarChart3 size={14} /> Refresh
+            <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.78rem" }} onClick={handleRefresh}>
+              <BarChart3 size={13} /> Refresh
             </button>
-            <button type="button" className="admin-btn-primary" onClick={handleExport}>
-              <Download size={14} /> Export
+            <button type="button" className="admin-btn-primary" style={{ fontSize: "0.78rem" }} onClick={handleExport}>
+              <Download size={13} /> Export
             </button>
           </div>
         </div>
@@ -728,7 +728,7 @@ export function RiderPerformanceScreen({
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <label className="admin-filter-search">
-              <Search size={14} aria-hidden />
+              <Search size={13} aria-hidden />
               <input
                 type="search"
                 placeholder="Search riders..."
@@ -736,8 +736,8 @@ export function RiderPerformanceScreen({
                 onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
               />
             </label>
-            <button type="button" className="admin-btn-secondary" onClick={() => addToast("Filters panel coming soon", "info")}>
-              <Filter size={14} /> Filters
+            <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.78rem" }} onClick={() => addToast("Filters panel coming soon", "info")}>
+              <Filter size={13} /> Filters
             </button>
           </div>
         </div>
@@ -864,7 +864,7 @@ export function RiderPerformanceScreen({
                             onClick={() => addToast(`Viewing ${row.rider.user.fullName}'s full profile`, "info")}
                             title="View details"
                           >
-                            <Eye size={14} />
+                            <Eye size={13} />
                           </button>
                         </td>
                       </tr>
@@ -896,7 +896,7 @@ export function RiderPerformanceScreen({
                   }}
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 >
-                  <ChevronLeft size={14} />
+                   <ChevronLeft size={13} />
                 </button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                   <button
@@ -923,7 +923,7 @@ export function RiderPerformanceScreen({
                   }}
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 >
-                  <ChevronRight size={14} />
+                   <ChevronRight size={13} />
                 </button>
               </div>
             </div>

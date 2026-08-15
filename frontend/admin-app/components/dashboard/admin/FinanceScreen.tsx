@@ -162,6 +162,7 @@ export function FinanceScreen({
             <button
               type="button"
               className="admin-btn-primary"
+              style={{ fontSize: "0.78rem" }}
               onClick={() =>
                 downloadCsv(
                   "wallet-transactions.csv",
@@ -179,7 +180,7 @@ export function FinanceScreen({
                 )
               }
             >
-              <Download size={14} />
+              <Download size={13} />
               Export Report
             </button>
           </div>
@@ -187,7 +188,7 @@ export function FinanceScreen({
       />
       <section className="admin-kpi-grid">
         <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon green"><CreditCard size={22} /></div>
+          <div className="admin-reference-kpi-icon green"><CreditCard size={18} /></div>
           <div>
             <span>Total Revenue</span>
             <strong>{formatMoney(adminCurrency, totalRevenue)}</strong>
@@ -195,7 +196,7 @@ export function FinanceScreen({
           </div>
         </article>
         <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon yellow"><TrendingUp size={22} /></div>
+          <div className="admin-reference-kpi-icon yellow"><TrendingUp size={18} /></div>
           <div>
             <span>Platform Net Profit</span>
             <strong>{formatMoney(adminCurrency, platformNetProfit)}</strong>
@@ -203,7 +204,7 @@ export function FinanceScreen({
           </div>
         </article>
         <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon red"><TrendingDown size={22} /></div>
+          <div className="admin-reference-kpi-icon red"><TrendingDown size={18} /></div>
           <div>
             <span>Payout Outflow</span>
             <strong>{formatMoney(adminCurrency, payoutOutflow)}</strong>
@@ -211,7 +212,7 @@ export function FinanceScreen({
           </div>
         </article>
         <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon yellow"><CreditCard size={22} /></div>
+          <div className="admin-reference-kpi-icon yellow"><CreditCard size={18} /></div>
           <div>
             <span>Pending Payouts</span>
             <strong>{pendingPayoutRequests.length}</strong>
@@ -220,7 +221,7 @@ export function FinanceScreen({
         </article>
       </section>
 
-      <article className="admin-reference-card" style={{ marginTop: 16 }}>
+      <article className="admin-reference-card" style={{ marginTop: 12 }}>
         <div className="admin-reference-cardhead">
           <div><h3>Finance Reconciliation</h3><p>Revenue, commission & net breakdown</p></div>
         </div>
@@ -393,7 +394,7 @@ export function FinanceScreen({
       </section>
 
       {/* Wallet Transactions */}
-      <article className="admin-reference-card" style={{ marginTop: 16 }}>
+      <article className="admin-reference-card" style={{ marginTop: 12 }}>
         <div className="admin-reference-cardhead">
           <div>
             <h3>Wallet Transactions</h3>
@@ -404,7 +405,8 @@ export function FinanceScreen({
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: isMobile ? "wrap" : undefined }}>
             <button
-              className="admin-select-sm"
+              className="admin-btn-secondary"
+              style={{ fontSize: "0.75rem", padding: "6px 12px" }}
               onClick={() =>
                 onServerExport
                   ? onServerExport("wallet-transactions")
@@ -424,13 +426,14 @@ export function FinanceScreen({
                     )
               }
             >
-              <Download size={14} /> Export CSV
+              <Download size={13} /> Export CSV
             </button>
-            <Filter size={14} />
+            <Filter size={14} style={{ color: "var(--text-secondary)", alignSelf: "center" }} />
             <select
               className="admin-select-sm"
               value={transactionStatusFilter}
               onChange={(e) => onTransactionStatusChange(e.target.value)}
+              style={{ fontSize: "0.78rem" }}
             >
               <option value="">All statuses</option>
               <option value="POSTED">Posted</option>
@@ -442,6 +445,7 @@ export function FinanceScreen({
               className="admin-select-sm"
               value={transactionTypeFilter}
               onChange={(e) => onTransactionTypeChange(e.target.value)}
+              style={{ fontSize: "0.78rem" }}
             >
               <option value="">All types</option>
               <option value="RIDE_FARE">Ride Fare</option>
@@ -484,7 +488,7 @@ export function FinanceScreen({
                     <td>
                       <em className={`admin-reference-tag ${statusTone(tx.status)}`}>{tx.status}</em>
                     </td>
-                    <td><code style={{ fontSize: 11 }}>{tx.reference?.slice(-12)}</code></td>
+                    <td><code style={{ fontSize: 10 }}>{tx.reference?.slice(-12)}</code></td>
                     <td><small>{formatDateTime(tx.createdAt)}</small></td>
                   </tr>
                 ))}
@@ -501,7 +505,7 @@ export function FinanceScreen({
       </article>
 
       {/* Payout Requests */}
-      <article className="admin-reference-card" style={{ marginTop: 16 }}>
+      <article className="admin-reference-card" style={{ marginTop: 12 }}>
         <div className="admin-reference-cardhead">
           <div>
             <h3>Payout Requests</h3>
@@ -509,7 +513,8 @@ export function FinanceScreen({
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: isMobile ? "wrap" : undefined }}>
             <button
-              className="admin-select-sm"
+              className="admin-btn-secondary"
+              style={{ fontSize: "0.75rem", padding: "6px 12px" }}
               onClick={() =>
                 onServerExport
                   ? onServerExport("payout-requests")
@@ -529,12 +534,13 @@ export function FinanceScreen({
                     )
               }
             >
-              <Download size={14} /> Export CSV
+              <Download size={13} /> Export CSV
             </button>
             <select
               className="admin-select-sm"
               value={payoutStatusFilter}
               onChange={(e) => onPayoutStatusChange(e.target.value)}
+              style={{ fontSize: "0.78rem" }}
             >
               <option value="">All statuses</option>
               <option value="REQUESTED">Requested</option>
@@ -585,14 +591,14 @@ export function FinanceScreen({
                     <td><small>{request.reviewer?.fullName ?? "—"}</small></td>
                     {onPayoutAction ? (
                       <td>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                           {canPayoutAction(status, "mark_reviewing") && (
-                            <button type="button" className="admin-btn-secondary" disabled={isMutating} onClick={() => onPayoutAction(request.id, "mark_reviewing")}>
+                            <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.72rem", padding: "5px 10px" }} disabled={isMutating} onClick={() => onPayoutAction(request.id, "mark_reviewing")}>
                               Review
                             </button>
                           )}
                           {canPayoutAction(status, "approve") && (
-                            <button type="button" className="admin-btn-primary" disabled={isMutating} onClick={() => onPayoutAction(request.id, "approve")}>
+                            <button type="button" className="admin-btn-primary" style={{ fontSize: "0.72rem", padding: "5px 10px" }} disabled={isMutating} onClick={() => onPayoutAction(request.id, "approve")}>
                               Approve
                             </button>
                           )}
@@ -600,6 +606,7 @@ export function FinanceScreen({
                             <button
                               type="button"
                               className="admin-btn-secondary"
+                              style={{ fontSize: "0.72rem", padding: "5px 10px" }}
                               disabled={isMutating}
                               onClick={() => onPayoutAction(request.id, "mark_processing")}
                             >
@@ -607,7 +614,7 @@ export function FinanceScreen({
                             </button>
                           )}
                           {canPayoutAction(status, "mark_paid") && (
-                            <button type="button" className="admin-btn-primary" disabled={isMutating} onClick={() => onPayoutAction(request.id, "mark_paid")}>
+                            <button type="button" className="admin-btn-primary" style={{ fontSize: "0.72rem", padding: "5px 10px" }} disabled={isMutating} onClick={() => onPayoutAction(request.id, "mark_paid")}>
                               Mark Paid
                             </button>
                           )}
@@ -615,6 +622,7 @@ export function FinanceScreen({
                             <button
                               type="button"
                               className="admin-btn-secondary"
+                              style={{ fontSize: "0.72rem", padding: "5px 10px" }}
                               disabled={isMutating}
                               onClick={() => {
                                 const reason = window.prompt("Rejection reason (required)");

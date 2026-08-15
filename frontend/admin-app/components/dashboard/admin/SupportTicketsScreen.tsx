@@ -130,7 +130,7 @@ export function SupportTicketsScreen({
           tab === "tickets" ? (
             <div className="admin-screen-toolbar">
               <label className="admin-filter-search">
-                <Search size={16} aria-hidden />
+                <Search size={14} aria-hidden />
                 <input
                   type="search"
                   value={query}
@@ -156,10 +156,10 @@ export function SupportTicketsScreen({
         <>
           <AdminKpiRow
             items={[
-              { label: "Open Tickets", value: openSupportTickets.length, hint: "Awaiting first response", icon: <AlertTriangle size={22} />, tone: "red" },
-              { label: "In Progress", value: inProgressSupportTickets.length, hint: "Assigned / working", icon: <Clock size={22} />, tone: "yellow" },
-              { label: "Resolved", value: resolvedSupportTickets.length, hint: "Closed tickets", icon: <CheckCircle size={22} />, tone: "green" },
-              { label: "Escalations", value: escalations.length, hint: "High priority open", icon: <Headphones size={22} />, tone: "red" }
+              { label: "Open Tickets", value: openSupportTickets.length, hint: "Awaiting first response", icon: <AlertTriangle size={18} />, tone: "red" },
+              { label: "In Progress", value: inProgressSupportTickets.length, hint: "Assigned / working", icon: <Clock size={18} />, tone: "yellow" },
+              { label: "Resolved", value: resolvedSupportTickets.length, hint: "Closed tickets", icon: <CheckCircle size={18} />, tone: "green" },
+              { label: "Escalations", value: escalations.length, hint: "High priority open", icon: <Headphones size={18} />, tone: "red" }
             ]}
           />
 
@@ -265,10 +265,10 @@ export function SupportTicketsScreen({
         <>
           <AdminKpiRow
             items={[
-              { label: "Open Incidents", value: openTickets.length, hint: "Awaiting first response", icon: <AlertTriangle size={22} />, tone: "red" },
-              { label: "In Progress", value: inProgressTickets.length, hint: "Under review or actioned", icon: <Clock size={22} />, tone: "yellow" },
-              { label: "Resolved", value: resolvedTickets.length, hint: "Closed incidents", icon: <CheckCircle size={22} />, tone: "green" },
-              { label: "Total Incidents", value: incidents.length, hint: "All safety cases", icon: <Headphones size={22} />, tone: "yellow" }
+              { label: "Open Incidents", value: openTickets.length, hint: "Awaiting first response", icon: <AlertTriangle size={18} />, tone: "red" },
+              { label: "In Progress", value: inProgressTickets.length, hint: "Under review or actioned", icon: <Clock size={18} />, tone: "yellow" },
+              { label: "Resolved", value: resolvedTickets.length, hint: "Closed incidents", icon: <CheckCircle size={18} />, tone: "green" },
+              { label: "Total Incidents", value: incidents.length, hint: "All safety cases", icon: <Headphones size={18} />, tone: "yellow" }
             ]}
           />
           <article className="admin-reference-card">
@@ -299,6 +299,7 @@ export function SupportTicketsScreen({
                         <button
                           type="button"
                           className="admin-btn-secondary"
+                          style={{ fontSize: "0.72rem", padding: "5px 10px" }}
                           disabled={isMutating}
                           onClick={() => onIncidentAction(ticket.id, "UNDER_REVIEW")}
                         >
@@ -307,6 +308,7 @@ export function SupportTicketsScreen({
                         <button
                           type="button"
                           className="admin-btn-primary"
+                          style={{ fontSize: "0.72rem", padding: "5px 10px" }}
                           disabled={isMutating}
                           onClick={() => onIncidentAction(ticket.id, "RESOLVED")}
                         >

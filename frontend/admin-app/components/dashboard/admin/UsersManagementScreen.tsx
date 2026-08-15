@@ -106,28 +106,28 @@ export function UsersManagementScreen({
             label: "Total Users",
             value: totalUsers,
             hint: `${passengersCount} passengers, ${ridersCount} riders`,
-            icon: <Users size={22} />,
+            icon: <Users size={18} />,
             tone: "green",
           },
           {
             label: "Passengers",
             value: passengersCount,
             hint: `${passengerPendingCount} pending · ${passengerVerifiedCount} verified`,
-            icon: <User size={22} />,
+            icon: <User size={18} />,
             tone: "yellow",
           },
           {
             label: "Riders",
             value: ridersCount,
             hint: `${riderPendingCount} pending · ${riderVerifiedCount} verified`,
-            icon: <Bike size={22} />,
+            icon: <Bike size={18} />,
             tone: "green",
           },
           {
             label: "Blocked Users",
             value: blockedUsers.length,
             hint: "Restricted access",
-            icon: <Users size={22} />,
+            icon: <Users size={18} />,
             tone: "red",
           },
         ]}
@@ -201,21 +201,22 @@ export function UsersManagementScreen({
                           </em>
                         </td>
                         <td><small>{user.location}</small></td>
-                        <td><code style={{ fontSize: 11 }}>{user.reference}</code></td>
+                        <td><code style={{ fontSize: 10 }}>{user.reference}</code></td>
                         <td><small>{user.joinedAt ? formatDateTime(user.joinedAt) : "—"}</small></td>
                         <td>
                           {onDeleteUser && (
                             <button
                               type="button"
-                              className="settings-btn settings-btn--ghost"
+                              className="admin-btn-ghost"
                               title={`Delete account for ${user.name}`}
+                              style={{ padding: "4px 8px", border: "none" }}
                               onClick={() => {
                                 if (window.confirm(`Are you sure you want to delete the account for ${user.name}? This will revoke access.`)) {
                                   onDeleteUser(user.id);
                                 }
                               }}
                             >
-                              <Trash2 size={14} style={{ color: "#ef4444" }} />
+                              <Trash2 size={13} style={{ color: "#ef4444" }} />
                             </button>
                           )}
                         </td>
@@ -248,19 +249,18 @@ export function UsersManagementScreen({
               <ul className="admin-summary-list">
                 {userLocationSnapshot.map(([location, count]) => (
                   <li key={location}>
-                    <div>
-                      <MapPin size={12} style={{ marginRight: 4 }} />
+                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                      <MapPin size={12} style={{ color: "var(--accent-orange)" }} />
                       <span>{location}</span>
                     </div>
-                    <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <div
                         style={{
-                          height: 6,
-                          width: `${Math.max(10, (count / userLocationMax) * 80)}px`,
+                          height: 5,
+                          width: `${Math.max(10, (count / userLocationMax) * 60)}px`,
                           background: "var(--accent-orange)",
                           borderRadius: 3,
                           display: "inline-block",
-                          marginRight: 8
                         }}
                       />
                       <strong>{count}</strong>

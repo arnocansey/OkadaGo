@@ -43,7 +43,7 @@ export function PromotionsScreen({
 
       <section className="admin-kpi-grid">
         <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon yellow"><Tag size={22} /></div>
+          <div className="admin-reference-kpi-icon yellow"><Tag size={18} /></div>
           <div>
             <span>Active Campaigns</span>
             <strong>{discountedRideCount}</strong>
@@ -51,7 +51,7 @@ export function PromotionsScreen({
           </div>
         </article>
         <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon yellow"><Percent size={22} /></div>
+          <div className="admin-reference-kpi-icon yellow"><Percent size={18} /></div>
           <div>
             <span>Avg Discount / Ride</span>
             <strong>{formatMoney(adminCurrency, avgDiscountPerRide)}</strong>
@@ -59,7 +59,7 @@ export function PromotionsScreen({
           </div>
         </article>
         <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon red"><TrendingDown size={22} /></div>
+          <div className="admin-reference-kpi-icon red"><TrendingDown size={18} /></div>
           <div>
             <span>Promo Spend</span>
             <strong>{formatMoney(adminCurrency, promoSpend)}</strong>
@@ -67,7 +67,7 @@ export function PromotionsScreen({
           </div>
         </article>
         <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon yellow"><TrendingDown size={22} /></div>
+          <div className="admin-reference-kpi-icon yellow"><TrendingDown size={18} /></div>
           <div>
             <span>Referral Spend</span>
             <strong>{formatMoney(adminCurrency, referralSpend)}</strong>
@@ -75,7 +75,7 @@ export function PromotionsScreen({
           </div>
         </article>
         <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon green"><PiggyBank size={22} /></div>
+          <div className="admin-reference-kpi-icon green"><PiggyBank size={18} /></div>
           <div>
             <span>Total Est. Savings</span>
             <strong>{formatMoney(adminCurrency, totalDiscount)}</strong>

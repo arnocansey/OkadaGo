@@ -105,10 +105,10 @@ export function SosIncidentsScreen({
 
       <AdminKpiRow
         items={[
-          { label: "Open SOS", value: openSosAll.length, hint: "Needs attention", icon: <ShieldAlert size={22} />, tone: "red" },
-          { label: `SLA > ${SOS_SLA_MINUTES}m`, value: breachedOpen, hint: "Open past target", icon: <AlertTriangle size={22} />, tone: "red" },
-          { label: "In progress", value: sosIncidents.filter((i) => ["under_review", "actioned"].includes(i.status.toLowerCase())).length, hint: "Being handled", icon: <Clock size={22} />, tone: "yellow" },
-          { label: "Resolved", value: resolvedSos.length, hint: "Closed critical cases", icon: <CheckCircle size={22} />, tone: "green" }
+          { label: "Open SOS", value: openSosAll.length, hint: "Needs attention", icon: <ShieldAlert size={18} />, tone: "red" },
+          { label: `SLA > ${SOS_SLA_MINUTES}m`, value: breachedOpen, hint: "Open past target", icon: <AlertTriangle size={18} />, tone: "red" },
+          { label: "In progress", value: sosIncidents.filter((i) => ["under_review", "actioned"].includes(i.status.toLowerCase())).length, hint: "Being handled", icon: <Clock size={18} />, tone: "yellow" },
+          { label: "Resolved", value: resolvedSos.length, hint: "Closed critical cases", icon: <CheckCircle size={18} />, tone: "green" }
         ]}
       />
 
@@ -169,6 +169,7 @@ export function SosIncidentsScreen({
                       <button
                         type="button"
                         className="admin-btn-secondary"
+                        style={{ fontSize: "0.78rem" }}
                         disabled={isMutating}
                         onClick={() => onIncidentAction(incident.id, "UNDER_REVIEW")}
                       >
@@ -177,6 +178,7 @@ export function SosIncidentsScreen({
                       <button
                         type="button"
                         className="admin-btn-primary"
+                        style={{ fontSize: "0.78rem" }}
                         disabled={isMutating}
                         onClick={() => onIncidentAction(incident.id, "RESOLVED")}
                       >
@@ -317,6 +319,7 @@ export function SosIncidentsScreen({
                         <button
                           type="button"
                           className="admin-btn-secondary"
+                          style={{ fontSize: "0.78rem" }}
                           disabled={isMutating}
                           onClick={() => onIncidentAction(incident.id, "UNDER_REVIEW")}
                         >
@@ -325,6 +328,7 @@ export function SosIncidentsScreen({
                         <button
                           type="button"
                           className="admin-btn-primary"
+                          style={{ fontSize: "0.78rem" }}
                           disabled={isMutating}
                           onClick={() => onIncidentAction(incident.id, "RESOLVED")}
                         >

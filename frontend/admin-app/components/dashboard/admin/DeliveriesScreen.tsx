@@ -135,28 +135,28 @@ export function DeliveriesScreen({
             label: "Total Deliveries",
             value: deliveries.length,
             hint: `${activeDeliveries.length} in progress`,
-            icon: <Package size={22} />,
+            icon: <Package size={18} />,
             tone: "yellow"
           },
           {
             label: "Completed",
             value: completedDeliveries.length,
             hint: `${completionRate}% completion rate`,
-            icon: <CheckCircle size={22} />,
+            icon: <CheckCircle size={18} />,
             tone: "green"
           },
           {
             label: "Cancelled",
             value: cancelledDeliveries.length,
             hint: "Failed or cancelled",
-            icon: <XCircle size={22} />,
+            icon: <XCircle size={18} />,
             tone: "red"
           },
           {
             label: "Delivery Revenue",
             value: formatMoney(adminCurrency, deliveryRevenue),
             hint: `${formatMoney(adminCurrency, deliveryCommission)} commission`,
-            icon: <Truck size={22} />,
+            icon: <Truck size={18} />,
             tone: "green"
           }
         ]}
@@ -210,7 +210,7 @@ export function DeliveriesScreen({
                   {displayItems.map((delivery) => (
                     <tr key={delivery.id}>
                       <td>
-                        <code style={{ fontSize: 11 }}>{delivery.id.slice(-8)}</code>
+                        <code style={{ fontSize: 10 }}>{delivery.id.slice(-8)}</code>
                       </td>
                       <td>
                         <strong>{delivery.passenger.user.fullName}</strong>

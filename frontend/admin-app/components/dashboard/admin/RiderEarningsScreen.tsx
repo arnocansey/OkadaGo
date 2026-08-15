@@ -130,11 +130,11 @@ export function RiderEarningsScreen({
         subtitle="Accra completed-trip earnings, surge incentives, and commission in GHS."
         actions={
           <div className="admin-screen-toolbar">
-            <button type="button" className="admin-btn-secondary" onClick={() => addToast("View All clicked")}>
-              <Eye size={14} /> View All
+            <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.78rem" }} onClick={() => addToast("View All clicked")}>
+              <Eye size={13} /> View All
             </button>
-            <button type="button" className="admin-btn-secondary" onClick={() => addToast("View Full History clicked")}>
-              <Download size={14} /> View Full History
+            <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.78rem" }} onClick={() => addToast("View Full History clicked")}>
+              <Download size={13} /> View Full History
             </button>
           </div>
         }
@@ -148,7 +148,7 @@ export function RiderEarningsScreen({
             className={`admin-tab${activeTab === tab ? " active" : ""}`}
             onClick={() => setActiveTab(tab)}
           >
-            {tab === "Daily" ? <Calendar size={14} style={{ marginRight: 6, verticalAlign: -2 }} /> : null}
+            {tab === "Daily" ? <Calendar size={13} style={{ marginRight: 6, verticalAlign: -2 }} /> : null}
             {tab}
           </button>
         ))}
@@ -156,11 +156,11 @@ export function RiderEarningsScreen({
 
       <AdminKpiRow
         items={[
-          { label: "Total Earnings", value: formatMoney(adminCurrency, totalRiderGrossRevenue), hint: "+12.5% vs last period", icon: <DollarSign size={22} />, tone: "yellow" },
-          { label: "Trip Earnings", value: formatMoney(adminCurrency, tripEarnings), hint: "+8.2% vs last period", icon: <TrendingUp size={22} />, tone: "green" },
-          { label: "Incentives", value: formatMoney(adminCurrency, incentives), hint: "+24.1% vs last period", icon: <Award size={22} />, tone: "yellow" },
-          { label: "Commissions", value: formatMoney(adminCurrency, totalRiderCommission), hint: "-3.4% vs last period", icon: <Target size={22} />, tone: "red" },
-          { label: "Net Earnings", value: formatMoney(adminCurrency, netEarnings), hint: "+15.7% vs last period", icon: <TrendingUp size={22} />, tone: "green" },
+          { label: "Total Earnings", value: formatMoney(adminCurrency, totalRiderGrossRevenue), hint: "+12.5% vs last period", icon: <DollarSign size={18} />, tone: "yellow" },
+          { label: "Trip Earnings", value: formatMoney(adminCurrency, tripEarnings), hint: "+8.2% vs last period", icon: <TrendingUp size={18} />, tone: "green" },
+          { label: "Incentives", value: formatMoney(adminCurrency, incentives), hint: "+24.1% vs last period", icon: <Award size={18} />, tone: "yellow" },
+          { label: "Commissions", value: formatMoney(adminCurrency, totalRiderCommission), hint: "-3.4% vs last period", icon: <Target size={18} />, tone: "red" },
+          { label: "Net Earnings", value: formatMoney(adminCurrency, netEarnings), hint: "+15.7% vs last period", icon: <TrendingUp size={18} />, tone: "green" },
         ]}
       />
 
@@ -388,12 +388,13 @@ export function RiderEarningsScreen({
             </h3>
             <p>Top 15 Accra earners this period (GHS).</p>
           </div>
-          <button
-            type="button"
-            className="admin-btn-secondary"
-            onClick={() => addToast("View Full History clicked")}
-          >
-            View Full History
+            <button
+              type="button"
+              className="admin-btn-secondary"
+              style={{ fontSize: "0.78rem" }}
+              onClick={() => addToast("View Full History clicked")}
+            >
+              View Full History
           </button>
         </div>
         {topRiders.length === 0 ? (

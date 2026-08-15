@@ -134,6 +134,14 @@ export function RidersScreen({
   const pendingCount = onboardingPipeline.pending ?? Math.max(0, onboardingPipeline.signedUp - onboardingPipeline.verified);
   const verifiedCount = onboardingPipeline.verified;
 
+  const pipelineStages = [
+    { label: "Signed Up", count: onboardingPipeline.signedUp, color: "var(--text-muted)" },
+    { label: "Vehicle Added", count: onboardingPipeline.hasVehicle, color: "#d97706" },
+    { label: "Zone Assigned", count: onboardingPipeline.hasZone, color: "var(--accent-orange)" },
+    { label: "Verified", count: onboardingPipeline.verified, color: "var(--color-success)" },
+    { label: "Active", count: onboardingPipeline.active, color: "#16a34a" }
+  ];
+
   return (
     <div className="exact-admin-screen">
       <AdminPageHeader
@@ -142,7 +150,7 @@ export function RidersScreen({
       />
       <section className="admin-kpi-grid">
         <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon green"><MapPin size={22} /></div>
+          <div className="admin-reference-kpi-icon green"><MapPin size={18} /></div>
           <div>
             <span>Total Riders</span>
             <strong>{ridersTotal}</strong>
@@ -150,7 +158,7 @@ export function RidersScreen({
           </div>
         </article>
         <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon yellow"><MapPin size={22} /></div>
+          <div className="admin-reference-kpi-icon yellow"><MapPin size={18} /></div>
           <div>
             <span>Pending</span>
             <strong>{pendingCount}</strong>
@@ -158,7 +166,7 @@ export function RidersScreen({
           </div>
         </article>
         <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon green"><MapPin size={22} /></div>
+          <div className="admin-reference-kpi-icon green"><MapPin size={18} /></div>
           <div>
             <span>Verified</span>
             <strong>{verifiedCount}</strong>
@@ -166,7 +174,7 @@ export function RidersScreen({
           </div>
         </article>
         <article className="admin-reference-kpi">
-          <div className="admin-reference-kpi-icon yellow"><MapPin size={22} /></div>
+          <div className="admin-reference-kpi-icon yellow"><MapPin size={18} /></div>
           <div>
             <span>Online Now</span>
             <strong>{activeRiders.length}</strong>
@@ -175,26 +183,28 @@ export function RidersScreen({
         </article>
       </section>
 
-      <article className="admin-reference-card" style={{ marginBottom: 16 }}>
+      <article className="admin-reference-card" style={{ marginBottom: 12 }}>
         <div className="admin-reference-cardhead">
           <div><h3>Rider Onboarding Pipeline</h3><p>Registration progress across all stages</p></div>
         </div>
-        <div style={{ display: "flex", gap: 2, padding: "16px 0" }}>
-          {/* Each stage is a horizontal bar segment */}
-          {[
-            { label: "Signed Up", count: onboardingPipeline.signedUp, color: "var(--text-muted)" },
-            { label: "Vehicle Added", count: onboardingPipeline.hasVehicle, color: "#d97706" },
-            { label: "Zone Assigned", count: onboardingPipeline.hasZone, color: "var(--accent-orange)" },
-            { label: "Verified", count: onboardingPipeline.verified, color: "var(--color-success)" },
-            { label: "Active", count: onboardingPipeline.active, color: "#16a34a" }
-          ].map((stage, i) => {
+        <div style={{ display: "flex", gap: 2, padding: "12px 0" }}>
+          {pipelineStages.map((stage, i) => {
             const pct = onboardingPipeline.total > 0 ? (stage.count / onboardingPipeline.total) * 100 : 0;
             return (
               <div key={stage.label} style={{ flex: pct > 0 ? pct : 1, minWidth: pct > 0 ? 60 : 20 }}>
-                <div style={{ height: 32, background: stage.color, borderRadius: i === 0 ? "8px 0 0 8px" : i === 4 ? "0 8px 8px 0" : 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: pct > 0 ? 1 : 0.3 }}>
-                  <span style={{ color: "#fff", fontSize: 12, fontWeight: 600 }}>{stage.count}</span>
+                <div style={{
+                  height: 28,
+                  background: stage.color,
+                  borderRadius: i === 0 ? "8px 0 0 8px" : i === 4 ? "0 8px 8px 0" : 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  opacity: pct > 0 ? 1 : 0.3,
+                  transition: "opacity 0.2s"
+                }}>
+                  <span style={{ color: "#fff", fontSize: 11, fontWeight: 700 }}>{stage.count}</span>
                 </div>
-                <span style={{ fontSize: 11, color: "var(--text-secondary)", display: "block", textAlign: "center", marginTop: 4 }}>{stage.label}</span>
+                <span style={{ fontSize: 10, color: "var(--text-secondary)", display: "block", textAlign: "center", marginTop: 4 }}>{stage.label}</span>
               </div>
             );
           })}
@@ -203,7 +213,7 @@ export function RidersScreen({
 
       <div className="admin-overview-split">
         <div>
-          <article className="admin-reference-card" style={{ marginBottom: 16 }}>
+          <article className="admin-reference-card" style={{ marginBottom: 12 }}>
             <div className="admin-reference-cardhead">
               <div><h3>Live Rider Map</h3><p>{activeRiders.length} riders online</p></div>
             </div>
@@ -225,7 +235,8 @@ export function RidersScreen({
             <div className="admin-reference-cardhead">
               <div><h3>All Riders</h3><p>Sorted by online status</p></div>
               <button
-                className="admin-select-sm"
+                className="admin-btn-secondary"
+                style={{ fontSize: "0.75rem", padding: "6px 12px" }}
                 onClick={() =>
                   downloadCsv(
                     "riders.csv",
@@ -243,14 +254,14 @@ export function RidersScreen({
                   )
                 }
               >
-                <Download size={14} /> Export CSV
+                <Download size={13} /> Export CSV
               </button>
             </div>
             {riders.length === 0 ? (
               <EmptyCard title="No riders yet." body="Rider registrations will appear here." />
             ) : (
               <ul className="admin-reference-list">
-                <li className="admin-reference-list-row" style={{ fontWeight: 600, fontSize: 12, color: "var(--muted, #888)" }}>
+                <li className="admin-reference-list-row" style={{ fontWeight: 600, fontSize: 11, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                   <input
                     type="checkbox"
                     checked={allSelected}
@@ -338,21 +349,8 @@ export function RidersScreen({
       </div>
 
       {selectedIds.size > 0 && (
-        <div
-          className="admin-bulk-bar"
-          style={{
-            position: "sticky",
-            bottom: 0,
-            background: "var(--card-bg, #1a1b1e)",
-            borderTop: "1px solid var(--border)",
-            padding: "12px 16px",
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            zIndex: 10
-          }}
-        >
-          <span style={{ fontSize: 13, color: "var(--muted, #aaa)" }}>
+        <div className="admin-bulk-bar">
+          <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>
             {selectedIds.size} rider{selectedIds.size !== 1 ? "s" : ""} selected
           </span>
           {onBulkApprove && (
@@ -360,6 +358,7 @@ export function RidersScreen({
               type="button"
               className="admin-btn-primary"
               onClick={() => onBulkApprove(Array.from(selectedIds))}
+              style={{ fontSize: "0.78rem" }}
             >
               Approve Selected
             </button>
@@ -369,14 +368,16 @@ export function RidersScreen({
               type="button"
               className="admin-btn-secondary"
               onClick={() => onBulkSuspend(Array.from(selectedIds))}
+              style={{ fontSize: "0.78rem" }}
             >
               Suspend Selected
             </button>
           )}
           <button
             type="button"
-            className="admin-btn-secondary"
+            className="admin-btn-ghost"
             onClick={() => setSelectedIds(new Set())}
+            style={{ fontSize: "0.78rem" }}
           >
             Clear Selection
           </button>

@@ -84,14 +84,14 @@ export function ScheduledNotificationsScreen({
       />
       <AdminKpiRow
         items={[
-          { label: "Total Notifications", value: notifications.length, hint: "All scheduled messages", icon: <Bell size={22} />, tone: "yellow" },
-          { label: "Pending", value: pendingCount, hint: "Awaiting delivery", icon: <Clock size={22} />, tone: "yellow" },
-          { label: "Sent", value: sentCount, hint: "Successfully delivered", icon: <Send size={22} />, tone: "green" },
+          { label: "Total Notifications", value: notifications.length, hint: "All scheduled messages", icon: <Bell size={18} />, tone: "yellow" },
+          { label: "Pending", value: pendingCount, hint: "Awaiting delivery", icon: <Clock size={18} />, tone: "yellow" },
+          { label: "Sent", value: sentCount, hint: "Successfully delivered", icon: <Send size={18} />, tone: "green" },
           {
             label: "Failed",
             value: failedCount,
             hint: lastFinished ? `Worker last ran ${formatDateTime(lastFinished)}` : "Delivery errors",
-            icon: <XCircle size={22} />,
+            icon: <XCircle size={18} />,
             tone: "red",
           },
         ]}
@@ -186,7 +186,7 @@ export function ScheduledNotificationsScreen({
             <button
               type="button"
               className="admin-btn-primary"
-              style={{ alignSelf: "flex-start", opacity: isMutating || !title.trim() || !body.trim() || !scheduledAt ? 0.5 : 1, cursor: isMutating || !title.trim() || !body.trim() || !scheduledAt ? "not-allowed" : "pointer" }}
+              style={{ fontSize: "0.78rem", alignSelf: "flex-start", opacity: isMutating || !title.trim() || !body.trim() || !scheduledAt ? 0.5 : 1, cursor: isMutating || !title.trim() || !body.trim() || !scheduledAt ? "not-allowed" : "pointer" }}
               onClick={handleSchedule}
               disabled={isMutating || !title.trim() || !body.trim() || !scheduledAt}
             >

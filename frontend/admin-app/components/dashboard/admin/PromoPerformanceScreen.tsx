@@ -104,28 +104,28 @@ export function PromoPerformanceScreen({ rides, adminCurrency, dataLoading = fal
             label: "Promo Trips",
             value: promoRides.length,
             hint: `${formatMoney(adminCurrency, totalPromoDiscount)} given`,
-            icon: <Tag size={22} />,
+            icon: <Tag size={18} />,
             tone: "yellow"
           },
           {
             label: "Referral Trips",
             value: referralRides.length,
             hint: `${formatMoney(adminCurrency, totalReferralDiscount)} given`,
-            icon: <Users size={22} />,
+            icon: <Users size={18} />,
             tone: "green"
           },
           {
             label: "Avg Promo Discount",
             value: formatMoney(adminCurrency, avgPromoDiscount),
             hint: "Per discounted trip",
-            icon: <Percent size={22} />,
+            icon: <Percent size={18} />,
             tone: "yellow"
           },
           {
             label: "Total Est. Savings",
             value: formatMoney(adminCurrency, totalPromoDiscount + totalReferralDiscount),
             hint: "Promo + referral",
-            icon: <TrendingUp size={22} />,
+            icon: <TrendingUp size={18} />,
             tone: "green"
           }
         ]}
@@ -265,7 +265,7 @@ export function PromoPerformanceScreen({ rides, adminCurrency, dataLoading = fal
                 {topDiscounted.map((r) => (
                   <tr key={r.id}>
                     <td>
-                      <code style={{ fontSize: 11 }}>{r.id.slice(-8)}</code>
+                      <code style={{ fontSize: 10 }}>{r.id.slice(-8)}</code>
                     </td>
                     <td>
                       <small>{r.passenger.user.fullName}</small>
