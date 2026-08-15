@@ -129,7 +129,7 @@ const screenMeta: Record<AdminConsoleScreen, AdminScreenMeta> = {
   riderSuspensions: { eyebrow: "", title: "Banned", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/verification", quickActionNote: "" },
   passengers: { eyebrow: "", title: "Passengers", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
   payments: { eyebrow: "", title: "Payments", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/reports-analytics", quickActionNote: "" },
-  pricing: { eyebrow: "", title: "Pricing", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/zones", quickActionNote: "" },
+  pricing: { eyebrow: "", title: "Pricing", description: "Configure fares, rates, and commissions", searchLabel: "", quickActionLabel: "", quickActionHref: "/pricing", quickActionNote: "" },
   promotions: { eyebrow: "", title: "Promotions", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
   wallet: { eyebrow: "", title: "Wallet", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
   zones: { eyebrow: "", title: "Zones", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
@@ -299,7 +299,7 @@ export function AdminShell({
       },
       {
         label: "Pricing",
-        href: "/zones",
+        href: "/pricing",
         icon: Tag,
         screen: "pricing",
         group: "home",

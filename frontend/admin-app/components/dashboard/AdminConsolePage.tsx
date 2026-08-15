@@ -101,6 +101,10 @@ const ZoneManagementScreen = dynamic(
   () => import("./admin/ZoneManagementScreen").then((m) => m.ZoneManagementScreen),
   { loading: screenFallback }
 );
+const PricingManagementScreen = dynamic(
+  () => import("./admin/PricingManagementScreen").then((m) => m.PricingManagementScreen),
+  { loading: screenFallback }
+);
 const SupportTicketsScreen = dynamic(
   () => import("./admin/SupportTicketsScreen").then((m) => m.SupportTicketsScreen),
   { loading: screenFallback }
@@ -143,6 +147,10 @@ const SettingsManagementScreen = dynamic(
 );
 const RiderVerificationCenter = dynamic(
   () => import("./admin/RiderVerificationCenter").then((m) => m.RiderVerificationCenter),
+  { loading: screenFallback }
+);
+const PassengersManagementScreen = dynamic(
+  () => import("./admin/PassengersManagementScreen").then((m) => m.PassengersManagementScreen),
   { loading: screenFallback }
 );
 const AccountSecurityScreen = dynamic(
@@ -451,30 +459,15 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
 
       case "passengers":
         return (
-          <UsersManagementScreen
-            managedUsers={data.managedUsers}
-            searchedManagedUsers={data.searchedManagedUsers}
-            blockedUsers={data.blockedUsers}
-            userLocationSnapshot={data.userLocationSnapshot}
-            userLocationMax={data.userLocationMax}
-            recentManagedUsers={data.recentManagedUsers}
-            adminSearchTerm={data.adminSearchTerm}
-            onSearchChange={data.setAdminSearchTerm}
-            userTypeView={data.userTypeView}
-            onTypeViewChange={data.setUserTypeView}
-            passengersCount={data.userStats?.passengers.total ?? data.passengersTotal}
-            ridersCount={data.userStats?.riders.total ?? data.ridersTotal}
-            passengerPendingCount={data.userStats?.passengers.pending}
-            passengerVerifiedCount={data.userStats?.passengers.verified}
-            riderPendingCount={data.userStats?.riders.pending}
-            riderVerifiedCount={data.userStats?.riders.verified}
-            totalUsersCount={data.userStats?.totals.users}
-            dataLoading={data.dataLoading || data.passengersPending || data.userStatsPending}
-            page={data.passengersPage}
-            totalItems={data.passengersTotal}
-            pageSize={data.listPageSize}
-            onPageChange={data.setPassengersPage}
-            onDeleteUser={(userId) => data.deleteUserMutation.mutate(userId)}
+          <PassengersManagementScreen
+            passengers={data.passengers}
+            passengersTotal={data.userStats?.passengers.total ?? data.passengersTotal}
+            rides={data.rides}
+            userStats={data.userStats}
+            passengersPage={data.passengersPage}
+            listPageSize={data.listPageSize}
+            onPassengersPageChange={data.setPassengersPage}
+            dataLoading={data.dataLoading || data.passengersPending}
           />
         );
 
@@ -590,6 +583,19 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             ridesPerZone={data.ridesPerZone}
             adminCurrency={data.adminCurrency}
             onZoneUpdate={(zoneId, updates) => data.zoneUpdateMutation.mutate({ zoneId, updates })}
+            isMutating={data.zoneUpdateMutation.isPending}
+            dataLoading={data.zonesPending}
+          />
+        );
+
+      case "pricing":
+        return (
+          <PricingManagementScreen
+            zones={data.zones}
+            ridersPerZone={data.ridersPerZone}
+            ridesPerZone={data.ridesPerZone}
+            adminCurrency={data.adminCurrency}
+            onSavePricing={(zoneId, updates) => data.zoneUpdateMutation.mutate({ zoneId, updates })}
             isMutating={data.zoneUpdateMutation.isPending}
             dataLoading={data.zonesPending}
           />
