@@ -28,7 +28,23 @@ import {
   Moon,
   X,
   Zap,
-  RotateCcw
+  RotateCcw,
+  MessageSquare,
+  AlertTriangle,
+  Heart,
+  Mail,
+  Star,
+  Award,
+  Users2,
+  Shield,
+  Receipt,
+  DollarSign,
+  ArrowUpDown,
+  Ticket,
+  Megaphone,
+  LifeBuoy,
+  FileCheck,
+  ShieldCheck
 } from "lucide-react";
 import { ImmersivePage } from "@/components/layout/immersive-page";
 import { BrandMark } from "@/components/brand/BrandMark";
@@ -72,7 +88,14 @@ export type AdminShellProps = {
 };
 
 const navGroups = [
-  { label: "", key: "home" as const }
+  { label: "Overview", key: "overview" as const },
+  { label: "Operations", key: "operations" as const },
+  { label: "Finance", key: "finance" as const },
+  { label: "Growth", key: "growth" as const },
+  { label: "Customer", key: "customer" as const },
+  { label: "Safety", key: "safety" as const },
+  { label: "Analytics", key: "analytics" as const },
+  { label: "Administration", key: "administration" as const }
 ];
 
 const screenPermissions: Partial<Record<AdminConsoleScreen, string>> = {
@@ -92,15 +115,22 @@ const screenPermissions: Partial<Record<AdminConsoleScreen, string>> = {
   riderSuspensions: "riders.suspensions",
   passengers: "passengers.view",
   payments: "finance.view",
+  revenue: "finance.view",
+  transactions: "finance.view",
+  payouts: "finance.view",
   refunds: "finance.view",
   pricing: "zones.view",
   dynamicPricing: "zones.view",
   promotions: "promotions.view",
   promoManagement: "promotions.view",
+  referrals: "promotions.view",
+  goPoints: "promotions.view",
   wallet: "finance.view",
   zones: "zones.view",
   supportTickets: "support.view",
+  messageTemplates: "support.view",
   sosIncidents: "support.view",
+  safetyCenter: "support.view",
   escalationRules: "support.view",
   analytics: "reports.view",
   notifications: "notifications.view",
@@ -114,50 +144,59 @@ const screenPermissions: Partial<Record<AdminConsoleScreen, string>> = {
   integrations: "settings.view",
   taxesCompliance: "settings.view",
   settingsNotifications: "settings.view",
-  admins: "admins.view"
+  admins: "admins.view",
+  rolesPermissions: "admins.view"
 };
 
 const screenMeta: Record<AdminConsoleScreen, AdminScreenMeta> = {
-  dashboard: { eyebrow: "", title: "Overview", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/requests", quickActionNote: "" },
-  liveOperations: { eyebrow: "", title: "Live Operations", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/requests", quickActionNote: "" },
-  rides: { eyebrow: "", title: "Rides", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders", quickActionNote: "" },
-  deliveries: { eyebrow: "", title: "Deliveries", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/requests", quickActionNote: "" },
-  riders: { eyebrow: "", title: "Riders", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
-  riderVerification: { eyebrow: "", title: "Verify Riders", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/documents", quickActionNote: "" },
-  riderDocuments: { eyebrow: "", title: "Documents", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/verification", quickActionNote: "" },
-  riderPerformance: { eyebrow: "", title: "Performance", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/earnings", quickActionNote: "" },
-  riderEarnings: { eyebrow: "", title: "Earnings", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/payouts", quickActionNote: "" },
-  riderWallet: { eyebrow: "", title: "Wallet", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/payouts", quickActionNote: "" },
-  riderPayouts: { eyebrow: "", title: "Payouts", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
-  riderComplaints: { eyebrow: "", title: "Cases", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/reports-analytics", quickActionNote: "" },
-  riderActivity: { eyebrow: "", title: "Live Monitoring", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders", quickActionNote: "" },
-  riderSuspensions: { eyebrow: "", title: "Banned", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/verification", quickActionNote: "" },
-  passengers: { eyebrow: "", title: "Passengers", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
-  payments: { eyebrow: "", title: "Payments", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/reports-analytics", quickActionNote: "" },
-  refunds: { eyebrow: "", title: "Refund Management", description: "Review and process passenger refund requests.", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
-  pricing: { eyebrow: "", title: "Pricing", description: "Configure fares, rates, and commissions", searchLabel: "", quickActionLabel: "", quickActionHref: "/pricing", quickActionNote: "" },
-  dynamicPricing: { eyebrow: "", title: "Dynamic Pricing", description: "Demand-based surge pricing rules", searchLabel: "", quickActionLabel: "", quickActionHref: "/dynamic-pricing", quickActionNote: "" },
-  promotions: { eyebrow: "", title: "Promotions", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
-  promoManagement: { eyebrow: "", title: "Promotions", description: "Manage promo codes and campaigns", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
-  wallet: { eyebrow: "", title: "Wallet", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
-  zones: { eyebrow: "", title: "Zones", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
-  supportTickets: { eyebrow: "", title: "Support", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/complaints", quickActionNote: "" },
-  sosIncidents: { eyebrow: "", title: "SOS", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/support-tickets", quickActionNote: "" },
-  escalationRules: { eyebrow: "", title: "Escalation", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/support-tickets", quickActionNote: "" },
-  analytics: { eyebrow: "", title: "Analytics", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/reports", quickActionNote: "" },
-  notifications: { eyebrow: "", title: "Alerts", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
-  reports: { eyebrow: "", title: "Reports", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
-  auditLogs: { eyebrow: "", title: "Audit Logs", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/admins", quickActionNote: "" },
-  settings: { eyebrow: "", title: "Settings", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/admins", quickActionNote: "" },
-  companyProfile: { eyebrow: "", title: "Company Profile", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
-  accountSecurity: { eyebrow: "", title: "Account & Security", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
-  notificationSettings: { eyebrow: "", title: "Notifications", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/notifications", quickActionNote: "" },
-  paymentMethods: { eyebrow: "", title: "Payment Methods", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
-  integrations: { eyebrow: "", title: "Integrations", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
-  taxesCompliance: { eyebrow: "", title: "Taxes & Compliance", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
-  settingsNotifications: { eyebrow: "", title: "Alert Settings", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
-  admins: { eyebrow: "", title: "Staff", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
-  ratings: { eyebrow: "", title: "Ratings", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" }
+  dashboard: { eyebrow: "Overview", title: "Dashboard", description: "Platform overview and KPIs", searchLabel: "", quickActionLabel: "", quickActionHref: "/requests", quickActionNote: "" },
+  liveOperations: { eyebrow: "Overview", title: "Live Operations", description: "Real-time map and activity feed", searchLabel: "", quickActionLabel: "", quickActionHref: "/requests", quickActionNote: "" },
+  rides: { eyebrow: "Operations", title: "Rides", description: "Manage ride requests and trips", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders", quickActionNote: "" },
+  deliveries: { eyebrow: "Operations", title: "Deliveries", description: "Manage delivery orders", searchLabel: "", quickActionLabel: "", quickActionHref: "/requests", quickActionNote: "" },
+  riders: { eyebrow: "Operations", title: "Riders", description: "Manage rider accounts and performance", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
+  riderVerification: { eyebrow: "Operations", title: "Verify Riders", description: "Review rider verification submissions", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/documents", quickActionNote: "" },
+  riderDocuments: { eyebrow: "Operations", title: "Documents", description: "Rider document management", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/verification", quickActionNote: "" },
+  riderPerformance: { eyebrow: "Operations", title: "Performance", description: "Rider performance metrics", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/earnings", quickActionNote: "" },
+  riderEarnings: { eyebrow: "Operations", title: "Earnings", description: "Rider earnings breakdown", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/payouts", quickActionNote: "" },
+  riderWallet: { eyebrow: "Operations", title: "Wallet", description: "Rider wallet balances", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/payouts", quickActionNote: "" },
+  riderPayouts: { eyebrow: "Operations", title: "Payouts", description: "Rider payout requests", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
+  riderComplaints: { eyebrow: "Operations", title: "Cases", description: "Rider complaints and cases", searchLabel: "", quickActionLabel: "", quickActionHref: "/reports-analytics", quickActionNote: "" },
+  riderActivity: { eyebrow: "Operations", title: "Live Monitoring", description: "Track rider locations in real-time", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders", quickActionNote: "" },
+  riderSuspensions: { eyebrow: "Operations", title: "Banned", description: "Suspended rider accounts", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/verification", quickActionNote: "" },
+  passengers: { eyebrow: "Operations", title: "Passengers", description: "Manage passenger accounts", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
+  payments: { eyebrow: "Finance", title: "Payments", description: "Payment overview", searchLabel: "", quickActionLabel: "", quickActionHref: "/reports-analytics", quickActionNote: "" },
+  revenue: { eyebrow: "Finance", title: "Revenue", description: "Revenue dashboard and financial overview", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
+  transactions: { eyebrow: "Finance", title: "Transactions", description: "All wallet transactions and payment history", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
+  payouts: { eyebrow: "Finance", title: "Payouts", description: "Rider payout requests and processing", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
+  refunds: { eyebrow: "Finance", title: "Refunds", description: "Review and process passenger refund requests", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
+  pricing: { eyebrow: "Finance", title: "Pricing", description: "Configure fares, rates, and commissions", searchLabel: "", quickActionLabel: "", quickActionHref: "/pricing", quickActionNote: "" },
+  dynamicPricing: { eyebrow: "Finance", title: "Dynamic Pricing", description: "Demand-based surge pricing rules", searchLabel: "", quickActionLabel: "", quickActionHref: "/dynamic-pricing", quickActionNote: "" },
+  promotions: { eyebrow: "Growth", title: "Promotions", description: "Promo codes and campaigns", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
+  promoManagement: { eyebrow: "Growth", title: "Promotions", description: "Manage promo codes and campaigns", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
+  referrals: { eyebrow: "Growth", title: "Referrals", description: "Referral program analytics and management", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
+  goPoints: { eyebrow: "Growth", title: "GoPoints", description: "Loyalty points program management", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
+  wallet: { eyebrow: "Finance", title: "Wallet", description: "Platform wallet balances", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
+  zones: { eyebrow: "Finance", title: "Zones", description: "Service zone management", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
+  supportTickets: { eyebrow: "Customer", title: "Support", description: "Customer support tickets", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/complaints", quickActionNote: "" },
+  messageTemplates: { eyebrow: "Customer", title: "Message Templates", description: "Reusable notification and message templates", searchLabel: "", quickActionLabel: "", quickActionHref: "/notifications", quickActionNote: "" },
+  sosIncidents: { eyebrow: "Safety", title: "Incidents", description: "SOS incident reports and management", searchLabel: "", quickActionLabel: "", quickActionHref: "/support-tickets", quickActionNote: "" },
+  safetyCenter: { eyebrow: "Safety", title: "Safety Center", description: "Safety overview, escalation rules, and incident metrics", searchLabel: "", quickActionLabel: "", quickActionHref: "/support-tickets", quickActionNote: "" },
+  escalationRules: { eyebrow: "Safety", title: "Escalation", description: "Escalation rule configuration", searchLabel: "", quickActionLabel: "", quickActionHref: "/support-tickets", quickActionNote: "" },
+  analytics: { eyebrow: "Analytics", title: "Analytics", description: "Platform analytics and insights", searchLabel: "", quickActionLabel: "", quickActionHref: "/reports", quickActionNote: "" },
+  notifications: { eyebrow: "Customer", title: "Notifications", description: "Scheduled broadcasts and alerts", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
+  reports: { eyebrow: "Analytics", title: "Reports", description: "Generated reports and exports", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
+  auditLogs: { eyebrow: "Administration", title: "Audit Logs", description: "Admin activity audit trail", searchLabel: "", quickActionLabel: "", quickActionHref: "/admins", quickActionNote: "" },
+  settings: { eyebrow: "Administration", title: "Settings", description: "Platform configuration", searchLabel: "", quickActionLabel: "", quickActionHref: "/admins", quickActionNote: "" },
+  companyProfile: { eyebrow: "Administration", title: "Company Profile", description: "Company information", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
+  accountSecurity: { eyebrow: "Administration", title: "Account & Security", description: "Security settings", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
+  notificationSettings: { eyebrow: "Administration", title: "Notifications", description: "Alert configuration", searchLabel: "", quickActionLabel: "", quickActionHref: "/notifications", quickActionNote: "" },
+  paymentMethods: { eyebrow: "Administration", title: "Payment Methods", description: "Payment gateway configuration", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
+  integrations: { eyebrow: "Administration", title: "Integrations", description: "Third-party integrations", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
+  taxesCompliance: { eyebrow: "Administration", title: "Taxes & Compliance", description: "Tax configuration", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
+  settingsNotifications: { eyebrow: "Administration", title: "Alert Settings", description: "Notification alert configuration", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
+  admins: { eyebrow: "Administration", title: "Admin Users", description: "Manage admin accounts", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
+  rolesPermissions: { eyebrow: "Administration", title: "Roles & Permissions", description: "Manage admin roles and permission matrix", searchLabel: "", quickActionLabel: "", quickActionHref: "/admins", quickActionNote: "" },
+  ratings: { eyebrow: "Operations", title: "Ratings", description: "Passenger and rider ratings", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" }
 };
 
 export function AdminShell({
@@ -225,12 +264,13 @@ export function AdminShell({
 
   const navItems: AdminNavItem[] = useMemo(() => {
     const allItems: AdminNavItem[] = [
+      // ── Overview ──
       {
         label: "Dashboard",
         href: "/",
         icon: LayoutDashboard,
         screen: "dashboard",
-        group: "home",
+        group: "overview",
         hint: "",
         badge: `${badgeData.activeTripsCount}`
       },
@@ -239,16 +279,17 @@ export function AdminShell({
         href: "/live-operations",
         icon: Activity,
         screen: "liveOperations",
-        group: "home",
+        group: "overview",
         hint: "",
         badge: `${badgeData.activeTripsCount}`
       },
+      // ── Operations ──
       {
         label: "Rides",
         href: "/requests",
         icon: Bike,
         screen: "rides",
-        group: "home",
+        group: "operations",
         hint: "",
         badge: `${badgeData.completedTripsCount}`
       },
@@ -257,7 +298,7 @@ export function AdminShell({
         href: "/deliveries",
         icon: Package,
         screen: "deliveries",
-        group: "home",
+        group: "operations",
         hint: "",
         badge: `${badgeData.deliveriesCount}`
       },
@@ -266,22 +307,16 @@ export function AdminShell({
         href: "/riders",
         icon: User,
         screen: "riders",
-        group: "home",
+        group: "operations",
         hint: "",
         badge: `${badgeData.activeRidersCount}`,
         children: [
           { label: "All Riders", href: "/riders", screen: "riders", badge: `${badgeData.ridersCount}` },
-          {
-            label: "Verify",
-            href: "/riders/verification",
-            screen: "riderVerification",
-            badge: `${badgeData.riderVerificationPending + badgeData.riderVerificationUnderReview}`
-          },
+          { label: "Verify", href: "/riders/verification", screen: "riderVerification", badge: `${badgeData.riderVerificationPending + badgeData.riderVerificationUnderReview}` },
           { label: "Documents", href: "/riders/documents", screen: "riderDocuments", badge: `${badgeData.riderDocumentMissing}` },
           { label: "Stats", href: "/riders/performance", screen: "riderPerformance", badge: `${badgeData.completedTripsCount}` },
           { label: "Earnings", href: "/riders/earnings", screen: "riderEarnings", badge: `${badgeData.topRiderPerformanceEarningsCount}` },
           { label: "Wallet", href: "/riders/wallet", screen: "riderWallet", badge: `${badgeData.riderWalletTransactionsCount}` },
-          { label: "Payouts", href: "/riders/payouts", screen: "riderPayouts", badge: `${badgeData.riderPayoutRequestedCount}` },
           { label: "Cases", href: "/riders/complaints", screen: "riderComplaints", badge: `${badgeData.riderIncidentsCount}` },
           { label: "Live Monitoring", href: "/riders/activity-tracking", screen: "riderActivity", badge: `${badgeData.ridersWithCoordsCount}` },
           { label: "Banned", href: "/riders/suspensions", screen: "riderSuspensions", badge: `${badgeData.suspendedRidersCount}` }
@@ -292,99 +327,177 @@ export function AdminShell({
         href: "/users",
         icon: Users,
         screen: "passengers",
-        group: "home",
+        group: "operations",
         hint: "",
         badge: `${badgeData.passengersCount}`
       },
+      // ── Finance ──
       {
-        label: "Payments",
+        label: "Revenue",
         href: "/finance",
-        icon: CreditCard,
-        screen: "payments",
-        group: "home",
+        icon: DollarSign,
+        screen: "revenue",
+        group: "finance",
         hint: "",
-        badge: `${badgeData.pendingPayoutRequestsCount}`
+        badge: `${badgeData.pendingPayoutRequestsCount}`,
+        children: [
+          { label: "Overview", href: "/finance", screen: "revenue" },
+          { label: "Pricing", href: "/pricing", screen: "pricing", badge: `${badgeData.zonesActiveCount}` },
+          { label: "Dynamic Pricing", href: "/dynamic-pricing", screen: "dynamicPricing" }
+        ]
+      },
+      {
+        label: "Transactions",
+        href: "/transactions",
+        icon: ArrowUpDown,
+        screen: "transactions",
+        group: "finance",
+        hint: ""
+      },
+      {
+        label: "Payouts",
+        href: "/payouts",
+        icon: Receipt,
+        screen: "payouts",
+        group: "finance",
+        hint: "",
+        badge: `${badgeData.riderPayoutRequestedCount}`
       },
       {
         label: "Refunds",
         href: "/refunds",
         icon: RotateCcw,
         screen: "refunds",
-        group: "home",
+        group: "finance",
         hint: "",
         badge: `${badgeData.pendingPayoutRequestsCount}`
-      },
-      {
-        label: "Pricing",
-        href: "/pricing",
-        icon: Tag,
-        screen: "pricing",
-        group: "home",
-        hint: "",
-        badge: `${badgeData.zonesActiveCount}`
-      },
-      {
-        label: "Dynamic Pricing",
-        href: "/dynamic-pricing",
-        icon: Zap,
-        screen: "dynamicPricing",
-        group: "home",
-        hint: "",
-        badge: ""
-      },
-      {
-        label: "Promotions",
-        href: "/promotions",
-        icon: Tag,
-        screen: "promotions",
-        group: "home",
-        hint: "",
-        badge: `${badgeData.promoAdjustedTripsCount}`
       },
       {
         label: "Wallet",
         href: "/wallet",
         icon: Wallet,
         screen: "wallet",
-        group: "home",
-        hint: "",
-        badge: ""
+        group: "finance",
+        hint: ""
       },
+      // ── Growth ──
+      {
+        label: "Promotions",
+        href: "/promotions",
+        icon: Tag,
+        screen: "promotions",
+        group: "growth",
+        hint: "",
+        badge: `${badgeData.promoAdjustedTripsCount}`
+      },
+      {
+        label: "Referrals",
+        href: "/referrals",
+        icon: Users2,
+        screen: "referrals",
+        group: "growth",
+        hint: ""
+      },
+      {
+        label: "GoPoints",
+        href: "/go-points",
+        icon: Award,
+        screen: "goPoints",
+        group: "growth",
+        hint: ""
+      },
+      // ── Customer ──
       {
         label: "Support",
         href: "/support-tickets",
         icon: Headphones,
         screen: "supportTickets",
-        group: "home",
+        group: "customer",
         hint: "",
         badge: `${badgeData.openSupportTicketsCount}`
       },
+      {
+        label: "Notifications",
+        href: "/notifications",
+        icon: Megaphone,
+        screen: "notifications",
+        group: "customer",
+        hint: ""
+      },
+      {
+        label: "Message Templates",
+        href: "/message-templates",
+        icon: Mail,
+        screen: "messageTemplates",
+        group: "customer",
+        hint: ""
+      },
+      // ── Safety ──
+      {
+        label: "Incidents",
+        href: "/incidents",
+        icon: AlertTriangle,
+        screen: "sosIncidents",
+        group: "safety",
+        hint: ""
+      },
+      {
+        label: "Safety Center",
+        href: "/safety-center",
+        icon: ShieldCheck,
+        screen: "safetyCenter",
+        group: "safety",
+        hint: ""
+      },
+      // ── Analytics ──
       {
         label: "Analytics",
         href: "/analytics",
         icon: BarChart3,
         screen: "analytics",
-        group: "home",
-        hint: "",
-        badge: ""
+        group: "analytics",
+        hint: ""
       },
       {
         label: "Reports",
         href: "/reports",
         icon: FileText,
         screen: "reports",
-        group: "home",
-        hint: "",
-        badge: ""
+        group: "analytics",
+        hint: ""
+      },
+      // ── Administration ──
+      {
+        label: "Admin Users",
+        href: "/admins",
+        icon: Shield,
+        screen: "admins",
+        group: "administration",
+        hint: ""
+      },
+      {
+        label: "Roles & Permissions",
+        href: "/roles-permissions",
+        icon: ShieldCheck,
+        screen: "rolesPermissions",
+        group: "administration",
+        hint: ""
+      },
+      {
+        label: "Audit Logs",
+        href: "/audit-logs",
+        icon: ClipboardList,
+        screen: "auditLogs",
+        group: "administration",
+        hint: ""
       },
       {
         label: "Settings",
         href: "/settings",
         icon: Settings,
         screen: "settings",
-        group: "home",
+        group: "administration",
         hint: "",
-        badge: "",
         children: [
           { label: "General", href: "/settings", screen: "settings" },
           { label: "Company Profile", href: "/settings/company", screen: "companyProfile" },
@@ -394,15 +507,6 @@ export function AdminShell({
           { label: "Taxes", href: "/taxes-compliance", screen: "taxesCompliance" },
           { label: "Integrations", href: "/integrations", screen: "integrations" }
         ]
-      },
-      {
-        label: "Audit Logs",
-        href: "/audit-logs",
-        icon: ClipboardList,
-        screen: "auditLogs",
-        group: "home",
-        hint: "",
-        badge: ""
       }
     ];
 

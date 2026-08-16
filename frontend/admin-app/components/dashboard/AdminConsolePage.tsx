@@ -217,6 +217,30 @@ const EscalationRulesScreen = dynamic(
   () => import("./admin/EscalationRulesScreen"),
   { loading: screenFallback }
 );
+const TransactionsScreen = dynamic(
+  () => import("./admin/TransactionsScreen").then((m) => m.TransactionsScreen),
+  { loading: screenFallback }
+);
+const ReferralsScreen = dynamic(
+  () => import("./admin/ReferralsScreen").then((m) => m.ReferralsScreen),
+  { loading: screenFallback }
+);
+const GoPointsScreen = dynamic(
+  () => import("./admin/GoPointsScreen").then((m) => m.GoPointsScreen),
+  { loading: screenFallback }
+);
+const MessageTemplatesScreen = dynamic(
+  () => import("./admin/MessageTemplatesScreen").then((m) => m.MessageTemplatesScreen),
+  { loading: screenFallback }
+);
+const SafetyCenterDashboard = dynamic(
+  () => import("./admin/SafetyCenterDashboard").then((m) => m.SafetyCenterDashboard),
+  { loading: screenFallback }
+);
+const RolesPermissionsScreen = dynamic(
+  () => import("./admin/RolesPermissionsScreen").then((m) => m.RolesPermissionsScreen),
+  { loading: screenFallback }
+);
 
 export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
   const { session, status, signOut: authSignOut } = useAuth();
@@ -498,20 +522,6 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             listPageSize={data.listPageSize}
             onPassengersPageChange={data.setPassengersPage}
             dataLoading={data.dataLoading || data.passengersPending}
-          />
-        );
-
-      case "payments":
-        return (
-          <FinanceDashboardScreen
-            financeSummary={data.financeSummary ?? null}
-            walletTransactions={data.walletTransactions}
-            rides={data.rides}
-            deliveries={data.deliveries}
-            pendingPayoutValue={data.pendingPayoutValue}
-            adminCurrency={data.adminCurrency}
-            dataLoading={data.dataLoading}
-            onServerExport={(entity) => void data.downloadServerCsv(entity)}
           />
         );
 
@@ -848,6 +858,99 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             isPromoting={data.promotePassengerMutation.isPending}
             isDeleting={data.deleteAdminMutation.isPending}
             dataLoading={data.adminAccountsPending || data.passengersPending}
+          />
+        );
+
+      case "revenue":
+        return (
+          <FinanceDashboardScreen
+            financeSummary={data.financeSummary ?? null}
+            walletTransactions={data.walletTransactions}
+            rides={data.rides}
+            deliveries={data.deliveries}
+            pendingPayoutValue={data.pendingPayoutValue}
+            adminCurrency={data.adminCurrency}
+            dataLoading={data.dataLoading}
+            onServerExport={(entity) => void data.downloadServerCsv(entity)}
+          />
+        );
+
+      case "transactions":
+        return (
+          <TransactionsScreen
+            walletTransactions={data.walletTransactions}
+            rides={data.rides}
+            deliveries={data.deliveries}
+            adminCurrency={data.adminCurrency}
+            dataLoading={data.dataLoading}
+          />
+        );
+
+      case "payouts":
+        return (
+          <RiderPayoutDashboardScreen
+            payoutRequests={data.payoutRequests}
+            payoutRequestsTotal={data.payoutRequestsTotal}
+            payoutStatusFilter=""
+            onPayoutStatusChange={() => {}}
+            payoutPage={0}
+            payoutTotal={data.payoutRequestsTotal}
+            listPageSize={20}
+            onPayoutPageChange={() => {}}
+            pendingPayoutValue={data.pendingPayoutValue}
+            payoutOutflow={data.payoutOutflow}
+            totalRiderPayoutValue={data.totalRiderPayoutValue}
+            failedRiderPayouts={data.failedRiderPayouts}
+            onPayoutAction={(id, action, reason) => data.payoutReviewMutation.mutate({ payoutRequestId: id, action, rejectionReason: reason })}
+            onServerExport={(entity) => void data.downloadServerCsv(entity)}
+            isMutating={data.payoutReviewMutation.isPending}
+            adminCurrency={data.adminCurrency}
+            dataLoading={data.dataLoading}
+          />
+        );
+
+      case "referrals":
+        return (
+          <ReferralsScreen
+            referralSpend={data.referralSpend}
+            promoCodes={data.promoCodes}
+            promoAdjustedTrips={data.promoAdjustedTrips}
+            adminCurrency={data.adminCurrency}
+            dataLoading={data.dataLoading}
+          />
+        );
+
+      case "goPoints":
+        return (
+          <GoPointsScreen
+            adminCurrency={data.adminCurrency}
+            dataLoading={data.dataLoading}
+          />
+        );
+
+      case "messageTemplates":
+        return (
+          <MessageTemplatesScreen
+            dataLoading={data.dataLoading}
+          />
+        );
+
+      case "safetyCenter":
+        return (
+          <SafetyCenterDashboard
+            incidents={data.incidents}
+            escalationRules={data.escalationRules}
+            riders={data.riders}
+            dataLoading={data.dataLoading}
+          />
+        );
+
+      case "rolesPermissions":
+        return (
+          <RolesPermissionsScreen
+            adminAccounts={data.adminAccounts}
+            adminRoleEntries={data.adminRoleEntries}
+            dataLoading={data.adminAccountsPending}
           />
         );
 

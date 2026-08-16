@@ -2218,6 +2218,32 @@ export function useAdminData(
     refunds: [
       { label: "Total refunds", value: `${walletTransactions.filter((t) => t.type?.toUpperCase() === "REFUND").length}` },
       { label: "Refund volume", value: `${adminCurrency} ${walletTransactions.filter((t) => t.type?.toUpperCase() === "REFUND").reduce((s, t) => s + (typeof t.amount === "number" ? t.amount : parseFloat(String(t.amount)) || 0), 0).toFixed(0)}` }
+    ],
+    revenue: [
+      { label: "Revenue", value: `${adminCurrency} ${totalRevenue.toFixed(0)}` },
+      { label: "Commission", value: `${adminCurrency} ${totalCommission.toFixed(0)}` }
+    ],
+    transactions: [
+      { label: "Transactions", value: `${walletTransactions.length}` },
+      { label: "Volume", value: `${adminCurrency} ${walletTransactions.reduce((sum, tx) => sum + (tx.direction === "credit" ? Math.abs(Number(tx.amount)) : 0), 0).toFixed(0)}` }
+    ],
+    payouts: [
+      { label: "Pending", value: `${pendingPayoutRequests.length}` },
+      { label: "Paid", value: `${paidPayoutRequests.length}` }
+    ],
+    referrals: [
+      { label: "Referral spend", value: `${adminCurrency} ${referralSpend.toFixed(0)}` },
+      { label: "Promo rides", value: `${promoAdjustedTrips.length}` }
+    ],
+    goPoints: [],
+    messageTemplates: [],
+    safetyCenter: [
+      { label: "Open incidents", value: `${openSosCount}` },
+      { label: "Escalation rules", value: `${escalationRules.length}` }
+    ],
+    rolesPermissions: [
+      { label: "Admins", value: `${adminAccounts.length}` },
+      { label: "Roles", value: `${adminRoleEntries.length}` }
     ]
   }), [
     opsSummary, liveSnapshot, liveOnlineCount, activeRides, activeRiders, adminCurrency, totalDashboardRevenue,
