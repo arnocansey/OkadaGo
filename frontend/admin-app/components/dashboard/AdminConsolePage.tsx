@@ -137,6 +137,10 @@ const SosIncidentsScreen = dynamic(
   () => import("./admin/SosIncidentsScreen").then((m) => m.SosIncidentsScreen),
   { loading: screenFallback }
 );
+const SafetyIncidentCenter = dynamic(
+  () => import("./admin/SafetyIncidentCenter").then((m) => m.SafetyIncidentCenter),
+  { loading: screenFallback }
+);
 const ScheduledNotificationsScreen = dynamic(
   () => import("./admin/ScheduledNotificationsScreen").then((m) => m.ScheduledNotificationsScreen),
   { loading: screenFallback }
@@ -615,10 +619,14 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
 
       case "sosIncidents":
         return (
-          <SosIncidentsScreen
+          <SafetyIncidentCenter
             incidents={data.incidents}
+            incidentsTotal={data.incidentsTotal}
+            adminAccounts={data.adminAccounts}
+            rides={data.rides}
             onIncidentAction={(id, status) => data.incidentReviewMutation.mutate({ incidentId: id, status })}
-            isMutating={data.incidentReviewMutation.isPending}
+            onIncidentAssign={(id, assignedToId) => data.incidentAssignMutation.mutate({ incidentId: id, assignedToId })}
+            isMutating={data.incidentReviewMutation.isPending || data.incidentAssignMutation.isPending}
             dataLoading={data.dataLoading}
             page={data.incidentsPage}
             totalItems={data.incidentsTotal}

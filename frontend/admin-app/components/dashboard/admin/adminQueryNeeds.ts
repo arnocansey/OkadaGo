@@ -55,7 +55,7 @@ const SCREEN_EXTRA: Record<AdminConsoleScreen, AdminQueryNeed[]> = {
   wallet: ["walletTx", "payout"],
   zones: ["zones", "riders", "rides"],
   supportTickets: ["supportTickets"],
-  sosIncidents: ["incidents", "liveStream"],
+  sosIncidents: ["incidents", "liveStream", "adminAccounts"],
   analytics: ["financeSummary", "rides", "deliveries", "riders"],
   notifications: ["scheduledBroadcasts", "opsJobStatus"],
   reports: ["financeSummary"],
