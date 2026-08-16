@@ -137,6 +137,10 @@ const SosIncidentsScreen = dynamic(
   () => import("./admin/SosIncidentsScreen").then((m) => m.SosIncidentsScreen),
   { loading: screenFallback }
 );
+const AnalyticsDashboardScreen = dynamic(
+  () => import("./admin/AnalyticsDashboardScreen").then((m) => m.AnalyticsDashboardScreen),
+  { loading: screenFallback }
+);
 const SafetyIncidentCenter = dynamic(
   () => import("./admin/SafetyIncidentCenter").then((m) => m.SafetyIncidentCenter),
   { loading: screenFallback }
@@ -664,6 +668,22 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
               data.retryBroadcastMutation.isPending
             }
             dataLoading={data.scheduledBroadcastsPending}
+          />
+        );
+
+      case "analytics":
+        return (
+          <AnalyticsDashboardScreen
+            rides={data.rides}
+            deliveries={data.deliveries}
+            riders={data.riders}
+            passengers={data.passengers}
+            zones={data.zones}
+            financeSummary={data.financeSummary ?? null}
+            adminCurrency={data.adminCurrency}
+            dataLoading={data.dataLoading}
+            dashboardDateRange={data.dashboardDateRange}
+            onDateRangeChange={data.setDashboardDateRange}
           />
         );
 
