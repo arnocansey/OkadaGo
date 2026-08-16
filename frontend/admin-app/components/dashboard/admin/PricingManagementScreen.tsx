@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { formatMoney } from "@/lib/currency";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
-import { FareSimulator } from "./FareSimulator";
+import { AdminPageSkeleton } from "./AdminSkeleton";
 import type { ServiceZoneRecord } from "./types";
-import { parseNumber, ACCRA_MAP_CENTER, ACCRA_MAP_ZOOM_CITY } from "./utils";
+import { parseNumber } from "./utils";
 import {
   DollarSign,
   MapPin,
@@ -19,10 +19,22 @@ import {
   Calculator,
   Zap,
   AlertTriangle,
-  Check
+  Check,
+  Edit3,
+  X,
+  Plus,
+  Minus,
+  Bike,
+  Package,
+  ArrowRight,
+  Shield,
+  Info,
+  ChevronRight
 } from "lucide-react";
 
-/* ── Types ────────────────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════════ */
+/*  Types                                                                      */
+/* ══════════════════════════════════════════════════════════════════════════════ */
 
 export type PricingManagementScreenProps = {
   zones: ServiceZoneRecord[];
@@ -34,32 +46,62 @@ export type PricingManagementScreenProps = {
   dataLoading?: boolean;
 };
 
-type ServiceType = "standard_bike" | "express_bike" | "cargo_tricycle";
+type ServiceTab = "passenger" | "delivery";
 
-const SERVICE_TYPES: Array<{ id: ServiceType; label: string; tag: string; color: string; commission: number }> = [
-  { id: "standard_bike", label: "OkadaGo", tag: "Standard", color: "#22c55e", commission: 10 },
-  { id: "express_bike", label: "OkadaX", tag: "Express", color: "#ff6b00", commission: 15 },
-  { id: "cargo_tricycle", label: "Cargo", tag: "Tricycle", color: "#3b82f6", commission: 12 }
+type PricingField = {
+  key: string;
+  label: string;
+  icon: typeof DollarSign;
+  zoneKey: keyof ServiceZoneRecord;
+  description: string;
+  suffix?: string;
+};
+
+const SERVICE_TABS: Array<{ key: ServiceTab; label: string; icon: typeof Bike }> = [
+  { key: "passenger", label: "Passenger Rides", icon: Bike },
+  { key: "delivery", label: "Deliveries", icon: Package }
 ];
 
-const TIME_PERIODS = [
-  { id: "default", label: "Default", description: "Standard hours" },
-  { id: "peak", label: "Peak Hours", description: "Mon–Fri 7:00–9:00, 17:00–19:00" },
-  { id: "night", label: "Night", description: "22:00–05:00" },
-  { id: "weekend", label: "Weekend", description: "Sat–Sun" },
-  { id: "holiday", label: "Public Holiday", description: "National holidays" }
+const PASSENGER_FIELDS: PricingField[] = [
+  { key: "baseFare", label: "Base Fare", icon: DollarSign, zoneKey: "baseFare", description: "Fixed charge when a ride starts" },
+  { key: "perKmFee", label: "Per Kilometer", icon: MapPin, zoneKey: "perKmFee", description: "Charge per kilometer traveled" },
+  { key: "perMinuteFee", label: "Per Minute", icon: Clock, zoneKey: "perMinuteFee", description: "Charge per minute of ride time" },
+  { key: "minimumFare", label: "Minimum Fare", icon: Tag, zoneKey: "minimumFare", description: "Lowest fare for any completed trip" },
+  { key: "cancellationFee", label: "Cancellation Fee", icon: AlertTriangle, zoneKey: "cancellationFee", description: "Fee charged when a ride is cancelled" },
+  { key: "waitingFeePerMin", label: "Waiting Fee", icon: Clock, zoneKey: "waitingFeePerMin", description: "Fee per minute while rider waits" }
 ];
 
-const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const DELIVERY_FIELDS: PricingField[] = [
+  { key: "baseFare", label: "Base Fare", icon: DollarSign, zoneKey: "baseFare", description: "Fixed charge when a delivery starts" },
+  { key: "perKmFee", label: "Per Kilometer", icon: MapPin, zoneKey: "perKmFee", description: "Charge per kilometer for delivery" },
+  { key: "perMinuteFee", label: "Per Minute", icon: Clock, zoneKey: "perMinuteFee", description: "Charge per minute of delivery time" },
+  { key: "minimumFare", label: "Minimum Fare", icon: Tag, zoneKey: "minimumFare", description: "Lowest fare for any completed delivery" },
+  { key: "cancellationFee", label: "Cancellation Fee", icon: AlertTriangle, zoneKey: "cancellationFee", description: "Fee when a delivery is cancelled" },
+  { key: "waitingFeePerMin", label: "Waiting Fee", icon: Clock, zoneKey: "waitingFeePerMin", description: "Fee per minute at pickup/dropoff" }
+];
 
-/* ── Helpers ──────────────────────────────────────────────────────────────── */
+const COMMISSION_RATES: Record<ServiceTab, Array<{ label: string; rate: number }>> = {
+  passenger: [
+    { label: "OkadaGo Standard", rate: 10 },
+    { label: "OkadaX Express", rate: 15 },
+    { label: "Cargo Tricycle", rate: 12 }
+  ],
+  delivery: [
+    { label: "Standard Delivery", rate: 10 },
+    { label: "Express Delivery", rate: 15 },
+    { label: "Cargo Delivery", rate: 12 }
+  ]
+};
 
-function computeFareBreakdown(params: {
+/* ══════════════════════════════════════════════════════════════════════════════ */
+/*  Fare computation                                                           */
+/* ══════════════════════════════════════════════════════════════════════════════ */
+
+function computeFare(params: {
   baseFare: number;
   perKmFee: number;
   perMinuteFee: number;
   minimumFare: number;
-  cancellationFee: number;
   bookingFee: number;
   commissionPercent: number;
   distanceKm: number;
@@ -71,175 +113,24 @@ function computeFareBreakdown(params: {
   const subtotal = params.baseFare + distanceFee + timeFee + params.bookingFee;
   const surgedSubtotal = subtotal * params.surgeMultiplier;
   const surgeAmount = surgedSubtotal - subtotal;
-  const totalFare = Math.max(params.minimumFare, surgedSubtotal);
-  const commission = totalFare * (params.commissionPercent / 100);
-  const riderEarnings = Math.max(0, totalFare - commission);
+  const passengerFare = Math.max(params.minimumFare, surgedSubtotal);
+  const commission = passengerFare * (params.commissionPercent / 100);
+  const riderEarnings = Math.max(0, passengerFare - commission);
 
   return {
-    subtotal: Math.round(subtotal * 100) / 100,
-    surgeAmount: Math.round(surgeAmount * 100) / 100,
-    totalFare: Math.round(totalFare * 100) / 100,
-    commission: Math.round(commission * 100) / 100,
-    riderEarnings: Math.round(riderEarnings * 100) / 100,
     distanceFee: Math.round(distanceFee * 100) / 100,
     timeFee: Math.round(timeFee * 100) / 100,
-    breakdown: [
-      { label: "Base fare", amount: params.baseFare },
-      { label: "Distance fee", amount: Math.round(distanceFee * 100) / 100 },
-      { label: "Time fee", amount: Math.round(timeFee * 100) / 100 },
-      { label: "Booking fee", amount: params.bookingFee },
-      ...(surgeAmount > 0 ? [{ label: "Surge adjustment", amount: Math.round(surgeAmount * 100) / 100 }] : [])
-    ]
+    subtotal: Math.round(subtotal * 100) / 100,
+    surgeAmount: Math.round(surgeAmount * 100) / 100,
+    passengerFare: Math.round(passengerFare * 100) / 100,
+    commission: Math.round(commission * 100) / 100,
+    riderEarnings: Math.round(riderEarnings * 100) / 100,
+    bookingFee: params.bookingFee
   };
 }
 
-/* ── Pricing Zone Card ────────────────────────────────────────────────────── */
-
-function PricingZoneCard({
-  zone,
-  currency,
-  rides,
-  riders,
-  isExpanded,
-  onToggle,
-  editingFields,
-  onFieldChange,
-  isSaving
-}: {
-  zone: ServiceZoneRecord;
-  currency: string;
-  rides: number;
-  riders: number;
-  isExpanded: boolean;
-  onToggle: () => void;
-  editingFields: Record<string, string>;
-  onFieldChange: (field: string, value: string) => void;
-  isSaving: boolean;
-}) {
-  const fields = [
-    { key: "baseFare", label: "Base Fare", icon: DollarSign },
-    { key: "perKmFee", label: "Per KM Rate", icon: MapPin },
-    { key: "perMinuteFee", label: "Per Minute Rate", icon: Clock },
-    { key: "minimumFare", label: "Minimum Fare", icon: TrendingUp },
-    { key: "cancellationFee", label: "Cancellation Fee", icon: AlertTriangle },
-    { key: "waitingFeePerMin", label: "Waiting Fee/min", icon: Clock }
-  ];
-
-  return (
-    <article className={`prc-zone-card${zone.isActive ? "" : " prc-zone-card--inactive"}`}>
-      <button type="button" className="prc-zone-header" onClick={onToggle}>
-        <div className="prc-zone-header-left">
-          <div className="prc-zone-header-info">
-            <h3>{zone.name}</h3>
-            <span className="prc-zone-meta">
-              {zone.city} · {currency}
-              {zone.isActive ? (
-                <span className="prc-badge prc-badge-success">Active</span>
-              ) : (
-                <span className="prc-badge prc-badge-neutral">Inactive</span>
-              )}
-            </span>
-          </div>
-        </div>
-        <div className="prc-zone-header-right">
-          <span className="prc-zone-stats">
-            <span>{riders} riders</span>
-            <span>{rides} rides</span>
-          </span>
-          {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </div>
-      </button>
-
-      {isExpanded && (
-        <div className="prc-zone-body">
-          <div className="prc-zone-fields">
-            {fields.map((f) => {
-              const Icon = f.icon;
-              const zoneVal = (zone as unknown as Record<string, string | number | null | undefined>)[f.key];
-              const originalValue = parseNumber(zoneVal ?? 0).toFixed(2);
-              const editedValue = editingFields[f.key] ?? "";
-              const isDirty = editedValue !== "" && editedValue !== originalValue;
-              return (
-                <div key={f.key} className={`prc-field${isDirty ? " prc-field--dirty" : ""}`}>
-                  <label className="prc-field-label">
-                    <Icon size={13} />
-                    {f.label}
-                  </label>
-                  <div className="prc-field-input-wrap">
-                    <span className="prc-field-prefix">{currency}</span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      className="prc-field-input"
-                      placeholder={originalValue}
-                      value={editedValue}
-                      onChange={(e) => onFieldChange(f.key, e.target.value)}
-                    />
-                    {isDirty && <Check size={13} className="prc-field-check" />}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="prc-zone-extras">
-            <div className="prc-field prc-field--wide">
-              <label className="prc-field-label">
-                <Tag size={13} />
-                Commission %
-              </label>
-              <div className="prc-field-input-wrap">
-                <input
-                  type="number"
-                  step="0.5"
-                  min="0"
-                  max="100"
-                  className="prc-field-input"
-                  placeholder="10.00"
-                  value={editingFields["commissionPercent"] ?? ""}
-                  onChange={(e) => onFieldChange("commissionPercent", e.target.value)}
-                />
-                <span className="prc-field-suffix">%</span>
-                {(editingFields["commissionPercent"] ?? "") !== "" && <Check size={13} className="prc-field-check" />}
-              </div>
-            </div>
-
-            <div className="prc-field prc-field--wide">
-              <label className="prc-field-label">
-                <DollarSign size={13} />
-                Booking Fee
-              </label>
-              <div className="prc-field-input-wrap">
-                <span className="prc-field-prefix">{currency}</span>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  className="prc-field-input"
-                  placeholder="0.00"
-                  value={editingFields["bookingFee"] ?? ""}
-                  onChange={(e) => onFieldChange("bookingFee", e.target.value)}
-                />
-                {(editingFields["bookingFee"] ?? "") !== "" && <Check size={13} className="prc-field-check" />}
-              </div>
-            </div>
-
-            <div className="prc-zone-extras-note">
-              <small>
-                Changes to this zone will affect all {zone.name} riders.
-                {Object.keys(editingFields).length > 0 && (
-                  <> <strong>{Object.keys(editingFields).length} field(s) modified.</strong></>
-                )}
-              </small>
-            </div>
-          </div>
-        </div>
-      )}
-    </article>
-  );
-}
-
+/* ══════════════════════════════════════════════════════════════════════════════ */
+/*  Main Component                                                             */
 /* ══════════════════════════════════════════════════════════════════════════════ */
 
 export function PricingManagementScreen({
@@ -251,243 +142,598 @@ export function PricingManagementScreen({
   isMutating = false,
   dataLoading = false
 }: PricingManagementScreenProps) {
-  const [expandedZone, setExpandedZone] = useState<string | null>(null);
-  const [editedZones, setEditedZones] = useState<Record<string, Record<string, string>>>({});
-  const [activeServiceTab, setActiveServiceTab] = useState<ServiceType>("standard_bike");
+  /* ── State ── */
+  const [serviceTab, setServiceTab] = useState<ServiceTab>("passenger");
+  const [selectedZone, setSelectedZone] = useState<string>(zones[0]?.id ?? "");
+  const [editingCard, setEditingCard] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<Record<string, string>>({});
+  const [simulatorOpen, setSimulatorOpen] = useState(false);
+  const [publishConfirmOpen, setPublishConfirmOpen] = useState(false);
+  const [publishPassword, setPublishPassword] = useState("");
+  const [pendingChanges, setPendingChanges] = useState<Array<{ zoneId: string; field: string; oldValue: number; newValue: number }>>([]);
   const [periodSurges, setPeriodSurges] = useState<Record<string, number>>({
     default: 1.0, peak: 1.5, night: 1.3, weekend: 1.2, holiday: 1.8
   });
-  const [showSimulator, setShowSimulator] = useState(true);
 
-  const handleFieldChange = (zoneId: string, field: string, value: string) => {
-    setEditedZones((prev) => ({
-      ...prev,
-      [zoneId]: { ...(prev[zoneId] ?? {}), [field]: value }
-    }));
-  };
+  /* ── Derived ── */
+  const zone = useMemo(() => zones.find((z) => z.id === selectedZone) ?? zones[0], [zones, selectedZone]);
+  const activeFields = serviceTab === "passenger" ? PASSENGER_FIELDS : DELIVERY_FIELDS;
+  const commissionRates = COMMISSION_RATES[serviceTab];
 
-  const handleSaveZone = (zoneId: string) => {
-    if (!onSavePricing) return;
-    const edits = editedZones[zoneId] ?? {};
-    const updates: Partial<ServiceZoneRecord> = {};
-    for (const [key, val] of Object.entries(edits)) {
-      if (val === "") continue;
-      const numVal = parseFloat(val);
-      if (!isNaN(numVal)) {
-        (updates as Record<string, unknown>)[key] = numVal;
+  /* ── Simulator state ── */
+  const [simDistance, setSimDistance] = useState("5");
+  const [simDuration, setSimDuration] = useState("15");
+  const [simSurge, setSimSurge] = useState("1.0");
+  const [simTimePeriod, setSimTimePeriod] = useState("default");
+
+  const simResult = useMemo(() => {
+    if (!zone) return null;
+    const surge = parseFloat(simSurge) || 1.0;
+    const bookingFee = serviceTab === "passenger" ? 2.0 : 3.0;
+    return computeFare({
+      baseFare: parseNumber(zone.baseFare),
+      perKmFee: parseNumber(zone.perKmFee),
+      perMinuteFee: parseNumber(zone.perMinuteFee),
+      minimumFare: parseNumber(zone.minimumFare),
+      bookingFee,
+      commissionPercent: commissionRates[0].rate,
+      distanceKm: parseFloat(simDistance) || 0,
+      durationMin: parseFloat(simDuration) || 0,
+      surgeMultiplier: surge
+    });
+  }, [zone, simDistance, simDuration, simSurge, serviceTab, commissionRates]);
+
+  /* ── Handlers ── */
+  const startEdit = useCallback((cardKey: string, currentValue: number) => {
+    setEditingCard(cardKey);
+    setEditValues({ [cardKey]: String(currentValue) });
+  }, []);
+
+  const cancelEdit = useCallback(() => {
+    setEditingCard(null);
+    setEditValues({});
+  }, []);
+
+  const saveEdit = useCallback((cardKey: string, field: PricingField) => {
+    if (!zone || !onSavePricing) return;
+    const newVal = parseFloat(editValues[cardKey]) || 0;
+    const rawVal = zone[field.zoneKey];
+    const oldVal = parseNumber(typeof rawVal === "number" || typeof rawVal === "string" ? rawVal : 0);
+    if (newVal !== oldVal) {
+      setPendingChanges((prev) => [
+        ...prev.filter((c) => !(c.zoneId === zone.id && c.field === cardKey)),
+        { zoneId: zone.id, field: cardKey, oldValue: oldVal, newValue: newVal }
+      ]);
+    }
+    setEditingCard(null);
+    setEditValues({});
+  }, [zone, editValues, onSavePricing]);
+
+  const handlePublish = useCallback(() => {
+    if (!zone || !onSavePricing) return;
+    pendingChanges.forEach((change) => {
+      const field = activeFields.find((f) => f.key === change.field);
+      if (field) {
+        onSavePricing(zone.id, { [field.zoneKey]: change.newValue });
       }
-    }
-    if (Object.keys(updates).length > 0) {
-      onSavePricing(zoneId, updates);
-      setEditedZones((prev) => {
-        const next = { ...prev };
-        delete next[zoneId];
-        return next;
-      });
-    }
-  };
+    });
+    setPendingChanges([]);
+    setPublishConfirmOpen(false);
+    setPublishPassword("");
+  }, [zone, pendingChanges, activeFields, onSavePricing]);
 
-  const handleSaveAll = () => {
-    for (const zoneId of Object.keys(editedZones)) {
-      handleSaveZone(zoneId);
-    }
-  };
+  const revertAll = useCallback(() => {
+    setPendingChanges([]);
+    setEditingCard(null);
+    setEditValues({});
+  }, []);
 
-  const handleReset = () => {
-    setEditedZones({});
-  };
-
-  const totalEdits = useMemo(
-    () => Object.values(editedZones).reduce((sum, zoneEdits) => sum + Object.keys(zoneEdits).length, 0),
-    [editedZones]
-  );
-
-  const currentService = SERVICE_TYPES.find((s) => s.id === activeServiceTab)!;
+  /* ── Loading ── */
+  if (dataLoading) {
+    return <AdminPageSkeleton variant="dashboard" kpis={4} />;
+  }
 
   return (
-    <div className="prc-mgmt">
-      <AdminPageHeader
-        title="Pricing Management"
-        subtitle="Configure base fares, rates, and commissions across service zones and time periods."
-      />
-
-      {/* ── KPI Cards ── */}
-      <section className="prc-mgmt-kpis">
-        <article className="prc-kpi prc-kpi--info">
-          <div className="prc-kpi-icon"><MapPin size={18} /></div>
-          <div className="prc-kpi-body">
-            <span className="prc-kpi-label">Active Zones</span>
-            <strong className="prc-kpi-value">{zones.filter((z) => z.isActive).length}</strong>
-          </div>
-        </article>
-        <article className="prc-kpi prc-kpi--accent">
-          <div className="prc-kpi-icon"><Tag size={18} /></div>
-          <div className="prc-kpi-body">
-            <span className="prc-kpi-label">Service Types</span>
-            <strong className="prc-kpi-value">{SERVICE_TYPES.length}</strong>
-          </div>
-        </article>
-        <article className="prc-kpi prc-kpi--success">
-          <div className="prc-kpi-icon"><Calculator size={18} /></div>
-          <div className="prc-kpi-body">
-            <span className="prc-kpi-label">Avg Commission</span>
-            <strong className="prc-kpi-value">10–15%</strong>
-          </div>
-        </article>
-        <article className="prc-kpi prc-kpi--warning">
-          <div className="prc-kpi-icon"><Zap size={18} /></div>
-          <div className="prc-kpi-body">
-            <span className="prc-kpi-label">Pending Changes</span>
-            <strong className="prc-kpi-value">{totalEdits}</strong>
-          </div>
-        </article>
-      </section>
-
-      {/* ── Service Type Tabs ── */}
-      <div className="prc-service-tabs">
-        {SERVICE_TYPES.map((st) => (
-          <button
-            key={st.id}
-            type="button"
-            className={`prc-service-tab${activeServiceTab === st.id ? " active" : ""}`}
-            style={{ "--tab-color": st.color } as React.CSSProperties}
-            onClick={() => setActiveServiceTab(st.id)}
-          >
-            <span className="prc-service-dot" />
-            {st.label}
-            <span className="prc-service-tag">{st.tag}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* ── Service Type Overview ── */}
-      <div className="prc-service-overview">
-        <div className="prc-service-card" style={{ borderColor: currentService.color }}>
-          <div className="prc-service-card-header">
-            <h3>{currentService.label} Pricing</h3>
-            <span className="prc-badge" style={{ background: currentService.color + "20", color: currentService.color }}>
-              {currentService.tag}
+    <div className="pm-mgmt">
+      {/* ═══ Header ═══ */}
+      <div className="pm-mgmt-header">
+        <div className="pm-mgmt-header-left">
+          <h1 className="pm-mgmt-title">Pricing Management</h1>
+          <p className="pm-mgmt-subtitle">Control fares, fees and rider earnings across OkadaGo services.</p>
+        </div>
+        <div className="pm-mgmt-header-right">
+          {pendingChanges.length > 0 && (
+            <span className="pm-mgmt-pending-badge">
+              <AlertTriangle size={13} /> {pendingChanges.length} unsaved change{pendingChanges.length > 1 ? "s" : ""}
             </span>
-          </div>
-          <p className="prc-service-desc">
-            {activeServiceTab === "standard_bike" && "Standard motorcycle rides — the core OkadaGo experience."}
-            {activeServiceTab === "express_bike" && "Premium express rides with faster pickup and priority matching."}
-            {activeServiceTab === "cargo_tricycle" && "Tricycle cargo delivery — package and goods transport."}
-          </p>
-          <div className="prc-service-rates">
-            <div className="prc-rate-item">
-              <span>Commission</span>
-              <strong>{currentService.commission}%</strong>
-            </div>
-            <div className="prc-rate-item">
-              <span>Surge Cap</span>
-              <strong>2.5×</strong>
-            </div>
-            <div className="prc-rate-item">
-              <span>Min Fare</span>
-              <strong>Zone base</strong>
-            </div>
-          </div>
+          )}
+          <button type="button" className="pm-btn pm-btn--outline" onClick={() => setSimulatorOpen(true)}>
+            <Calculator size={14} /> Fare Simulator
+          </button>
+          <button
+            type="button"
+            className="pm-btn pm-btn--primary"
+            disabled={pendingChanges.length === 0 || isMutating}
+            onClick={() => setPublishConfirmOpen(true)}
+          >
+            <Save size={14} /> Publish Changes
+          </button>
         </div>
       </div>
 
-      {/* ── Time Periods ── */}
-      <div className="prc-periods">
-        <h3 className="prc-section-title"><Clock size={15} /> Time-Based Pricing</h3>
-        <div className="prc-period-grid">
-          {TIME_PERIODS.map((tp) => {
-            const surgeVal = periodSurges[tp.id] ?? 1.0;
-            const isDefault = tp.id === "default";
-            return (
-              <article key={tp.id} className="prc-period-card">
-                <div className="prc-period-header">
-                  <span className="prc-period-label">{tp.label}</span>
-                  <span className="prc-period-desc">{tp.description}</span>
-                </div>
-                <div className="prc-period-rates">
-                  <label className="prc-period-surge-label">Surge</label>
-                  <div className="prc-period-surge-input">
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0.5"
-                      max="5.0"
-                      value={surgeVal}
-                      disabled={isDefault}
-                      onChange={(e) => {
-                        const val = parseFloat(e.target.value) || 1.0;
-                        setPeriodSurges((prev) => ({ ...prev, [tp.id]: Math.max(0.5, Math.min(5.0, val)) }));
-                      }}
-                      className="prc-surge-input"
-                    />
-                    <span className="prc-surge-x">×</span>
+      {/* ═══ Service Tabs ═══ */}
+      <div className="pm-mgmt-tabs">
+        {SERVICE_TABS.map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              className={`pm-mgmt-tab ${serviceTab === tab.key ? "active" : ""}`}
+              onClick={() => { setServiceTab(tab.key); setEditingCard(null); }}
+            >
+              <Icon size={15} />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ═══ Zone Selector ═══ */}
+      <div className="pm-mgmt-toolbar">
+        <div className="pm-zone-select">
+          <MapPin size={14} />
+          <select
+            className="pm-zone-dropdown"
+            value={selectedZone}
+            onChange={(e) => { setSelectedZone(e.target.value); setEditingCard(null); }}
+          >
+            {zones.map((z) => (
+              <option key={z.id} value={z.id}>{z.name} — {z.city}</option>
+            ))}
+          </select>
+          <ChevronDown size={14} className="pm-zone-chevron" />
+        </div>
+        <div className="pm-mgmt-toolbar-right">
+          {zone && (
+            <>
+              <span className={`pm-status-badge ${zone.isActive ? "active" : "inactive"}`}>
+                {zone.isActive ? "Active" : "Inactive"}
+              </span>
+              <span className="pm-zone-meta">{ridersPerZone[zone.id] ?? 0} riders · {ridesPerZone[zone.id] ?? 0} rides</span>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* ═══ Main Layout: Cards + Fare Breakdown ═══ */}
+      <div className="pm-mgmt-body">
+        {/* ── Pricing Cards Grid ── */}
+        <div className="pm-cards-section">
+          <div className="pm-cards-header">
+            <h2 className="pm-section-title">Pricing Components</h2>
+            <span className="pm-section-hint">{serviceTab === "passenger" ? "Passenger ride" : "Delivery"} fares for {zone?.name ?? "—"}</span>
+          </div>
+          <div className="pm-cards-grid">
+            {activeFields.map((field) => {
+              const Icon = field.icon;
+              const rawFieldVal = zone ? zone[field.zoneKey] : 0;
+              const rawVal = parseNumber(typeof rawFieldVal === "number" || typeof rawFieldVal === "string" ? rawFieldVal : 0);
+              const isEditing = editingCard === field.key;
+              const pending = pendingChanges.find((c) => c.zoneId === zone?.id && c.field === field.key);
+              const displayVal = pending ? pending.newValue : rawVal;
+
+              return (
+                <article key={field.key} className={`pm-pricing-card ${isEditing ? "editing" : ""} ${pending ? "modified" : ""}`}>
+                  <div className="pm-card-header">
+                    <div className="pm-card-icon"><Icon size={16} /></div>
+                    <div className="pm-card-title-group">
+                      <h3 className="pm-card-label">{field.label}</h3>
+                      <p className="pm-card-desc">{field.description}</p>
+                    </div>
+                    {!isEditing && (
+                      <button type="button" className="pm-card-edit-btn" onClick={() => startEdit(field.key, displayVal)}>
+                        <Edit3 size={13} />
+                      </button>
+                    )}
                   </div>
-                  <span className={`prc-period-status${surgeVal > 1.0 ? " active" : ""}`}>
-                    {isDefault ? "—" : surgeVal > 1.0 ? "Active" : "Off"}
-                  </span>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      </div>
+                  <div className="pm-card-value-row">
+                    {isEditing ? (
+                      <div className="pm-card-edit-row">
+                        <input
+                          type="number"
+                          step="0.1"
+                          className="pm-card-edit-input"
+                          value={editValues[field.key] ?? ""}
+                          onChange={(e) => setEditValues({ ...editValues, [field.key]: e.target.value })}
+                          autoFocus
+                        />
+                        <span className="pm-card-currency">{zone?.currency ?? adminCurrency}</span>
+                        <button type="button" className="pm-card-save-btn" onClick={() => saveEdit(field.key, field)}>
+                          <Check size={14} />
+                        </button>
+                        <button type="button" className="pm-card-cancel-btn" onClick={cancelEdit}>
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="pm-card-value-display">
+                        <span className="pm-card-value">{formatMoney(zone?.currency ?? adminCurrency, displayVal)}</span>
+                        {pending && (
+                          <span className="pm-card-change-badge">
+                            was {formatMoney(zone?.currency ?? adminCurrency, rawVal)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <div className="pm-card-meta">
+                    <span className="pm-card-service-tag">
+                      {serviceTab === "passenger" ? "Ride" : "Delivery"}
+                    </span>
+                    <span className="pm-card-updated">Last updated: {zone?.id ? "Recently" : "—"}</span>
+                  </div>
+                </article>
+              );
+            })}
 
-      {/* ── Zone Pricing ── */}
-      <div className="prc-zones">
-        <div className="prc-zones-header">
-          <h3 className="prc-section-title"><MapPin size={15} /> Zone Pricing</h3>
-          <div className="prc-zones-actions">
-            {totalEdits > 0 && (
+            {/* Commission Card */}
+            <article className="pm-pricing-card pm-pricing-card--commission">
+              <div className="pm-card-header">
+                <div className="pm-card-icon pm-card-icon--orange"><TrendingUp size={16} /></div>
+                <div className="pm-card-title-group">
+                  <h3 className="pm-card-label">Platform Commission</h3>
+                  <p className="pm-card-desc">Percentage earned by OkadaGo per trip</p>
+                </div>
+              </div>
+              <div className="pm-commission-list">
+                {commissionRates.map((cr) => (
+                  <div key={cr.label} className="pm-commission-row">
+                    <span className="pm-commission-label">{cr.label}</span>
+                    <span className="pm-commission-value">{cr.rate}%</span>
+                  </div>
+                ))}
+              </div>
+              <div className="pm-card-meta">
+                <span className="pm-card-service-tag">All services</span>
+                <span className="pm-card-updated">Configurable</span>
+              </div>
+            </article>
+
+            {/* Taxes Card */}
+            <article className="pm-pricing-card pm-pricing-card--taxes">
+              <div className="pm-card-header">
+                <div className="pm-card-icon pm-card-icon--purple"><Tag size={16} /></div>
+                <div className="pm-card-title-group">
+                  <h3 className="pm-card-label">Applicable Taxes</h3>
+                  <p className="pm-card-desc">VAT and other taxes applied to fares</p>
+                </div>
+              </div>
+              <div className="pm-commission-list">
+                <div className="pm-commission-row">
+                  <span className="pm-commission-label">VAT (Ghana)</span>
+                  <span className="pm-commission-value">15%</span>
+                </div>
+                <div className="pm-commission-row">
+                  <span className="pm-commission-label">NHIL</span>
+                  <span className="pm-commission-value">2.5%</span>
+                </div>
+                <div className="pm-commission-row">
+                  <span className="pm-commission-label">GETFund</span>
+                  <span className="pm-commission-value">2.5%</span>
+                </div>
+              </div>
+              <div className="pm-card-meta">
+                <span className="pm-card-service-tag">Government</span>
+                <span className="pm-card-updated">Fixed rates</span>
+              </div>
+            </article>
+
+            {/* Time-Based Pricing Card */}
+            <article className="pm-pricing-card pm-pricing-card--surge pm-pricing-card--wide">
+              <div className="pm-card-header">
+                <div className="pm-card-icon pm-card-icon--yellow"><Zap size={16} /></div>
+                <div className="pm-card-title-group">
+                  <h3 className="pm-card-label">Time-Based Surge Pricing</h3>
+                  <p className="pm-card-desc">Multipliers for different time periods</p>
+                </div>
+              </div>
+              <div className="pm-surge-grid">
+                {[
+                  { id: "default", label: "Default", desc: "Standard hours" },
+                  { id: "peak", label: "Peak Hours", desc: "Mon–Fri 7–9, 17–19" },
+                  { id: "night", label: "Night", desc: "22:00–05:00" },
+                  { id: "weekend", label: "Weekend", desc: "Sat–Sun" },
+                  { id: "holiday", label: "Public Holiday", desc: "National holidays" }
+                ].map((tp) => {
+                  const val = periodSurges[tp.id] ?? 1.0;
+                  const isDefault = tp.id === "default";
+                  return (
+                    <div key={tp.id} className="pm-surge-item">
+                      <div className="pm-surge-info">
+                        <span className="pm-surge-label">{tp.label}</span>
+                        <span className="pm-surge-desc">{tp.desc}</span>
+                      </div>
+                      <div className="pm-surge-control">
+                        <input
+                          type="number"
+                          step="0.1"
+                          min="0.5"
+                          max="5.0"
+                          className="pm-surge-input"
+                          value={val}
+                          disabled={isDefault}
+                          onChange={(e) => {
+                            const v = parseFloat(e.target.value) || 1.0;
+                            setPeriodSurges((prev) => ({ ...prev, [tp.id]: Math.max(0.5, Math.min(5.0, v)) }));
+                          }}
+                        />
+                        <span className="pm-surge-x">×</span>
+                        <span className={`pm-surge-status ${val > 1.0 ? "active" : ""}`}>
+                          {isDefault ? "—" : val > 1.0 ? "Active" : "Off"}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </article>
+          </div>
+        </div>
+
+        {/* ── Fare Breakdown Preview Panel ── */}
+        <aside className="pm-breakdown-panel">
+          <div className="pm-breakdown-sticky">
+            <h2 className="pm-section-title">Fare Breakdown Preview</h2>
+            <p className="pm-section-hint">Estimated fare for a sample trip</p>
+
+            <div className="pm-breakdown-zone">
+              <MapPin size={13} />
+              <span>{zone?.name ?? "Select zone"}</span>
+            </div>
+
+            {simResult && (
               <>
-                <button type="button" className="prc-btn prc-btn--outline" onClick={handleReset}>
-                  <RotateCcw size={13} /> Reset ({totalEdits})
-                </button>
-                <button type="button" className="prc-btn prc-btn--primary" onClick={handleSaveAll}>
-                  <Save size={13} /> Save All ({totalEdits})
+                <div className="pm-breakdown-lines">
+                  <div className="pm-breakdown-row">
+                    <span>Base Fare</span>
+                    <span>{formatMoney(adminCurrency, parseNumber(zone?.baseFare))}</span>
+                  </div>
+                  <div className="pm-breakdown-row">
+                    <span>Distance (5 km × {formatMoney(adminCurrency, parseNumber(zone?.perKmFee))}/km)</span>
+                    <span>{formatMoney(adminCurrency, simResult.distanceFee)}</span>
+                  </div>
+                  <div className="pm-breakdown-row">
+                    <span>Time (15 min × {formatMoney(adminCurrency, parseNumber(zone?.perMinuteFee))}/min)</span>
+                    <span>{formatMoney(adminCurrency, simResult.timeFee)}</span>
+                  </div>
+                  <div className="pm-breakdown-row">
+                    <span>Booking Fee</span>
+                    <span>{formatMoney(adminCurrency, simResult.bookingFee)}</span>
+                  </div>
+                  {simResult.surgeAmount > 0 && (
+                    <div className="pm-breakdown-row pm-breakdown-row--surge">
+                      <span>Surge ({simSurge}×)</span>
+                      <span>+{formatMoney(adminCurrency, simResult.surgeAmount)}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pm-breakdown-divider" />
+
+                <div className="pm-breakdown-row pm-breakdown-row--fare">
+                  <span>Passenger Fare</span>
+                  <span>{formatMoney(adminCurrency, simResult.passengerFare)}</span>
+                </div>
+                <div className="pm-breakdown-row pm-breakdown-row--commission">
+                  <span>− OkadaGo Commission ({commissionRates[0].rate}%)</span>
+                  <span>−{formatMoney(adminCurrency, simResult.commission)}</span>
+                </div>
+
+                <div className="pm-breakdown-divider" />
+
+                <div className="pm-breakdown-row pm-breakdown-row--earnings">
+                  <span>= Rider Earnings</span>
+                  <span>{formatMoney(adminCurrency, simResult.riderEarnings)}</span>
+                </div>
+
+                <button
+                  type="button"
+                  className="pm-btn pm-btn--ghost pm-btn--full"
+                  onClick={() => setSimulatorOpen(true)}
+                >
+                  <Calculator size={13} /> Open Full Simulator
                 </button>
               </>
             )}
+
+            {/* Publish Warning */}
+            {pendingChanges.length > 0 && (
+              <div className="pm-publish-warning">
+                <AlertTriangle size={14} />
+                <p>Changing pricing may affect passenger fares and rider earnings. An authorized administrator must confirm.</p>
+              </div>
+            )}
+          </div>
+        </aside>
+      </div>
+
+      {/* ═══ Fare Simulator Drawer ═══ */}
+      {simulatorOpen && (
+        <div className="pm-drawer-backdrop" onClick={() => setSimulatorOpen(false)}>
+          <div className="pm-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="pm-drawer-header">
+              <h2><Calculator size={18} /> Fare Simulator</h2>
+              <button type="button" className="pm-drawer-close" onClick={() => setSimulatorOpen(false)}>
+                <X size={18} />
+              </button>
+            </div>
+            <div className="pm-drawer-body">
+              <div className="pm-sim-grid">
+                <div className="pm-sim-field">
+                  <label className="pm-sim-label">
+                    <MapPin size={13} /> Pickup Location
+                  </label>
+                  <input type="text" className="pm-sim-input" placeholder="e.g. Osu, Accra" defaultValue="Osu, Accra" />
+                </div>
+                <div className="pm-sim-field">
+                  <label className="pm-sim-label">
+                    <MapPin size={13} /> Destination
+                  </label>
+                  <input type="text" className="pm-sim-input" placeholder="e.g. Airport City" defaultValue="Airport City" />
+                </div>
+                <div className="pm-sim-field">
+                  <label className="pm-sim-label">
+                    <MapPin size={13} /> Distance (km)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    className="pm-sim-input"
+                    value={simDistance}
+                    onChange={(e) => setSimDistance(e.target.value)}
+                  />
+                </div>
+                <div className="pm-sim-field">
+                  <label className="pm-sim-label">
+                    <Clock size={13} /> Duration (min)
+                  </label>
+                  <input
+                    type="number"
+                    step="1"
+                    className="pm-sim-input"
+                    value={simDuration}
+                    onChange={(e) => setSimDuration(e.target.value)}
+                  />
+                </div>
+                <div className="pm-sim-field">
+                  <label className="pm-sim-label">
+                    <Tag size={13} /> Service Type
+                  </label>
+                  <select className="pm-sim-input" value={serviceTab} onChange={(e) => setServiceTab(e.target.value as ServiceTab)}>
+                    {SERVICE_TABS.map((t) => <option key={t.key} value={t.key}>{t.label}</option>)}
+                  </select>
+                </div>
+                <div className="pm-sim-field">
+                  <label className="pm-sim-label">
+                    <Clock size={13} /> Time of Day
+                  </label>
+                  <select className="pm-sim-input" value={simTimePeriod} onChange={(e) => {
+                    setSimTimePeriod(e.target.value);
+                    setSimSurge(String(periodSurges[e.target.value] ?? 1.0));
+                  }}>
+                    {Object.entries(periodSurges).map(([k, v]) => (
+                      <option key={k} value={k}>{k.charAt(0).toUpperCase() + k.slice(1)} ({v}×)</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="pm-sim-field pm-sim-field--full">
+                  <label className="pm-sim-label">
+                    <Zap size={13} /> Dynamic Pricing Multiplier
+                  </label>
+                  <div className="pm-sim-slider-row">
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="3.0"
+                      step="0.1"
+                      className="pm-sim-slider"
+                      value={simSurge}
+                      onChange={(e) => setSimSurge(e.target.value)}
+                    />
+                    <span className="pm-sim-slider-value">{simSurge}×</span>
+                  </div>
+                </div>
+              </div>
+
+              {simResult && (
+                <div className="pm-sim-result">
+                  <h3 className="pm-sim-result-title">Estimated Fare</h3>
+                  <div className="pm-sim-result-grid">
+                    <div className="pm-sim-result-item pm-sim-result-item--fare">
+                      <span className="pm-sim-result-label">Passenger Fare</span>
+                      <span className="pm-sim-result-value">{formatMoney(adminCurrency, simResult.passengerFare)}</span>
+                    </div>
+                    <div className="pm-sim-result-item pm-sim-result-item--rider">
+                      <span className="pm-sim-result-label">Rider Earnings</span>
+                      <span className="pm-sim-result-value">{formatMoney(adminCurrency, simResult.riderEarnings)}</span>
+                    </div>
+                    <div className="pm-sim-result-item pm-sim-result-item--platform">
+                      <span className="pm-sim-result-label">OkadaGo Revenue</span>
+                      <span className="pm-sim-result-value">{formatMoney(adminCurrency, simResult.commission)}</span>
+                    </div>
+                    <div className="pm-sim-result-item pm-sim-result-item--fee">
+                      <span className="pm-sim-result-label">Booking Fee</span>
+                      <span className="pm-sim-result-value">{formatMoney(adminCurrency, simResult.bookingFee)}</span>
+                    </div>
+                  </div>
+                  <div className="pm-sim-breakdown">
+                    <div className="pm-sim-breakdown-row"><span>Base Fare</span><span>{formatMoney(adminCurrency, parseNumber(zone?.baseFare))}</span></div>
+                    <div className="pm-sim-breakdown-row"><span>Distance ({simDistance} km)</span><span>{formatMoney(adminCurrency, simResult.distanceFee)}</span></div>
+                    <div className="pm-sim-breakdown-row"><span>Time ({simDuration} min)</span><span>{formatMoney(adminCurrency, simResult.timeFee)}</span></div>
+                    <div className="pm-sim-breakdown-row"><span>Booking Fee</span><span>{formatMoney(adminCurrency, simResult.bookingFee)}</span></div>
+                    {simResult.surgeAmount > 0 && (
+                      <div className="pm-sim-breakdown-row pm-sim-breakdown-row--surge"><span>Surge ({simSurge}×)</span><span>+{formatMoney(adminCurrency, simResult.surgeAmount)}</span></div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+      )}
 
-        <div className="prc-zone-list">
-          {zones.map((zone) => (
-            <PricingZoneCard
-              key={zone.id}
-              zone={zone}
-              currency={zone.currency || adminCurrency}
-              rides={ridesPerZone[zone.id] ?? 0}
-              riders={ridersPerZone[zone.id] ?? 0}
-              isExpanded={expandedZone === zone.id}
-              onToggle={() => setExpandedZone(expandedZone === zone.id ? null : zone.id)}
-              editingFields={editedZones[zone.id] ?? {}}
-              onFieldChange={(field, value) => handleFieldChange(zone.id, field, value)}
-              isSaving={isMutating}
-            />
-          ))}
+      {/* ═══ Publish Confirmation Modal ═══ */}
+      {publishConfirmOpen && (
+        <div className="pm-modal-backdrop" onClick={() => setPublishConfirmOpen(false)}>
+          <div className="pm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="pm-modal-icon"><AlertTriangle size={28} /></div>
+            <h3 className="pm-modal-title">Confirm Pricing Change</h3>
+            <p className="pm-modal-desc">
+              Changing pricing may affect passenger fares and rider earnings. This action requires admin authorization.
+            </p>
+            <div className="pm-modal-changes">
+              {pendingChanges.map((c, i) => {
+                const field = activeFields.find((f) => f.key === c.field);
+                return (
+                  <div key={i} className="pm-modal-change-row">
+                    <span>{field?.label ?? c.field}</span>
+                    <span className="pm-modal-change-old">{formatMoney(adminCurrency, c.oldValue)}</span>
+                    <ChevronRight size={14} />
+                    <span className="pm-modal-change-new">{formatMoney(adminCurrency, c.newValue)}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="pm-modal-field">
+              <label className="pm-modal-label">
+                <Shield size={13} /> Admin Password
+              </label>
+              <input
+                type="password"
+                className="pm-modal-input"
+                placeholder="Enter your admin password"
+                value={publishPassword}
+                onChange={(e) => setPublishPassword(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div className="pm-modal-actions">
+              <button type="button" className="pm-btn pm-btn--ghost" onClick={() => { setPublishConfirmOpen(false); setPublishPassword(""); }}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="pm-btn pm-btn--primary"
+                disabled={publishPassword.length < 3 || isMutating}
+                onClick={handlePublish}
+              >
+                {isMutating ? "Publishing..." : "Confirm & Publish"}
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-
-      {/* ── Fare Simulator ── */}
-      <div className="prc-simulator">
-        <div className="prc-simulator-header">
-          <h3 className="prc-section-title"><Calculator size={15} /> Fare Simulator</h3>
-          <button
-            type="button"
-            className="prc-btn prc-btn--ghost"
-            onClick={() => setShowSimulator(!showSimulator)}
-          >
-            {showSimulator ? "Collapse" : "Expand"}
-          </button>
-        </div>
-        {showSimulator && (
-          <FareSimulator
-            zones={zones}
-            activeService={activeServiceTab}
-            adminCurrency={adminCurrency}
-          />
-        )}
-      </div>
+      )}
     </div>
   );
 }
