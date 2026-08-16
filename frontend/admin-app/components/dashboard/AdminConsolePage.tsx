@@ -117,6 +117,10 @@ const FinanceDashboardScreen = dynamic(
   () => import("./admin/FinanceDashboardScreen").then((m) => m.FinanceDashboardScreen),
   { loading: screenFallback }
 );
+const RiderPayoutDashboardScreen = dynamic(
+  () => import("./admin/RiderPayoutDashboardScreen").then((m) => m.RiderPayoutDashboardScreen),
+  { loading: screenFallback }
+);
 const SupportTicketsScreen = dynamic(
   () => import("./admin/SupportTicketsScreen").then((m) => m.SupportTicketsScreen),
   { loading: screenFallback }
@@ -393,28 +397,26 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
 
       case "riderPayouts":
         return (
-          <RiderPayoutsScreen
-            riderPayoutRequests={data.payoutRequests}
-            requestedRiderPayouts={data.requestedRiderPayouts}
-            paidRiderPayouts={data.paidPayoutRequests}
-            failedRiderPayouts={data.failedRiderPayouts}
+          <RiderPayoutDashboardScreen
+            payoutRequests={data.payoutRequests}
+            payoutRequestsTotal={data.payoutRequestsTotal}
+            payoutStatusFilter={data.payoutStatusFilter}
+            onPayoutStatusChange={data.setPayoutStatusFilter}
+            payoutPage={data.payoutPage}
+            payoutTotal={data.payoutRequestsTotal}
+            listPageSize={data.listPageSize}
+            onPayoutPageChange={data.setPayoutPage}
+            pendingPayoutValue={data.pendingPayoutValue}
+            payoutOutflow={data.payoutOutflow}
             totalRiderPayoutValue={data.totalRiderPayoutValue}
-            riderPayoutMethodSnapshot={data.riderPayoutMethodSnapshot}
-            riderPayoutMethodTotal={data.riderPayoutMethodTotal}
-            adminCurrency={data.adminCurrency}
-            payoutRejectionReasons={data.payoutRejectionReasons}
-            onRejectionReasonChange={(id, reason) =>
-              data.setPayoutRejectionReasons((prev) => ({ ...prev, [id]: reason }))
-            }
+            failedRiderPayouts={data.failedRiderPayouts}
             onPayoutAction={(id, action, reason) =>
               data.payoutReviewMutation.mutate({ payoutRequestId: id, action, rejectionReason: reason })
             }
+            onServerExport={(entity) => void data.downloadServerCsv(entity)}
             isMutating={data.payoutReviewMutation.isPending}
+            adminCurrency={data.adminCurrency}
             dataLoading={data.dataLoading}
-            page={data.payoutPage}
-            totalItems={data.payoutRequestsTotal}
-            pageSize={data.listPageSize}
-            onPageChange={data.setPayoutPage}
           />
         );
 

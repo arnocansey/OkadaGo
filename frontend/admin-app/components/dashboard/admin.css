@@ -11538,3 +11538,444 @@ html[data-theme="dark"] .admin-toast--info {
   border-color: rgba(255, 255, 255, 0.2);
   color: var(--text-primary);
 }
+
+/* ═══════════════════════════════════════════
+   RIDER PAYOUT DASHBOARD — KPIs + Table + Actions
+   ═══════════════════════════════════════════ */
+
+.rpd-mgmt {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px 24px 32px;
+  min-height: 100%;
+}
+
+/* ── KPIs ── */
+
+.rpd-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.rpd-kpi {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--bg-card, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.rpd-kpi:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+.rpd-kpi-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rpd-kpi--pending .rpd-kpi-icon { background: rgba(250, 204, 21, 0.12); color: #facc15; }
+.rpd-kpi--completed .rpd-kpi-icon { background: rgba(34, 197, 94, 0.12); color: #22c55e; }
+.rpd-kpi--failed .rpd-kpi-icon { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+.rpd-kpi--total .rpd-kpi-icon { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
+
+.rpd-kpi-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rpd-kpi-label {
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rpd-kpi-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.rpd-kpi-body small {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+}
+
+/* ── Toolbar ── */
+
+.rpd-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.rpd-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: var(--bg-surface, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  min-width: 220px;
+  color: var(--text-muted);
+  transition: border-color 0.15s;
+}
+
+.rpd-search:focus-within {
+  border-color: var(--accent-orange);
+}
+
+.rpd-search input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  font-family: inherit;
+  outline: none;
+}
+
+.rpd-search input::placeholder {
+  color: var(--text-muted);
+}
+
+.rpd-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.rpd-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.68rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.rpd-filter-chip:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+}
+
+.rpd-filter-chip.active {
+  border-color: var(--accent-orange);
+  background: rgba(255, 107, 0, 0.08);
+  color: var(--accent-orange);
+}
+
+/* ── Table ── */
+
+.rpd-table-wrap {
+  border-radius: 10px;
+  background: var(--bg-card, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+  overflow: hidden;
+}
+
+.rpd-empty {
+  padding: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rpd-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.72rem;
+}
+
+.rpd-table thead th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--bg-surface, rgba(255, 255, 255, 0.03));
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+  white-space: nowrap;
+}
+
+.rpd-table tbody tr {
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.04));
+  transition: background 0.12s;
+}
+
+.rpd-table tbody tr:hover {
+  background: var(--bg-surface-hover, rgba(255, 255, 255, 0.05));
+}
+
+.rpd-table tbody tr.rpd-row--terminal {
+  opacity: 0.55;
+}
+
+.rpd-table td {
+  padding: 10px 14px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.rpd-rider {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.rpd-rider-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.rpd-rider-code {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+}
+
+.rpd-amount {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.rpd-account {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-secondary);
+}
+
+.rpd-method {
+  font-size: 0.66rem;
+  text-transform: capitalize;
+  color: var(--text-muted);
+}
+
+.rpd-period,
+.rpd-date {
+  font-size: 0.66rem;
+  color: var(--text-muted);
+}
+
+.rpd-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.rpd-status--warning { background: rgba(250, 204, 21, 0.1); color: #facc15; }
+.rpd-status--info { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.rpd-status--success { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.rpd-status--processing { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
+.rpd-status--paid { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.rpd-status--rejected { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.rpd-status--cancelled { background: rgba(107, 114, 128, 0.1); color: #6b7280; }
+.rpd-status--default { background: var(--bg-surface, rgba(255, 255, 255, 0.06)); color: var(--text-secondary); }
+
+.rpd-provider-status {
+  display: block;
+  font-size: 0.58rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ── Actions ── */
+
+.rpd-actions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.rpd-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-size: 0.64rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.rpd-action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.rpd-action-btn--primary {
+  background: rgba(255, 107, 0, 0.1);
+  border-color: rgba(255, 107, 0, 0.2);
+  color: var(--accent-orange);
+}
+
+.rpd-action-btn--primary:hover:not(:disabled) {
+  background: rgba(255, 107, 0, 0.18);
+  border-color: var(--accent-orange);
+}
+
+.rpd-action-btn--reject {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.rpd-action-btn--reject:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #ef4444;
+}
+
+.rpd-no-action {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+
+/* ── Reject Modal ── */
+
+.rpd-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rpd-modal {
+  background: var(--bg-card, #111827);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-radius: 12px;
+  padding: 24px;
+  width: 420px;
+  max-width: 90vw;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.rpd-modal h3 {
+  margin: 0 0 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.rpd-modal-desc {
+  margin: 0 0 14px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.rpd-modal-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+  background: var(--bg-surface, rgba(255, 255, 255, 0.04));
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.rpd-modal-input:focus {
+  border-color: var(--accent-orange);
+}
+
+.rpd-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.rpd-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.rpd-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.rpd-btn--ghost {
+  background: transparent;
+  border-color: var(--border-color, rgba(255, 255, 255, 0.12));
+  color: var(--text-secondary);
+}
+
+.rpd-btn--ghost:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+}
+
+.rpd-btn--danger {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #ef4444;
+}
+
+.rpd-btn--danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+}
+
+.rpd-btn--outline {
+  background: transparent;
+  border-color: var(--border-color, rgba(255, 255, 255, 0.12));
+  color: var(--text-secondary);
+}
+
+.rpd-btn--outline:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+}
