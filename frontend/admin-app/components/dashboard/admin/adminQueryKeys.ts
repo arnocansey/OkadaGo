@@ -21,5 +21,6 @@ export const QK = {
   scheduledBroadcasts: ["admin-scheduled-broadcasts"] as const,
   opsJobStatus: ["admin-ops-jobs-status"] as const,
   riderDocuments: ["admin-rider-documents"] as const,
-  platformSettings: ["admin-platform-settings"] as const
+  platformSettings: ["admin-platform-settings"] as const,
+  promoCodes: ["admin-promo-codes"] as const
 } as const;

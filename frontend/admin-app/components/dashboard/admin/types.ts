@@ -20,6 +20,7 @@ export type AdminConsoleScreen =
   | "pricing"
   | "dynamicPricing"
   | "promotions"
+  | "promoManagement"
   | "wallet"
   | "zones"
   | "supportTickets"
@@ -250,6 +251,25 @@ export type ServiceZoneRecord = {
   minimumFare: string | number;
   cancellationFee: string | number;
   waitingFeePerMin: string | number;
+};
+
+export type PromoCodeRecord = {
+  id: string;
+  code: string;
+  name: string;
+  type: "FLAT" | "PERCENTAGE" | "CREDIT";
+  status: "DRAFT" | "ACTIVE" | "PAUSED" | "EXPIRED" | "ARCHIVED";
+  discountValue: string | number;
+  maxDiscount?: string | number | null;
+  minRideAmount?: string | number | null;
+  maxRedemptions?: number | null;
+  perUserLimit?: number | null;
+  city?: string | null;
+  currency?: string | null;
+  startsAt?: string | null;
+  endsAt?: string | null;
+  createdAt: string;
+  _count?: { redemptions?: number };
 };
 
 export type AdminAccountRecord = {

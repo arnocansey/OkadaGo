@@ -109,6 +109,10 @@ const DynamicPricingScreen = dynamic(
   () => import("./admin/DynamicPricingScreen").then((m) => m.DynamicPricingScreen),
   { loading: screenFallback }
 );
+const PromotionsManagementScreen = dynamic(
+  () => import("./admin/PromotionsManagementScreen").then((m) => m.PromotionsManagementScreen),
+  { loading: screenFallback }
+);
 const SupportTicketsScreen = dynamic(
   () => import("./admin/SupportTicketsScreen").then((m) => m.SupportTicketsScreen),
   { loading: screenFallback }
@@ -559,24 +563,32 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
 
       case "promotions":
         return (
-          <div>
-            <PromotionsScreen
-              promoAdjustedTrips={data.promoAdjustedTrips}
-              topDiscountedRides={data.topDiscountedRides}
-              promotionZoneSnapshot={data.promotionZoneSnapshot}
-              promoSpend={data.promoSpend}
-              referralSpend={data.referralSpend}
-              adminCurrency={data.adminCurrency}
-              dataLoading={data.dataLoading}
-            />
-            <div style={{ marginTop: 24 }}>
-              <PromoPerformanceScreen
-                rides={data.rides}
-                adminCurrency={data.adminCurrency}
-                dataLoading={data.dataLoading}
-              />
-            </div>
-          </div>
+          <PromotionsManagementScreen
+            promoCodes={data.promoCodes}
+            promoAdjustedTrips={data.promoAdjustedTrips}
+            promoSpend={data.promoSpend}
+            referralSpend={data.referralSpend}
+            adminCurrency={data.adminCurrency}
+            onCreatePromo={(input) => data.createPromoMutation.mutate(input)}
+            onUpdatePromo={(id, updates) => data.updatePromoMutation.mutate({ id, updates })}
+            isMutating={data.createPromoMutation.isPending || data.updatePromoMutation.isPending}
+            dataLoading={data.dataLoading || data.promoCodesPending}
+          />
+        );
+
+      case "promoManagement":
+        return (
+          <PromotionsManagementScreen
+            promoCodes={data.promoCodes}
+            promoAdjustedTrips={data.promoAdjustedTrips}
+            promoSpend={data.promoSpend}
+            referralSpend={data.referralSpend}
+            adminCurrency={data.adminCurrency}
+            onCreatePromo={(input) => data.createPromoMutation.mutate(input)}
+            onUpdatePromo={(id, updates) => data.updatePromoMutation.mutate({ id, updates })}
+            isMutating={data.createPromoMutation.isPending || data.updatePromoMutation.isPending}
+            dataLoading={data.dataLoading || data.promoCodesPending}
+          />
         );
 
       case "zones":

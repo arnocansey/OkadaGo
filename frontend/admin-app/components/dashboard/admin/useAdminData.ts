@@ -32,7 +32,8 @@ import type {
   OpsJobStatus,
   ScheduledBroadcastRecord,
   AdminUserStats,
-  RiderDocumentRecord
+  RiderDocumentRecord,
+  PromoCodeRecord
 } from "./types";
 
 export { QK } from "./adminQueryKeys";
@@ -535,6 +536,15 @@ export function useAdminData(
     () => platformSettingsData?.settings ?? {},
     [platformSettingsData]
   );
+
+  // ── promo codes ──────────────────────────────────────────────────────────
+  const { data: promoCodesData, isPending: promoCodesPending } = useQuery<PromoCodeRecord[]>({
+    queryKey: QK.promoCodes,
+    queryFn: () => requestJson("/admin/promotions?limit=100", { token }),
+    enabled: want("promoCodes"),
+    staleTime: 30000
+  });
+  const promoCodes = useMemo(() => promoCodesData ?? [], [promoCodesData]);
 
   // ── live ops stream (SSE) — map / SOS screens only ──────────────────────────
   const { liveSnapshot, liveSos, liveOpsConnected, liveOpsTimestamp } = useAdminLiveOps({
@@ -2200,6 +2210,10 @@ export function useAdminData(
     dynamicPricing: [
       { label: "Zones", value: `${zones.length}` },
       { label: "Active rules", value: "0" }
+    ],
+    promoManagement: [
+      { label: "Campaigns", value: `${promoCodes.length}` },
+      { label: "Active", value: `${promoCodes.filter((p) => p.status === "ACTIVE").length}` }
     ]
   }), [
     opsSummary, liveSnapshot, liveOnlineCount, activeRides, activeRiders, adminCurrency, totalDashboardRevenue,
@@ -2257,6 +2271,49 @@ export function useAdminData(
       addToast("Incident assigned", "success");
     },
     onError: (error) => addToast((error as Error).message || "Could not assign incident", "error")
+  });
+
+  // ── promo code mutations ──────────────────────────────────────────────────
+  const createPromoMutation = useMutation({
+    mutationFn: async (input: {
+      code: string;
+      name: string;
+      type: "FLAT" | "PERCENTAGE" | "CREDIT";
+      discountValue: number;
+      maxDiscount?: number;
+      minRideAmount?: number;
+      maxRedemptions?: number;
+      perUserLimit?: number;
+      city?: string;
+      currency?: string;
+      startsAt?: string;
+      endsAt?: string;
+      status?: string;
+    }) =>
+      requestJson("/admin/promotions", {
+        method: "POST",
+        token,
+        body: JSON.stringify(input)
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: QK.promoCodes });
+      addToast("Promo code created", "success");
+    },
+    onError: (error) => addToast((error as Error).message || "Could not create promo code", "error")
+  });
+
+  const updatePromoMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Record<string, unknown> }) =>
+      requestJson(`/admin/promotions/${id}`, {
+        method: "PATCH",
+        token,
+        body: JSON.stringify(updates)
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: QK.promoCodes });
+      addToast("Promo code updated", "success");
+    },
+    onError: (error) => addToast((error as Error).message || "Could not update promo code", "error")
   });
 
   // ── full-dataset CSV export from the backend ────────────────────────────────
@@ -2392,6 +2449,7 @@ export function useAdminData(
     managedUsers, searchedManagedUsers, blockedUsers,
     userLocationSnapshot, userLocationMax, recentManagedUsers,
     promoAdjustedTrips, topDiscountedRides, promoSpend, referralSpend, promotionZoneSnapshot,
+    promoCodes, promoCodesPending,
     ridersPerZone, ridesPerZone,
     rideZoneSnapshot, riderCitySnapshot, riderZoneSnapshot,
     rideStatusGroups, visibleRequestCards, visibleDeliveryRequestCards,
@@ -2423,6 +2481,8 @@ export function useAdminData(
     saveSettingsMutation,
     requestRiderInfoMutation,
     incidentAssignMutation,
+    createPromoMutation,
+    updatePromoMutation,
 
     // Server export
     downloadServerCsv

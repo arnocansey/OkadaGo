@@ -24,6 +24,7 @@ export type AdminQueryNeed =
   | "opsJobStatus"
   | "riderDocuments"
   | "platformSettings"
+  | "promoCodes"
   | "liveStream";
 
 /** Shell badges + dashboard KPIs — one aggregate, not sample list pages. */
@@ -50,6 +51,7 @@ const SCREEN_EXTRA: Record<AdminConsoleScreen, AdminQueryNeed[]> = {
   dynamicPricing: ["zones", "rides", "riders"],
   ratings: ["ratings"],
   promotions: ["rides", "zones"],
+  promoManagement: ["rides", "zones", "promoCodes"],
   wallet: ["walletTx", "payout"],
   zones: ["zones", "riders", "rides"],
   supportTickets: ["supportTickets"],
