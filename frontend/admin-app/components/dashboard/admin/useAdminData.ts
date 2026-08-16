@@ -2214,6 +2214,10 @@ export function useAdminData(
     promoManagement: [
       { label: "Campaigns", value: `${promoCodes.length}` },
       { label: "Active", value: `${promoCodes.filter((p) => p.status === "ACTIVE").length}` }
+    ],
+    refunds: [
+      { label: "Total refunds", value: `${walletTransactions.filter((t) => t.type?.toUpperCase() === "REFUND").length}` },
+      { label: "Refund volume", value: `${adminCurrency} ${walletTransactions.filter((t) => t.type?.toUpperCase() === "REFUND").reduce((s, t) => s + (typeof t.amount === "number" ? t.amount : parseFloat(String(t.amount)) || 0), 0).toFixed(0)}` }
     ]
   }), [
     opsSummary, liveSnapshot, liveOnlineCount, activeRides, activeRiders, adminCurrency, totalDashboardRevenue,

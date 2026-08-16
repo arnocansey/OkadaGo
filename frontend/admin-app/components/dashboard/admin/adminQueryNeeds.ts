@@ -69,7 +69,8 @@ const SCREEN_EXTRA: Record<AdminConsoleScreen, AdminQueryNeed[]> = {
   taxesCompliance: ["platformSettings"],
   settingsNotifications: ["scheduledBroadcasts"],
   admins: ["adminAccounts", "adminPermissions", "passengers"],
-  escalationRules: ["escalationRules"]
+  escalationRules: ["escalationRules"],
+  refunds: ["walletTx", "rides", "deliveries"]
 };
 
 export function needsForScreen(screen: AdminConsoleScreen): Set<AdminQueryNeed> {

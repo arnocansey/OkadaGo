@@ -121,8 +121,16 @@ const RiderPayoutDashboardScreen = dynamic(
   () => import("./admin/RiderPayoutDashboardScreen").then((m) => m.RiderPayoutDashboardScreen),
   { loading: screenFallback }
 );
+const RefundManagementScreen = dynamic(
+  () => import("./admin/RefundManagementScreen").then((m) => m.RefundManagementScreen),
+  { loading: screenFallback }
+);
 const SupportTicketsScreen = dynamic(
   () => import("./admin/SupportTicketsScreen").then((m) => m.SupportTicketsScreen),
+  { loading: screenFallback }
+);
+const SupportCenterScreen = dynamic(
+  () => import("./admin/SupportCenterScreen").then((m) => m.SupportCenterScreen),
   { loading: screenFallback }
 );
 const SosIncidentsScreen = dynamic(
@@ -592,22 +600,16 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
 
       case "supportTickets":
         return (
-          <SupportTicketsScreen
-            incidents={data.incidents}
-            openTickets={data.openTickets}
-            inProgressTickets={data.inProgressTickets}
-            resolvedTickets={data.resolvedTickets}
+          <SupportCenterScreen
             supportTickets={data.supportTickets}
             openSupportTickets={data.openSupportTicketRows}
             inProgressSupportTickets={data.inProgressSupportTicketRows}
             resolvedSupportTickets={data.resolvedSupportTicketRows}
-            onIncidentAction={(id, status) => data.incidentReviewMutation.mutate({ incidentId: id, status })}
-            isMutating={data.incidentReviewMutation.isPending}
+            rides={data.rides}
+            deliveries={data.deliveries}
+            adminCurrency={data.adminCurrency}
             dataLoading={data.dataLoading || data.supportTicketsPending}
-            page={data.ticketsPage}
-            totalItems={data.supportTicketsTotal}
-            pageSize={data.listPageSize}
-            onPageChange={data.setTicketsPage}
+            onTicketAction={(id, action) => data.incidentReviewMutation.mutate({ incidentId: id, status: action === "resolve" ? "RESOLVED" : action === "close" ? "CLOSED" : action === "escalate" ? "UNDER_REVIEW" : "ACTIONED" })}
           />
         );
 
@@ -818,6 +820,18 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             isPromoting={data.promotePassengerMutation.isPending}
             isDeleting={data.deleteAdminMutation.isPending}
             dataLoading={data.adminAccountsPending || data.passengersPending}
+          />
+        );
+
+      case "refunds":
+        return (
+          <RefundManagementScreen
+            walletTransactions={data.walletTransactions}
+            rides={data.rides}
+            deliveries={data.deliveries}
+            adminCurrency={data.adminCurrency}
+            dataLoading={data.dataLoading}
+            onServerExport={(entity) => void data.downloadServerCsv(entity)}
           />
         );
 

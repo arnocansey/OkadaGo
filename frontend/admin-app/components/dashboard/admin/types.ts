@@ -39,7 +39,8 @@ export type AdminConsoleScreen =
   | "auditLogs"
   | "admins"
   | "escalationRules"
-  | "ratings";
+  | "ratings"
+  | "refunds";
 
 export type RideRecord = {
   id: string;

@@ -27,7 +27,8 @@ import {
   Sun,
   Moon,
   X,
-  Zap
+  Zap,
+  RotateCcw
 } from "lucide-react";
 import { ImmersivePage } from "@/components/layout/immersive-page";
 import { BrandMark } from "@/components/brand/BrandMark";
@@ -91,6 +92,7 @@ const screenPermissions: Partial<Record<AdminConsoleScreen, string>> = {
   riderSuspensions: "riders.suspensions",
   passengers: "passengers.view",
   payments: "finance.view",
+  refunds: "finance.view",
   pricing: "zones.view",
   dynamicPricing: "zones.view",
   promotions: "promotions.view",
@@ -132,6 +134,7 @@ const screenMeta: Record<AdminConsoleScreen, AdminScreenMeta> = {
   riderSuspensions: { eyebrow: "", title: "Banned", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/riders/verification", quickActionNote: "" },
   passengers: { eyebrow: "", title: "Passengers", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
   payments: { eyebrow: "", title: "Payments", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/reports-analytics", quickActionNote: "" },
+  refunds: { eyebrow: "", title: "Refund Management", description: "Review and process passenger refund requests.", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
   pricing: { eyebrow: "", title: "Pricing", description: "Configure fares, rates, and commissions", searchLabel: "", quickActionLabel: "", quickActionHref: "/pricing", quickActionNote: "" },
   dynamicPricing: { eyebrow: "", title: "Dynamic Pricing", description: "Demand-based surge pricing rules", searchLabel: "", quickActionLabel: "", quickActionHref: "/dynamic-pricing", quickActionNote: "" },
   promotions: { eyebrow: "", title: "Promotions", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
@@ -298,6 +301,15 @@ export function AdminShell({
         href: "/finance",
         icon: CreditCard,
         screen: "payments",
+        group: "home",
+        hint: "",
+        badge: `${badgeData.pendingPayoutRequestsCount}`
+      },
+      {
+        label: "Refunds",
+        href: "/refunds",
+        icon: RotateCcw,
+        screen: "refunds",
         group: "home",
         hint: "",
         badge: `${badgeData.pendingPayoutRequestsCount}`
