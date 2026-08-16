@@ -47,6 +47,7 @@ const SCREEN_EXTRA: Record<AdminConsoleScreen, AdminQueryNeed[]> = {
   passengers: ["passengers", "userStats"],
   payments: ["financeSummary", "walletTx", "payout"],
   pricing: ["zones", "rides"],
+  dynamicPricing: ["zones", "rides", "riders"],
   ratings: ["ratings"],
   promotions: ["rides", "zones"],
   wallet: ["walletTx", "payout"],

@@ -105,6 +105,10 @@ const PricingManagementScreen = dynamic(
   () => import("./admin/PricingManagementScreen").then((m) => m.PricingManagementScreen),
   { loading: screenFallback }
 );
+const DynamicPricingScreen = dynamic(
+  () => import("./admin/DynamicPricingScreen").then((m) => m.DynamicPricingScreen),
+  { loading: screenFallback }
+);
 const SupportTicketsScreen = dynamic(
   () => import("./admin/SupportTicketsScreen").then((m) => m.SupportTicketsScreen),
   { loading: screenFallback }
@@ -598,6 +602,18 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             onSavePricing={(zoneId, updates) => data.zoneUpdateMutation.mutate({ zoneId, updates })}
             isMutating={data.zoneUpdateMutation.isPending}
             dataLoading={data.zonesPending}
+          />
+        );
+
+      case "dynamicPricing":
+        return (
+          <DynamicPricingScreen
+            zones={data.zones}
+            rides={data.rides}
+            ridersPerZone={data.ridersPerZone}
+            ridesPerZone={data.ridesPerZone}
+            adminCurrency={data.adminCurrency}
+            dataLoading={data.dataLoading || data.zonesPending}
           />
         );
 

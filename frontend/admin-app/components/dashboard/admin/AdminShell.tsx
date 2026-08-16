@@ -26,7 +26,8 @@ import {
   Settings,
   Sun,
   Moon,
-  X
+  X,
+  Zap
 } from "lucide-react";
 import { ImmersivePage } from "@/components/layout/immersive-page";
 import { BrandMark } from "@/components/brand/BrandMark";
@@ -91,6 +92,7 @@ const screenPermissions: Partial<Record<AdminConsoleScreen, string>> = {
   passengers: "passengers.view",
   payments: "finance.view",
   pricing: "zones.view",
+  dynamicPricing: "zones.view",
   promotions: "promotions.view",
   wallet: "finance.view",
   zones: "zones.view",
@@ -130,6 +132,7 @@ const screenMeta: Record<AdminConsoleScreen, AdminScreenMeta> = {
   passengers: { eyebrow: "", title: "Passengers", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
   payments: { eyebrow: "", title: "Payments", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/reports-analytics", quickActionNote: "" },
   pricing: { eyebrow: "", title: "Pricing", description: "Configure fares, rates, and commissions", searchLabel: "", quickActionLabel: "", quickActionHref: "/pricing", quickActionNote: "" },
+  dynamicPricing: { eyebrow: "", title: "Dynamic Pricing", description: "Demand-based surge pricing rules", searchLabel: "", quickActionLabel: "", quickActionHref: "/dynamic-pricing", quickActionNote: "" },
   promotions: { eyebrow: "", title: "Promotions", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
   wallet: { eyebrow: "", title: "Wallet", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
   zones: { eyebrow: "", title: "Zones", description: "", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
@@ -305,6 +308,15 @@ export function AdminShell({
         group: "home",
         hint: "",
         badge: `${badgeData.zonesActiveCount}`
+      },
+      {
+        label: "Dynamic Pricing",
+        href: "/dynamic-pricing",
+        icon: Zap,
+        screen: "dynamicPricing",
+        group: "home",
+        hint: "",
+        badge: ""
       },
       {
         label: "Promotions",

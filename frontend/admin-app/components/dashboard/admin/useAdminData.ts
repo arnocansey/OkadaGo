@@ -2196,6 +2196,10 @@ export function useAdminData(
     escalationRules: [
       { label: "Rules", value: `${escalationRules.length}` },
       { label: "Active", value: `${escalationRules.filter((r) => r.enabled).length}` }
+    ],
+    dynamicPricing: [
+      { label: "Zones", value: `${zones.length}` },
+      { label: "Active rules", value: "0" }
     ]
   }), [
     opsSummary, liveSnapshot, liveOnlineCount, activeRides, activeRiders, adminCurrency, totalDashboardRevenue,

@@ -18,6 +18,7 @@ export type AdminConsoleScreen =
   | "passengers"
   | "payments"
   | "pricing"
+  | "dynamicPricing"
   | "promotions"
   | "wallet"
   | "zones"
