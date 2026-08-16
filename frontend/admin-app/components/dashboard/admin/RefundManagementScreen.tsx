@@ -90,7 +90,7 @@ function walletTxToRefundRow(
   deliveries: DeliveryRecord[]
 ): RefundRow {
   const ride = rides.find((r) => r.id === tx.ride?.id) ?? null;
-  const delivery = deliveries.find((d) => d.id === tx.ride?.id) ?? null;
+  const delivery = deliveries.find((d) => tx.reference?.includes(d.id) || tx.description?.includes(d.id)) ?? null;
   const desc = tx.description?.toLowerCase() ?? "";
   const isPartial = desc.includes("partial");
   const isRejected = desc.includes("rejected");
@@ -197,6 +197,7 @@ export function RefundManagementScreen({
   const [detailTab, setDetailTab] = useState<DetailTab>("history");
   const [partialRefundId, setPartialRefundId] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<{ id: string; action: "approve" | "reject" } | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
 
   const refundRows = useMemo(() => {
     return walletTransactions
@@ -245,9 +246,10 @@ export function RefundManagementScreen({
 
   const handleConfirmAction = useCallback(() => {
     if (!confirmAction) return;
-    if (onRefundAction) onRefundAction(confirmAction.id, confirmAction.action);
+    if (onRefundAction) onRefundAction(confirmAction.id, confirmAction.action, undefined, confirmAction.action === "reject" ? rejectReason.trim() || undefined : undefined);
     setConfirmAction(null);
-  }, [confirmAction, onRefundAction]);
+    setRejectReason("");
+  }, [confirmAction, onRefundAction, rejectReason]);
 
   const handlePartialConfirm = useCallback(
     (amount: number, reason: string) => {
@@ -636,20 +638,34 @@ export function RefundManagementScreen({
 
       {/* ── Confirm Modal ── */}
       {confirmAction && (
-        <div className="rfm-modal-backdrop" onClick={() => setConfirmAction(null)}>
+        <div className="rfm-modal-backdrop" onClick={() => { setConfirmAction(null); setRejectReason(""); }}>
           <div className="rfm-modal" onClick={(e) => e.stopPropagation()}>
             <h3>{confirmAction.action === "approve" ? "Approve Refund" : "Reject Refund"}</h3>
             <p className="rfm-modal-desc">
               {confirmAction.action === "approve"
                 ? "This will refund the full amount to the passenger's wallet. Continue?"
-                : "This will reject the refund request. Continue?"}
+                : "This will reject the refund request. Provide a reason below."}
             </p>
+            {confirmAction.action === "reject" && (
+              <>
+                <label className="rfm-modal-label">Rejection Reason</label>
+                <textarea
+                  className="rfm-modal-textarea"
+                  rows={3}
+                  placeholder="Why is this refund being rejected?"
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  autoFocus
+                />
+              </>
+            )}
             <div className="rfm-modal-actions">
-              <button type="button" className="rfm-btn rfm-btn--ghost" onClick={() => setConfirmAction(null)}>Cancel</button>
+              <button type="button" className="rfm-btn rfm-btn--ghost" onClick={() => { setConfirmAction(null); setRejectReason(""); }}>Cancel</button>
               <button
                 type="button"
                 className={`rfm-btn ${confirmAction.action === "approve" ? "rfm-btn--approve" : "rfm-btn--reject"}`}
                 onClick={handleConfirmAction}
+                disabled={confirmAction.action === "reject" && rejectReason.trim().length < 3}
               >
                 {confirmAction.action === "approve" ? <><CheckCircle2 size={13} /> Approve</> : <><Ban size={13} /> Reject</>}
               </button>

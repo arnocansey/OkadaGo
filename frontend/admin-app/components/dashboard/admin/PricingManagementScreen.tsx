@@ -254,6 +254,9 @@ export function PricingManagementScreen({
   const [expandedZone, setExpandedZone] = useState<string | null>(null);
   const [editedZones, setEditedZones] = useState<Record<string, Record<string, string>>>({});
   const [activeServiceTab, setActiveServiceTab] = useState<ServiceType>("standard_bike");
+  const [periodSurges, setPeriodSurges] = useState<Record<string, number>>({
+    default: 1.0, peak: 1.5, night: 1.3, weekend: 1.2, holiday: 1.8
+  });
   const [showSimulator, setShowSimulator] = useState(true);
 
   const handleFieldChange = (zoneId: string, field: string, value: string) => {
@@ -392,18 +395,40 @@ export function PricingManagementScreen({
       <div className="prc-periods">
         <h3 className="prc-section-title"><Clock size={15} /> Time-Based Pricing</h3>
         <div className="prc-period-grid">
-          {TIME_PERIODS.map((tp) => (
-            <article key={tp.id} className="prc-period-card">
-              <div className="prc-period-header">
-                <span className="prc-period-label">{tp.label}</span>
-                <span className="prc-period-desc">{tp.description}</span>
-              </div>
-              <div className="prc-period-rates">
-                <span>Surge: 1.0×</span>
-                <span>Active: {tp.id === "default" ? "—" : "Rules"}</span>
-              </div>
-            </article>
-          ))}
+          {TIME_PERIODS.map((tp) => {
+            const surgeVal = periodSurges[tp.id] ?? 1.0;
+            const isDefault = tp.id === "default";
+            return (
+              <article key={tp.id} className="prc-period-card">
+                <div className="prc-period-header">
+                  <span className="prc-period-label">{tp.label}</span>
+                  <span className="prc-period-desc">{tp.description}</span>
+                </div>
+                <div className="prc-period-rates">
+                  <label className="prc-period-surge-label">Surge</label>
+                  <div className="prc-period-surge-input">
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0.5"
+                      max="5.0"
+                      value={surgeVal}
+                      disabled={isDefault}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value) || 1.0;
+                        setPeriodSurges((prev) => ({ ...prev, [tp.id]: Math.max(0.5, Math.min(5.0, val)) }));
+                      }}
+                      className="prc-surge-input"
+                    />
+                    <span className="prc-surge-x">×</span>
+                  </div>
+                  <span className={`prc-period-status${surgeVal > 1.0 ? " active" : ""}`}>
+                    {isDefault ? "—" : surgeVal > 1.0 ? "Active" : "Off"}
+                  </span>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </div>
 

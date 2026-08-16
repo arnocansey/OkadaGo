@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, Fragment } from "react";
 import { formatMoney } from "@/lib/currency";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { EmptyCard } from "./EmptyCard";
@@ -504,76 +504,162 @@ export function PromotionsManagementScreen({
                 const isExpanded = expandedId === promo.id;
 
                 return (
-                  <tr key={promo.id}>
-                    <td>
-                      <div className="pmg-campaign">
-                        <span className="pmg-campaign-name">{promo.name}</span>
-                        <span className="pmg-campaign-cat">{category.replace("_", " ")}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <code className="pmg-code">{promo.code}</code>
-                    </td>
-                    <td>
-                      <span className="pmg-type-badge" style={{ background: tBadge.color + "20", color: tBadge.color }}>
-                        {tBadge.label}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="pmg-discount">
-                        {promo.type === "PERCENTAGE"
-                          ? `${parseNumber(promo.discountValue)}%`
-                          : formatMoney(promo.currency ?? adminCurrency, parseNumber(promo.discountValue))}
-                        {promo.maxDiscount != null && (
-                          <small> (max {formatMoney(promo.currency ?? adminCurrency, parseNumber(promo.maxDiscount))})</small>
-                        )}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="pmg-usage">
-                        {redemptions}
-                        {promo.maxRedemptions != null && <small> / {promo.maxRedemptions}</small>}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="pmg-budget">
-                        {promo.maxRedemptions != null && promo.discountValue
-                          ? formatMoney(promo.currency ?? adminCurrency, promo.maxRedemptions * parseNumber(promo.discountValue))
-                          : "—"}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="pmg-date">{promo.startsAt ? formatDateTime(promo.startsAt) : "—"}</span>
-                    </td>
-                    <td>
-                      <span className="pmg-date">{promo.endsAt ? formatDateTime(promo.endsAt) : "—"}</span>
-                    </td>
-                    <td>
-                      <span className={`pmg-badge pmg-badge-${badge.tone}`}>{badge.label}</span>
-                    </td>
-                    <td>
-                      <div className="pmg-actions">
-                        <button
-                          type="button"
-                          className="pmg-action-btn"
-                          onClick={() => setExpandedId(isExpanded ? null : promo.id)}
-                          title="View details"
-                        >
-                          {isExpanded ? <EyeOff size={14} /> : <Eye size={14} />}
-                        </button>
-                        {onUpdatePromo && (
+                  <Fragment key={promo.id}>
+                    <tr>
+                      <td>
+                        <div className="pmg-campaign">
+                          <span className="pmg-campaign-name">{promo.name}</span>
+                          <span className="pmg-campaign-cat">{category.replace("_", " ")}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <code className="pmg-code">{promo.code}</code>
+                      </td>
+                      <td>
+                        <span className="pmg-type-badge" style={{ background: tBadge.color + "20", color: tBadge.color }}>
+                          {tBadge.label}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="pmg-discount">
+                          {promo.type === "PERCENTAGE"
+                            ? `${parseNumber(promo.discountValue)}%`
+                            : formatMoney(promo.currency ?? adminCurrency, parseNumber(promo.discountValue))}
+                          {promo.maxDiscount != null && (
+                            <small> (max {formatMoney(promo.currency ?? adminCurrency, parseNumber(promo.maxDiscount))})</small>
+                          )}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="pmg-usage">
+                          {redemptions}
+                          {promo.maxRedemptions != null && <small> / {promo.maxRedemptions}</small>}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="pmg-budget">
+                          {promo.maxRedemptions != null && promo.discountValue
+                            ? formatMoney(promo.currency ?? adminCurrency, promo.maxRedemptions * parseNumber(promo.discountValue))
+                            : "—"}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="pmg-date">{promo.startsAt ? formatDateTime(promo.startsAt) : "—"}</span>
+                      </td>
+                      <td>
+                        <span className="pmg-date">{promo.endsAt ? formatDateTime(promo.endsAt) : "—"}</span>
+                      </td>
+                      <td>
+                        <span className={`pmg-badge pmg-badge-${badge.tone}`}>{badge.label}</span>
+                      </td>
+                      <td>
+                        <div className="pmg-actions">
                           <button
                             type="button"
                             className="pmg-action-btn"
-                            onClick={() => handleToggleStatus(promo)}
-                            title={promo.status === "ACTIVE" ? "Pause" : "Activate"}
+                            onClick={() => setExpandedId(isExpanded ? null : promo.id)}
+                            title="View details"
                           >
-                            {promo.status === "ACTIVE" ? <PauseCircle size={14} /> : <CheckCircle size={14} />}
+                            {isExpanded ? <EyeOff size={14} /> : <Eye size={14} />}
                           </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
+                          {onUpdatePromo && (
+                            <>
+                              <button
+                                type="button"
+                                className="pmg-action-btn"
+                                onClick={() => handleToggleStatus(promo)}
+                                title={promo.status === "ACTIVE" ? "Pause" : "Activate"}
+                              >
+                                {promo.status === "ACTIVE" ? <PauseCircle size={14} /> : <CheckCircle size={14} />}
+                              </button>
+                              <button
+                                type="button"
+                                className="pmg-action-btn"
+                                onClick={() => onUpdatePromo(promo.id, { status: "ARCHIVED" })}
+                                title="Archive"
+                              >
+                                <Archive size={14} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr className="pmg-expanded-row">
+                        <td colSpan={10}>
+                          <div className="pmg-expanded-content">
+                            <div className="pmg-detail-grid">
+                              <div className="pmg-detail-group">
+                                <span className="pmg-detail-label">Code</span>
+                                <code className="pmg-detail-value">{promo.code}</code>
+                              </div>
+                              <div className="pmg-detail-group">
+                                <span className="pmg-detail-label">Type</span>
+                                <span className="pmg-detail-value">{tBadge.label}</span>
+                              </div>
+                              <div className="pmg-detail-group">
+                                <span className="pmg-detail-label">Discount</span>
+                                <span className="pmg-detail-value">
+                                  {promo.type === "PERCENTAGE"
+                                    ? `${parseNumber(promo.discountValue)}%`
+                                    : formatMoney(promo.currency ?? adminCurrency, parseNumber(promo.discountValue))}
+                                </span>
+                              </div>
+                              {promo.maxDiscount != null && (
+                                <div className="pmg-detail-group">
+                                  <span className="pmg-detail-label">Max Discount</span>
+                                  <span className="pmg-detail-value">{formatMoney(promo.currency ?? adminCurrency, parseNumber(promo.maxDiscount))}</span>
+                                </div>
+                              )}
+                              {promo.minRideAmount != null && (
+                                <div className="pmg-detail-group">
+                                  <span className="pmg-detail-label">Min Ride Amount</span>
+                                  <span className="pmg-detail-value">{formatMoney(promo.currency ?? adminCurrency, parseNumber(promo.minRideAmount))}</span>
+                                </div>
+                              )}
+                              <div className="pmg-detail-group">
+                                <span className="pmg-detail-label">Redemptions</span>
+                                <span className="pmg-detail-value">{redemptions}{promo.maxRedemptions != null ? ` / ${promo.maxRedemptions}` : ""}</span>
+                              </div>
+                              {promo.perUserLimit != null && (
+                                <div className="pmg-detail-group">
+                                  <span className="pmg-detail-label">Per User Limit</span>
+                                  <span className="pmg-detail-value">{promo.perUserLimit}</span>
+                                </div>
+                              )}
+                              {promo.city && (
+                                <div className="pmg-detail-group">
+                                  <span className="pmg-detail-label">City</span>
+                                  <span className="pmg-detail-value">{promo.city}</span>
+                                </div>
+                              )}
+                              <div className="pmg-detail-group">
+                                <span className="pmg-detail-label">Category</span>
+                                <span className="pmg-detail-value">{category.replace("_", " ")}</span>
+                              </div>
+                              <div className="pmg-detail-group">
+                                <span className="pmg-detail-label">Status</span>
+                                <span className={`pmg-badge pmg-badge-${badge.tone}`}>{badge.label}</span>
+                              </div>
+                              <div className="pmg-detail-group">
+                                <span className="pmg-detail-label">Start</span>
+                                <span className="pmg-detail-value">{promo.startsAt ? formatDateTime(promo.startsAt) : "—"}</span>
+                              </div>
+                              <div className="pmg-detail-group">
+                                <span className="pmg-detail-label">End</span>
+                                <span className="pmg-detail-value">{promo.endsAt ? formatDateTime(promo.endsAt) : "—"}</span>
+                              </div>
+                              <div className="pmg-detail-group">
+                                <span className="pmg-detail-label">Created</span>
+                                <span className="pmg-detail-value">{formatDateTime(promo.createdAt)}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 );
               })}
             </tbody>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { formatMoney } from "@/lib/currency";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { OperationsMap } from "@/components/maps/operations-map";
@@ -40,6 +40,7 @@ export type DynamicPricingScreenProps = {
   ridesPerZone: Record<string, number>;
   adminCurrency: string;
   dataLoading?: boolean;
+  onSaveRules?: (rules: PricingRule[]) => void;
 };
 
 type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -148,8 +149,11 @@ function computeDemandMarkers(rides: RideRecord[], zones: ServiceZoneRecord[]) {
     return Array.from(zoneDemand.entries()).map(([zoneId, data]) => {
       const intensity = data.count / maxCount;
       const zone = zones.find((z) => z.id === zoneId);
-      const lat = zone ? ACCRA_MAP_CENTER[0] + (Math.random() - 0.5) * 0.05 : ACCRA_MAP_CENTER[0];
-      const lng = zone ? ACCRA_MAP_CENTER[1] + (Math.random() - 0.5) * 0.05 : ACCRA_MAP_CENTER[1];
+      const hash = zoneId.split("").reduce((a, c) => ((a << 5) - a + c.charCodeAt(0)) | 0, 0);
+      const latOffset = ((hash % 100) / 100) * 0.04 - 0.02;
+      const lngOffset = (((hash * 7) % 100) / 100) * 0.04 - 0.02;
+      const lat = zone ? ACCRA_MAP_CENTER[0] + latOffset : ACCRA_MAP_CENTER[0];
+      const lng = zone ? ACCRA_MAP_CENTER[1] + lngOffset : ACCRA_MAP_CENTER[1];
       return {
         id: `demand-${zoneId}`,
         position: [lat, lng] as [number, number],
@@ -167,9 +171,15 @@ export function DynamicPricingScreen({
   ridersPerZone,
   ridesPerZone,
   adminCurrency,
-  dataLoading = false
+  dataLoading = false,
+  onSaveRules
 }: DynamicPricingScreenProps) {
-  const [rules, setRules] = useState<PricingRule[]>([]);
+  const [rules, setRules] = useState<PricingRule[]>(() => {
+    try {
+      const saved = localStorage.getItem("okadago_dynamic_pricing_rules");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
   const [editingRule, setEditingRule] = useState<RuleDraft | null>(null);
   const [expandedRuleId, setExpandedRuleId] = useState<string | null>(null);
   const [previewZone, setPreviewZone] = useState<string>(zones[0]?.id ?? "");
@@ -177,6 +187,11 @@ export function DynamicPricingScreen({
   const [previewDuration, setPreviewDuration] = useState("15");
   const [showRuleForm, setShowRuleForm] = useState(false);
   const [previewRan, setPreviewRan] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem("okadago_dynamic_pricing_rules", JSON.stringify(rules));
+    if (onSaveRules) onSaveRules(rules);
+  }, [rules, onSaveRules]);
 
   const demandMarkers = useMemo(() => computeDemandMarkers(rides, zones), [rides, zones]);
 
@@ -256,9 +271,23 @@ export function DynamicPricingScreen({
   const previewMinFare = parseNumber(selectedZone?.minimumFare);
 
   const previewResult = useMemo(() => {
-    const activeSurgeRule = rules.find(
-      (r) => r.isActive && r.surgeMultiplier && r.surgeMultiplier > 1 && (!r.serviceZoneId || r.serviceZoneId === previewZone)
-    );
+    const now = new Date();
+    const currentMinute = now.getHours() * 60 + now.getMinutes();
+    const currentDay = now.getDay();
+
+    const activeSurgeRule = rules.find((r) => {
+      if (!r.isActive || !r.surgeMultiplier || r.surgeMultiplier <= 1) return false;
+      if (r.serviceZoneId && r.serviceZoneId !== previewZone) return false;
+      if (r.dayOfWeek != null && r.dayOfWeek !== currentDay) return false;
+      if (r.startMinuteOfDay != null && r.endMinuteOfDay != null) {
+        if (r.startMinuteOfDay <= r.endMinuteOfDay) {
+          if (currentMinute < r.startMinuteOfDay || currentMinute > r.endMinuteOfDay) return false;
+        } else {
+          if (currentMinute < r.startMinuteOfDay && currentMinute > r.endMinuteOfDay) return false;
+        }
+      }
+      return true;
+    });
     const surge = activeSurgeRule?.surgeMultiplier ?? 1;
 
     return computeFarePreview({
