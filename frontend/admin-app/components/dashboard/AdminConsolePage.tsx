@@ -113,6 +113,10 @@ const PromotionsManagementScreen = dynamic(
   () => import("./admin/PromotionsManagementScreen").then((m) => m.PromotionsManagementScreen),
   { loading: screenFallback }
 );
+const FinanceDashboardScreen = dynamic(
+  () => import("./admin/FinanceDashboardScreen").then((m) => m.FinanceDashboardScreen),
+  { loading: screenFallback }
+);
 const SupportTicketsScreen = dynamic(
   () => import("./admin/SupportTicketsScreen").then((m) => m.SupportTicketsScreen),
   { loading: screenFallback }
@@ -481,60 +485,15 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
 
       case "payments":
         return (
-          <FinanceScreen
-            walletTransactions={data.filteredWalletTransactions}
-            payoutRequests={data.filteredPayoutRequests}
-            postedWalletTransactions={data.postedWalletTransactions}
-            pendingWalletTransactions={data.pendingWalletTransactions}
-            failedWalletTransactions={data.failedWalletTransactions}
-            pendingPayoutRequests={data.pendingPayoutRequests}
-            paidPayoutRequests={data.paidPayoutRequests}
-            totalRevenue={data.totalRevenue}
-            totalCommission={data.totalCommission}
-            payoutOutflow={data.payoutOutflow}
-            platformNetProfit={data.platformNetProfit}
-            profitMargin={data.profitMargin}
-            postedWalletVolume={
-              data.financeSummary?.wallet.postedVolume ??
-              data.postedWalletTransactions.reduce(
-                (sum, t) => sum + Math.abs(parseNumber(t.amount)),
-                0
-              )
-            }
+          <FinanceDashboardScreen
+            financeSummary={data.financeSummary ?? null}
+            walletTransactions={data.walletTransactions}
+            rides={data.rides}
+            deliveries={data.deliveries}
             pendingPayoutValue={data.pendingPayoutValue}
-            payoutHoldBalance={data.riderWalletLockedBalance}
-            financeDailyBuckets={data.financeDailyBuckets}
-            financeDailyMax={data.financeDailyMax}
-            payoutDailyBuckets={data.payoutDailyBuckets}
-            payoutDailyMax={data.payoutDailyMax}
-            paymentMethodSnapshot={data.paymentMethodSnapshot}
-            paymentMethodTotal={data.paymentMethodTotal}
-            recentFinanceTransactions={data.walletTransactions.slice(0, 10)}
-            transactionStatusFilter={data.transactionStatusFilter}
-            transactionTypeFilter={data.transactionTypeFilter}
-            payoutStatusFilter={data.payoutStatusFilter}
-            onTransactionStatusChange={data.setTransactionStatusFilter}
-            onTransactionTypeChange={data.setTransactionTypeFilter}
-            onPayoutStatusChange={data.setPayoutStatusFilter}
             adminCurrency={data.adminCurrency}
-            totalRideRevenue={data.totalRideRevenue}
-            totalDeliveryRevenue={data.totalDeliveryRevenue}
-            totalRideCommission={data.totalRideCommission}
-            totalDeliveryCommission={data.totalDeliveryCommission}
-            riderEarningsTotal={data.riderEarningsTotal}
             dataLoading={data.dataLoading}
-            onPayoutAction={(id, action, reason) =>
-              data.payoutReviewMutation.mutate({ payoutRequestId: id, action, rejectionReason: reason })
-            }
             onServerExport={(entity) => void data.downloadServerCsv(entity)}
-            isMutating={data.payoutReviewMutation.isPending}
-            walletPage={data.walletPage}
-            walletTotal={data.walletTxTotal}
-            payoutPage={data.payoutPage}
-            payoutTotal={data.payoutRequestsTotal}
-            listPageSize={data.listPageSize}
-            onWalletPageChange={data.setWalletPage}
-            onPayoutPageChange={data.setPayoutPage}
           />
         );
 
