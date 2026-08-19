@@ -162,6 +162,8 @@ export function TripChatModal({ visible, tripId, onClose }: Props) {
     [colors, typography]
   );
 
+  const flatListRef = React.useRef<FlatList>(null);
+
   useEffect(() => {
     if (!visible || !tripId) return;
 
@@ -171,7 +173,14 @@ export function TripChatModal({ visible, tripId, onClose }: Props) {
     const handleIncomingMessage = (data: unknown) => {
       const msg = data as ChatMessage;
       if (msg && msg.tripId === tripId) {
-        setMessages((prev) => [...prev, msg]);
+        setMessages((prev) => {
+          const exists = prev.some(
+            (m) => m.text === msg.text && m.senderRole === msg.senderRole
+          );
+          if (exists && msg.senderRole === "rider") return prev;
+          return [...prev, msg];
+        });
+        setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
       }
     };
 
@@ -185,16 +194,21 @@ export function TripChatModal({ visible, tripId, onClose }: Props) {
   function sendMessage(text: string) {
     if (!text.trim() || !tripId) return;
 
+    const formattedTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     const payload: ChatMessage = {
       tripId,
       text: text.trim(),
       senderRole: "rider",
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      timestamp: formattedTime,
     };
 
+    riderWs.send("trip:join-room", { tripId });
     riderWs.send("trip:chat-message", payload);
+
+    setMessages((prev) => [...prev, payload]);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setInputText("");
+    setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
   }
 
   return (
@@ -216,6 +230,7 @@ export function TripChatModal({ visible, tripId, onClose }: Props) {
             </View>
 
             <FlatList
+              ref={flatListRef}
               data={messages}
               keyExtractor={(_, index) => index.toString()}
               contentContainerStyle={styles.messageList}

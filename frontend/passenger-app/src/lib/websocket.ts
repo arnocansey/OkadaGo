@@ -20,13 +20,13 @@ export class PassengerWebSocketService {
         this.socket.on("connect", () => resolve());
         this.socket.on("error", (error) => reject(error));
 
-        for (const event of [
-          "ride:assigned",
-          "ride:status-update",
-          "delivery:status-update",
-          "rider:location-update",
-          "notification",
-        ]) {
+        // Forward all server events to internal listeners
+        this.socket.onAny((event, data) => {
+          this.emit(event, data);
+        });
+
+        // Ensure any previously registered listeners are bound to current socket
+        for (const event of this.listeners.keys()) {
           this.socket.on(event, (data) => this.emit(event, data));
         }
       } catch (error) {
@@ -44,6 +44,10 @@ export class PassengerWebSocketService {
     const list = this.listeners.get(event) ?? [];
     list.push(callback);
     this.listeners.set(event, list);
+
+    if (this.socket) {
+      this.socket.on(event, (data) => this.emit(event, data));
+    }
   }
 
   off(event: string, callback: (data: unknown) => void): void {
