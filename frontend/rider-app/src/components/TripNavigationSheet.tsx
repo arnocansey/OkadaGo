@@ -4,6 +4,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Linking,
+  Modal,
   Platform,
   Pressable,
   StyleSheet,
@@ -26,6 +27,7 @@ import {
 import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { AppMap } from "@/components/AppMap";
+import { MotorcycleNavigation } from "@/components/MotorcycleNavigation";
 import { PinVerificationSheet } from "@/components/PinVerificationSheet";
 import { SafetyCenter } from "@/components/SafetyCenter";
 import { useTheme } from "@/context/ThemeContext";
@@ -122,6 +124,7 @@ export function TripNavigationSheet({
   const { session } = useApp();
   const [showPinSheet, setShowPinSheet] = useState(false);
   const [showSafetyCenter, setShowSafetyCenter] = useState(false);
+  const [showInAppNav, setShowInAppNav] = useState(false);
 
   const status = trip.status?.toLowerCase() ?? "assigned";
   const isArriving = status === "arriving";
@@ -677,22 +680,15 @@ export function TripNavigationSheet({
                 )}
               </Pressable>
 
-              {/* Navigation Apps */}
+              {/* Navigation Button */}
               {pickupLat && pickupLon && (
                 <View style={s.navRow}>
                   <Pressable
                     style={s.navBtn}
-                    onPress={() => openGoogleMapsNavigation(pickupLat, pickupLon, trip.pickupAddress)}
+                    onPress={() => setShowInAppNav(true)}
                   >
-                    <MapPin size={14} color={colors.primary} />
-                    <Text style={s.navBtnText}>Google Maps</Text>
-                  </Pressable>
-                  <Pressable
-                    style={s.navBtn}
-                    onPress={() => openWazeNavigation(pickupLat, pickupLon)}
-                  >
-                    <Navigation size={14} color={colors.primary} />
-                    <Text style={s.navBtnText}>Waze</Text>
+                    <Navigation size={16} color={colors.primary} />
+                    <Text style={s.navBtnText}>Navigate to Pickup (In-App)</Text>
                   </Pressable>
                 </View>
               )}
@@ -880,33 +876,15 @@ export function TripNavigationSheet({
                 )}
               </Pressable>
 
-              {/* Navigation Apps */}
+              {/* In-App Navigation Button */}
               {trip.destinationLatitude && trip.destinationLongitude && (
                 <View style={s.navRow}>
                   <Pressable
                     style={s.navBtn}
-                    onPress={() =>
-                      openGoogleMapsNavigation(
-                        trip.destinationLatitude!,
-                        trip.destinationLongitude!,
-                        trip.destinationAddress,
-                      )
-                    }
+                    onPress={() => setShowInAppNav(true)}
                   >
-                    <MapPin size={14} color={colors.primary} />
-                    <Text style={s.navBtnText}>Google Maps</Text>
-                  </Pressable>
-                  <Pressable
-                    style={s.navBtn}
-                    onPress={() =>
-                      openWazeNavigation(
-                        trip.destinationLatitude!,
-                        trip.destinationLongitude!,
-                      )
-                    }
-                  >
-                    <Navigation size={14} color={colors.primary} />
-                    <Text style={s.navBtnText}>Waze</Text>
+                    <Navigation size={16} color={colors.primary} />
+                    <Text style={s.navBtnText}>Navigate to Destination (In-App)</Text>
                   </Pressable>
                 </View>
               )}
@@ -914,6 +892,24 @@ export function TripNavigationSheet({
           )}
         </View>
       </KeyboardAvoidingView>
+
+      {/* ─── In-App Motorcycle Navigation Modal ─────────────────── */}
+      <Modal
+        visible={showInAppNav}
+        animationType="slide"
+        onRequestClose={() => setShowInAppNav(false)}
+      >
+        <MotorcycleNavigation
+          destinationAddress={isPickupPhase ? trip.pickupAddress : trip.destinationAddress}
+          destinationLandmark={isPickupPhase ? trip.pickupLandmark : trip.destinationLandmark}
+          destinationLatitude={isPickupPhase ? trip.pickupLatitude : trip.destinationLatitude}
+          destinationLongitude={isPickupPhase ? trip.pickupLongitude : trip.destinationLongitude}
+          passengerName={trip.passengerName}
+          passengerPhone={trip.passengerPhone}
+          onClose={() => setShowInAppNav(false)}
+          onCallPassenger={() => trip.passengerPhone && Linking.openURL(`tel:${trip.passengerPhone}`)}
+        />
+      </Modal>
 
       {/* ─── PIN Verification Sheet ──────────────────────────────── */}
       <PinVerificationSheet

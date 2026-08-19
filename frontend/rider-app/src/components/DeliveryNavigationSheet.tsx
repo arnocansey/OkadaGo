@@ -4,6 +4,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Linking,
+  Modal,
   Platform,
   Pressable,
   StyleSheet,
@@ -29,6 +30,7 @@ import {
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { AppMap } from "@/components/AppMap";
+import { MotorcycleNavigation } from "@/components/MotorcycleNavigation";
 import { PackageVerificationSheet } from "@/components/PackageVerificationSheet";
 import { DeliveryCompletionSheet } from "@/components/DeliveryCompletionSheet";
 import { SafetyCenter } from "@/components/SafetyCenter";
@@ -157,6 +159,7 @@ export function DeliveryNavigationSheet({
   const [showPackageVerification, setShowPackageVerification] = useState(false);
   const [showDeliveryCompletion, setShowDeliveryCompletion] = useState(false);
   const [showSafetyCenter, setShowSafetyCenter] = useState(false);
+  const [showInAppNav, setShowInAppNav] = useState(false);
 
   const status = delivery.status?.toLowerCase() ?? "assigned";
   const isPickupPhase = ["assigned", "arriving"].includes(status);
@@ -299,23 +302,8 @@ export function DeliveryNavigationSheet({
       // Show delivery completion sheet
       setShowDeliveryCompletion(true);
     } else {
-      // Navigate phase — open maps
-      const lat =
-        isPickupPhase
-          ? delivery.pickupLatitude
-          : delivery.dropoffLatitude;
-      const lon =
-        isPickupPhase
-          ? delivery.pickupLongitude
-          : delivery.dropoffLongitude;
-      const addr =
-        isPickupPhase
-          ? delivery.pickupAddress
-          : delivery.dropoffAddress;
-
-      if (lat && lon) {
-        openGoogleMapsNavigation(lat, lon, addr);
-      }
+      // Open in-app navigation modal instead of external maps
+      setShowInAppNav(true);
     }
   }
 
@@ -961,28 +949,15 @@ export function DeliveryNavigationSheet({
                 )}
               </Pressable>
 
-              {/* Navigation Apps */}
+              {/* Navigation Button */}
               {isPickupPhase && pickupLat && pickupLon && (
                 <View style={s.navRow}>
                   <Pressable
                     style={s.navBtn}
-                    onPress={() =>
-                      openGoogleMapsNavigation(
-                        pickupLat,
-                        pickupLon,
-                        delivery.pickupAddress,
-                      )
-                    }
+                    onPress={() => setShowInAppNav(true)}
                   >
-                    <MapPin size={14} color={colors.primary} />
-                    <Text style={s.navBtnText}>Google Maps</Text>
-                  </Pressable>
-                  <Pressable
-                    style={s.navBtn}
-                    onPress={() => openWazeNavigation(pickupLat, pickupLon)}
-                  >
-                    <Navigation size={14} color={colors.primary} />
-                    <Text style={s.navBtnText}>Waze</Text>
+                    <Navigation size={16} color={colors.primary} />
+                    <Text style={s.navBtnText}>Navigate to Pickup (In-App)</Text>
                   </Pressable>
                 </View>
               )}
@@ -1171,28 +1146,15 @@ export function DeliveryNavigationSheet({
                 )}
               </Pressable>
 
-              {/* Navigation Apps */}
+              {/* Navigation Button */}
               {(isDeliveryPhase || isAtDropoff) && dropoffLat && dropoffLon && (
                 <View style={s.navRow}>
                   <Pressable
                     style={s.navBtn}
-                    onPress={() =>
-                      openGoogleMapsNavigation(
-                        dropoffLat,
-                        dropoffLon,
-                        delivery.dropoffAddress,
-                      )
-                    }
+                    onPress={() => setShowInAppNav(true)}
                   >
-                    <MapPin size={14} color={colors.primary} />
-                    <Text style={s.navBtnText}>Google Maps</Text>
-                  </Pressable>
-                  <Pressable
-                    style={s.navBtn}
-                    onPress={() => openWazeNavigation(dropoffLat, dropoffLon)}
-                  >
-                    <Navigation size={14} color={colors.primary} />
-                    <Text style={s.navBtnText}>Waze</Text>
+                    <Navigation size={16} color={colors.primary} />
+                    <Text style={s.navBtnText}>Navigate to Dropoff (In-App)</Text>
                   </Pressable>
                 </View>
               )}
@@ -1200,6 +1162,27 @@ export function DeliveryNavigationSheet({
           )}
         </View>
       </KeyboardAvoidingView>
+
+      {/* ─── In-App Motorcycle Navigation Modal ─────────────────── */}
+      <Modal
+        visible={showInAppNav}
+        animationType="slide"
+        onRequestClose={() => setShowInAppNav(false)}
+      >
+        <MotorcycleNavigation
+          destinationAddress={isPickupPhase ? delivery.pickupAddress : delivery.dropoffAddress}
+          destinationLandmark={isPickupPhase ? delivery.pickupLandmark : delivery.dropoffLandmark}
+          destinationLatitude={isPickupPhase ? delivery.pickupLatitude : delivery.dropoffLatitude}
+          destinationLongitude={isPickupPhase ? delivery.pickupLongitude : delivery.dropoffLongitude}
+          passengerName={isPickupPhase ? delivery.senderName : delivery.recipient?.name}
+          passengerPhone={isPickupPhase ? delivery.senderPhone : delivery.recipient?.phone}
+          onClose={() => setShowInAppNav(false)}
+          onCallPassenger={() => {
+            const phone = isPickupPhase ? delivery.senderPhone : delivery.recipient?.phone;
+            if (phone) Linking.openURL(`tel:${phone}`);
+          }}
+        />
+      </Modal>
 
       {/* ─── Package Verification Sheet ──────────────────────────── */}
       <PackageVerificationSheet

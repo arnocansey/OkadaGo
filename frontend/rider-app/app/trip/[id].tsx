@@ -4,6 +4,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Linking,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -24,6 +25,7 @@ import {
   Star,
 } from "lucide-react-native";
 import { AppMap } from "@/components/AppMap";
+import { MotorcycleNavigation } from "@/components/MotorcycleNavigation";
 import { TripNavigationSheet } from "@/components/TripNavigationSheet";
 import { DeliveryNavigationSheet } from "@/components/DeliveryNavigationSheet";
 import { CancellationReasonModal } from "@/components/ui/CancellationReasonModal";
@@ -113,6 +115,7 @@ export default function TripScreen() {
   const [completingStopId, setCompletingStopId] = useState<string | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [showInAppNav, setShowInAppNav] = useState(false);
   const isRide = kind !== "delivery";
   const trip = isRide
     ? rides.find((r) => r.id === id)
@@ -841,20 +844,11 @@ export default function TripScreen() {
               ) : null}
               <View style={styles.navRow}>
                 <Button
-                  label="Google Maps"
-                  variant="outline"
-                  icon={<MapPin size={16} color={colors.primary} />}
-                  style={styles.navBtn}
-                  onPress={() =>
-                    openGoogleMapsNavigation(navLat, navLon, navLabel)
-                  }
-                />
-                <Button
-                  label="Waze"
-                  variant="outline"
-                  icon={<Navigation size={16} color={colors.primary} />}
-                  style={styles.navBtn}
-                  onPress={() => openWazeNavigation(navLat, navLon)}
+                  label="Navigate on In-App Map"
+                  variant="accent"
+                  icon={<Navigation size={16} color="#000000" />}
+                  fullWidth
+                  onPress={() => setShowInAppNav(true)}
                 />
               </View>
             </Card>
@@ -1034,6 +1028,23 @@ export default function TripScreen() {
         loading={cancelLoading}
         tripType={isRide ? "ride" : "delivery"}
       />
+
+      <Modal
+        visible={showInAppNav}
+        animationType="slide"
+        onRequestClose={() => setShowInAppNav(false)}
+      >
+        <MotorcycleNavigation
+          destinationAddress={navLabel}
+          destinationLandmark={navLandmark ?? undefined}
+          destinationLatitude={navLat}
+          destinationLongitude={navLon}
+          passengerName={trip.passenger?.user?.fullName}
+          passengerPhone={passengerPhone}
+          onClose={() => setShowInAppNav(false)}
+          onCallPassenger={() => passengerPhone && Linking.openURL(`tel:${passengerPhone}`)}
+        />
+      </Modal>
     </>
   );
 }
