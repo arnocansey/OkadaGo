@@ -223,8 +223,8 @@ export default function TripScreen() {
     return undefined;
   }, [livePreview, latitude, longitude, navLat, navLon]);
 
-  /* ─── Ride: Navigation-focused layout ────────────────────────────── */
-  if (isRide && trip) {
+  /* ─── Ride: Navigation-focused layout (Active Trip Only) ────────── */
+  if (isRide && trip && isActiveTrip) {
     const ride = trip as (typeof rides)[0];
     return (
       <>
@@ -290,8 +290,8 @@ export default function TripScreen() {
     );
   }
 
-  /* ─── Delivery: Navigation-focused layout ────────────────────────── */
-  if (!isRide && trip) {
+  /* ─── Delivery: Navigation-focused layout (Active Trip Only) ─────── */
+  if (!isRide && trip && isActiveTrip) {
     const delivery = trip as (typeof deliveries)[0];
     return (
       <>
@@ -741,7 +741,13 @@ export default function TripScreen() {
       <Stack.Screen
         options={{
           headerShown: true,
-          title: "Active trip",
+          title: isActiveTrip
+            ? isRide
+              ? "Active Ride"
+              : "Active Delivery"
+            : isRide
+              ? "Ride Details"
+              : "Delivery Details",
           ...stackHeaderOptions,
         }}
       />
@@ -757,14 +763,16 @@ export default function TripScreen() {
             contentContainerStyle={styles.body}
             keyboardShouldPersistTaps="handled"
           >
-            <Text style={styles.wsStatus}>
-              {riderWs.isConnected()
-                ? "Live updates connected"
-                : "Polling for updates"}
-              {livePreview
-                ? ` · ETA ~${Math.round(livePreview.durationMinutes)} min (${livePreview.distanceKm.toFixed(1)} km)`
-                : ""}
-            </Text>
+            {isActiveTrip && (
+              <Text style={styles.wsStatus}>
+                {riderWs.isConnected()
+                  ? "Live updates connected"
+                  : "Polling for updates"}
+                {livePreview
+                  ? ` · ETA ~${Math.round(livePreview.durationMinutes)} min (${livePreview.distanceKm.toFixed(1)} km)`
+                  : ""}
+              </Text>
+            )}
 
             <View style={styles.header}>
               <View
@@ -847,22 +855,92 @@ export default function TripScreen() {
               </View>
             </Card>
 
+            {/* ─── Route & Navigation ────────────────────────────── */}
             <Card stacked>
-              <Text style={styles.section}>Navigate</Text>
-              <Text style={styles.navDestination}>{navLabel}</Text>
-              {navLandmark ? (
-                <Text style={styles.navLandmark}>
-                  Landmark: {navLandmark}
-                </Text>
-              ) : null}
-              <View style={styles.navRow}>
-                <Button
-                  label="Navigate on In-App Map"
-                  variant="accent"
-                  icon={<Navigation size={16} color="#000000" />}
-                  fullWidth
-                  onPress={() => setShowInAppNav(true)}
-                />
+              <Text style={styles.section}>Route Details</Text>
+              <View style={{ gap: spacing.md, marginTop: spacing.xs }}>
+                <View style={{ gap: 2 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary }} />
+                    <Text style={{ ...typography.captionMedium, color: colors.textMuted }}>PICKUP LOCATION</Text>
+                  </View>
+                  <Text style={{ ...typography.bodySemibold, color: colors.text, paddingLeft: 14 }}>
+                    {isRide
+                      ? (trip as (typeof rides)[0])?.pickupAddress
+                      : (trip as (typeof deliveries)[0])?.pickupAddress}
+                  </Text>
+                  {(isRide
+                    ? (trip as (typeof rides)[0])?.pickupLandmark
+                    : (trip as (typeof deliveries)[0])?.pickupLandmark) ? (
+                    <Text style={{ ...typography.caption, color: colors.primary, paddingLeft: 14 }}>
+                      Landmark: {isRide
+                        ? (trip as (typeof rides)[0])?.pickupLandmark
+                        : (trip as (typeof deliveries)[0])?.pickupLandmark}
+                    </Text>
+                  ) : null}
+                </View>
+
+                <View style={{ gap: 2, paddingTop: spacing.xs, borderTopWidth: 1, borderTopColor: colors.border }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.danger }} />
+                    <Text style={{ ...typography.captionMedium, color: colors.textMuted }}>DESTINATION</Text>
+                  </View>
+                  <Text style={{ ...typography.bodySemibold, color: colors.text, paddingLeft: 14 }}>
+                    {isRide
+                      ? (trip as (typeof rides)[0])?.destinationAddress
+                      : (trip as (typeof deliveries)[0])?.dropoffAddress}
+                  </Text>
+                  {(isRide
+                    ? (trip as (typeof rides)[0])?.destinationLandmark
+                    : (trip as (typeof deliveries)[0])?.dropoffLandmark) ? (
+                    <Text style={{ ...typography.caption, color: colors.primary, paddingLeft: 14 }}>
+                      Landmark: {isRide
+                        ? (trip as (typeof rides)[0])?.destinationLandmark
+                        : (trip as (typeof deliveries)[0])?.dropoffLandmark}
+                    </Text>
+                  ) : null}
+                </View>
+              </View>
+
+              {isActiveTrip && (
+                <View style={[styles.navRow, { marginTop: spacing.md }]}>
+                  <Button
+                    label="Navigate on In-App Map"
+                    variant="accent"
+                    icon={<Navigation size={16} color="#000000" />}
+                    fullWidth
+                    onPress={() => setShowInAppNav(true)}
+                  />
+                </View>
+              )}
+            </Card>
+
+            {/* ─── Fare & Earnings Receipt Breakdown ────────────── */}
+            <Card stacked>
+              <Text style={styles.section}>Fare & Earnings Summary</Text>
+              <View style={{ flexDirection: "row", gap: spacing.md, marginTop: spacing.xs }}>
+                <View style={{ flex: 1, backgroundColor: colors.surfaceOverlay, padding: spacing.md, borderRadius: radii.md }}>
+                  <Text style={{ ...typography.caption, color: colors.textMuted }}>YOUR EARNINGS</Text>
+                  <Text style={{ ...typography.h3, color: colors.primary, marginTop: 2 }}>
+                    {money(
+                      isRide
+                        ? (trip as (typeof rides)[0]).riderEarnings ?? (trip as (typeof rides)[0]).estimatedFare
+                        : (trip as (typeof deliveries)[0]).riderEarnings ?? (trip as (typeof deliveries)[0]).estimatedFee,
+                      trip.currency,
+                    )}
+                  </Text>
+                </View>
+                <View style={{ flex: 1, backgroundColor: colors.surfaceOverlay, padding: spacing.md, borderRadius: radii.md }}>
+                  <Text style={{ ...typography.caption, color: colors.textMuted }}>ESTIMATED FARE</Text>
+                  <Text style={{ ...typography.h3, color: colors.text, marginTop: 2 }}>
+                    {money(
+                      isRide
+                        ? (trip as (typeof rides)[0]).estimatedFare ?? (trip as (typeof rides)[0]).riderEarnings
+                        : (trip as (typeof deliveries)[0]).estimatedFee ?? (trip as (typeof deliveries)[0]).riderEarnings,
+                      trip.currency,
+                    )}
+                  </Text>
+                </View>
               </View>
             </Card>
 
