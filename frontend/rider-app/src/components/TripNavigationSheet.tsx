@@ -132,10 +132,12 @@ export function TripNavigationSheet({
   const isPickupPhase = ["assigned", "arriving"].includes(status);
   const isTripPhase = ["started", "picked_up", "in_transit"].includes(status);
 
+  const { latitude: riderLat, longitude: riderLng } = useUserLocation();
+
   // Live route preview — only when en route
   const livePreview = useLiveRoutePreview(
     session?.token,
-    null,
+    riderLat && riderLng ? { latitude: riderLat, longitude: riderLng } : null,
     isPickupPhase && trip.pickupLatitude && trip.pickupLongitude
       ? { latitude: trip.pickupLatitude, longitude: trip.pickupLongitude }
       : isTripPhase && trip.destinationLatitude && trip.destinationLongitude
@@ -143,6 +145,21 @@ export function TripNavigationSheet({
         : null,
     true,
   );
+
+  const routeCoordinates = useMemo(() => {
+    if (livePreview?.route && livePreview.route.length > 0) {
+      return livePreview.route.map(([lat, lon]) => ({ latitude: lat, longitude: lon }));
+    }
+    const targetLat = isPickupPhase ? trip.pickupLatitude : trip.destinationLatitude;
+    const targetLon = isPickupPhase ? trip.pickupLongitude : trip.destinationLongitude;
+    if (riderLat && riderLng && targetLat && targetLon) {
+      return [
+        { latitude: riderLat, longitude: riderLng },
+        { latitude: targetLat, longitude: targetLon },
+      ];
+    }
+    return undefined;
+  }, [livePreview, isPickupPhase, trip.pickupLatitude, trip.pickupLongitude, trip.destinationLatitude, trip.destinationLongitude, riderLat, riderLng]);
 
   const actionLabel = useMemo(() => {
     switch (status) {
@@ -157,8 +174,6 @@ export function TripNavigationSheet({
         return "Arrived";
     }
   }, [status]);
-
-  const { latitude: riderLat, longitude: riderLng } = useUserLocation();
 
   const markers = useMemo(() => {
     const m = [];
@@ -546,6 +561,7 @@ export function TripNavigationSheet({
       <View style={s.mapArea}>
         <AppMap
           markers={markers}
+          routeCoordinates={routeCoordinates}
           fitToMarkers={markers.length > 0}
           showCenterButton
           centerButtonInset={{ bottom: 16, right: 16 }}

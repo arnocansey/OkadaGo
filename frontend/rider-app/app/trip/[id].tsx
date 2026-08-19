@@ -210,6 +210,19 @@ export default function TripScreen() {
     Boolean(trip) && isActiveTrip,
   );
 
+  const routeCoordinates = useMemo(() => {
+    if (livePreview?.route && livePreview.route.length > 0) {
+      return livePreview.route.map(([lat, lon]) => ({ latitude: lat, longitude: lon }));
+    }
+    if (latitude && longitude && navLat && navLon) {
+      return [
+        { latitude, longitude },
+        { latitude: navLat, longitude: navLon },
+      ];
+    }
+    return undefined;
+  }, [livePreview, latitude, longitude, navLat, navLon]);
+
   /* ─── Ride: Navigation-focused layout ────────────────────────────── */
   if (isRide && trip) {
     const ride = trip as (typeof rides)[0];
@@ -733,7 +746,7 @@ export default function TripScreen() {
         }}
       />
       <View style={styles.screen}>
-        <AppMap style={styles.map} markers={markers} fitToMarkers />
+        <AppMap style={styles.map} markers={markers} routeCoordinates={routeCoordinates} fitToMarkers />
 
         <KeyboardAvoidingView
           style={{ flex: 1 }}

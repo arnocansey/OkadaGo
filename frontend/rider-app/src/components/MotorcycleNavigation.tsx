@@ -27,6 +27,7 @@ import { AppMap } from "@/components/AppMap";
 import { SafetyCenter } from "@/components/SafetyCenter";
 import { useTheme } from "@/context/ThemeContext";
 import { useLiveRoutePreview } from "@/hooks/useLiveRoutePreview";
+import { useUserLocation } from "@/hooks/useUserLocation";
 import { api } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
 import { openGoogleMapsNavigation, openWazeNavigation } from "@/lib/navigation";
@@ -129,10 +130,12 @@ export function MotorcycleNavigation({
     [],
   );
 
+  const { latitude: riderLat, longitude: riderLng } = useUserLocation();
+
   // Live route preview
   const livePreview = useLiveRoutePreview(
     session?.token,
-    null,
+    riderLat && riderLng ? { latitude: riderLat, longitude: riderLng } : null,
     destinationLatitude && destinationLongitude
       ? { latitude: destinationLatitude, longitude: destinationLongitude }
       : null,
@@ -149,20 +152,41 @@ export function MotorcycleNavigation({
   const step = steps[currentStep];
   const nextStep = steps[currentStep + 1];
 
-  const markers = useMemo(() => {
-    if (destinationLatitude && destinationLongitude) {
+  const routeCoordinates = useMemo(() => {
+    if (livePreview?.route && livePreview.route.length > 0) {
+      return livePreview.route.map(([lat, lon]) => ({ latitude: lat, longitude: lon }));
+    }
+    if (riderLat && riderLng && destinationLatitude && destinationLongitude) {
       return [
-        {
-          id: "destination",
-          latitude: destinationLatitude,
-          longitude: destinationLongitude,
-          title: "Destination",
-          pinColor: brand.primary,
-        },
+        { latitude: riderLat, longitude: riderLng },
+        { latitude: destinationLatitude, longitude: destinationLongitude },
       ];
     }
-    return [];
-  }, [destinationLatitude, destinationLongitude]);
+    return undefined;
+  }, [livePreview, riderLat, riderLng, destinationLatitude, destinationLongitude]);
+
+  const markers = useMemo(() => {
+    const m = [];
+    if (riderLat && riderLng) {
+      m.push({
+        id: "rider-current-location",
+        latitude: riderLat,
+        longitude: riderLng,
+        title: "Your Location",
+        pinColor: brand.primary,
+      });
+    }
+    if (destinationLatitude && destinationLongitude) {
+      m.push({
+        id: "destination",
+        latitude: destinationLatitude,
+        longitude: destinationLongitude,
+        title: "Destination",
+        pinColor: colors.danger,
+      });
+    }
+    return m;
+  }, [riderLat, riderLng, destinationLatitude, destinationLongitude, colors.danger]);
 
   // Safety button opens SafetyCenter
   function openSafety() {
@@ -446,6 +470,7 @@ export function MotorcycleNavigation({
       <View style={s.mapArea}>
         <AppMap
           markers={markers}
+          routeCoordinates={routeCoordinates}
           fitToMarkers={markers.length > 0}
           showCenterButton={false}
         />

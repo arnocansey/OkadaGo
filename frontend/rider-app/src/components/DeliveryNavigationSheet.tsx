@@ -177,10 +177,12 @@ export function DeliveryNavigationSheet({
     delivery.stops?.filter((s) => s.status === "COMPLETED" || s.status === "DELIVERED").length ?? 0;
   const totalStops = delivery.stops?.length ?? 0;
 
+  const { latitude: riderLat, longitude: riderLng } = useUserLocation();
+
   // Live route preview
   const livePreview = useLiveRoutePreview(
     session?.token,
-    null,
+    riderLat && riderLng ? { latitude: riderLat, longitude: riderLng } : null,
     isPickupPhase && delivery.pickupLatitude && delivery.pickupLongitude
       ? { latitude: delivery.pickupLatitude, longitude: delivery.pickupLongitude }
       : (isDeliveryPhase || isAtDropoff) && delivery.dropoffLatitude && delivery.dropoffLongitude
@@ -189,7 +191,20 @@ export function DeliveryNavigationSheet({
     true,
   );
 
-  const { latitude: riderLat, longitude: riderLng } = useUserLocation();
+  const routeCoordinates = useMemo(() => {
+    if (livePreview?.route && livePreview.route.length > 0) {
+      return livePreview.route.map(([lat, lon]) => ({ latitude: lat, longitude: lon }));
+    }
+    const targetLat = isPickupPhase ? delivery.pickupLatitude : delivery.dropoffLatitude;
+    const targetLon = isPickupPhase ? delivery.pickupLongitude : delivery.dropoffLongitude;
+    if (riderLat && riderLng && targetLat && targetLon) {
+      return [
+        { latitude: riderLat, longitude: riderLng },
+        { latitude: targetLat, longitude: targetLon },
+      ];
+    }
+    return undefined;
+  }, [livePreview, isPickupPhase, delivery.pickupLatitude, delivery.pickupLongitude, delivery.dropoffLatitude, delivery.dropoffLongitude, riderLat, riderLng]);
 
   const markers = useMemo(() => {
     const m = [];
@@ -745,6 +760,7 @@ export function DeliveryNavigationSheet({
       <View style={s.mapArea}>
         <AppMap
           markers={markers}
+          routeCoordinates={routeCoordinates}
           fitToMarkers={markers.length > 0}
           showCenterButton
           centerButtonInset={{ bottom: 16, right: 16 }}
