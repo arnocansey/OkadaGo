@@ -1190,8 +1190,15 @@ export function DeliveryNavigationSheet({
           destinationLandmark={isPickupPhase ? delivery.pickupLandmark : delivery.dropoffLandmark}
           destinationLatitude={isPickupPhase ? delivery.pickupLatitude : delivery.dropoffLatitude}
           destinationLongitude={isPickupPhase ? delivery.pickupLongitude : delivery.dropoffLongitude}
+          pickupAddress={delivery.pickupAddress}
+          pickupLandmark={delivery.pickupLandmark}
           passengerName={isPickupPhase ? delivery.senderName : delivery.recipient?.name}
           passengerPhone={isPickupPhase ? delivery.senderPhone : delivery.recipient?.phone}
+          riderEarnings={delivery.riderEarnings}
+          estimatedFare={delivery.estimatedFee}
+          currency={delivery.currency}
+          rideType="PACKAGE DELIVERY"
+          packageDetails={delivery.package?.type ? `${delivery.package.type}${delivery.package.weight ? ` • ${delivery.package.weight}` : ""}` : undefined}
           onClose={() => setShowInAppNav(false)}
           onCallPassenger={() => {
             const phone = isPickupPhase ? delivery.senderPhone : delivery.recipient?.phone;

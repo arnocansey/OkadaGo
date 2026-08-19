@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Modal,
   Platform,
   Pressable,
   StyleSheet,
@@ -16,10 +17,13 @@ import {
   ArrowUp,
   ChevronRight,
   Clock,
+  Info,
   MapPin,
   Navigation,
+  Package,
   Phone,
   ShieldAlert,
+  User,
   X,
 } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
@@ -44,8 +48,15 @@ type Props = {
   destinationLandmark?: string;
   destinationLatitude?: number;
   destinationLongitude?: number;
+  pickupAddress?: string;
+  pickupLandmark?: string;
   passengerName?: string;
   passengerPhone?: string;
+  riderEarnings?: number;
+  estimatedFare?: number;
+  currency?: string;
+  rideType?: string;
+  packageDetails?: string;
   onClose?: () => void;
   onCallPassenger?: () => void;
   onSos?: () => void;
@@ -85,8 +96,15 @@ export function MotorcycleNavigation({
   destinationLandmark,
   destinationLatitude,
   destinationLongitude,
+  pickupAddress,
+  pickupLandmark,
   passengerName,
   passengerPhone,
+  riderEarnings,
+  estimatedFare,
+  currency = "GHS",
+  rideType,
+  packageDetails,
   onClose,
   onCallPassenger,
   onSos,
@@ -95,6 +113,7 @@ export function MotorcycleNavigation({
   const { colors, isDark } = useTheme();
   const { session } = useApp();
   const [showSafetyCenter, setShowSafetyCenter] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
 
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -486,13 +505,26 @@ export function MotorcycleNavigation({
             <Text style={s.safetyText}>Safety</Text>
           </Pressable>
 
-          <Pressable
-            style={s.closeBtn}
-            onPress={onClose}
-            accessibilityLabel="Close navigation"
-          >
-            <X size={20} color={colors.text} />
-          </Pressable>
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <Pressable
+              style={s.closeBtn}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setShowInfoModal(true);
+              }}
+              accessibilityLabel="View ride details"
+            >
+              <Info size={20} color={colors.primary} />
+            </Pressable>
+
+            <Pressable
+              style={s.closeBtn}
+              onPress={onClose}
+              accessibilityLabel="Close navigation"
+            >
+              <X size={20} color={colors.text} />
+            </Pressable>
+          </View>
         </View>
 
         {/* Destination Badge on Map */}
@@ -598,6 +630,78 @@ export function MotorcycleNavigation({
           )}
         </View>
       </View>
+
+      {/* Trip / Delivery Details Modal Overlay */}
+      <Modal
+        visible={showInfoModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowInfoModal(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" }}>
+          <View style={{ backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, gap: 16 }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+              <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text }}>Ride Details</Text>
+              <Pressable onPress={() => setShowInfoModal(false)}>
+                <X size={20} color={colors.text} />
+              </Pressable>
+            </View>
+
+            {rideType && (
+              <View style={{ backgroundColor: brand.primary + "20", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, alignSelf: "flex-start" }}>
+                <Text style={{ fontSize: 12, fontWeight: "700", color: brand.primary }}>{rideType.toUpperCase()}</Text>
+              </View>
+            )}
+
+            {(riderEarnings != null || estimatedFare != null) && (
+              <View style={{ flexDirection: "row", gap: 16, backgroundColor: colors.background, padding: 12, borderRadius: 12 }}>
+                {riderEarnings != null ? (
+                  <View>
+                    <Text style={{ fontSize: 11, color: colors.textMuted }}>Your Earnings</Text>
+                    <Text style={{ fontSize: 16, fontWeight: "700", color: colors.primary }}>{currency} {Number(riderEarnings).toFixed(2)}</Text>
+                  </View>
+                ) : null}
+                {estimatedFare != null ? (
+                  <View>
+                    <Text style={{ fontSize: 11, color: colors.textMuted }}>Est. Fare</Text>
+                    <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>{currency} {Number(estimatedFare).toFixed(2)}</Text>
+                  </View>
+                ) : null}
+              </View>
+            )}
+
+            {pickupAddress && (
+              <View style={{ gap: 4 }}>
+                <Text style={{ fontSize: 12, fontWeight: "600", color: colors.textMuted }}>PICKUP</Text>
+                <Text style={{ fontSize: 14, color: colors.text }}>{pickupAddress}</Text>
+                {pickupLandmark ? <Text style={{ fontSize: 12, color: colors.primary }}>Landmark: {pickupLandmark}</Text> : null}
+              </View>
+            )}
+
+            {destinationAddress && (
+              <View style={{ gap: 4 }}>
+                <Text style={{ fontSize: 12, fontWeight: "600", color: colors.textMuted }}>DESTINATION</Text>
+                <Text style={{ fontSize: 14, color: colors.text }}>{destinationAddress}</Text>
+                {destinationLandmark ? <Text style={{ fontSize: 12, color: colors.primary }}>Landmark: {destinationLandmark}</Text> : null}
+              </View>
+            )}
+
+            {passengerName && (
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.border }}>
+                <View>
+                  <Text style={{ fontSize: 11, color: colors.textMuted }}>Passenger</Text>
+                  <Text style={{ fontSize: 15, fontWeight: "600", color: colors.text }}>{passengerName}</Text>
+                </View>
+                {passengerPhone && (
+                  <Pressable style={{ padding: 10, borderRadius: 20, backgroundColor: brand.primary + "20" }} onPress={onCallPassenger}>
+                    <Phone size={18} color={colors.primary} />
+                  </Pressable>
+                )}
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
 
       {/* Safety Center */}
       <SafetyCenter

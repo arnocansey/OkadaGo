@@ -16,12 +16,16 @@ import {
   CheckCircle2,
   ChevronLeft,
   Clock,
+  DollarSign,
+  Info,
   MapPin,
   MessageCircle,
   Navigation,
   Phone,
   Shield,
   ShieldAlert,
+  User,
+  X,
   Zap,
 } from "lucide-react-native";
 import { router } from "expo-router";
@@ -125,6 +129,7 @@ export function TripNavigationSheet({
   const [showPinSheet, setShowPinSheet] = useState(false);
   const [showSafetyCenter, setShowSafetyCenter] = useState(false);
   const [showInAppNav, setShowInAppNav] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   const status = trip.status?.toLowerCase() ?? "assigned";
   const isArriving = status === "arriving";
@@ -578,8 +583,20 @@ export function TripNavigationSheet({
           </Pressable>
         </View>
 
-        {/* Safety Center Button */}
+        {/* Safety Center & Trip Info Buttons */}
         <View style={s.sosWrap}>
+          <Pressable
+            style={[s.sosBtn, { backgroundColor: colors.surfaceOverlay, borderColor: colors.border, borderWidth: 1 }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setShowDetailsModal(true);
+            }}
+            accessibilityLabel="View Trip Details"
+          >
+            <Info size={16} color={colors.primary} />
+            <Text style={[s.sosLabel, { color: colors.text }]}>Details</Text>
+          </Pressable>
+
           <Pressable
             style={s.sosBtn}
             onPress={() => {
@@ -920,8 +937,14 @@ export function TripNavigationSheet({
           destinationLandmark={isPickupPhase ? trip.pickupLandmark : trip.destinationLandmark}
           destinationLatitude={isPickupPhase ? trip.pickupLatitude : trip.destinationLatitude}
           destinationLongitude={isPickupPhase ? trip.pickupLongitude : trip.destinationLongitude}
+          pickupAddress={trip.pickupAddress}
+          pickupLandmark={trip.pickupLandmark}
           passengerName={trip.passengerName}
           passengerPhone={trip.passengerPhone}
+          riderEarnings={trip.riderEarnings}
+          estimatedFare={trip.estimatedFare}
+          currency={trip.currency}
+          rideType={trip.rideType}
           onClose={() => setShowInAppNav(false)}
           onCallPassenger={() => trip.passengerPhone && Linking.openURL(`tel:${trip.passengerPhone}`)}
         />
@@ -936,6 +959,116 @@ export function TripNavigationSheet({
         onSkip={() => setShowPinSheet(false)}
         onVerify={onVerifyPin}
       />
+
+      {/* ─── Comprehensive Trip Details Modal ────────────────────── */}
+      <Modal
+        visible={showDetailsModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowDetailsModal(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" }}>
+          <View style={{ backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 16 }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+              <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text }}>Trip Information</Text>
+              <Pressable onPress={() => setShowDetailsModal(false)}>
+                <X size={22} color={colors.text} />
+              </Pressable>
+            </View>
+
+            {/* Ride Tier Badge */}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              {trip.rideType && (
+                <View style={{ backgroundColor: colors.primary + "20", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}>
+                  <Text style={{ fontSize: 12, fontWeight: "700", color: colors.primary }}>{trip.rideType.toUpperCase()} OKADA</Text>
+                </View>
+              )}
+              {trip.tripPin && (
+                <View style={{ backgroundColor: "#22C55E20", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}>
+                  <Text style={{ fontSize: 12, fontWeight: "700", color: "#22C55E" }}>PIN: {trip.tripPin}</Text>
+                </View>
+              )}
+            </View>
+
+            {/* Fare & Earnings Breakdown */}
+            {(trip.riderEarnings != null || trip.estimatedFare != null) && (
+              <View style={{ flexDirection: "row", gap: 16, backgroundColor: colors.background, padding: 14, borderRadius: 14 }}>
+                {trip.riderEarnings != null && (
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 11, fontWeight: "600", color: colors.textMuted }}>YOUR EARNINGS</Text>
+                    <Text style={{ fontSize: 18, fontWeight: "700", color: colors.primary }}>
+                      {trip.currency ?? "GHS"} {Number(trip.riderEarnings).toFixed(2)}
+                    </Text>
+                  </View>
+                )}
+                {trip.estimatedFare != null && (
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 11, fontWeight: "600", color: colors.textMuted }}>ESTIMATED FARE</Text>
+                    <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text }}>
+                      {trip.currency ?? "GHS"} {Number(trip.estimatedFare).toFixed(2)}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* Route Addresses */}
+            <View style={{ gap: 12, backgroundColor: colors.background, padding: 14, borderRadius: 14 }}>
+              <View style={{ gap: 4 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary }} />
+                  <Text style={{ fontSize: 11, fontWeight: "700", color: colors.textMuted }}>PICKUP LOCATION</Text>
+                </View>
+                <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text, paddingLeft: 14 }}>
+                  {trip.pickupAddress}
+                </Text>
+                {trip.pickupLandmark && (
+                  <Text style={{ fontSize: 12, color: colors.primary, paddingLeft: 14 }}>
+                    Landmark: {trip.pickupLandmark}
+                  </Text>
+                )}
+              </View>
+
+              {trip.destinationAddress && (
+                <View style={{ gap: 4, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.border }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.danger }} />
+                    <Text style={{ fontSize: 11, fontWeight: "700", color: colors.textMuted }}>DESTINATION</Text>
+                  </View>
+                  <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text, paddingLeft: 14 }}>
+                    {trip.destinationAddress}
+                  </Text>
+                  {trip.destinationLandmark && (
+                    <Text style={{ fontSize: 12, color: colors.primary, paddingLeft: 14 }}>
+                      Landmark: {trip.destinationLandmark}
+                    </Text>
+                  )}
+                </View>
+              )}
+            </View>
+
+            {/* Passenger Info */}
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: colors.background, padding: 14, borderRadius: 14 }}>
+              <View>
+                <Text style={{ fontSize: 11, fontWeight: "600", color: colors.textMuted }}>PASSENGER</Text>
+                <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>{trip.passengerName ?? "Passenger"}</Text>
+                {trip.passengerPhone && (
+                  <Text style={{ fontSize: 13, color: colors.textSecondary }}>{trip.passengerPhone}</Text>
+                )}
+              </View>
+
+              {trip.passengerPhone && (
+                <Pressable
+                  style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary + "20", alignItems: "center", justifyContent: "center" }}
+                  onPress={() => Linking.openURL(`tel:${trip.passengerPhone}`)}
+                >
+                  <Phone size={20} color={colors.primary} />
+                </Pressable>
+              )}
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* ─── Safety Center ──────────────────────────────────────── */}
       <SafetyCenter
