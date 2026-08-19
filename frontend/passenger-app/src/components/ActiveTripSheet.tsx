@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
-import { MapPin, MessageCircle, Phone, Shield } from "lucide-react-native";
+import { Info, MapPin, MessageCircle, Phone, Shield } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/context/ThemeContext";
 import { Avatar } from "@/components/ui/Avatar";
@@ -27,6 +27,7 @@ type Props = {
   onCall: () => void;
   onChat: () => void;
   onSafety: () => void;
+  onRiderPress?: () => void;
 };
 
 /**
@@ -55,6 +56,7 @@ export function ActiveTripSheet({
   onCall,
   onChat,
   onSafety,
+  onRiderPress,
 }: Props) {
   const insets = useSafeAreaInsets();
   const { colors, isDark } = useTheme();
@@ -212,19 +214,27 @@ export function ActiveTripSheet({
 
       <View style={s.inner}>
         {/* ─── Rider Row ────────────────────────────────── */}
-        <View style={s.riderRow}>
+        <Pressable
+          style={s.riderRow}
+          onPress={onRiderPress}
+          accessibilityRole="button"
+          accessibilityLabel="View rider profile and details"
+        >
           <Avatar name={rider.name} size={40} imageUri={rider.avatarUrl ?? undefined} />
           <View style={s.riderInfo}>
-            <Text style={s.riderName} numberOfLines={1}>
-              {rider.name}
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <Text style={s.riderName} numberOfLines={1}>
+                {rider.name}
+              </Text>
+              {onRiderPress ? <Info size={14} color={colors.primary} /> : null}
+            </View>
             {vehicleSummary ? (
               <Text style={s.vehicleText} numberOfLines={1}>
                 {vehicleSummary}
               </Text>
             ) : null}
           </View>
-        </View>
+        </Pressable>
 
         <View style={s.divider} />
 

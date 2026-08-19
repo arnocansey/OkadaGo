@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
-import { MessageCircle, Phone, Shield, Star } from "lucide-react-native";
+import { Info, MessageCircle, Phone, Shield, Star } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/context/ThemeContext";
 import { Avatar } from "@/components/ui/Avatar";
@@ -28,6 +28,7 @@ type Props = {
   onCall: () => void;
   onChat: () => void;
   onSafety: () => void;
+  onRiderPress?: () => void;
 };
 
 /**
@@ -59,6 +60,7 @@ export function RiderAssignedSheet({
   onCall,
   onChat,
   onSafety,
+  onRiderPress,
 }: Props) {
   const insets = useSafeAreaInsets();
   const { colors, isDark } = useTheme();
@@ -275,12 +277,20 @@ export function RiderAssignedSheet({
 
       <View style={s.inner}>
         {/* ─── Rider Profile ──────────────────────────────── */}
-        <View style={s.profileRow}>
+        <Pressable
+          style={s.profileRow}
+          onPress={onRiderPress}
+          accessibilityRole="button"
+          accessibilityLabel="View rider profile and details"
+        >
           <View style={s.avatarWrap}>
             <Avatar name={rider.name} size={60} imageUri={rider.avatarUrl ?? undefined} />
           </View>
           <View style={s.riderInfo}>
-            <Text style={s.riderName}>{rider.name}</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <Text style={s.riderName}>{rider.name}</Text>
+              {onRiderPress ? <Info size={16} color={colors.primary} /> : null}
+            </View>
             <View style={s.riderMeta}>
               {rider.rating != null ? (
                 <View style={s.ratingBadge}>
@@ -303,7 +313,7 @@ export function RiderAssignedSheet({
               <Text style={s.etaText}>{eta}</Text>
             </View>
           ) : null}
-        </View>
+        </Pressable>
 
         {/* ─── Vehicle Card ───────────────────────────────── */}
         {(vehicleDescription || rider.vehicle?.plateNumber) && (

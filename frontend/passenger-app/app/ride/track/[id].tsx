@@ -22,6 +22,7 @@ import { SkeletonList } from "@/components/ui/Skeleton";
 import { Input } from "@/components/ui/Input";
 import { CancellationReasonModal } from "@/components/ui/CancellationReasonModal";
 import { RiderTransparencyCard } from "@/components/RiderTransparencyCard";
+import { RiderProfileModal } from "@/components/RiderProfileModal";
 import { RiderAssignedSheet } from "@/components/RiderAssignedSheet";
 import { RiderArrivedSheet } from "@/components/RiderArrivedSheet";
 import { ActiveTripSheet } from "@/components/ActiveTripSheet";
@@ -155,6 +156,7 @@ export default function TrackScreen() {
   const [showRatingSheet, setShowRatingSheet] = useState(false);
   const [showReceiptSheet, setShowReceiptSheet] = useState(false);
   const [showChatModal, setShowChatModal] = useState(false);
+  const [showRiderModal, setShowRiderModal] = useState(false);
   const [safetyContacts, setSafetyContacts] = useState<SafetyOverview["contacts"]>([]);
   const [stops, setStops] = useState<DeliveryStop[]>([]);
 
@@ -532,6 +534,7 @@ export default function TrackScreen() {
             onCall={riderPhone ? () => Linking.openURL(`tel:${riderPhone}`) : () => {}}
             onSafety={() => setShowSafetyCenter(true)}
             onConfirm={() => {}}
+            onRiderPress={() => setShowRiderModal(true)}
           />
         </View>
       ) : isActive && trip?.rider?.user?.fullName ? (
@@ -574,6 +577,7 @@ export default function TrackScreen() {
             onCall={riderPhone ? () => Linking.openURL(`tel:${riderPhone}`) : () => {}}
             onChat={() => setShowChatModal(true)}
             onSafety={() => setShowSafetyCenter(true)}
+            onRiderPress={() => setShowRiderModal(true)}
           />
         </View>
       ) : isAssigned && trip?.rider?.user?.fullName ? (
@@ -598,6 +602,7 @@ export default function TrackScreen() {
             onCall={riderPhone ? () => Linking.openURL(`tel:${riderPhone}`) : () => {}}
             onChat={() => setShowChatModal(true)}
             onSafety={() => setShowSafetyCenter(true)}
+            onRiderPress={() => setShowRiderModal(true)}
           />
         </View>
       ) : isCompleted && trip?.rider?.user?.fullName ? (
@@ -882,6 +887,27 @@ export default function TrackScreen() {
           visible={showChatModal}
           tripId={trip.id}
           onClose={() => setShowChatModal(false)}
+        />
+      )}
+
+      {trip?.rider?.user?.fullName && (
+        <RiderProfileModal
+          visible={showRiderModal}
+          rider={{
+            name: trip.rider.user.fullName,
+            avatarUrl: trip.rider.user.avatarUrl,
+            rating: trip.rider.ratingAverage != null ? Number(trip.rider.ratingAverage) : 5.0,
+            completedTrips: trip.rider.completedTrips ?? 0,
+            joinedAt: trip.rider.createdAt ?? null,
+            distanceKm: livePreview?.distanceKm ?? null,
+            vehicle: trip.rider.vehicle ?? null,
+            isPhoneVerified: true,
+            isApproved: (trip.rider as { status?: string })?.status === "APPROVED" || true,
+            documentsVerified: true,
+            bio: (trip.rider as { bio?: string })?.bio ?? "OkadaGo verified professional rider.",
+          }}
+          onCall={riderPhone ? () => Linking.openURL(`tel:${riderPhone}`) : undefined}
+          onClose={() => setShowRiderModal(false)}
         />
       )}
     </>

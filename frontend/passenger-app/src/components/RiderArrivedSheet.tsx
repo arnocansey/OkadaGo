@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
-import { CheckCircle, Phone, Shield } from "lucide-react-native";
+import { CheckCircle, Info, Phone, Shield } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/context/ThemeContext";
 import { Avatar } from "@/components/ui/Avatar";
@@ -25,6 +25,7 @@ type Props = {
   onCall: () => void;
   onSafety: () => void;
   onConfirm: () => void;
+  onRiderPress?: () => void;
 };
 
 function getVehicleComponent(
@@ -75,6 +76,7 @@ export function RiderArrivedSheet({
   onCall,
   onSafety,
   onConfirm,
+  onRiderPress,
 }: Props) {
   const insets = useSafeAreaInsets();
   const { colors, isDark } = useTheme();
@@ -326,10 +328,11 @@ export function RiderArrivedSheet({
               </View>
             ) : null}
           </View>
-          <View style={s.riderRow}>
+          <Pressable style={s.riderRow} onPress={onRiderPress} accessibilityRole="button" accessibilityLabel="View rider profile">
             <Avatar name={rider.name} size={28} imageUri={rider.avatarUrl ?? undefined} />
             <Text style={s.riderName}>{rider.name}</Text>
-          </View>
+            {onRiderPress ? <Info size={14} color={colors.primary} /> : null}
+          </Pressable>
         </View>
 
         {/* ─── Trip PIN ──────────────────────────────────── */}
