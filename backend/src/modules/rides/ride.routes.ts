@@ -89,6 +89,14 @@ export const rideRoutes: FastifyPluginAsync = async (server) => {
     return rideService.recordRideLocation(params.rideId, input);
   });
 
+  server.get("/rides/active", async (request) => {
+    const query = request.query as { userId?: string };
+    if (!query.userId) {
+      return null;
+    }
+    return rideService.getActiveRide(query.userId);
+  });
+
   server.get("/rides", async (request) => {
     const query = request.query as { limit?: string; page?: string; riderId?: string; passengerId?: string; status?: string };
     return rideService.listRides({

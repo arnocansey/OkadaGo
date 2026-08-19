@@ -74,12 +74,16 @@ export function attachRealtimeServer(httpServer: HttpServer) {
     });
 
     // Throttle location pings from sockets to max 1 per 2000ms
-    socket.on("rider:location", (data) => {
+    socket.on("rider:location", (data: { tripId?: string; latitude: number; longitude: number; heading?: number }) => {
       const now = Date.now();
       const last = lastPingBySocket.get(socket.id) ?? 0;
       if (now - last < 2000) return;
       lastPingBySocket.set(socket.id, now);
-      socket.broadcast.emit("rider:location-broadcast", data);
+      if (data?.tripId) {
+        io.to(`trip:${data.tripId}`).emit("rider:location-update", data);
+      } else {
+        socket.broadcast.emit("rider:location-broadcast", data);
+      }
     });
 
     socket.on("disconnect", () => {

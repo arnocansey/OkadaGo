@@ -218,6 +218,38 @@ export class AdminJobsService {
     return actions;
   }
 
+  async checkDocumentExpirations() {
+    const fourteenDaysFromNow = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+    const expiringDocs = await prisma.riderDocument.findMany({
+      where: {
+        status: "APPROVED",
+        expiresAt: { lte: fourteenDaysFromNow }
+      },
+      include: {
+        rider: { include: { user: true } }
+      }
+    });
+
+    for (const doc of expiringDocs) {
+      if (doc.expiresAt && doc.expiresAt <= new Date()) {
+        await prisma.riderProfile.update({
+          where: { id: doc.riderId },
+          data: { approvalStatus: "REJECTED" }
+        });
+        await prisma.riderDocument.update({
+          where: { id: doc.id },
+          data: { status: "EXPIRED" }
+        });
+        await pushService.sendToUser(doc.rider.userId, {
+          title: "Document Expired",
+          body: `Your ${doc.type} document has expired. Please upload a renewed copy to resume taking rides.`,
+          data: { type: "document_expired", documentId: doc.id }
+        });
+      }
+    }
+    return { checked: expiringDocs.length };
+  }
+
   private async touchHeartbeat(
     id: "broadcasts" | "escalations",
     input: {

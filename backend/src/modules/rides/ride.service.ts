@@ -887,6 +887,42 @@ export class RideService {
     return { data, total, page, limit };
   }
 
+  async getActiveRide(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { passengerProfile: true, riderProfile: true }
+    });
+    if (!user) return null;
+
+    const activeStatuses: RideStatus[] = [
+      RideStatus.SEARCHING,
+      RideStatus.ASSIGNED,
+      RideStatus.ARRIVING,
+      RideStatus.ARRIVED,
+      RideStatus.STARTED
+    ];
+
+    const passengerId = user.passengerProfile?.id;
+    const riderId = user.riderProfile?.id;
+
+    if (!passengerId && !riderId) return null;
+
+    const activeRide = await prisma.ride.findFirst({
+      where: {
+        OR: [
+          ...(passengerId ? [{ passengerId, status: { in: activeStatuses } }] : []),
+          ...(riderId ? [{ riderId, status: { in: activeStatuses } }] : [])
+        ]
+      },
+      orderBy: { createdAt: "desc" },
+      include: rideDetailsInclude
+    });
+
+    if (!activeRide) return null;
+
+    return serializeRideForRealtime(activeRide);
+  }
+
   async listRideLocations(rideId: RideIdParams["rideId"], limit = 30) {
     const ride = await prisma.ride.findUnique({
       where: {
