@@ -19,6 +19,7 @@ import {
   Clock,
   Info,
   MapPin,
+  MessageCircle,
   Navigation,
   Package,
   Phone,
@@ -28,6 +29,7 @@ import {
 } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { AppMap } from "@/components/AppMap";
+import { TripChatModal } from "@/components/TripChatModal";
 import { SafetyCenter } from "@/components/SafetyCenter";
 import { useTheme } from "@/context/ThemeContext";
 import { useLiveRoutePreview } from "@/hooks/useLiveRoutePreview";
@@ -57,9 +59,11 @@ type Props = {
   currency?: string;
   rideType?: string;
   packageDetails?: string;
+  tripId?: string;
   onClose?: () => void;
   onCallPassenger?: () => void;
   onSos?: () => void;
+  onChat?: () => void;
 };
 
 /**
@@ -105,6 +109,7 @@ export function MotorcycleNavigation({
   currency = "GHS",
   rideType,
   packageDetails,
+  tripId,
   onClose,
   onCallPassenger,
   onSos,
@@ -114,6 +119,7 @@ export function MotorcycleNavigation({
   const { session } = useApp();
   const [showSafetyCenter, setShowSafetyCenter] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const [showChatModal, setShowChatModal] = useState(false);
 
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -510,6 +516,17 @@ export function MotorcycleNavigation({
               style={s.closeBtn}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setShowChatModal(true);
+              }}
+              accessibilityLabel="Open Chat"
+            >
+              <MessageCircle size={20} color={colors.primary} />
+            </Pressable>
+
+            <Pressable
+              style={s.closeBtn}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 setShowInfoModal(true);
               }}
               accessibilityLabel="View ride details"
@@ -708,6 +725,15 @@ export function MotorcycleNavigation({
         visible={showSafetyCenter}
         onClose={() => setShowSafetyCenter(false)}
       />
+
+      {/* Trip Chat Modal */}
+      {tripId && (
+        <TripChatModal
+          visible={showChatModal}
+          tripId={tripId}
+          onClose={() => setShowChatModal(false)}
+        />
+      )}
     </View>
   );
 }

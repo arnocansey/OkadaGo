@@ -25,6 +25,7 @@ import { RiderTransparencyCard } from "@/components/RiderTransparencyCard";
 import { RiderAssignedSheet } from "@/components/RiderAssignedSheet";
 import { RiderArrivedSheet } from "@/components/RiderArrivedSheet";
 import { ActiveTripSheet } from "@/components/ActiveTripSheet";
+import { TripChatModal } from "@/components/TripChatModal";
 import { SafetyCenter } from "@/components/SafetyCenter";
 import { TripCompletedSheet } from "@/components/TripCompletedSheet";
 import { RateRiderSheet } from "@/components/RateRiderSheet";
@@ -153,6 +154,7 @@ export default function TrackScreen() {
   const [showReceiptSection, setShowReceiptSection] = useState(false);
   const [showRatingSheet, setShowRatingSheet] = useState(false);
   const [showReceiptSheet, setShowReceiptSheet] = useState(false);
+  const [showChatModal, setShowChatModal] = useState(false);
   const [safetyContacts, setSafetyContacts] = useState<SafetyOverview["contacts"]>([]);
   const [stops, setStops] = useState<DeliveryStop[]>([]);
 
@@ -570,7 +572,7 @@ export default function TrackScreen() {
               return Math.max(0, Math.min(1, 1 - remaining / total));
             })()}
             onCall={riderPhone ? () => Linking.openURL(`tel:${riderPhone}`) : () => {}}
-            onChat={() => {}}
+            onChat={() => setShowChatModal(true)}
             onSafety={() => setShowSafetyCenter(true)}
           />
         </View>
@@ -594,7 +596,7 @@ export default function TrackScreen() {
             tripPin={null}
             eta={livePreview ? `~${Math.round(livePreview.durationMinutes)} min` : undefined}
             onCall={riderPhone ? () => Linking.openURL(`tel:${riderPhone}`) : () => {}}
-            onChat={() => {}}
+            onChat={() => setShowChatModal(true)}
             onSafety={() => setShowSafetyCenter(true)}
           />
         </View>
@@ -874,6 +876,14 @@ export default function TrackScreen() {
         createdAt={trip?.createdAt}
         onDone={() => setShowReceiptSheet(false)}
       />
+
+      {trip?.id && (
+        <TripChatModal
+          visible={showChatModal}
+          tripId={trip.id}
+          onClose={() => setShowChatModal(false)}
+        />
+      )}
     </>
   );
 }

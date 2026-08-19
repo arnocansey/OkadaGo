@@ -30,6 +30,7 @@ import {
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { AppMap } from "@/components/AppMap";
+import { TripChatModal } from "./TripChatModal";
 import { MotorcycleNavigation } from "@/components/MotorcycleNavigation";
 import { PackageVerificationSheet } from "@/components/PackageVerificationSheet";
 import { DeliveryCompletionSheet } from "@/components/DeliveryCompletionSheet";
@@ -160,6 +161,7 @@ export function DeliveryNavigationSheet({
   const [showDeliveryCompletion, setShowDeliveryCompletion] = useState(false);
   const [showSafetyCenter, setShowSafetyCenter] = useState(false);
   const [showInAppNav, setShowInAppNav] = useState(false);
+  const [showChatModal, setShowChatModal] = useState(false);
 
   const status = delivery.status?.toLowerCase() ?? "assigned";
   const isPickupPhase = ["assigned", "arriving"].includes(status);
@@ -777,8 +779,20 @@ export function DeliveryNavigationSheet({
           </Pressable>
         </View>
 
-        {/* Safety Center Button */}
+        {/* Chat & Safety Center Buttons */}
         <View style={s.sosWrap}>
+          <Pressable
+            style={[s.sosBtn, { backgroundColor: colors.surfaceOverlay, borderColor: colors.border, borderWidth: 1 }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setShowChatModal(true);
+            }}
+            accessibilityLabel="Open Chat with Customer"
+          >
+            <MessageCircle size={16} color={colors.primary} />
+            <Text style={[s.sosLabel, { color: colors.text }]}>Chat</Text>
+          </Pressable>
+
           <Pressable
             style={s.sosBtn}
             onPress={() => {
@@ -1245,6 +1259,13 @@ export function DeliveryNavigationSheet({
         destinationAddress={delivery.dropoffAddress}
         pickupLatitude={delivery.pickupLatitude}
         pickupLongitude={delivery.pickupLongitude}
+      />
+
+      {/* ─── Delivery Chat Modal ────────────────────────────────── */}
+      <TripChatModal
+        visible={showChatModal}
+        tripId={delivery.id}
+        onClose={() => setShowChatModal(false)}
       />
     </View>
   );
