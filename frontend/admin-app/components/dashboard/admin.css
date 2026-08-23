@@ -6008,7 +6008,7 @@
   border: none;
   background: transparent;
   color: var(--text-secondary);
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
@@ -6044,7 +6044,7 @@
 .mgmt-settings-card {
   background: var(--bg-card, rgba(255, 255, 255, 0.03));
   border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
-  border-radius: 10px;
+  border-radius: 14px;
   padding: 18px 20px;
 }
 
@@ -6295,12 +6295,12 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 14px;
-  border-radius: 6px;
+  padding: 9px 16px;
+  border-radius: 10px;
   border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
   background: transparent;
   color: var(--text-secondary);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
@@ -6315,7 +6315,7 @@
 .mgmt-settings-btn.primary {
   background: var(--accent-orange);
   border-color: var(--accent-orange);
-  color: #000;
+  color: #fff;
   font-weight: 600;
 }
 
@@ -6330,7 +6330,7 @@
 
 .mgmt-settings-btn.small {
   padding: 4px 8px;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
 }
 
 /* ═══════════════════════════════════════════
@@ -13536,4 +13536,14 @@
 @media (max-width: 1100px) {
   .pm-mgmt-body { grid-template-columns: 1fr; }
   .pm-breakdown-sticky { position: static; }
+  .sc-layout { grid-template-columns: 280px 1fr; }
+  .sc-panel--info { display: none; }
+}
+
+@media (max-width: 768px) {
+  .sc-layout { grid-template-columns: 1fr; }
+  .sc-layout--list .sc-panel--conversation,
+  .sc-layout--list .sc-panel--info { display: none; }
+  .mgmt-settings-tabs { overflow-x: auto; }
+  .mgmt-settings-tab { font-size: 0.72rem; padding: 6px 10px; }
 }

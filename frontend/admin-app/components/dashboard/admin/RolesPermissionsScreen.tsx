@@ -346,7 +346,7 @@ export function RolesPermissionsScreen({
         .rp-kpi-row {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 16px;
+          gap: 12px;
           margin-bottom: 24px;
         }
 
@@ -354,19 +354,20 @@ export function RolesPermissionsScreen({
           display: flex;
           align-items: center;
           gap: 16px;
-          background: #1a1d27;
-          border: 1px solid #2a2d3a;
-          border-radius: 12px;
-          padding: 20px;
+          background: var(--card-bg, #1a1d27);
+          border: 1px solid var(--border-color, #2a2d3a);
+          border-radius: 14px;
+          padding: 18px 20px;
         }
 
         .rp-kpi-icon {
-          width: 48px;
-          height: 48px;
+          width: 40px;
+          height: 40px;
           border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
+          flex-shrink: 0;
         }
 
         .rp-kpi-icon-roles {
@@ -385,8 +386,8 @@ export function RolesPermissionsScreen({
         }
 
         .rp-kpi-icon-svg {
-          width: 24px;
-          height: 24px;
+          width: 20px;
+          height: 20px;
         }
 
         .rp-kpi-content {
@@ -395,15 +396,15 @@ export function RolesPermissionsScreen({
         }
 
         .rp-kpi-value {
-          font-size: 24px;
+          font-size: 1.35rem;
           font-weight: 700;
-          color: #f8fafc;
+          color: var(--text-primary, #f8fafc);
           line-height: 1.2;
         }
 
         .rp-kpi-label {
-          font-size: 13px;
-          color: #94a3b8;
+          font-size: 0.72rem;
+          color: var(--text-muted, #94a3b8);
           margin-top: 2px;
         }
 
@@ -418,8 +419,8 @@ export function RolesPermissionsScreen({
         .rp-search {
           display: flex;
           align-items: center;
-          background: #1a1d27;
-          border: 1px solid #2a2d3a;
+          background: var(--card-bg, #1a1d27);
+          border: 1px solid var(--border-color, #2a2d3a);
           border-radius: 8px;
           padding: 0 12px;
           flex: 1;
@@ -427,9 +428,9 @@ export function RolesPermissionsScreen({
         }
 
         .rp-search-icon {
-          width: 18px;
-          height: 18px;
-          color: #64748b;
+          width: 16px;
+          height: 16px;
+          color: var(--text-muted, #64748b);
           flex-shrink: 0;
         }
 
@@ -438,13 +439,13 @@ export function RolesPermissionsScreen({
           background: none;
           border: none;
           outline: none;
-          color: #e2e8f0;
+          color: var(--text-primary, #e2e8f0);
           padding: 10px 10px;
-          font-size: 14px;
+          font-size: 0.8rem;
         }
 
         .rp-search-input::placeholder {
-          color: #64748b;
+          color: var(--text-muted, #64748b);
         }
 
         .rp-search-clear {
@@ -452,52 +453,28 @@ export function RolesPermissionsScreen({
           border: none;
           cursor: pointer;
           padding: 4px;
-          color: #64748b;
+          color: var(--text-muted, #64748b);
           display: flex;
           align-items: center;
         }
 
         .rp-search-clear:hover {
-          color: #94a3b8;
+          color: var(--text-primary, #94a3b8);
         }
 
         .rp-search-clear-icon {
-          width: 16px;
-          height: 16px;
-        }
-
-        .rp-btn-primary {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background: #3b82f6;
-          color: #fff;
-          border: none;
-          border-radius: 8px;
-          padding: 10px 18px;
-          font-size: 14px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: background 0.15s ease;
-        }
-
-        .rp-btn-primary:hover {
-          background: #2563eb;
-        }
-
-        .rp-btn-primary svg {
-          width: 16px;
-          height: 16px;
+          width: 14px;
+          height: 14px;
         }
 
         .rp-tabs {
           display: flex;
           gap: 4px;
-          background: #1a1d27;
+          background: var(--card-bg, #1a1d27);
           border-radius: 10px;
           padding: 4px;
           margin-bottom: 20px;
-          border: 1px solid #2a2d3a;
+          border: 1px solid var(--border-color, #2a2d3a);
         }
 
         .rp-tab {
@@ -507,8 +484,8 @@ export function RolesPermissionsScreen({
           padding: 10px 20px;
           border: none;
           background: transparent;
-          color: #94a3b8;
-          font-size: 14px;
+          color: var(--text-muted, #94a3b8);
+          font-size: 0.78rem;
           font-weight: 500;
           border-radius: 8px;
           cursor: pointer;
@@ -516,29 +493,29 @@ export function RolesPermissionsScreen({
         }
 
         .rp-tab:hover {
-          color: #e2e8f0;
+          color: var(--text-primary, #e2e8f0);
           background: rgba(255, 255, 255, 0.04);
         }
 
         .rp-tab-active {
-          background: #2563eb;
+          background: var(--accent-orange, #ff6b00);
           color: #fff;
         }
 
         .rp-tab-active:hover {
-          background: #2563eb;
+          background: var(--accent-hover, #e65c00);
           color: #fff;
         }
 
         .rp-tab-icon {
-          width: 16px;
-          height: 16px;
+          width: 14px;
+          height: 14px;
         }
 
         .rp-tab-content {
-          background: #1a1d27;
-          border: 1px solid #2a2d3a;
-          border-radius: 12px;
+          background: var(--card-bg, #1a1d27);
+          border: 1px solid var(--border-color, #2a2d3a);
+          border-radius: 14px;
           padding: 24px;
           min-height: 400px;
         }
@@ -554,20 +531,20 @@ export function RolesPermissionsScreen({
 
         .rp-table th {
           text-align: left;
-          padding: 12px 16px;
-          font-size: 12px;
-          font-weight: 600;
-          color: #64748b;
+          padding: 10px 12px;
+          font-size: 0.7rem;
+          font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.05em;
-          border-bottom: 1px solid #2a2d3a;
+          color: var(--text-muted, #64748b);
+          border-bottom: 1px solid var(--border-color, #2a2d3a);
         }
 
         .rp-table td {
-          padding: 14px 16px;
-          font-size: 14px;
-          border-bottom: 1px solid #1e2030;
-          color: #cbd5e1;
+          padding: 10px 12px;
+          font-size: 0.82rem;
+          border-bottom: 1px solid var(--border-color, #1e2030);
+          color: var(--text-primary, #cbd5e1);
         }
 
         .rp-table tbody tr:hover {
@@ -585,21 +562,21 @@ export function RolesPermissionsScreen({
         }
 
         .rp-role-icon {
-          width: 18px;
-          height: 18px;
+          width: 16px;
+          height: 16px;
           color: #22c55e;
         }
 
         .rp-role-name {
           font-weight: 600;
-          color: #f1f5f9;
+          color: var(--text-primary, #f1f5f9);
         }
 
         .rp-badge {
           display: inline-block;
           padding: 3px 10px;
           border-radius: 6px;
-          font-size: 13px;
+          font-size: 0.7rem;
           font-weight: 600;
           background: rgba(59, 130, 246, 0.12);
           color: #3b82f6;
@@ -619,7 +596,7 @@ export function RolesPermissionsScreen({
           display: inline-block;
           padding: 3px 10px;
           border-radius: 6px;
-          font-size: 12px;
+          font-size: 0.7rem;
           font-weight: 600;
         }
 
@@ -643,13 +620,13 @@ export function RolesPermissionsScreen({
           background: rgba(255, 255, 255, 0.06);
           border-radius: 6px;
           cursor: pointer;
-          color: #94a3b8;
+          color: var(--text-muted, #94a3b8);
           transition: all 0.15s ease;
         }
 
         .rp-btn-icon:hover {
           background: rgba(255, 255, 255, 0.1);
-          color: #e2e8f0;
+          color: var(--text-primary, #e2e8f0);
         }
 
         .rp-btn-icon-danger:hover {
@@ -658,14 +635,14 @@ export function RolesPermissionsScreen({
         }
 
         .rp-btn-icon-svg {
-          width: 16px;
-          height: 16px;
+          width: 14px;
+          height: 14px;
         }
 
         .rp-empty-row {
           text-align: center;
-          color: #64748b;
-          padding: 40px 16px !important;
+          color: var(--text-muted, #64748b);
+          padding: 40px 12px !important;
           font-style: italic;
         }
 
@@ -674,12 +651,12 @@ export function RolesPermissionsScreen({
           align-items: center;
           gap: 10px;
           font-weight: 500;
-          color: #f1f5f9;
+          color: var(--text-primary, #f1f5f9);
         }
 
         .rp-admin-avatar {
-          width: 18px;
-          height: 18px;
+          width: 16px;
+          height: 16px;
           color: #3b82f6;
         }
 
@@ -693,8 +670,8 @@ export function RolesPermissionsScreen({
 
         .rp-matrix-header {
           text-align: center !important;
-          font-size: 11px !important;
-          padding: 12px 10px !important;
+          font-size: 0.68rem !important;
+          padding: 10px 8px !important;
           white-space: nowrap;
         }
 
@@ -703,14 +680,14 @@ export function RolesPermissionsScreen({
           align-items: center;
           gap: 8px;
           font-weight: 600;
-          color: #f1f5f9;
+          color: var(--text-primary, #f1f5f9);
           white-space: nowrap;
         }
 
         .rp-matrix-label-icon {
           width: 14px;
           height: 14px;
-          color: #64748b;
+          color: var(--text-muted, #64748b);
         }
 
         .rp-matrix-cell {
@@ -724,7 +701,7 @@ export function RolesPermissionsScreen({
           width: 28px;
           height: 28px;
           border-radius: 6px;
-          font-size: 14px;
+          font-size: 0.82rem;
           font-weight: 700;
         }
 
@@ -745,20 +722,28 @@ export function RolesPermissionsScreen({
           justify-content: center;
           gap: 16px;
           padding: 60px 20px;
-          color: #64748b;
+          color: var(--text-muted, #64748b);
         }
 
         .rp-spinner {
           width: 32px;
           height: 32px;
-          border: 3px solid #2a2d3a;
-          border-top-color: #3b82f6;
+          border: 3px solid var(--border-color, #2a2d3a);
+          border-top-color: var(--accent-orange, #ff6b00);
           border-radius: 50%;
           animation: rp-spin 0.8s linear infinite;
         }
 
         @keyframes rp-spin {
           to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+          .rp-kpi-row { grid-template-columns: 1fr; }
+          .rp-toolbar { flex-direction: column; align-items: stretch; }
+          .rp-search { max-width: 100%; }
+          .rp-tabs { overflow-x: auto; }
+          .rp-tab { white-space: nowrap; font-size: 0.72rem; padding: 8px 14px; }
         }
       `}</style>
     </div>

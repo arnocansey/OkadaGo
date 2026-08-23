@@ -350,11 +350,11 @@ export function MessageTemplatesScreen({ dataLoading = false, messageTemplates, 
         .mt-admin-screen { display: flex; flex-direction: column; gap: 20px; }
         .mt-loading-skeleton { padding: 40px; text-align: center; color: var(--text-secondary, #94a3b8); }
 
-        .mt-kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-        .mt-kpi-card { background: var(--surface, #1e293b); border: 1px solid var(--border, #334155); border-radius: 10px; padding: 16px; display: flex; align-items: center; gap: 12px; }
-        .mt-kpi-icon { width: 36px; height: 36px; border-radius: 8px; background: rgba(99, 102, 241, 0.12); color: #818cf8; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .mt-kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .mt-kpi-card { background: var(--surface, #1e293b); border: 1px solid var(--border, #334155); border-radius: 14px; padding: 18px 20px; display: flex; align-items: center; gap: 12px; }
+        .mt-kpi-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(99, 102, 241, 0.12); color: #818cf8; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .mt-kpi-content { display: flex; flex-direction: column; }
-        .mt-kpi-value { font-size: 1.4rem; font-weight: 700; color: var(--text-primary, #f1f5f9); line-height: 1.2; }
+        .mt-kpi-value { font-size: 1.35rem; font-weight: 700; color: var(--text-primary, #f1f5f9); line-height: 1.2; }
         .mt-kpi-label { font-size: 0.72rem; color: var(--text-secondary, #94a3b8); }
 
         .mt-toolbar { display: flex; flex-direction: column; gap: 12px; }
@@ -373,15 +373,15 @@ export function MessageTemplatesScreen({ dataLoading = false, messageTemplates, 
         .mt-btn-primary { display: inline-flex; align-items: center; gap: 6px; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); color: #818cf8; border-radius: 8px; padding: 8px 14px; font-size: 0.78rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
         .mt-btn-primary:hover { background: rgba(99, 102, 241, 0.25); }
 
-        .mt-table-card { background: var(--surface, #1e293b); border: 1px solid var(--border, #334155); border-radius: 10px; overflow: hidden; }
+        .mt-table-card { background: var(--surface, #1e293b); border: 1px solid var(--border, #334155); border-radius: 14px; overflow: hidden; }
         .mt-table { width: 100%; border-collapse: collapse; }
-        .mt-table th { text-align: left; padding: 10px 14px; font-size: 0.7rem; font-weight: 600; color: var(--text-secondary, #94a3b8); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--border, #334155); background: rgba(0,0,0,0.15); }
-        .mt-table td { padding: 10px 14px; font-size: 0.8rem; color: var(--text-primary, #f1f5f9); border-bottom: 1px solid var(--border, #1e293b); }
+        .mt-table th { text-align: left; padding: 10px 12px; font-size: 0.7rem; font-weight: 700; color: var(--text-secondary, #94a3b8); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--border, #334155); background: rgba(0,0,0,0.15); }
+        .mt-table td { padding: 10px 12px; font-size: 0.82rem; color: var(--text-primary, #f1f5f9); border-bottom: 1px solid var(--border, #1e293b); }
         .mt-table tr:last-child td { border-bottom: none; }
         .mt-table tr:hover td { background: rgba(99, 102, 241, 0.04); }
 
         .mt-template-name { font-weight: 600; font-size: 0.82rem; }
-        .mt-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.68rem; font-weight: 600; white-space: nowrap; }
+        .mt-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; white-space: nowrap; }
         .mt-template-subject { font-size: 0.78rem; font-weight: 500; color: var(--text-primary, #f1f5f9); margin-bottom: 2px; }
         .mt-template-body { font-size: 0.72rem; color: var(--text-secondary, #94a3b8); max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 

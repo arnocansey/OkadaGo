@@ -402,10 +402,10 @@ export function GoPointsScreen({
                     </td>
                     <td>
                       <div style={{ display: "flex", gap: 6 }}>
-                        <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.7rem", padding: "3px 8px" }} onClick={() => startEditRule(row)}>
+                        <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.72rem", padding: "3px 8px" }} onClick={() => startEditRule(row)}>
                           Edit
                         </button>
-                        <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.7rem", padding: "3px 8px" }} onClick={() => onUpdateRule(row.id, { active: !row.active })}>
+                        <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.72rem", padding: "3px 8px" }} onClick={() => onUpdateRule(row.id, { active: !row.active })}>
                           {row.active ? "Deactivate" : "Activate"}
                         </button>
                       </div>
@@ -536,20 +536,20 @@ export function GoPointsScreen({
           display: flex;
           align-items: flex-start;
           gap: 12px;
-          padding: 16px 18px;
+          padding: 18px 20px;
           background: var(--card-bg, #1a1d24);
           border: 1px solid var(--border-color, #2a2d35);
-          border-radius: 10px;
+          border-radius: 14px;
           min-width: 0;
         }
         .gp-kpi-card > div > span { display: block; font-size: 0.72rem; color: var(--text-muted, #8b8fa3); margin-bottom: 2px; }
-        .gp-kpi-card > div > strong { display: block; font-size: 1.25rem; color: var(--text-primary, #f0f0f0); }
-        .gp-kpi-card > div > small { display: block; font-size: 0.68rem; color: var(--text-muted, #8b8fa3); margin-top: 2px; }
-        .gp-kpi-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(255,165,0,0.12); color: #ffa500; }
+        .gp-kpi-card > div > strong { display: block; font-size: 1.35rem; color: var(--text-primary, #f0f0f0); }
+        .gp-kpi-card > div > small { display: block; font-size: 0.72rem; color: var(--text-muted, #8b8fa3); margin-top: 2px; }
+        .gp-kpi-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(255,107,0,0.12); color: var(--accent-orange, #ff6b00); }
         .gp-kpi-icon--green { background: rgba(34,197,94,0.12); color: #22c55e; }
         .gp-kpi-icon--blue { background: rgba(59,130,246,0.12); color: #3b82f6; }
         .gp-kpi-icon--purple { background: rgba(168,85,247,0.12); color: #a855f7; }
-        .gp-kpi-icon--orange { background: rgba(255,107,0,0.12); color: #ff6b00; }
+        .gp-kpi-icon--orange { background: rgba(255,107,0,0.12); color: var(--accent-orange, #ff6b00); }
 
         /* ── Tabs ────────────────────────────────────────────────────────── */
         .gp-tabs { display: flex; gap: 0; margin-top: 16px; border-bottom: 1px solid var(--border-color, #2a2d35); }
@@ -565,7 +565,7 @@ export function GoPointsScreen({
           transition: color 0.15s, border-color 0.15s;
         }
         .gp-tab:hover { color: var(--text-primary, #f0f0f0); }
-        .gp-tab--active { color: #ffa500; border-bottom-color: #ffa500; }
+        .gp-tab--active { color: var(--accent-orange, #ff6b00); border-bottom-color: var(--accent-orange, #ff6b00); }
 
         /* ── Search ──────────────────────────────────────────────────────── */
         .gp-search-bar {
@@ -580,7 +580,7 @@ export function GoPointsScreen({
           max-width: 320px;
         }
         .gp-search-bar svg { color: var(--text-muted, #8b8fa3); flex-shrink: 0; }
-        .gp-search-bar input { background: transparent; border: none; outline: none; color: var(--text-primary, #f0f0f0); font-size: 0.78rem; width: 100%; }
+        .gp-search-bar input { background: transparent; border: none; outline: none; color: var(--text-primary, #f0f0f0); font-size: 0.8rem; width: 100%; }
         .gp-search-bar input::placeholder { color: var(--text-muted, #8b8fa3); }
         .gp-search-clear { background: none; border: none; color: var(--text-muted, #8b8fa3); cursor: pointer; padding: 2px; display: flex; }
         .gp-search-clear:hover { color: var(--text-primary, #f0f0f0); }
@@ -590,10 +590,10 @@ export function GoPointsScreen({
           display: inline-block;
           padding: 2px 8px;
           border-radius: 6px;
-          font-size: 0.75rem;
+          font-size: 0.72rem;
           font-weight: 600;
-          background: rgba(255,165,0,0.12);
-          color: #ffa500;
+          background: rgba(255,107,0,0.12);
+          color: var(--accent-orange, #ff6b00);
         }
         .gp-status {
           display: inline-block;
@@ -617,7 +617,7 @@ export function GoPointsScreen({
           font-size: 0.72rem;
           font-weight: 600;
         }
-        .gp-tier--gold { background: rgba(255,165,0,0.15); color: #ffa500; }
+        .gp-tier--gold { background: rgba(255,165,0,0.15); color: var(--accent-orange, #ff6b00); }
         .gp-tier--silver { background: rgba(156,163,175,0.15); color: #9ca3af; }
         .gp-tier--bronze { background: rgba(180,120,60,0.15); color: #b4783c; }
 
@@ -627,6 +627,13 @@ export function GoPointsScreen({
           text-align: center;
           color: var(--text-muted, #8b8fa3);
           font-size: 0.82rem;
+        }
+
+        @media (max-width: 768px) {
+          .gp-toolbar { flex-direction: column; align-items: stretch; }
+          .gp-search-bar { max-width: 100%; }
+          .gp-tabs { overflow-x: auto; }
+          .gp-tab { white-space: nowrap; font-size: 0.72rem; padding: 8px 14px; }
         }
       `}</style>
     </div>
