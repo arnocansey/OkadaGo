@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { AdminAccountRecord } from "./types";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
@@ -305,7 +307,7 @@ export function RolesPermissionsScreen({
   );
 
   return (
-    <div className="rp-screen">
+    <div className="exact-admin-screen rp-screen">
       <AdminPageHeader
         title="Roles & Permissions"
         subtitle="Manage admin roles and permission matrix"
@@ -360,8 +362,8 @@ export function RolesPermissionsScreen({
             </button>
           )}
         </div>
-        <button className="rp-btn-primary" onClick={() => addToast("Roles are defined by permission sets — use the Admins screen to create or promote accounts", "info")}>
-          <Plus className="rp-btn-icon-svg" />
+        <button className="admin-btn-primary" onClick={() => addToast("Roles are defined by permission sets — use the Admins screen to create or promote accounts", "info")}>
+          <Plus size={14} />
           <span>Add Role</span>
         </button>
       </div>
@@ -397,9 +399,7 @@ export function RolesPermissionsScreen({
       <style>{`
         .rp-screen {
           padding: 24px;
-          color: #e2e8f0;
-          min-height: 100vh;
-          background: #0f1117;
+          color: var(--text-primary);
         }
 
         .rp-kpi-row {

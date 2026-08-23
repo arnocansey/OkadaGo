@@ -108,7 +108,7 @@ export function MessageTemplatesScreen({ dataLoading = false, messageTemplates, 
         title="Message Templates"
         subtitle="Reusable notification and message templates"
         actions={
-          <button type="button" className="mt-btn-primary" onClick={() => { setShowForm((v) => !v); setEditingId(null); setForm({ name: "", category: "Ride", channel: "SMS", subject: "", body: "" }); }}>
+          <button type="button" className="admin-btn-primary" onClick={() => { setShowForm((v) => !v); setEditingId(null); setForm({ name: "", category: "Ride", channel: "SMS", subject: "", body: "" }); }}>
             <Plus size={14} />
             <span>{showForm ? "Close form" : "New Template"}</span>
           </button>
@@ -152,10 +152,10 @@ export function MessageTemplatesScreen({ dataLoading = false, messageTemplates, 
             </label>
           </div>
           <div className="admin-page-header-actions" style={{ marginTop: 16 }}>
-            <button type="button" className="admin-btn-primary" style={{ fontSize: "0.78rem" }} disabled={isMutating} onClick={submitTemplate}>
+            <button type="button" className="admin-btn-primary" disabled={isMutating} onClick={submitTemplate}>
               {editingId ? "Update template" : "Save template"}
             </button>
-            <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.78rem" }} onClick={() => { setShowForm(false); setEditingId(null); }}>
+            <button type="button" className="admin-btn-secondary" onClick={() => { setShowForm(false); setEditingId(null); }}>
               Cancel
             </button>
           </div>

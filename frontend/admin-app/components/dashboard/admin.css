@@ -2218,6 +2218,61 @@
   color: var(--accent-orange);
 }
 
+/* ── Admin KPI Grid ── */
+.admin-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* ── Admin Table Wrapper ── */
+.admin-table-wrapper {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+}
+
+.admin-table-wrapper .admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* ── Admin Search Input ── */
+.admin-search-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.admin-search-input:focus {
+  border-color: var(--accent-orange);
+}
+
+.admin-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ── Admin Screen Toolbar ── */
+.admin-screen-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Admin Page Header Actions ── */
+.admin-page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* ── Enhanced Status Dots ── */
 .admin-reference-status-dot {
   width: 8px;

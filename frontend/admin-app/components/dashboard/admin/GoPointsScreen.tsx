@@ -203,7 +203,7 @@ export function GoPointsScreen({
         subtitle="Loyalty points program management"
         actions={
           <div className="admin-screen-toolbar">
-            <button type="button" className="admin-btn-primary" style={{ fontSize: "0.78rem" }} onClick={() => { setShowRuleForm((v) => !v); setEditingRuleId(null); setRuleForm({ name: "", description: "", eventType: "", points: 10, perUnit: 1, minSpend: "", active: true }); }}>
+            <button type="button" className="admin-btn-primary" onClick={() => { setShowRuleForm((v) => !v); setEditingRuleId(null); setRuleForm({ name: "", description: "", eventType: "", points: 10, perUnit: 1, minSpend: "", active: true }); }}>
               <Plus size={13} /> {showRuleForm ? "Close form" : "Add Rule"}
             </button>
           </div>
@@ -245,10 +245,10 @@ export function GoPointsScreen({
             </label>
           </div>
           <div className="admin-page-header-actions" style={{ marginTop: 16 }}>
-            <button type="button" className="admin-btn-primary" style={{ fontSize: "0.78rem" }} disabled={isMutating} onClick={submitRule}>
+            <button type="button" className="admin-btn-primary" disabled={isMutating} onClick={submitRule}>
               {editingRuleId ? "Update rule" : "Save rule"}
             </button>
-            <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.78rem" }} onClick={() => { setShowRuleForm(false); setEditingRuleId(null); }}>
+            <button type="button" className="admin-btn-secondary" onClick={() => { setShowRuleForm(false); setEditingRuleId(null); }}>
               Cancel
             </button>
           </div>
@@ -282,10 +282,10 @@ export function GoPointsScreen({
             </label>
           </div>
           <div className="admin-page-header-actions" style={{ marginTop: 16 }}>
-            <button type="button" className="admin-btn-primary" style={{ fontSize: "0.78rem" }} disabled={isMutating} onClick={submitRedemption}>
+            <button type="button" className="admin-btn-primary" disabled={isMutating} onClick={submitRedemption}>
               Save redemption item
             </button>
-            <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.78rem" }} onClick={() => setShowRedemptionForm(false)}>
+            <button type="button" className="admin-btn-secondary" onClick={() => setShowRedemptionForm(false)}>
               Cancel
             </button>
           </div>
@@ -423,7 +423,7 @@ export function GoPointsScreen({
         <div className="admin-reference-card" style={{ marginTop: 12 }}>
           <div className="admin-reference-cardhead">
             <div><h3>Redemption Catalog</h3><p>Rewards passengers can redeem with GoPoints</p></div>
-            <button type="button" className="admin-btn-primary" style={{ fontSize: "0.75rem" }} onClick={() => setShowRedemptionForm((v) => !v)}>
+            <button type="button" className="admin-btn-primary" onClick={() => setShowRedemptionForm((v) => !v)}>
               <Plus size={12} /> {showRedemptionForm ? "Close form" : "Add Item"}
             </button>
           </div>
