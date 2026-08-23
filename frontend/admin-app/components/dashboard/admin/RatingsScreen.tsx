@@ -30,7 +30,7 @@ export type RatingsScreenProps = {
   onPageChange?: (page: number) => void;
 };
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 10;
 
 export function RatingsScreen({
   ratings,

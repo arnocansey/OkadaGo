@@ -42,5 +42,5 @@ export async function requestPagedJson<T>(
 }
 
 export function listPageSize(screenHeavy: boolean) {
-  return screenHeavy ? 100 : 25;
+  return screenHeavy ? 50 : 10;
 }

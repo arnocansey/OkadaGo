@@ -173,7 +173,7 @@ export function useAdminData(
   const [auditPage, setAuditPage] = useState(1);
   const [ticketsPage, setTicketsPage] = useState(1);
   const [documentsPage, setDocumentsPage] = useState(1);
-  const LIST_PAGE = 25;
+  const LIST_PAGE = 10;
 
   useEffect(() => {
     setRidesPage(1);

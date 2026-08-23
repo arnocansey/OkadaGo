@@ -48,7 +48,7 @@ export type RiderSuspensionsScreenProps = {
 
 const TABS = ["All Suspensions", "Active", "Expired"] as const;
 type TabKey = (typeof TABS)[number];
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 10;
 
 function formatDate(value?: string | null) {
   if (!value) return "—";

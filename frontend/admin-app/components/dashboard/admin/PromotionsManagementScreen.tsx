@@ -7,6 +7,7 @@ import { EmptyCard } from "./EmptyCard";
 import { AdminPageSkeleton } from "./AdminSkeleton";
 import type { PromoCodeRecord, RideRecord } from "./types";
 import { parseNumber, formatDateTime } from "./utils";
+import { usePagination, AdminPagination } from "./ui/AdminPagination";
 import {
   Tag,
   Plus,
@@ -171,6 +172,10 @@ export function PromotionsManagementScreen({
       return true;
     });
   }, [promoCodes, typeFilter, statusFilter, categoryFilter, search]);
+
+  const PAGE_SIZE = 10;
+  const pagination = usePagination(filtered, PAGE_SIZE);
+  const paged = pagination.paginated;
 
   const handleCreate = () => {
     if (!onCreatePromo || !form.code.trim() || !form.name.trim() || !form.discountValue) return;
@@ -480,6 +485,7 @@ export function PromotionsManagementScreen({
             />
           </div>
         ) : (
+          <div>
           <table className="pmg-table">
             <thead>
               <tr>
@@ -496,7 +502,7 @@ export function PromotionsManagementScreen({
               </tr>
             </thead>
             <tbody>
-              {filtered.map((promo) => {
+              {paged.map((promo) => {
                 const badge = statusBadge(promo.status);
                 const tBadge = typeBadge(promo.type);
                 const category = detectCategory(promo);
@@ -664,6 +670,13 @@ export function PromotionsManagementScreen({
               })}
             </tbody>
           </table>
+          <AdminPagination
+            page={pagination.page}
+            totalItems={pagination.totalItems}
+            pageSize={PAGE_SIZE}
+            onPageChange={pagination.setPage}
+          />
+          </div>
         )}
       </div>
     </div>

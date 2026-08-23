@@ -11,7 +11,7 @@ import { AdminPagination, hasServerPagination, usePagination } from "./ui/AdminP
 import type { DeliveryRecord } from "./types";
 import { parseNumber, formatDateTime, statusTone, formatEnumLabel } from "./utils";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 10;
 
 export type DeliveriesScreenProps = {
   deliveries: DeliveryRecord[];

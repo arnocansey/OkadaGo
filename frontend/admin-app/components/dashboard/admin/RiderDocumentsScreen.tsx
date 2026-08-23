@@ -17,7 +17,7 @@ const DOCUMENT_TABS = [
   "Background Check",
 ] as const;
 
-const ITEMS_PER_PAGE = 8;
+const ITEMS_PER_PAGE = 10;
 
 const STATUS_OPTIONS = ["All", "Compliant", "Expiring Soon", "Expired", "Missing", "Pending"] as const;
 

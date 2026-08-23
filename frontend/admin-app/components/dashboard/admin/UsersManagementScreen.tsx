@@ -9,7 +9,7 @@ import { AdminKpiRow } from "./ui/AdminKpiRow";
 import { AdminPagination, hasServerPagination, usePagination } from "./ui/AdminPagination";
 import { statusTone, formatDateTime } from "./utils";
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 10;
 
 type ManagedUser = {
   id: string;

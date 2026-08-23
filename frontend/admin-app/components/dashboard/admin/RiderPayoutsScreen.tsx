@@ -53,7 +53,7 @@ export type RiderPayoutsScreenProps = {
   onPageChange?: (page: number) => void;
 };
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 10;
 
 const STATUS_OPTIONS = [
   "All Statuses",

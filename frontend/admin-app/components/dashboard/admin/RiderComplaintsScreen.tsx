@@ -38,7 +38,7 @@ export type RiderComplaintsScreenProps = {
 };
 
 const TABS = ["All", "Open", "In Progress", "Resolved", "Closed"] as const;
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 10;
 
 const tagStyle = (variant: "danger" | "warning" | "success" | "neutral"): React.CSSProperties => ({
   display: "inline-flex",

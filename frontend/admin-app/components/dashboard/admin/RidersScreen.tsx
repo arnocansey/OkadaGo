@@ -10,7 +10,7 @@ import type { RiderRecord } from "./types";
 import { statusTone } from "./utils";
 import { parseNumber, ACCRA_MAP_CENTER, ACCRA_MAP_ZOOM_CITY, ACCRA_MAP_ZOOM_METRO } from "./utils";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 10;
 
 export type RiderMapMarker = {
   id: string;

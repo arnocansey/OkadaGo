@@ -8,7 +8,7 @@ import type { AuditLogRecord } from "./types";
 import { formatDateTime } from "./utils";
 import { useEffect, useMemo, useState } from "react";
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 10;
 
 export type AuditLogsScreenProps = {
   auditLogs: AuditLogRecord[];
