@@ -14,7 +14,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
-import { Lock, Mail } from "lucide-react-native";
+import { Lock, Mail, Phone, Eye, EyeOff } from "lucide-react-native";
 import { api, phoneParts, type AuthResponse } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -28,6 +28,8 @@ export default function LoginScreen() {
   const { colors, typography } = useTheme();
 
   const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -70,23 +72,32 @@ export default function LoginScreen() {
           paddingHorizontal: spacing.lg,
         },
 
-        /* ─── Phone Input Section ─────────────────────────── */
+        /* ─── Input Section ───────────────────────────────── */
         inputSection: {
           gap: spacing.lg,
           marginBottom: spacing.xxxl,
         },
-        phoneFieldWrapper: {
+        fieldWrapper: {
           backgroundColor: colors.surface,
           borderRadius: radius.xl,
           borderWidth: 2,
-          borderColor: phone.length > 0 ? colors.primary : colors.border,
+          borderColor: colors.border,
           flexDirection: "row",
           alignItems: "center",
           paddingHorizontal: spacing.lg,
           minHeight: 64,
         },
-        phoneFieldWrapperError: {
+        phoneFieldActive: {
+          borderColor: phone.length > 0 ? colors.primary : colors.border,
+        },
+        passwordFieldActive: {
+          borderColor: password.length > 0 ? colors.primary : colors.border,
+        },
+        fieldWrapperError: {
           borderColor: colors.danger,
+        },
+        fieldIcon: {
+          marginRight: spacing.md,
         },
         countryCode: {
           ...typography.h2,
@@ -103,6 +114,12 @@ export default function LoginScreen() {
           paddingVertical: spacing.lg,
           letterSpacing: 2,
         },
+        passwordInput: {
+          flex: 1,
+          ...typography.body,
+          color: colors.text,
+          paddingVertical: spacing.lg,
+        },
         phonePlaceholder: {
           position: "absolute",
           left: 56,
@@ -110,11 +127,22 @@ export default function LoginScreen() {
           color: colors.textMuted,
           letterSpacing: 2,
         },
+        eyeBtn: {
+          padding: spacing.sm,
+        },
         errorText: {
           ...typography.caption,
           color: colors.danger,
           textAlign: "center",
           marginTop: -spacing.sm,
+        },
+        forgotPassword: {
+          alignSelf: "flex-end",
+          marginTop: -spacing.md,
+        },
+        forgotPasswordText: {
+          ...typography.captionMedium,
+          color: colors.primary,
         },
 
         /* ─── Divider ─────────────────────────────────────── */
@@ -175,7 +203,7 @@ export default function LoginScreen() {
           color: colors.textSecondary,
         },
       }),
-    [colors, typography, phone],
+    [colors, typography, phone, password],
   );
 
   async function submit() {
@@ -184,12 +212,16 @@ export default function LoginScreen() {
       setError("Enter a valid Ghanaian phone number");
       return;
     }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
     setLoading(true);
     try {
       const phoneData = phoneParts(phone);
       const result = await api<AuthResponse>("/auth/passenger/login", {
         method: "POST",
-        body: { phoneE164: phoneData.phoneE164, password: "__phone_otp__" },
+        body: { phoneE164: phoneData.phoneE164, password },
       });
       await signIn({ token: result.token, expiresAt: result.expiresAt, user: result.user });
       if (result.user.isPhoneVerified === false) {
@@ -198,9 +230,13 @@ export default function LoginScreen() {
       }
       const prompted = await AsyncStorage.getItem("@okadago_passenger_location_prompted");
       router.replace(prompted === "seen" ? "/(main)" : "/(auth)/location-permission");
-    } catch {
-      // Phone+password login not supported — fall back to OTP flow
-      router.push({ pathname: "/(auth)/verify-phone", params: { phone } });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "";
+      if (msg.toLowerCase().includes("invalid") || msg.toLowerCase().includes("credential")) {
+        setError("Invalid phone number or password");
+      } else {
+        setError(msg || "Login failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -221,13 +257,15 @@ export default function LoginScreen() {
             </View>
             <Text style={styles.heading}>Welcome to OkadaGo</Text>
             <Text style={styles.subheading}>
-              Ride across Ghana in minutes. Enter your phone number to get started.
+              Ride across Ghana in minutes. Sign in to your account.
             </Text>
           </View>
 
-          {/* ─── Phone Input ──────────────────────────────── */}
+          {/* ─── Input Fields ─────────────────────────────── */}
           <View style={styles.inputSection}>
-            <View style={[styles.phoneFieldWrapper, error ? styles.phoneFieldWrapperError : null]}>
+            {/* Phone Number */}
+            <View style={[styles.fieldWrapper, styles.phoneFieldActive, error ? styles.fieldWrapperError : null]}>
+              <Phone size={20} color={colors.textMuted} style={styles.fieldIcon} />
               <Text style={styles.countryCode}>+233</Text>
               <TextInput
                 style={styles.phoneInput}
@@ -245,12 +283,35 @@ export default function LoginScreen() {
                 <Text style={styles.phonePlaceholder}>024 123 4567</Text>
               )}
             </View>
+
+            {/* Password */}
+            <View style={[styles.fieldWrapper, styles.passwordFieldActive, error ? styles.fieldWrapperError : null]}>
+              <Lock size={20} color={colors.textMuted} style={styles.fieldIcon} />
+              <TextInput
+                style={styles.passwordInput}
+                value={password}
+                onChangeText={setPassword}
+                placeholder="Enter your password"
+                placeholderTextColor={colors.textMuted}
+                secureTextEntry={!showPassword}
+                autoComplete="password"
+                textContentType="password"
+              />
+              <Pressable style={styles.eyeBtn} onPress={() => setShowPassword(!showPassword)}>
+                {showPassword ? (
+                  <EyeOff size={20} color={colors.textMuted} />
+                ) : (
+                  <Eye size={20} color={colors.textMuted} />
+                )}
+              </Pressable>
+            </View>
+
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
           </View>
 
-          {/* ─── Continue CTA ─────────────────────────────── */}
+          {/* ─── Sign In CTA ─────────────────────────────── */}
           <Button
-            label={t("auth.continue") || "Continue"}
+            label={t("auth.signIn") || "Sign In"}
             loading={loading}
             onPress={submit}
             fullWidth
