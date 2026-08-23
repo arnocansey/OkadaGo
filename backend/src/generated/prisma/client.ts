@@ -268,3 +268,13 @@ export type GoPointRedemption = Prisma.GoPointRedemptionModel
  * 
  */
 export type MessageTemplate = Prisma.MessageTemplateModel
+/**
+ * Model AssignmentRule
+ * 
+ */
+export type AssignmentRule = Prisma.AssignmentRuleModel
+/**
+ * Model AssignmentAuditLog
+ * 
+ */
+export type AssignmentAuditLog = Prisma.AssignmentAuditLogModel

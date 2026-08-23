@@ -428,7 +428,9 @@ export const ModelName = {
   GoPointBalance: 'GoPointBalance',
   GoPointLedger: 'GoPointLedger',
   GoPointRedemption: 'GoPointRedemption',
-  MessageTemplate: 'MessageTemplate'
+  MessageTemplate: 'MessageTemplate',
+  AssignmentRule: 'AssignmentRule',
+  AssignmentAuditLog: 'AssignmentAuditLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -444,7 +446,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "riderOnlineLog" | "adminProfile" | "savedPaymentMethod" | "adminNote" | "platformSetting" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "deliveryRequest" | "deliveryStop" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "riderPayoutAccount" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog" | "escalationRule" | "scheduledBroadcast" | "opsJobHeartbeat" | "goPointRule" | "goPointBalance" | "goPointLedger" | "goPointRedemption" | "messageTemplate"
+    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "riderOnlineLog" | "adminProfile" | "savedPaymentMethod" | "adminNote" | "platformSetting" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "deliveryRequest" | "deliveryStop" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "riderPayoutAccount" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog" | "escalationRule" | "scheduledBroadcast" | "opsJobHeartbeat" | "goPointRule" | "goPointBalance" | "goPointLedger" | "goPointRedemption" | "messageTemplate" | "assignmentRule" | "assignmentAuditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3778,6 +3780,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AssignmentRule: {
+      payload: Prisma.$AssignmentRulePayload<ExtArgs>
+      fields: Prisma.AssignmentRuleFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AssignmentRuleFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentRulePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AssignmentRuleFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentRulePayload>
+        }
+        findFirst: {
+          args: Prisma.AssignmentRuleFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentRulePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AssignmentRuleFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentRulePayload>
+        }
+        findMany: {
+          args: Prisma.AssignmentRuleFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentRulePayload>[]
+        }
+        create: {
+          args: Prisma.AssignmentRuleCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentRulePayload>
+        }
+        createMany: {
+          args: Prisma.AssignmentRuleCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AssignmentRuleCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentRulePayload>[]
+        }
+        delete: {
+          args: Prisma.AssignmentRuleDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentRulePayload>
+        }
+        update: {
+          args: Prisma.AssignmentRuleUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentRulePayload>
+        }
+        deleteMany: {
+          args: Prisma.AssignmentRuleDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AssignmentRuleUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AssignmentRuleUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentRulePayload>[]
+        }
+        upsert: {
+          args: Prisma.AssignmentRuleUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentRulePayload>
+        }
+        aggregate: {
+          args: Prisma.AssignmentRuleAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAssignmentRule>
+        }
+        groupBy: {
+          args: Prisma.AssignmentRuleGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AssignmentRuleGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AssignmentRuleCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AssignmentRuleCountAggregateOutputType> | number
+        }
+      }
+    }
+    AssignmentAuditLog: {
+      payload: Prisma.$AssignmentAuditLogPayload<ExtArgs>
+      fields: Prisma.AssignmentAuditLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AssignmentAuditLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentAuditLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AssignmentAuditLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentAuditLogPayload>
+        }
+        findFirst: {
+          args: Prisma.AssignmentAuditLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentAuditLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AssignmentAuditLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentAuditLogPayload>
+        }
+        findMany: {
+          args: Prisma.AssignmentAuditLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentAuditLogPayload>[]
+        }
+        create: {
+          args: Prisma.AssignmentAuditLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentAuditLogPayload>
+        }
+        createMany: {
+          args: Prisma.AssignmentAuditLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AssignmentAuditLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentAuditLogPayload>[]
+        }
+        delete: {
+          args: Prisma.AssignmentAuditLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentAuditLogPayload>
+        }
+        update: {
+          args: Prisma.AssignmentAuditLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentAuditLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.AssignmentAuditLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AssignmentAuditLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AssignmentAuditLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentAuditLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.AssignmentAuditLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssignmentAuditLogPayload>
+        }
+        aggregate: {
+          args: Prisma.AssignmentAuditLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAssignmentAuditLog>
+        }
+        groupBy: {
+          args: Prisma.AssignmentAuditLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AssignmentAuditLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AssignmentAuditLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AssignmentAuditLogCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -4651,6 +4801,55 @@ export const MessageTemplateScalarFieldEnum = {
 export type MessageTemplateScalarFieldEnum = (typeof MessageTemplateScalarFieldEnum)[keyof typeof MessageTemplateScalarFieldEnum]
 
 
+export const AssignmentRuleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  enabled: 'enabled',
+  priority: 'priority',
+  weightProximity: 'weightProximity',
+  weightEta: 'weightEta',
+  weightRating: 'weightRating',
+  weightAcceptance: 'weightAcceptance',
+  cancellationPenalty: 'cancellationPenalty',
+  maxPickupRadiusKm: 'maxPickupRadiusKm',
+  maxEtaMinutes: 'maxEtaMinutes',
+  minRating: 'minRating',
+  minAcceptanceRate: 'minAcceptanceRate',
+  maxCancellationRate: 'maxCancellationRate',
+  requireOnline: 'requireOnline',
+  requireApproved: 'requireApproved',
+  excludeSuspended: 'excludeSuspended',
+  requireVehicle: 'requireVehicle',
+  autoAssignEnabled: 'autoAssignEnabled',
+  autoAssignDelayMs: 'autoAssignDelayMs',
+  zoneId: 'zoneId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AssignmentRuleScalarFieldEnum = (typeof AssignmentRuleScalarFieldEnum)[keyof typeof AssignmentRuleScalarFieldEnum]
+
+
+export const AssignmentAuditLogScalarFieldEnum = {
+  id: 'id',
+  rideId: 'rideId',
+  action: 'action',
+  actorUserId: 'actorUserId',
+  riderId: 'riderId',
+  previousRiderId: 'previousRiderId',
+  reason: 'reason',
+  reasonNote: 'reasonNote',
+  score: 'score',
+  metadata: 'metadata',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt'
+} as const
+
+export type AssignmentAuditLogScalarFieldEnum = (typeof AssignmentAuditLogScalarFieldEnum)[keyof typeof AssignmentAuditLogScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -5412,6 +5611,8 @@ export type GlobalOmitConfig = {
   goPointLedger?: Prisma.GoPointLedgerOmit
   goPointRedemption?: Prisma.GoPointRedemptionOmit
   messageTemplate?: Prisma.MessageTemplateOmit
+  assignmentRule?: Prisma.AssignmentRuleOmit
+  assignmentAuditLog?: Prisma.AssignmentAuditLogOmit
 }
 
 /* Types for Logging */

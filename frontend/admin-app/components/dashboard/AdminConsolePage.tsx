@@ -1021,6 +1021,8 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             reassignRiderMutation={data.reassignRiderMutation}
             unassignRiderMutation={data.unassignRiderMutation}
             autoAssignMutation={data.autoAssignMutation}
+            assignmentStats={data.assignmentStats}
+            assignmentStatsPending={data.assignmentStatsPending}
           />
         );
 

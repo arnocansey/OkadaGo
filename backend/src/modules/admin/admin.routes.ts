@@ -545,4 +545,54 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
     const params = parseParams(request, rideParamsSchema);
     return assignmentService.getAssignmentHistory(token, params.rideId);
   });
+
+  // ── Assignment Stats ──
+  server.get("/admin/assignments/stats", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return assignmentService.getAssignmentStats(token);
+  });
+
+  // ── Assignment Rules CRUD ──
+  server.get("/admin/assignment-rules", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return assignmentService.listRules(token);
+  });
+
+  server.post("/admin/assignment-rules", async (request, reply) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const body = request.body as Record<string, unknown>;
+    const ip = request.ip;
+    const ua = request.headers["user-agent"];
+    const rule = await assignmentService.createRule(token, body, ip, ua);
+    return reply.status(201).send(rule);
+  });
+
+  server.put("/admin/assignment-rules/:ruleId", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, z.object({ ruleId: z.string().cuid() }));
+    const body = request.body as Record<string, unknown>;
+    const ip = request.ip;
+    const ua = request.headers["user-agent"];
+    return assignmentService.updateRule(token, params.ruleId, body, ip, ua);
+  });
+
+  server.delete("/admin/assignment-rules/:ruleId", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, z.object({ ruleId: z.string().cuid() }));
+    const ip = request.ip;
+    const ua = request.headers["user-agent"];
+    return assignmentService.deleteRule(token, params.ruleId, ip, ua);
+  });
+
+  // ── Assignment Audit Logs ──
+  server.get("/admin/assignment-audit-logs", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const query = request.query as { rideId?: string; action?: string; page?: string; limit?: string };
+    return assignmentService.getAssignmentAuditLogs(token, {
+      rideId: query.rideId,
+      action: query.action,
+      page: query.page ? parseInt(query.page) : undefined,
+      limit: query.limit ? parseInt(query.limit) : undefined
+    });
+  });
 };

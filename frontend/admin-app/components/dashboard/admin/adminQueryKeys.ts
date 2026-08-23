@@ -31,5 +31,8 @@ export const QK = {
   messageTemplates: ["admin-message-templates"] as const,
   activeRides: ["admin-active-rides"] as const,
   availableRiders: (rideId: string) => ["admin-available-riders", rideId] as const,
-  assignmentHistory: (rideId: string) => ["admin-assignment-history", rideId] as const
+  assignmentHistory: (rideId: string) => ["admin-assignment-history", rideId] as const,
+  assignmentStats: ["admin-assignment-stats"] as const,
+  assignmentRules: ["admin-assignment-rules"] as const,
+  assignmentAuditLogs: ["admin-assignment-audit-logs"] as const
 } as const;

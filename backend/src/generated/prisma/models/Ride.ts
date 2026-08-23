@@ -597,6 +597,7 @@ export type RideWhereInput = {
   ticket?: Prisma.XOR<Prisma.SupportTicketNullableScalarRelationFilter, Prisma.SupportTicketWhereInput> | null
   incidents?: Prisma.IncidentListRelationFilter
   promoRedemptions?: Prisma.PromoRedemptionListRelationFilter
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogListRelationFilter
 }
 
 export type RideOrderByWithRelationInput = {
@@ -656,6 +657,7 @@ export type RideOrderByWithRelationInput = {
   ticket?: Prisma.SupportTicketOrderByWithRelationInput
   incidents?: Prisma.IncidentOrderByRelationAggregateInput
   promoRedemptions?: Prisma.PromoRedemptionOrderByRelationAggregateInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogOrderByRelationAggregateInput
 }
 
 export type RideWhereUniqueInput = Prisma.AtLeast<{
@@ -718,6 +720,7 @@ export type RideWhereUniqueInput = Prisma.AtLeast<{
   ticket?: Prisma.XOR<Prisma.SupportTicketNullableScalarRelationFilter, Prisma.SupportTicketWhereInput> | null
   incidents?: Prisma.IncidentListRelationFilter
   promoRedemptions?: Prisma.PromoRedemptionListRelationFilter
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogListRelationFilter
 }, "id">
 
 export type RideOrderByWithAggregationInput = {
@@ -873,6 +876,7 @@ export type RideCreateInput = {
   ticket?: Prisma.SupportTicketCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateInput = {
@@ -928,6 +932,7 @@ export type RideUncheckedCreateInput = {
   ticket?: Prisma.SupportTicketUncheckedCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideUpdateInput = {
@@ -983,6 +988,7 @@ export type RideUpdateInput = {
   ticket?: Prisma.SupportTicketUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateInput = {
@@ -1038,6 +1044,7 @@ export type RideUncheckedUpdateInput = {
   ticket?: Prisma.SupportTicketUncheckedUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideCreateManyInput = {
@@ -1686,6 +1693,20 @@ export type RideUpdateOneWithoutIncidentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.RideUpdateToOneWithWhereWithoutIncidentsInput, Prisma.RideUpdateWithoutIncidentsInput>, Prisma.RideUncheckedUpdateWithoutIncidentsInput>
 }
 
+export type RideCreateNestedOneWithoutAssignmentAuditLogsInput = {
+  create?: Prisma.XOR<Prisma.RideCreateWithoutAssignmentAuditLogsInput, Prisma.RideUncheckedCreateWithoutAssignmentAuditLogsInput>
+  connectOrCreate?: Prisma.RideCreateOrConnectWithoutAssignmentAuditLogsInput
+  connect?: Prisma.RideWhereUniqueInput
+}
+
+export type RideUpdateOneRequiredWithoutAssignmentAuditLogsNestedInput = {
+  create?: Prisma.XOR<Prisma.RideCreateWithoutAssignmentAuditLogsInput, Prisma.RideUncheckedCreateWithoutAssignmentAuditLogsInput>
+  connectOrCreate?: Prisma.RideCreateOrConnectWithoutAssignmentAuditLogsInput
+  upsert?: Prisma.RideUpsertWithoutAssignmentAuditLogsInput
+  connect?: Prisma.RideWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.RideUpdateToOneWithWhereWithoutAssignmentAuditLogsInput, Prisma.RideUpdateWithoutAssignmentAuditLogsInput>, Prisma.RideUncheckedUpdateWithoutAssignmentAuditLogsInput>
+}
+
 export type RideCreateWithoutPassengerInput = {
   id?: string
   status?: $Enums.RideStatus
@@ -1738,6 +1759,7 @@ export type RideCreateWithoutPassengerInput = {
   ticket?: Prisma.SupportTicketCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutPassengerInput = {
@@ -1792,6 +1814,7 @@ export type RideUncheckedCreateWithoutPassengerInput = {
   ticket?: Prisma.SupportTicketUncheckedCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutPassengerInput = {
@@ -1921,6 +1944,7 @@ export type RideCreateWithoutRiderInput = {
   ticket?: Prisma.SupportTicketCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutRiderInput = {
@@ -1975,6 +1999,7 @@ export type RideUncheckedCreateWithoutRiderInput = {
   ticket?: Prisma.SupportTicketUncheckedCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutRiderInput = {
@@ -2055,6 +2080,7 @@ export type RideCreateWithoutServiceZoneInput = {
   ticket?: Prisma.SupportTicketCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutServiceZoneInput = {
@@ -2109,6 +2135,7 @@ export type RideUncheckedCreateWithoutServiceZoneInput = {
   ticket?: Prisma.SupportTicketUncheckedCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutServiceZoneInput = {
@@ -2189,6 +2216,7 @@ export type RideCreateWithoutLocationsInput = {
   ticket?: Prisma.SupportTicketCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutLocationsInput = {
@@ -2243,6 +2271,7 @@ export type RideUncheckedCreateWithoutLocationsInput = {
   ticket?: Prisma.SupportTicketUncheckedCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutLocationsInput = {
@@ -2313,6 +2342,7 @@ export type RideUpdateWithoutLocationsInput = {
   ticket?: Prisma.SupportTicketUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutLocationsInput = {
@@ -2367,6 +2397,7 @@ export type RideUncheckedUpdateWithoutLocationsInput = {
   ticket?: Prisma.SupportTicketUncheckedUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideCreateWithoutEventsInput = {
@@ -2421,6 +2452,7 @@ export type RideCreateWithoutEventsInput = {
   ticket?: Prisma.SupportTicketCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutEventsInput = {
@@ -2475,6 +2507,7 @@ export type RideUncheckedCreateWithoutEventsInput = {
   ticket?: Prisma.SupportTicketUncheckedCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutEventsInput = {
@@ -2545,6 +2578,7 @@ export type RideUpdateWithoutEventsInput = {
   ticket?: Prisma.SupportTicketUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutEventsInput = {
@@ -2599,6 +2633,7 @@ export type RideUncheckedUpdateWithoutEventsInput = {
   ticket?: Prisma.SupportTicketUncheckedUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideCreateWithoutPaymentInput = {
@@ -2653,6 +2688,7 @@ export type RideCreateWithoutPaymentInput = {
   ticket?: Prisma.SupportTicketCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutPaymentInput = {
@@ -2707,6 +2743,7 @@ export type RideUncheckedCreateWithoutPaymentInput = {
   ticket?: Prisma.SupportTicketUncheckedCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutPaymentInput = {
@@ -2777,6 +2814,7 @@ export type RideUpdateWithoutPaymentInput = {
   ticket?: Prisma.SupportTicketUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutPaymentInput = {
@@ -2831,6 +2869,7 @@ export type RideUncheckedUpdateWithoutPaymentInput = {
   ticket?: Prisma.SupportTicketUncheckedUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideCreateWithoutWalletTransactionsInput = {
@@ -2885,6 +2924,7 @@ export type RideCreateWithoutWalletTransactionsInput = {
   ticket?: Prisma.SupportTicketCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutWalletTransactionsInput = {
@@ -2939,6 +2979,7 @@ export type RideUncheckedCreateWithoutWalletTransactionsInput = {
   ticket?: Prisma.SupportTicketUncheckedCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutWalletTransactionsInput = {
@@ -3009,6 +3050,7 @@ export type RideUpdateWithoutWalletTransactionsInput = {
   ticket?: Prisma.SupportTicketUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutWalletTransactionsInput = {
@@ -3063,6 +3105,7 @@ export type RideUncheckedUpdateWithoutWalletTransactionsInput = {
   ticket?: Prisma.SupportTicketUncheckedUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideCreateWithoutRatingsInput = {
@@ -3117,6 +3160,7 @@ export type RideCreateWithoutRatingsInput = {
   ticket?: Prisma.SupportTicketCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutRatingsInput = {
@@ -3171,6 +3215,7 @@ export type RideUncheckedCreateWithoutRatingsInput = {
   ticket?: Prisma.SupportTicketUncheckedCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutRatingsInput = {
@@ -3241,6 +3286,7 @@ export type RideUpdateWithoutRatingsInput = {
   ticket?: Prisma.SupportTicketUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutRatingsInput = {
@@ -3295,6 +3341,7 @@ export type RideUncheckedUpdateWithoutRatingsInput = {
   ticket?: Prisma.SupportTicketUncheckedUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideCreateWithoutReviewsInput = {
@@ -3349,6 +3396,7 @@ export type RideCreateWithoutReviewsInput = {
   ticket?: Prisma.SupportTicketCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutReviewsInput = {
@@ -3403,6 +3451,7 @@ export type RideUncheckedCreateWithoutReviewsInput = {
   ticket?: Prisma.SupportTicketUncheckedCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutReviewsInput = {
@@ -3473,6 +3522,7 @@ export type RideUpdateWithoutReviewsInput = {
   ticket?: Prisma.SupportTicketUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutReviewsInput = {
@@ -3527,6 +3577,7 @@ export type RideUncheckedUpdateWithoutReviewsInput = {
   ticket?: Prisma.SupportTicketUncheckedUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideCreateWithoutPromoCodeInput = {
@@ -3581,6 +3632,7 @@ export type RideCreateWithoutPromoCodeInput = {
   ticket?: Prisma.SupportTicketCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutPromoCodeInput = {
@@ -3635,6 +3687,7 @@ export type RideUncheckedCreateWithoutPromoCodeInput = {
   ticket?: Prisma.SupportTicketUncheckedCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutPromoCodeInput = {
@@ -3715,6 +3768,7 @@ export type RideCreateWithoutPromoRedemptionsInput = {
   reviews?: Prisma.ReviewCreateNestedManyWithoutRideInput
   ticket?: Prisma.SupportTicketCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutPromoRedemptionsInput = {
@@ -3769,6 +3823,7 @@ export type RideUncheckedCreateWithoutPromoRedemptionsInput = {
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutRideInput
   ticket?: Prisma.SupportTicketUncheckedCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutPromoRedemptionsInput = {
@@ -3839,6 +3894,7 @@ export type RideUpdateWithoutPromoRedemptionsInput = {
   reviews?: Prisma.ReviewUpdateManyWithoutRideNestedInput
   ticket?: Prisma.SupportTicketUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutPromoRedemptionsInput = {
@@ -3893,6 +3949,7 @@ export type RideUncheckedUpdateWithoutPromoRedemptionsInput = {
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutRideNestedInput
   ticket?: Prisma.SupportTicketUncheckedUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideCreateWithoutTicketInput = {
@@ -3947,6 +4004,7 @@ export type RideCreateWithoutTicketInput = {
   reviews?: Prisma.ReviewCreateNestedManyWithoutRideInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutTicketInput = {
@@ -4001,6 +4059,7 @@ export type RideUncheckedCreateWithoutTicketInput = {
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutRideInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutTicketInput = {
@@ -4071,6 +4130,7 @@ export type RideUpdateWithoutTicketInput = {
   reviews?: Prisma.ReviewUpdateManyWithoutRideNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutTicketInput = {
@@ -4125,6 +4185,7 @@ export type RideUncheckedUpdateWithoutTicketInput = {
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutRideNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideCreateWithoutIncidentsInput = {
@@ -4179,6 +4240,7 @@ export type RideCreateWithoutIncidentsInput = {
   reviews?: Prisma.ReviewCreateNestedManyWithoutRideInput
   ticket?: Prisma.SupportTicketCreateNestedOneWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutIncidentsInput = {
@@ -4233,6 +4295,7 @@ export type RideUncheckedCreateWithoutIncidentsInput = {
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutRideInput
   ticket?: Prisma.SupportTicketUncheckedCreateNestedOneWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutIncidentsInput = {
@@ -4303,6 +4366,7 @@ export type RideUpdateWithoutIncidentsInput = {
   reviews?: Prisma.ReviewUpdateManyWithoutRideNestedInput
   ticket?: Prisma.SupportTicketUpdateOneWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutIncidentsInput = {
@@ -4356,6 +4420,243 @@ export type RideUncheckedUpdateWithoutIncidentsInput = {
   ratings?: Prisma.RatingUncheckedUpdateManyWithoutRideNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutRideNestedInput
   ticket?: Prisma.SupportTicketUncheckedUpdateOneWithoutRideNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
+}
+
+export type RideCreateWithoutAssignmentAuditLogsInput = {
+  id?: string
+  status?: $Enums.RideStatus
+  paymentMethod?: $Enums.PaymentMethod | null
+  cancellationParty?: $Enums.CancellationParty | null
+  cancellationReason?: string | null
+  requestedAt?: Date | string
+  scheduledFor?: Date | string | null
+  assignedAt?: Date | string | null
+  riderArrivedAt?: Date | string | null
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  pickupAddress: string
+  pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
+  destinationAddress: string
+  destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
+  routePolyline?: string | null
+  estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: number | null
+  actualDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  actualDurationMinutes?: number | null
+  estimatedFare?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFare?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  promoDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  referralDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  surgeAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  waitingAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency: string
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  passenger: Prisma.PassengerProfileCreateNestedOneWithoutRidesInput
+  rider?: Prisma.RiderProfileCreateNestedOneWithoutRidesInput
+  serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidesInput
+  promoCode?: Prisma.PromoCodeCreateNestedOneWithoutRidesInput
+  payment?: Prisma.PaymentCreateNestedOneWithoutRideInput
+  walletTransactions?: Prisma.WalletTransactionCreateNestedManyWithoutRideInput
+  locations?: Prisma.RideLocationCreateNestedManyWithoutRideInput
+  events?: Prisma.RideEventCreateNestedManyWithoutRideInput
+  ratings?: Prisma.RatingCreateNestedManyWithoutRideInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutRideInput
+  ticket?: Prisma.SupportTicketCreateNestedOneWithoutRideInput
+  incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
+  promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
+}
+
+export type RideUncheckedCreateWithoutAssignmentAuditLogsInput = {
+  id?: string
+  passengerId: string
+  riderId?: string | null
+  serviceZoneId?: string | null
+  promoCodeId?: string | null
+  status?: $Enums.RideStatus
+  paymentMethod?: $Enums.PaymentMethod | null
+  cancellationParty?: $Enums.CancellationParty | null
+  cancellationReason?: string | null
+  requestedAt?: Date | string
+  scheduledFor?: Date | string | null
+  assignedAt?: Date | string | null
+  riderArrivedAt?: Date | string | null
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  pickupAddress: string
+  pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
+  destinationAddress: string
+  destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
+  routePolyline?: string | null
+  estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: number | null
+  actualDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  actualDurationMinutes?: number | null
+  estimatedFare?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFare?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  promoDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  referralDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  surgeAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  waitingAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency: string
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  payment?: Prisma.PaymentUncheckedCreateNestedOneWithoutRideInput
+  walletTransactions?: Prisma.WalletTransactionUncheckedCreateNestedManyWithoutRideInput
+  locations?: Prisma.RideLocationUncheckedCreateNestedManyWithoutRideInput
+  events?: Prisma.RideEventUncheckedCreateNestedManyWithoutRideInput
+  ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutRideInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutRideInput
+  ticket?: Prisma.SupportTicketUncheckedCreateNestedOneWithoutRideInput
+  incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
+}
+
+export type RideCreateOrConnectWithoutAssignmentAuditLogsInput = {
+  where: Prisma.RideWhereUniqueInput
+  create: Prisma.XOR<Prisma.RideCreateWithoutAssignmentAuditLogsInput, Prisma.RideUncheckedCreateWithoutAssignmentAuditLogsInput>
+}
+
+export type RideUpsertWithoutAssignmentAuditLogsInput = {
+  update: Prisma.XOR<Prisma.RideUpdateWithoutAssignmentAuditLogsInput, Prisma.RideUncheckedUpdateWithoutAssignmentAuditLogsInput>
+  create: Prisma.XOR<Prisma.RideCreateWithoutAssignmentAuditLogsInput, Prisma.RideUncheckedCreateWithoutAssignmentAuditLogsInput>
+  where?: Prisma.RideWhereInput
+}
+
+export type RideUpdateToOneWithWhereWithoutAssignmentAuditLogsInput = {
+  where?: Prisma.RideWhereInput
+  data: Prisma.XOR<Prisma.RideUpdateWithoutAssignmentAuditLogsInput, Prisma.RideUncheckedUpdateWithoutAssignmentAuditLogsInput>
+}
+
+export type RideUpdateWithoutAssignmentAuditLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumRideStatusFieldUpdateOperationsInput | $Enums.RideStatus
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  riderArrivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  actualDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  actualDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  estimatedFare?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFare?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  promoDiscount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  referralDiscount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  surgeAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  waitingAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passenger?: Prisma.PassengerProfileUpdateOneRequiredWithoutRidesNestedInput
+  rider?: Prisma.RiderProfileUpdateOneWithoutRidesNestedInput
+  serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidesNestedInput
+  promoCode?: Prisma.PromoCodeUpdateOneWithoutRidesNestedInput
+  payment?: Prisma.PaymentUpdateOneWithoutRideNestedInput
+  walletTransactions?: Prisma.WalletTransactionUpdateManyWithoutRideNestedInput
+  locations?: Prisma.RideLocationUpdateManyWithoutRideNestedInput
+  events?: Prisma.RideEventUpdateManyWithoutRideNestedInput
+  ratings?: Prisma.RatingUpdateManyWithoutRideNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutRideNestedInput
+  ticket?: Prisma.SupportTicketUpdateOneWithoutRideNestedInput
+  incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
+}
+
+export type RideUncheckedUpdateWithoutAssignmentAuditLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  passengerId?: Prisma.StringFieldUpdateOperationsInput | string
+  riderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serviceZoneId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promoCodeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumRideStatusFieldUpdateOperationsInput | $Enums.RideStatus
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  riderArrivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  actualDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  actualDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  estimatedFare?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFare?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  promoDiscount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  referralDiscount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  surgeAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  waitingAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  payment?: Prisma.PaymentUncheckedUpdateOneWithoutRideNestedInput
+  walletTransactions?: Prisma.WalletTransactionUncheckedUpdateManyWithoutRideNestedInput
+  locations?: Prisma.RideLocationUncheckedUpdateManyWithoutRideNestedInput
+  events?: Prisma.RideEventUncheckedUpdateManyWithoutRideNestedInput
+  ratings?: Prisma.RatingUncheckedUpdateManyWithoutRideNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutRideNestedInput
+  ticket?: Prisma.SupportTicketUncheckedUpdateOneWithoutRideNestedInput
+  incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
 }
 
@@ -4456,6 +4757,7 @@ export type RideUpdateWithoutPassengerInput = {
   ticket?: Prisma.SupportTicketUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutPassengerInput = {
@@ -4510,6 +4812,7 @@ export type RideUncheckedUpdateWithoutPassengerInput = {
   ticket?: Prisma.SupportTicketUncheckedUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateManyWithoutPassengerInput = {
@@ -4654,6 +4957,7 @@ export type RideUpdateWithoutRiderInput = {
   ticket?: Prisma.SupportTicketUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutRiderInput = {
@@ -4708,6 +5012,7 @@ export type RideUncheckedUpdateWithoutRiderInput = {
   ticket?: Prisma.SupportTicketUncheckedUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateManyWithoutRiderInput = {
@@ -4852,6 +5157,7 @@ export type RideUpdateWithoutServiceZoneInput = {
   ticket?: Prisma.SupportTicketUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutServiceZoneInput = {
@@ -4906,6 +5212,7 @@ export type RideUncheckedUpdateWithoutServiceZoneInput = {
   ticket?: Prisma.SupportTicketUncheckedUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateManyWithoutServiceZoneInput = {
@@ -5050,6 +5357,7 @@ export type RideUpdateWithoutPromoCodeInput = {
   ticket?: Prisma.SupportTicketUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutPromoCodeInput = {
@@ -5104,6 +5412,7 @@ export type RideUncheckedUpdateWithoutPromoCodeInput = {
   ticket?: Prisma.SupportTicketUncheckedUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateManyWithoutPromoCodeInput = {
@@ -5164,6 +5473,7 @@ export type RideCountOutputType = {
   reviews: number
   incidents: number
   promoRedemptions: number
+  assignmentAuditLogs: number
 }
 
 export type RideCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -5174,6 +5484,7 @@ export type RideCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   reviews?: boolean | RideCountOutputTypeCountReviewsArgs
   incidents?: boolean | RideCountOutputTypeCountIncidentsArgs
   promoRedemptions?: boolean | RideCountOutputTypeCountPromoRedemptionsArgs
+  assignmentAuditLogs?: boolean | RideCountOutputTypeCountAssignmentAuditLogsArgs
 }
 
 /**
@@ -5235,6 +5546,13 @@ export type RideCountOutputTypeCountPromoRedemptionsArgs<ExtArgs extends runtime
   where?: Prisma.PromoRedemptionWhereInput
 }
 
+/**
+ * RideCountOutputType without action
+ */
+export type RideCountOutputTypeCountAssignmentAuditLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AssignmentAuditLogWhereInput
+}
+
 
 export type RideSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -5293,6 +5611,7 @@ export type RideSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   ticket?: boolean | Prisma.Ride$ticketArgs<ExtArgs>
   incidents?: boolean | Prisma.Ride$incidentsArgs<ExtArgs>
   promoRedemptions?: boolean | Prisma.Ride$promoRedemptionsArgs<ExtArgs>
+  assignmentAuditLogs?: boolean | Prisma.Ride$assignmentAuditLogsArgs<ExtArgs>
   _count?: boolean | Prisma.RideCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["ride"]>
 
@@ -5457,6 +5776,7 @@ export type RideInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   ticket?: boolean | Prisma.Ride$ticketArgs<ExtArgs>
   incidents?: boolean | Prisma.Ride$incidentsArgs<ExtArgs>
   promoRedemptions?: boolean | Prisma.Ride$promoRedemptionsArgs<ExtArgs>
+  assignmentAuditLogs?: boolean | Prisma.Ride$assignmentAuditLogsArgs<ExtArgs>
   _count?: boolean | Prisma.RideCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type RideIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -5488,6 +5808,7 @@ export type $RidePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     ticket: Prisma.$SupportTicketPayload<ExtArgs> | null
     incidents: Prisma.$IncidentPayload<ExtArgs>[]
     promoRedemptions: Prisma.$PromoRedemptionPayload<ExtArgs>[]
+    assignmentAuditLogs: Prisma.$AssignmentAuditLogPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -5940,6 +6261,7 @@ export interface Prisma__RideClient<T, Null = never, ExtArgs extends runtime.Typ
   ticket<T extends Prisma.Ride$ticketArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Ride$ticketArgs<ExtArgs>>): Prisma.Prisma__SupportTicketClient<runtime.Types.Result.GetResult<Prisma.$SupportTicketPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   incidents<T extends Prisma.Ride$incidentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Ride$incidentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$IncidentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   promoRedemptions<T extends Prisma.Ride$promoRedemptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Ride$promoRedemptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PromoRedemptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  assignmentAuditLogs<T extends Prisma.Ride$assignmentAuditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Ride$assignmentAuditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AssignmentAuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6673,6 +6995,30 @@ export type Ride$promoRedemptionsArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.PromoRedemptionScalarFieldEnum | Prisma.PromoRedemptionScalarFieldEnum[]
+}
+
+/**
+ * Ride.assignmentAuditLogs
+ */
+export type Ride$assignmentAuditLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AssignmentAuditLog
+   */
+  select?: Prisma.AssignmentAuditLogSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AssignmentAuditLog
+   */
+  omit?: Prisma.AssignmentAuditLogOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AssignmentAuditLogInclude<ExtArgs> | null
+  where?: Prisma.AssignmentAuditLogWhereInput
+  orderBy?: Prisma.AssignmentAuditLogOrderByWithRelationInput | Prisma.AssignmentAuditLogOrderByWithRelationInput[]
+  cursor?: Prisma.AssignmentAuditLogWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AssignmentAuditLogScalarFieldEnum | Prisma.AssignmentAuditLogScalarFieldEnum[]
 }
 
 /**

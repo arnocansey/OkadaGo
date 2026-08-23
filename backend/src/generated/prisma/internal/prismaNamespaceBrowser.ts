@@ -95,7 +95,9 @@ export const ModelName = {
   GoPointBalance: 'GoPointBalance',
   GoPointLedger: 'GoPointLedger',
   GoPointRedemption: 'GoPointRedemption',
-  MessageTemplate: 'MessageTemplate'
+  MessageTemplate: 'MessageTemplate',
+  AssignmentRule: 'AssignmentRule',
+  AssignmentAuditLog: 'AssignmentAuditLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -946,6 +948,55 @@ export const MessageTemplateScalarFieldEnum = {
 } as const
 
 export type MessageTemplateScalarFieldEnum = (typeof MessageTemplateScalarFieldEnum)[keyof typeof MessageTemplateScalarFieldEnum]
+
+
+export const AssignmentRuleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  enabled: 'enabled',
+  priority: 'priority',
+  weightProximity: 'weightProximity',
+  weightEta: 'weightEta',
+  weightRating: 'weightRating',
+  weightAcceptance: 'weightAcceptance',
+  cancellationPenalty: 'cancellationPenalty',
+  maxPickupRadiusKm: 'maxPickupRadiusKm',
+  maxEtaMinutes: 'maxEtaMinutes',
+  minRating: 'minRating',
+  minAcceptanceRate: 'minAcceptanceRate',
+  maxCancellationRate: 'maxCancellationRate',
+  requireOnline: 'requireOnline',
+  requireApproved: 'requireApproved',
+  excludeSuspended: 'excludeSuspended',
+  requireVehicle: 'requireVehicle',
+  autoAssignEnabled: 'autoAssignEnabled',
+  autoAssignDelayMs: 'autoAssignDelayMs',
+  zoneId: 'zoneId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AssignmentRuleScalarFieldEnum = (typeof AssignmentRuleScalarFieldEnum)[keyof typeof AssignmentRuleScalarFieldEnum]
+
+
+export const AssignmentAuditLogScalarFieldEnum = {
+  id: 'id',
+  rideId: 'rideId',
+  action: 'action',
+  actorUserId: 'actorUserId',
+  riderId: 'riderId',
+  previousRiderId: 'previousRiderId',
+  reason: 'reason',
+  reasonNote: 'reasonNote',
+  score: 'score',
+  metadata: 'metadata',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt'
+} as const
+
+export type AssignmentAuditLogScalarFieldEnum = (typeof AssignmentAuditLogScalarFieldEnum)[keyof typeof AssignmentAuditLogScalarFieldEnum]
 
 
 export const SortOrder = {

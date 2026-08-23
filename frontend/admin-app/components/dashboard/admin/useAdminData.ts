@@ -494,8 +494,9 @@ export function useAdminData(
 
   const { data: availableRidersData, isPending: availableRidersPending } = useQuery<{
     ride: Record<string, unknown>;
-    availableRiders: Array<{ riderId: string; displayName: string; displayCode: string; phone: string; rating: number; acceptanceRate: number; cancellationRate: number; completedTrips: number; todayTrips: number; todayEarnings: number; currentLatitude: number | null; currentLongitude: number | null; distanceToPickupKm: number; etaMinutes: number; score: number; onlineStatus: boolean; vehicle: { make: string; model: string; color: string; plateNumber: string; vehicleType: string } | null; serviceZone: string | null }>;
+    availableRiders: Array<{ riderId: string; userId: string; displayName: string; displayCode: string; phone: string; rating: number; acceptanceRate: number; cancellationRate: number; completedTrips: number; todayTrips: number; todayEarnings: number; currentLatitude: number | null; currentLongitude: number | null; distanceToPickupKm: number; etaMinutes: number; score: number; scoreBreakdown: { proximity: number; eta: number; rating: number; acceptance: number; cancellationPenalty: number }; qualificationIssues: string[]; qualified: boolean; onlineStatus: boolean; vehicle: { make: string; model: string; color: string; plateNumber: string; vehicleType: string } | null; serviceZone: string | null }>;
     recommendedRiderId: string | null;
+    activeRules: { id: string; name: string; weights: Record<string, number>; maxPickupRadiusKm: number } | null;
   }>({
     queryKey: QK.availableRiders(selectedAssignmentRideId ?? ""),
     queryFn: () => requestJson(`/admin/rides/${selectedAssignmentRideId}/available-riders`, { token }),
@@ -549,6 +550,102 @@ export function useAdminData(
       addToast("Auto-assignment completed", "success");
     },
     onError: (err: Error) => addToast(err.message || "Auto-assignment failed", "error")
+  });
+
+  // ── Assignment Stats ──
+  const { data: assignmentStats, isPending: assignmentStatsPending } = useQuery<{
+    totalActive: number;
+    unassigned: number;
+    assigned: number;
+    arriving: number;
+    arrived: number;
+    todayAssigned: number;
+    todayAutoAssigned: number;
+    todayUnassigned: number;
+    rulesCount: number;
+    assignmentRate: number;
+  }>({
+    queryKey: QK.assignmentStats,
+    queryFn: () => requestJson("/admin/assignments/stats", { token }),
+    enabled: want("liveOperations"),
+    refetchInterval: poll(15000, "liveOperations"),
+    staleTime: 10000
+  });
+
+  // ── Assignment Rules ──
+  const { data: assignmentRulesData, isPending: assignmentRulesPending } = useQuery<Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    enabled: boolean;
+    priority: number;
+    weightProximity: number;
+    weightEta: number;
+    weightRating: number;
+    weightAcceptance: number;
+    cancellationPenalty: number;
+    maxPickupRadiusKm: number;
+    maxEtaMinutes: number;
+    minRating: number;
+    minAcceptanceRate: number;
+    maxCancellationRate: number;
+    requireOnline: boolean;
+    requireApproved: boolean;
+    excludeSuspended: boolean;
+    requireVehicle: boolean;
+    autoAssignEnabled: boolean;
+    autoAssignDelayMs: number;
+    zoneId: string | null;
+    zone: { id: string; name: string; city: string } | null;
+    createdAt: string;
+  }>>({
+    queryKey: QK.assignmentRules,
+    queryFn: () => requestJson("/admin/assignment-rules", { token }),
+    enabled: want("liveOperations"),
+    staleTime: 30000
+  });
+
+  const createAssignmentRuleMutation = useMutation({
+    mutationFn: async (data: Record<string, unknown>) =>
+      postJson("/admin/assignment-rules", data, token),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QK.assignmentRules });
+      addToast("Rule created", "success");
+    },
+    onError: (err: Error) => addToast(err.message || "Failed to create rule", "error")
+  });
+
+  const updateAssignmentRuleMutation = useMutation({
+    mutationFn: async ({ ruleId, ...data }: { ruleId: string } & Record<string, unknown>) => {
+      const res = await fetch(`/v1/admin/assignment-rules/${ruleId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) throw new Error("Failed to update rule");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QK.assignmentRules });
+      addToast("Rule updated", "success");
+    },
+    onError: (err: Error) => addToast(err.message || "Failed to update rule", "error")
+  });
+
+  const deleteAssignmentRuleMutation = useMutation({
+    mutationFn: async ({ ruleId }: { ruleId: string }) => {
+      const res = await fetch(`/v1/admin/assignment-rules/${ruleId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error("Failed to delete rule");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QK.assignmentRules });
+      addToast("Rule deleted", "success");
+    },
+    onError: (err: Error) => addToast(err.message || "Failed to delete rule", "error")
   });
 
   const { data: escalationRulesData, isPending: escalationRulesPending } = useQuery<EscalationRuleRecord[]>({
@@ -2674,6 +2771,13 @@ export function useAdminData(
     reassignRiderMutation,
     unassignRiderMutation,
     autoAssignMutation,
+    assignmentStats,
+    assignmentStatsPending,
+    assignmentRules: assignmentRulesData ?? [],
+    assignmentRulesPending,
+    createAssignmentRuleMutation,
+    updateAssignmentRuleMutation,
+    deleteAssignmentRuleMutation,
 
     liveSos, liveOpsConnected, liveOpsTimestamp,
     opsSummary,

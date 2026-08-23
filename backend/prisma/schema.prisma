@@ -533,6 +533,7 @@ model ServiceZone {
   deliveries       DeliveryRequest[]
   riders           RiderProfile[]
   broadcasts       ScheduledBroadcast[]
+  assignmentRules  AssignmentRule[]
 
   @@index([city, isActive])
 }
@@ -619,6 +620,7 @@ model Ride {
   ticket                   SupportTicket?
   incidents                Incident[]
   promoRedemptions         PromoRedemption[]
+  assignmentAuditLogs      AssignmentAuditLog[]
 
   @@index([status, requestedAt])
   @@index([serviceZoneId, status])
@@ -1206,4 +1208,63 @@ model MessageTemplate {
   updatedAt DateTime @updatedAt
 
   @@index([category, active])
+}
+
+model AssignmentRule {
+  id             String   @id @default(cuid())
+  name           String   @db.VarChar(120)
+  description    String?  @db.VarChar(300)
+  enabled        Boolean  @default(true)
+  priority       Int      @default(0)
+
+  weightProximity Float  @default(0.35)
+  weightEta       Float  @default(0.25)
+  weightRating    Float  @default(0.15)
+  weightAcceptance Float @default(0.25)
+  cancellationPenalty Float @default(0.6)
+
+  maxPickupRadiusKm Float @default(8)
+  maxEtaMinutes     Int   @default(20)
+  minRating         Float @default(0)
+  minAcceptanceRate Float @default(0)
+  maxCancellationRate Float @default(100)
+
+  requireOnline     Boolean @default(true)
+  requireApproved   Boolean @default(true)
+  excludeSuspended  Boolean @default(true)
+  requireVehicle    Boolean @default(false)
+
+  autoAssignEnabled Boolean @default(false)
+  autoAssignDelayMs Int    @default(30000)
+
+  zoneId String?
+  zone   ServiceZone? @relation(fields: [zoneId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([enabled, priority])
+  @@index([zoneId])
+}
+
+model AssignmentAuditLog {
+  id          String   @id @default(cuid())
+  rideId      String
+  action      String   @db.VarChar(60)
+  actorUserId String?
+  riderId     String?
+  previousRiderId String?
+  reason      String?  @db.VarChar(200)
+  reasonNote  String?  @db.VarChar(500)
+  score       Float?
+  metadata    Json?
+  ipAddress   String?  @db.VarChar(45)
+  userAgent   String?  @db.VarChar(300)
+  createdAt   DateTime @default(now())
+
+  ride Ride @relation(fields: [rideId], references: [id])
+
+  @@index([rideId, createdAt])
+  @@index([action, createdAt])
+  @@index([actorUserId, createdAt])
 }
