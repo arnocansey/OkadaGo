@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { Mail, MessageSquare, Plus, Search, X, Edit3, Trash2, Copy, Eye, Tag } from "lucide-react";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
+import { ConfirmDialog } from "./ConfirmDialog";
 
 export type MessageTemplatesScreenRecord = {
   id: string;
@@ -51,6 +52,7 @@ export function MessageTemplatesScreen({ dataLoading = false, messageTemplates, 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", category: "Ride", channel: "SMS", subject: "", body: "" });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
 
   const filteredTemplates = useMemo(() => {
     let templates = messageTemplates;
@@ -289,7 +291,7 @@ export function MessageTemplatesScreen({ dataLoading = false, messageTemplates, 
                     <button type="button" className="mt-action-btn mt-action-btn--copy" title="Duplicate" onClick={() => duplicateTemplate(tpl)}>
                       <Copy size={13} />
                     </button>
-                    <button type="button" className="mt-action-btn mt-action-btn--delete" title="Delete" onClick={() => { if (window.confirm(`Delete "${tpl.name}"?`)) onDeleteTemplate(tpl.id); }}>
+                    <button type="button" className="mt-action-btn mt-action-btn--delete" title="Delete" onClick={() => setConfirmDelete({ id: tpl.id, name: tpl.name })}>
                       <Trash2 size={13} />
                     </button>
                   </div>
@@ -422,6 +424,17 @@ export function MessageTemplatesScreen({ dataLoading = false, messageTemplates, 
           .mt-chip-group { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; }
         }
       `}</style>
+
+      <ConfirmDialog
+        open={!!confirmDelete}
+        title="Delete Template"
+        message={`Are you sure you want to delete "${confirmDelete?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={() => { if (confirmDelete) onDeleteTemplate(confirmDelete.id); setConfirmDelete(null); }}
+        onCancel={() => setConfirmDelete(null)}
+        isProcessing={isMutating}
+      />
     </div>
   );
 }

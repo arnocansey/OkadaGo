@@ -27,6 +27,7 @@ import { useAuth } from "@/lib/auth";
 import { useAdminToast } from "./AdminToast";
 import { AdminPageSkeleton } from "./AdminSkeleton";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
+import { ConfirmDialog } from "./ConfirmDialog";
 
 /* ── Types ────────────────────────────────────────────────────────────────── */
 
@@ -390,6 +391,7 @@ function SecurityTab({ token }: { token?: string | null }) {
   const { addToast } = useAdminToast();
   const [sessions, setSessions] = useState<Array<{ id: string; device: string; lastActive: string; isCurrent: boolean }>>([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
+  const [confirmRevoke, setConfirmRevoke] = useState<{ id: string; label: string } | null>(null);
 
   useEffect(() => {
     if (!token) return;
@@ -419,16 +421,7 @@ function SecurityTab({ token }: { token?: string | null }) {
                   <span>{s.lastActive}{s.isCurrent ? " (Current)" : ""}</span>
                 </div>
                 {!s.isCurrent && (
-                  <button type="button" className="mgmt-settings-btn ghost small" onClick={async () => {
-                    if (!token) { addToast("No session token available", "error"); return; }
-                    try {
-                      await requestJson(`/auth/admin/sessions/${s.id}/revoke`, { method: "POST", token });
-                      setSessions((prev) => prev.filter((sess) => sess.id !== s.id));
-                      addToast("Session revoked", "success");
-                    } catch (err) {
-                      addToast((err as Error).message || "Could not revoke session", "error");
-                    }
-                  }}>
+                  <button type="button" className="mgmt-settings-btn ghost small" onClick={() => setConfirmRevoke({ id: s.id, label: s.device || s.id.slice(0, 8) })}>
                     <LogOut size={12} /> Revoke
                   </button>
                 )}
@@ -442,6 +435,26 @@ function SecurityTab({ token }: { token?: string | null }) {
         <h3 className="mgmt-settings-card-title"><KeyRound size={15} /> Password</h3>
         <p className="mgmt-settings-hint">Contact your system administrator to change your password.</p>
       </div>
+
+      <ConfirmDialog
+        open={!!confirmRevoke}
+        title="Revoke Session"
+        message={`Are you sure you want to revoke this session (${confirmRevoke?.label})? The user will be signed out immediately.`}
+        confirmLabel="Revoke"
+        variant="danger"
+        onConfirm={async () => {
+          if (!confirmRevoke || !token) { setConfirmRevoke(null); return; }
+          try {
+            await requestJson(`/auth/admin/sessions/${confirmRevoke.id}/revoke`, { method: "POST", token });
+            setSessions((prev) => prev.filter((sess) => sess.id !== confirmRevoke.id));
+            addToast("Session revoked", "success");
+          } catch (err) {
+            addToast((err as Error).message || "Could not revoke session", "error");
+          }
+          setConfirmRevoke(null);
+        }}
+        onCancel={() => setConfirmRevoke(null)}
+      />
     </div>
   );
 }

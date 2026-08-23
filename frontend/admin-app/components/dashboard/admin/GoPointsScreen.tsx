@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { formatMoney } from "@/lib/currency";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
+import { ConfirmDialog } from "./ConfirmDialog";
 import {
   Award,
   Star,
@@ -103,6 +104,7 @@ export function GoPointsScreen({
   const [redemptionForm, setRedemptionForm] = useState({ name: "", description: "", pointsCost: 500, cashValue: 5, available: true });
   const [ruleErrors, setRuleErrors] = useState<Record<string, string>>({});
   const [redemptionErrors, setRedemptionErrors] = useState<Record<string, string>>({});
+  const [confirmToggle, setConfirmToggle] = useState<{ id: string; name: string; active: boolean } | null>(null);
 
   const totalIssued = useMemo(() => goPointBalances.reduce((s, b) => s + b.totalEarned, 0), [goPointBalances]);
   const totalRedeemed = useMemo(() => goPointBalances.reduce((s, b) => s + b.totalRedeemed, 0), [goPointBalances]);
@@ -422,7 +424,7 @@ export function GoPointsScreen({
                         <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.72rem", padding: "3px 8px" }} onClick={() => startEditRule(row)}>
                           Edit
                         </button>
-                        <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.72rem", padding: "3px 8px" }} onClick={() => onUpdateRule(row.id, { active: !row.active })}>
+                        <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.72rem", padding: "3px 8px" }} onClick={() => setConfirmToggle({ id: row.id, name: row.name, active: row.active })}>
                           {row.active ? "Deactivate" : "Activate"}
                         </button>
                       </div>
@@ -653,6 +655,17 @@ export function GoPointsScreen({
           .gp-tab { white-space: nowrap; font-size: 0.72rem; padding: 8px 14px; }
         }
       `}</style>
+
+      <ConfirmDialog
+        open={!!confirmToggle}
+        title={confirmToggle?.active ? "Deactivate Rule" : "Activate Rule"}
+        message={confirmToggle?.active ? `Deactivate "${confirmToggle?.name}"? Passengers will no longer earn points for this rule.` : `Activate "${confirmToggle?.name}"? Passengers will start earning points for this rule.`}
+        confirmLabel={confirmToggle?.active ? "Deactivate" : "Activate"}
+        variant={confirmToggle?.active ? "warning" : "info"}
+        onConfirm={() => { if (confirmToggle) onUpdateRule(confirmToggle.id, { active: !confirmToggle.active }); setConfirmToggle(null); }}
+        onCancel={() => setConfirmToggle(null)}
+        isProcessing={isMutating}
+      />
     </div>
   );
 }

@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { AdminAccountRecord } from "./types";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { formatDateTime } from "./utils";
 import { useAdminToast } from "./AdminToast";
 
@@ -50,6 +51,7 @@ export function RolesPermissionsScreen({
 }: RolesPermissionsScreenProps) {
   const [activeTab, setActiveTab] = React.useState<string>("roles");
   const [searchQuery, setSearchQuery] = React.useState<string>("");
+  const [confirmRemoveAdmin, setConfirmRemoveAdmin] = useState<{ id: string; name: string } | null>(null);
   const { addToast } = useAdminToast();
 
   const roleCounts = React.useMemo(() => {
@@ -227,7 +229,7 @@ export function RolesPermissionsScreen({
                   <button
                     className="rp-btn-icon rp-btn-icon-danger"
                     title="Remove"
-                    onClick={() => { if (window.confirm(`Remove admin "${admin.user.fullName}"? This cannot be undone.`)) onDeleteAdmin?.(admin.user.id); }}
+                    onClick={() => setConfirmRemoveAdmin({ id: admin.user.id, name: admin.user.fullName })}
                   >
                     <Trash2 className="rp-btn-icon-svg" />
                   </button>
@@ -746,6 +748,16 @@ export function RolesPermissionsScreen({
           .rp-tab { white-space: nowrap; font-size: 0.72rem; padding: 8px 14px; }
         }
       `}</style>
+
+      <ConfirmDialog
+        open={!!confirmRemoveAdmin}
+        title="Remove Admin"
+        message={`Are you sure you want to remove "${confirmRemoveAdmin?.name}"? This action cannot be undone and they will lose all admin access.`}
+        confirmLabel="Remove"
+        variant="danger"
+        onConfirm={() => { if (confirmRemoveAdmin) onDeleteAdmin?.(confirmRemoveAdmin.id); setConfirmRemoveAdmin(null); }}
+        onCancel={() => setConfirmRemoveAdmin(null)}
+      />
     </div>
   );
 }
