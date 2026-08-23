@@ -2394,6 +2394,91 @@ export function useAdminData(
     onError: (error) => addToast((error as Error).message || "Could not update promo code", "error")
   });
 
+  // ── GoPoints mutations ───────────────────────────────────────────────────
+  const createGoPointRuleMutation = useMutation({
+    mutationFn: async (input: { name: string; description?: string; eventType: string; points: number; perUnit?: number; minSpend?: number; active?: boolean }) =>
+      requestJson("/admin/go-points/rules", {
+        method: "POST",
+        token,
+        body: JSON.stringify(input)
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: QK.goPointRules });
+      addToast("GoPoint rule created", "success");
+    },
+    onError: (error) => addToast((error as Error).message || "Could not create rule", "error")
+  });
+
+  const updateGoPointRuleMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Record<string, unknown> }) =>
+      requestJson(`/admin/go-points/rules/${id}`, {
+        method: "PUT",
+        token,
+        body: JSON.stringify(updates)
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: QK.goPointRules });
+      addToast("GoPoint rule updated", "success");
+    },
+    onError: (error) => addToast((error as Error).message || "Could not update rule", "error")
+  });
+
+  const createGoPointRedemptionMutation = useMutation({
+    mutationFn: async (input: { name: string; description?: string; pointsCost: number; cashValue: number; available?: boolean }) =>
+      requestJson("/admin/go-points/redemptions", {
+        method: "POST",
+        token,
+        body: JSON.stringify(input)
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: QK.goPointRedemptions });
+      addToast("Redemption item created", "success");
+    },
+    onError: (error) => addToast((error as Error).message || "Could not create redemption item", "error")
+  });
+
+  // ── Message Templates mutations ──────────────────────────────────────────
+  const createMessageTemplateMutation = useMutation({
+    mutationFn: async (input: { name: string; category: string; channel: string; subject: string; body: string }) =>
+      requestJson("/admin/message-templates", {
+        method: "POST",
+        token,
+        body: JSON.stringify(input)
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: QK.messageTemplates });
+      addToast("Template created", "success");
+    },
+    onError: (error) => addToast((error as Error).message || "Could not create template", "error")
+  });
+
+  const updateMessageTemplateMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Record<string, unknown> }) =>
+      requestJson(`/admin/message-templates/${id}`, {
+        method: "PUT",
+        token,
+        body: JSON.stringify(updates)
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: QK.messageTemplates });
+      addToast("Template updated", "success");
+    },
+    onError: (error) => addToast((error as Error).message || "Could not update template", "error")
+  });
+
+  const deleteMessageTemplateMutation = useMutation({
+    mutationFn: async (id: string) =>
+      requestJson(`/admin/message-templates/${id}`, {
+        method: "DELETE",
+        token
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: QK.messageTemplates });
+      addToast("Template deleted", "success");
+    },
+    onError: (error) => addToast((error as Error).message || "Could not delete template", "error")
+  });
+
   // ── full-dataset CSV export from the backend ────────────────────────────────
   const downloadServerCsv = useCallback(
     async (
@@ -2563,6 +2648,12 @@ export function useAdminData(
     incidentAssignMutation,
     createPromoMutation,
     updatePromoMutation,
+    createGoPointRuleMutation,
+    updateGoPointRuleMutation,
+    createGoPointRedemptionMutation,
+    createMessageTemplateMutation,
+    updateMessageTemplateMutation,
+    deleteMessageTemplateMutation,
 
     // Server export
     downloadServerCsv

@@ -943,6 +943,10 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             goPointBalances={data.goPointBalances}
             goPointLedger={data.goPointLedger}
             goPointRedemptions={data.goPointRedemptions}
+            onCreateRule={(input) => data.createGoPointRuleMutation.mutate(input)}
+            onUpdateRule={(id, updates) => data.updateGoPointRuleMutation.mutate({ id, updates })}
+            onCreateRedemption={(input) => data.createGoPointRedemptionMutation.mutate(input)}
+            isMutating={data.createGoPointRuleMutation.isPending || data.updateGoPointRuleMutation.isPending}
           />
         );
 
@@ -951,6 +955,10 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
           <MessageTemplatesScreen
             dataLoading={data.dataLoading}
             messageTemplates={data.messageTemplates}
+            onCreateTemplate={(input) => data.createMessageTemplateMutation.mutate(input)}
+            onUpdateTemplate={(id, updates) => data.updateMessageTemplateMutation.mutate({ id, updates })}
+            onDeleteTemplate={(id) => data.deleteMessageTemplateMutation.mutate(id)}
+            isMutating={data.createMessageTemplateMutation.isPending || data.updateMessageTemplateMutation.isPending || data.deleteMessageTemplateMutation.isPending}
           />
         );
 
@@ -970,6 +978,8 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             adminAccounts={data.adminAccounts}
             adminRoleEntries={data.adminRoleEntries}
             dataLoading={data.adminAccountsPending}
+            onDeleteAdmin={(userId) => data.deleteAdminMutation.mutate(userId)}
+            onReassignAdmin={() => {}} /* rolesPermissions handles its own toast */
           />
         );
 

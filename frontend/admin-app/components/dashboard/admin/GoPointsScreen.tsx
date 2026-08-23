@@ -65,6 +65,10 @@ export type GoPointsScreenProps = {
   goPointBalances: GoPointBalanceRecord[];
   goPointLedger: GoPointLedgerRecord[];
   goPointRedemptions: GoPointRedemptionRecord[];
+  onCreateRule: (input: { name: string; description?: string; eventType: string; points: number; perUnit?: number; minSpend?: number; active?: boolean }) => void;
+  onUpdateRule: (id: string, updates: Record<string, unknown>) => void;
+  onCreateRedemption: (input: { name: string; description?: string; pointsCost: number; cashValue: number; available?: boolean }) => void;
+  isMutating?: boolean;
 };
 
 type TabId = "earn" | "redemption" | "ledger" | "balances";
@@ -85,9 +89,18 @@ export function GoPointsScreen({
   goPointBalances,
   goPointLedger,
   goPointRedemptions,
+  onCreateRule,
+  onUpdateRule,
+  onCreateRedemption,
+  isMutating = false,
 }: GoPointsScreenProps) {
   const [activeTab, setActiveTab] = useState<TabId>("earn");
   const [search, setSearch] = useState("");
+  const [showRuleForm, setShowRuleForm] = useState(false);
+  const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
+  const [showRedemptionForm, setShowRedemptionForm] = useState(false);
+  const [ruleForm, setRuleForm] = useState({ name: "", description: "", eventType: "", points: 10, perUnit: 1, minSpend: "", active: true });
+  const [redemptionForm, setRedemptionForm] = useState({ name: "", description: "", pointsCost: 500, cashValue: 5, available: true });
 
   const totalIssued = useMemo(() => goPointBalances.reduce((s, b) => s + b.totalEarned, 0), [goPointBalances]);
   const totalRedeemed = useMemo(() => goPointBalances.reduce((s, b) => s + b.totalRedeemed, 0), [goPointBalances]);
@@ -119,6 +132,61 @@ export function GoPointsScreen({
     return goPointBalances.filter((b) => b.passenger.user.fullName.toLowerCase().includes(q));
   }, [goPointBalances, search]);
 
+  function submitRule() {
+    if (!ruleForm.name.trim() || !ruleForm.eventType.trim()) return;
+    if (editingRuleId) {
+      onUpdateRule(editingRuleId, {
+        name: ruleForm.name.trim(),
+        description: ruleForm.description.trim() || undefined,
+        eventType: ruleForm.eventType.trim(),
+        points: ruleForm.points,
+        perUnit: ruleForm.perUnit,
+        minSpend: ruleForm.minSpend ? Number(ruleForm.minSpend) : undefined,
+        active: ruleForm.active,
+      });
+    } else {
+      onCreateRule({
+        name: ruleForm.name.trim(),
+        description: ruleForm.description.trim() || undefined,
+        eventType: ruleForm.eventType.trim(),
+        points: ruleForm.points,
+        perUnit: ruleForm.perUnit,
+        minSpend: ruleForm.minSpend ? Number(ruleForm.minSpend) : undefined,
+        active: ruleForm.active,
+      });
+    }
+    setRuleForm({ name: "", description: "", eventType: "", points: 10, perUnit: 1, minSpend: "", active: true });
+    setEditingRuleId(null);
+    setShowRuleForm(false);
+  }
+
+  function startEditRule(rule: GoPointRuleRecord) {
+    setEditingRuleId(rule.id);
+    setRuleForm({
+      name: rule.name,
+      description: rule.description ?? "",
+      eventType: rule.eventType,
+      points: rule.points,
+      perUnit: rule.perUnit,
+      minSpend: rule.minSpend != null ? String(rule.minSpend) : "",
+      active: rule.active,
+    });
+    setShowRuleForm(true);
+  }
+
+  function submitRedemption() {
+    if (!redemptionForm.name.trim()) return;
+    onCreateRedemption({
+      name: redemptionForm.name.trim(),
+      description: redemptionForm.description.trim() || undefined,
+      pointsCost: redemptionForm.pointsCost,
+      cashValue: redemptionForm.cashValue,
+      available: redemptionForm.available,
+    });
+    setRedemptionForm({ name: "", description: "", pointsCost: 500, cashValue: 5, available: true });
+    setShowRedemptionForm(false);
+  }
+
   if (dataLoading) {
     return (
       <div className="exact-admin-screen">
@@ -135,12 +203,94 @@ export function GoPointsScreen({
         subtitle="Loyalty points program management"
         actions={
           <div className="admin-screen-toolbar">
-            <button type="button" className="admin-btn-primary" style={{ fontSize: "0.78rem" }}>
-              <Plus size={13} /> Add Rule
+            <button type="button" className="admin-btn-primary" style={{ fontSize: "0.78rem" }} onClick={() => { setShowRuleForm((v) => !v); setEditingRuleId(null); setRuleForm({ name: "", description: "", eventType: "", points: 10, perUnit: 1, minSpend: "", active: true }); }}>
+              <Plus size={13} /> {showRuleForm ? "Close form" : "Add Rule"}
             </button>
           </div>
         }
       />
+
+      {showRuleForm && (
+        <article className="admin-reference-card" style={{ marginBottom: 16 }}>
+          <div className="admin-reference-cardhead">
+            <div>
+              <h3>{editingRuleId ? "Edit Earn Rule" : "New Earn Rule"}</h3>
+              <p>Configure how passengers earn GoPoints</p>
+            </div>
+          </div>
+          <div className="admin-form-grid">
+            <label>
+              Rule Name
+              <input className="admin-search-input" value={ruleForm.name} onChange={(e) => setRuleForm((f) => ({ ...f, name: e.target.value }))} placeholder="e.g. Per Ride Bonus" />
+            </label>
+            <label>
+              Event Type
+              <input className="admin-search-input" value={ruleForm.eventType} onChange={(e) => setRuleForm((f) => ({ ...f, eventType: e.target.value }))} placeholder="e.g. ride_completed" />
+            </label>
+            <label>
+              Points
+              <input className="admin-search-input" type="number" min={1} value={ruleForm.points} onChange={(e) => setRuleForm((f) => ({ ...f, points: Number(e.target.value) }))} />
+            </label>
+            <label>
+              Per Unit
+              <input className="admin-search-input" type="number" min={1} value={ruleForm.perUnit} onChange={(e) => setRuleForm((f) => ({ ...f, perUnit: Number(e.target.value) }))} />
+            </label>
+            <label>
+              Min Spend (optional)
+              <input className="admin-search-input" type="number" min={0} value={ruleForm.minSpend} onChange={(e) => setRuleForm((f) => ({ ...f, minSpend: e.target.value }))} placeholder="0" />
+            </label>
+            <label className="admin-form-span">
+              Description
+              <input className="admin-search-input" value={ruleForm.description} onChange={(e) => setRuleForm((f) => ({ ...f, description: e.target.value }))} placeholder="Optional description" />
+            </label>
+          </div>
+          <div className="admin-page-header-actions" style={{ marginTop: 16 }}>
+            <button type="button" className="admin-btn-primary" style={{ fontSize: "0.78rem" }} disabled={isMutating} onClick={submitRule}>
+              {editingRuleId ? "Update rule" : "Save rule"}
+            </button>
+            <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.78rem" }} onClick={() => { setShowRuleForm(false); setEditingRuleId(null); }}>
+              Cancel
+            </button>
+          </div>
+        </article>
+      )}
+
+      {showRedemptionForm && (
+        <article className="admin-reference-card" style={{ marginBottom: 16 }}>
+          <div className="admin-reference-cardhead">
+            <div>
+              <h3>New Redemption Item</h3>
+              <p>Add a reward passengers can redeem with GoPoints</p>
+            </div>
+          </div>
+          <div className="admin-form-grid">
+            <label>
+              Reward Name
+              <input className="admin-search-input" value={redemptionForm.name} onChange={(e) => setRedemptionForm((f) => ({ ...f, name: e.target.value }))} placeholder="e.g. GHS 5 Credit" />
+            </label>
+            <label>
+              Points Cost
+              <input className="admin-search-input" type="number" min={1} value={redemptionForm.pointsCost} onChange={(e) => setRedemptionForm((f) => ({ ...f, pointsCost: Number(e.target.value) }))} />
+            </label>
+            <label>
+              Cash Value ({adminCurrency})
+              <input className="admin-search-input" type="number" min={0} step={0.5} value={redemptionForm.cashValue} onChange={(e) => setRedemptionForm((f) => ({ ...f, cashValue: Number(e.target.value) }))} />
+            </label>
+            <label className="admin-form-span">
+              Description
+              <input className="admin-search-input" value={redemptionForm.description} onChange={(e) => setRedemptionForm((f) => ({ ...f, description: e.target.value }))} placeholder="Optional" />
+            </label>
+          </div>
+          <div className="admin-page-header-actions" style={{ marginTop: 16 }}>
+            <button type="button" className="admin-btn-primary" style={{ fontSize: "0.78rem" }} disabled={isMutating} onClick={submitRedemption}>
+              Save redemption item
+            </button>
+            <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.78rem" }} onClick={() => setShowRedemptionForm(false)}>
+              Cancel
+            </button>
+          </div>
+        </article>
+      )}
 
       {/* KPI Cards */}
       <section className="admin-kpi-grid">
@@ -232,11 +382,12 @@ export function GoPointsScreen({
                   <th>Per Unit</th>
                   <th>Min Spend</th>
                   <th>Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredRules.length === 0 ? (
-                  <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--text-muted)", padding: 24 }}>No earn rules found</td></tr>
+                  <tr><td colSpan={7} style={{ textAlign: "center", color: "var(--text-muted)", padding: 24 }}>No earn rules found</td></tr>
                 ) : filteredRules.map((row) => (
                   <tr key={row.id}>
                     <td><strong>{row.name}</strong></td>
@@ -248,6 +399,16 @@ export function GoPointsScreen({
                       <span className={`gp-status gp-status--${row.active ? "active" : "inactive"}`}>
                         {row.active ? "Active" : "Inactive"}
                       </span>
+                    </td>
+                    <td>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.7rem", padding: "3px 8px" }} onClick={() => startEditRule(row)}>
+                          Edit
+                        </button>
+                        <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.7rem", padding: "3px 8px" }} onClick={() => onUpdateRule(row.id, { active: !row.active })}>
+                          {row.active ? "Deactivate" : "Activate"}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -262,6 +423,9 @@ export function GoPointsScreen({
         <div className="admin-reference-card" style={{ marginTop: 12 }}>
           <div className="admin-reference-cardhead">
             <div><h3>Redemption Catalog</h3><p>Rewards passengers can redeem with GoPoints</p></div>
+            <button type="button" className="admin-btn-primary" style={{ fontSize: "0.75rem" }} onClick={() => setShowRedemptionForm((v) => !v)}>
+              <Plus size={12} /> {showRedemptionForm ? "Close form" : "Add Item"}
+            </button>
           </div>
           <div className="admin-table-wrapper">
             <table className="admin-table">

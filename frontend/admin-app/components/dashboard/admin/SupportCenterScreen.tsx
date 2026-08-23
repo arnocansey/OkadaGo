@@ -374,7 +374,7 @@ export function SupportCenterScreen({
 
               {/* ── Composer ── */}
               <div className="sc-conv-composer">
-                <button type="button" className="sc-composer-btn" title="Attach file">
+                <button type="button" className="sc-composer-btn" title="File attachments coming soon" disabled style={{ opacity: 0.4, cursor: "not-allowed" }}>
                   <Paperclip size={16} />
                 </button>
                 <input

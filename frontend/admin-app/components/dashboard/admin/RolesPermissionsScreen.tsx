@@ -2,6 +2,7 @@ import React from "react";
 import { AdminAccountRecord } from "./types";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import { formatDateTime } from "./utils";
+import { useAdminToast } from "./AdminToast";
 
 type AdminRoleEntry = [string, string[]];
 import {
@@ -21,6 +22,8 @@ interface RolesPermissionsScreenProps {
   adminAccounts: AdminAccountRecord[];
   adminRoleEntries: AdminRoleEntry[];
   dataLoading?: boolean;
+  onDeleteAdmin?: (userId: string) => void;
+  onReassignAdmin?: (userId: string) => void;
 }
 
 const SAMPLE_ROLES = [
@@ -111,9 +114,13 @@ export function RolesPermissionsScreen({
   adminAccounts,
   adminRoleEntries,
   dataLoading = false,
+  onDeleteAdmin,
+  onReassignAdmin,
 }: RolesPermissionsScreenProps) {
   const [activeTab, setActiveTab] = React.useState<string>("roles");
   const [searchQuery, setSearchQuery] = React.useState<string>("");
+  const [showRoleForm, setShowRoleForm] = React.useState(false);
+  const { addToast } = useAdminToast();
 
   const roleCounts = React.useMemo(() => {
     const counts: Record<string, number> = {};
@@ -179,12 +186,13 @@ export function RolesPermissionsScreen({
               </td>
               <td>
                 <div className="rp-action-group">
-                  <button className="rp-btn-icon" title="Edit Role">
+                  <button className="rp-btn-icon" title="Edit Role" onClick={() => addToast(`Editing "${role}" — role permissions are managed through admin accounts`, "info")}>
                     <Edit3 className="rp-btn-icon-svg" />
                   </button>
                   <button
                     className="rp-btn-icon rp-btn-icon-danger"
                     title="Delete Role"
+                    onClick={() => addToast(`"${role}" cannot be deleted — roles are system-defined`, "error")}
                   >
                     <Trash2 className="rp-btn-icon-svg" />
                   </button>
@@ -270,12 +278,13 @@ export function RolesPermissionsScreen({
               <td>{admin.createdAt ? formatDateTime(admin.createdAt) : "—"}</td>
               <td>
                 <div className="rp-action-group">
-                  <button className="rp-btn-icon" title="Reassign Role">
+                  <button className="rp-btn-icon" title="Reassign Role" onClick={() => addToast(`Reassigning "${admin.title}" — use the Admins screen to update roles`, "info")}>
                     <Edit3 className="rp-btn-icon-svg" />
                   </button>
                   <button
                     className="rp-btn-icon rp-btn-icon-danger"
                     title="Remove"
+                    onClick={() => { if (window.confirm(`Remove admin "${admin.user.fullName}"? This cannot be undone.`)) onDeleteAdmin?.(admin.user.id); }}
                   >
                     <Trash2 className="rp-btn-icon-svg" />
                   </button>
@@ -351,7 +360,7 @@ export function RolesPermissionsScreen({
             </button>
           )}
         </div>
-        <button className="rp-btn-primary">
+        <button className="rp-btn-primary" onClick={() => addToast("Roles are defined by permission sets — use the Admins screen to create or promote accounts", "info")}>
           <Plus className="rp-btn-icon-svg" />
           <span>Add Role</span>
         </button>

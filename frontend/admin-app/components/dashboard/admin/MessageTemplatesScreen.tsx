@@ -19,6 +19,10 @@ export type MessageTemplatesScreenRecord = {
 export type MessageTemplatesScreenProps = {
   dataLoading?: boolean;
   messageTemplates: MessageTemplatesScreenRecord[];
+  onCreateTemplate: (input: { name: string; category: string; channel: string; subject: string; body: string }) => void;
+  onUpdateTemplate: (id: string, updates: Record<string, unknown>) => void;
+  onDeleteTemplate: (id: string) => void;
+  isMutating?: boolean;
 };
 
 const CATEGORY_CHIPS: string[] = ["Ride", "Delivery", "Promotion", "Account", "Safety"];
@@ -39,10 +43,13 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
   Safety: { bg: "#3c1a1a", text: "#f87171" },
 };
 
-export function MessageTemplatesScreen({ dataLoading = false, messageTemplates }: MessageTemplatesScreenProps) {
+export function MessageTemplatesScreen({ dataLoading = false, messageTemplates, onCreateTemplate, onUpdateTemplate, onDeleteTemplate, isMutating = false }: MessageTemplatesScreenProps) {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | "All">("All");
   const [previewTemplate, setPreviewTemplate] = useState<MessageTemplatesScreenRecord | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState({ name: "", category: "Ride", channel: "SMS", subject: "", body: "" });
 
   const filteredTemplates = useMemo(() => {
     let templates = messageTemplates;
@@ -62,6 +69,30 @@ export function MessageTemplatesScreen({ dataLoading = false, messageTemplates }
   const smsCount = messageTemplates.filter((t) => t.channel === "SMS").length;
   const pushCount = messageTemplates.filter((t) => t.channel === "Push" || t.channel === "PUSH").length;
 
+  function submitTemplate() {
+    if (!form.name.trim() || !form.subject.trim() || !form.body.trim()) return;
+    if (editingId) {
+      onUpdateTemplate(editingId, { ...form, name: form.name.trim(), subject: form.subject.trim(), body: form.body.trim() });
+    } else {
+      onCreateTemplate({ ...form, name: form.name.trim(), subject: form.subject.trim(), body: form.body.trim() });
+    }
+    setForm({ name: "", category: "Ride", channel: "SMS", subject: "", body: "" });
+    setEditingId(null);
+    setShowForm(false);
+  }
+
+  function startEdit(tpl: MessageTemplatesScreenRecord) {
+    setEditingId(tpl.id);
+    setForm({ name: tpl.name, category: tpl.category, channel: tpl.channel, subject: tpl.subject, body: tpl.body });
+    setShowForm(true);
+  }
+
+  function duplicateTemplate(tpl: MessageTemplatesScreenRecord) {
+    setEditingId(null);
+    setForm({ name: `${tpl.name} (copy)`, category: tpl.category, channel: tpl.channel, subject: tpl.subject, body: tpl.body });
+    setShowForm(true);
+  }
+
   if (dataLoading) {
     return (
       <div className="mt-admin-screen">
@@ -77,12 +108,59 @@ export function MessageTemplatesScreen({ dataLoading = false, messageTemplates }
         title="Message Templates"
         subtitle="Reusable notification and message templates"
         actions={
-          <button type="button" className="mt-btn-primary">
+          <button type="button" className="mt-btn-primary" onClick={() => { setShowForm((v) => !v); setEditingId(null); setForm({ name: "", category: "Ride", channel: "SMS", subject: "", body: "" }); }}>
             <Plus size={14} />
-            <span>New Template</span>
+            <span>{showForm ? "Close form" : "New Template"}</span>
           </button>
         }
       />
+
+      {showForm && (
+        <article className="admin-reference-card" style={{ marginBottom: 16 }}>
+          <div className="admin-reference-cardhead">
+            <div>
+              <h3>{editingId ? "Edit Template" : "New Template"}</h3>
+              <p>Create a reusable notification or message template</p>
+            </div>
+          </div>
+          <div className="admin-form-grid">
+            <label>
+              Template Name
+              <input className="admin-search-input" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="e.g. Ride Assigned" />
+            </label>
+            <label>
+              Category
+              <select className="admin-search-input" value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}>
+                {CATEGORY_CHIPS.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </label>
+            <label>
+              Channel
+              <select className="admin-search-input" value={form.channel} onChange={(e) => setForm((f) => ({ ...f, channel: e.target.value }))}>
+                <option value="SMS">SMS</option>
+                <option value="Push">Push</option>
+                <option value="Email">Email</option>
+              </select>
+            </label>
+            <label className="admin-form-span">
+              Subject
+              <input className="admin-search-input" value={form.subject} onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))} placeholder="Notification subject" />
+            </label>
+            <label className="admin-form-span">
+              Body
+              <textarea className="admin-search-input" rows={3} value={form.body} onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))} placeholder="Use {{variable}} for dynamic values" style={{ resize: "vertical" }} />
+            </label>
+          </div>
+          <div className="admin-page-header-actions" style={{ marginTop: 16 }}>
+            <button type="button" className="admin-btn-primary" style={{ fontSize: "0.78rem" }} disabled={isMutating} onClick={submitTemplate}>
+              {editingId ? "Update template" : "Save template"}
+            </button>
+            <button type="button" className="admin-btn-secondary" style={{ fontSize: "0.78rem" }} onClick={() => { setShowForm(false); setEditingId(null); }}>
+              Cancel
+            </button>
+          </div>
+        </article>
+      )}
 
       <div className="mt-kpi-row">
         <div className="mt-kpi-card">
@@ -196,13 +274,13 @@ export function MessageTemplatesScreen({ dataLoading = false, messageTemplates }
                     >
                       <Eye size={13} />
                     </button>
-                    <button type="button" className="mt-action-btn mt-action-btn--edit" title="Edit">
+                    <button type="button" className="mt-action-btn mt-action-btn--edit" title="Edit" onClick={() => startEdit(tpl)}>
                       <Edit3 size={13} />
                     </button>
-                    <button type="button" className="mt-action-btn mt-action-btn--copy" title="Duplicate">
+                    <button type="button" className="mt-action-btn mt-action-btn--copy" title="Duplicate" onClick={() => duplicateTemplate(tpl)}>
                       <Copy size={13} />
                     </button>
-                    <button type="button" className="mt-action-btn mt-action-btn--delete" title="Delete">
+                    <button type="button" className="mt-action-btn mt-action-btn--delete" title="Delete" onClick={() => { if (window.confirm(`Delete "${tpl.name}"?`)) onDeleteTemplate(tpl.id); }}>
                       <Trash2 size={13} />
                     </button>
                   </div>

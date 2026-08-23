@@ -419,7 +419,16 @@ function SecurityTab({ token }: { token?: string | null }) {
                   <span>{s.lastActive}{s.isCurrent ? " (Current)" : ""}</span>
                 </div>
                 {!s.isCurrent && (
-                  <button type="button" className="mgmt-settings-btn ghost small" onClick={() => addToast("Session revoked", "success")}>
+                  <button type="button" className="mgmt-settings-btn ghost small" onClick={async () => {
+                    if (!token) { addToast("No session token available", "error"); return; }
+                    try {
+                      await requestJson(`/auth/admin/sessions/${s.id}/revoke`, { method: "POST", token });
+                      setSessions((prev) => prev.filter((sess) => sess.id !== s.id));
+                      addToast("Session revoked", "success");
+                    } catch (err) {
+                      addToast((err as Error).message || "Could not revoke session", "error");
+                    }
+                  }}>
                     <LogOut size={12} /> Revoke
                   </button>
                 )}
