@@ -28,5 +28,8 @@ export const QK = {
   goPointBalances: ["admin-go-point-balances"] as const,
   goPointLedger: ["admin-go-point-ledger"] as const,
   goPointRedemptions: ["admin-go-point-redemptions"] as const,
-  messageTemplates: ["admin-message-templates"] as const
+  messageTemplates: ["admin-message-templates"] as const,
+  activeRides: ["admin-active-rides"] as const,
+  availableRiders: (rideId: string) => ["admin-available-riders", rideId] as const,
+  assignmentHistory: (rideId: string) => ["admin-assignment-history", rideId] as const
 } as const;

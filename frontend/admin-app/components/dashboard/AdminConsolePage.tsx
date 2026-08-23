@@ -242,6 +242,10 @@ const RolesPermissionsScreen = dynamic(
   () => import("./admin/RolesPermissionsScreen").then((m) => m.RolesPermissionsScreen),
   { loading: screenFallback }
 );
+const RiderAssignmentScreen = dynamic(
+  () => import("./admin/RiderAssignmentScreen").then((m) => m.RiderAssignmentScreen),
+  { loading: screenFallback }
+);
 
 export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
   const { session, status, signOut: authSignOut } = useAuth();
@@ -1001,6 +1005,22 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             adminCurrency={data.adminCurrency}
             dataLoading={data.dataLoading}
             onServerExport={(entity) => void data.downloadServerCsv(entity)}
+          />
+        );
+
+      case "riderAssignment":
+        return (
+          <RiderAssignmentScreen
+            activeRides={data.assignmentActiveRides}
+            activeRidesPending={data.assignmentActiveRidesPending}
+            selectedAssignmentRideId={data.selectedAssignmentRideId}
+            setSelectedAssignmentRideId={data.setSelectedAssignmentRideId}
+            availableRidersData={data.availableRidersData}
+            availableRidersPending={data.availableRidersPending}
+            assignRiderMutation={data.assignRiderMutation}
+            reassignRiderMutation={data.reassignRiderMutation}
+            unassignRiderMutation={data.unassignRiderMutation}
+            autoAssignMutation={data.autoAssignMutation}
           />
         );
 

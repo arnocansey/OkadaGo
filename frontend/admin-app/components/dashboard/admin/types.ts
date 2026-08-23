@@ -48,7 +48,8 @@ export type AdminConsoleScreen =
   | "rolesPermissions"
   | "escalationRules"
   | "ratings"
-  | "refunds";
+  | "refunds"
+  | "riderAssignment";
 
 export type RideRecord = {
   id: string;

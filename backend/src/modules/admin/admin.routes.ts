@@ -38,6 +38,9 @@ import {
 } from "./admin.schemas.js";
 
 import { prisma } from "../../common/prisma.js";
+import { assignmentService } from "./assignment.service.js";
+import { assignRiderSchema, reassignRiderSchema, rideParamsSchema } from "./assignment.schemas.js";
+import { z } from "zod";
 
 const authService = new AuthService();
 const walletService = new WalletService();
@@ -492,5 +495,54 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
     await authService.listAdmins(token);
     const params = request.params as { id: string };
     return prisma.messageTemplate.delete({ where: { id: params.id } });
+  });
+
+  // ── Rider Assignment ──────────────────────────────────────────────────────
+
+  server.get("/admin/rides/active", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    return assignmentService.getActiveRides(token);
+  });
+
+  server.get("/admin/rides/:rideId/available-riders", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, rideParamsSchema);
+    return assignmentService.getAvailableRiders(token, params.rideId);
+  });
+
+  server.post("/admin/rides/:rideId/assign-rider", async (request, reply) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, rideParamsSchema);
+    const body = parseBody(request, assignRiderSchema);
+    const result = await assignmentService.assignRider(token, params.rideId, body);
+    return reply.status(201).send(result);
+  });
+
+  server.post("/admin/rides/:rideId/reassign-rider", async (request, reply) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, rideParamsSchema);
+    const body = parseBody(request, reassignRiderSchema);
+    const result = await assignmentService.reassignRider(token, params.rideId, body);
+    return reply.status(201).send(result);
+  });
+
+  server.post("/admin/rides/:rideId/unassign-rider", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, rideParamsSchema);
+    return assignmentService.unassignRider(token, params.rideId);
+  });
+
+  server.post("/admin/rides/:rideId/auto-assign", async (request, reply) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, rideParamsSchema);
+    const body = (request.body ?? {}) as { maxRadiusKm?: number };
+    const result = await assignmentService.autoAssign(token, params.rideId, { maxRadiusKm: body.maxRadiusKm ?? 8 });
+    return reply.status(201).send(result);
+  });
+
+  server.get("/admin/rides/:rideId/assignment-history", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, rideParamsSchema);
+    return assignmentService.getAssignmentHistory(token, params.rideId);
   });
 };

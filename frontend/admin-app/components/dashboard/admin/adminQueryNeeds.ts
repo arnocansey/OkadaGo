@@ -27,7 +27,8 @@ export type AdminQueryNeed =
   | "promoCodes"
   | "goPoints"
   | "messageTemplates"
-  | "liveStream";
+  | "liveStream"
+  | "liveOperations";
 
 /** Shell badges + dashboard KPIs — one aggregate, not sample list pages. */
 const SHELL_NEEDS: AdminQueryNeed[] = ["opsSummary"];
@@ -80,7 +81,8 @@ const SCREEN_EXTRA: Record<AdminConsoleScreen, AdminQueryNeed[]> = {
   admins: ["adminAccounts", "adminPermissions", "passengers"],
   rolesPermissions: ["adminAccounts", "adminPermissions"],
   escalationRules: ["escalationRules"],
-  refunds: ["walletTx", "rides", "deliveries"]
+  refunds: ["walletTx", "rides", "deliveries"],
+  riderAssignment: ["liveOperations"]
 };
 
 export function needsForScreen(screen: AdminConsoleScreen): Set<AdminQueryNeed> {

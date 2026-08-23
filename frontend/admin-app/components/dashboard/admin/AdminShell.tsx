@@ -196,7 +196,8 @@ const screenMeta: Record<AdminConsoleScreen, AdminScreenMeta> = {
   settingsNotifications: { eyebrow: "Administration", title: "Alert Settings", description: "Notification alert configuration", searchLabel: "", quickActionLabel: "", quickActionHref: "/promotions", quickActionNote: "" },
   admins: { eyebrow: "Administration", title: "Admin Users", description: "Manage admin accounts", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
   rolesPermissions: { eyebrow: "Administration", title: "Roles & Permissions", description: "Manage admin roles and permission matrix", searchLabel: "", quickActionLabel: "", quickActionHref: "/admins", quickActionNote: "" },
-  ratings: { eyebrow: "Operations", title: "Ratings", description: "Passenger and rider ratings", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" }
+  ratings: { eyebrow: "Operations", title: "Ratings", description: "Passenger and rider ratings", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
+  riderAssignment: { eyebrow: "Operations", title: "Rider Assignment", description: "Assign and manage riders to active rides", searchLabel: "", quickActionLabel: "", quickActionHref: "/rider-assignment", quickActionNote: "" }
 };
 
 export function AdminShell({
@@ -371,6 +372,14 @@ export function AdminShell({
         group: "finance",
         hint: "",
         badge: `${badgeData.pendingPayoutRequestsCount}`
+      },
+      {
+        label: "Rider Assignment",
+        href: "/rider-assignment",
+        icon: Users,
+        screen: "riderAssignment",
+        group: "operations",
+        hint: ""
       },
       {
         label: "Wallet",

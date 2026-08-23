@@ -479,6 +479,78 @@ export function useAdminData(
     onError: (err: Error) => addToast(err.message || "Failed to send message", "error")
   });
 
+  // ── Rider Assignment ──
+  const { data: assignmentActiveRidesData, isPending: assignmentActiveRidesPending } = useQuery<
+    Array<{ id: string; status: string; pickupAddress: string; destinationAddress: string; requestedAt: string; assignmentStatus: string; passenger: { name: string; phone: string } | null; assignedRider: { id: string; name: string; phone: string; vehicle: { make: string; model: string; plateNumber: string } | null } | null; [key: string]: unknown }>
+  >({
+    queryKey: QK.activeRides,
+    queryFn: () => requestJson("/admin/rides/active", { token }),
+    enabled: want("liveOperations"),
+    refetchInterval: poll(15000, "liveOperations"),
+    staleTime: 10000
+  });
+
+  const [selectedAssignmentRideId, setSelectedAssignmentRideId] = useState<string | null>(null);
+
+  const { data: availableRidersData, isPending: availableRidersPending } = useQuery<{
+    ride: Record<string, unknown>;
+    availableRiders: Array<{ riderId: string; displayName: string; displayCode: string; phone: string; rating: number; acceptanceRate: number; cancellationRate: number; completedTrips: number; todayTrips: number; todayEarnings: number; currentLatitude: number | null; currentLongitude: number | null; distanceToPickupKm: number; etaMinutes: number; score: number; onlineStatus: boolean; vehicle: { make: string; model: string; color: string; plateNumber: string; vehicleType: string } | null; serviceZone: string | null }>;
+    recommendedRiderId: string | null;
+  }>({
+    queryKey: QK.availableRiders(selectedAssignmentRideId ?? ""),
+    queryFn: () => requestJson(`/admin/rides/${selectedAssignmentRideId}/available-riders`, { token }),
+    enabled: !!selectedAssignmentRideId,
+    staleTime: 5000
+  });
+
+  const assignRiderMutation = useMutation({
+    mutationFn: async ({ rideId, riderProfileId }: { rideId: string; riderProfileId: string }) =>
+      postJson(`/admin/rides/${rideId}/assign-rider`, { riderProfileId }, token),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: QK.activeRides });
+      queryClient.invalidateQueries({ queryKey: QK.availableRiders(variables.rideId) });
+      setSelectedAssignmentRideId(null);
+      addToast("Rider assigned successfully", "success");
+    },
+    onError: (err: Error) => addToast(err.message || "Failed to assign rider", "error")
+  });
+
+  const reassignRiderMutation = useMutation({
+    mutationFn: async ({ rideId, riderProfileId, reason, reasonNote }: { rideId: string; riderProfileId: string; reason: string; reasonNote?: string }) =>
+      postJson(`/admin/rides/${rideId}/reassign-rider`, { riderProfileId, reason, reasonNote }, token),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: QK.activeRides });
+      queryClient.invalidateQueries({ queryKey: QK.availableRiders(variables.rideId) });
+      queryClient.invalidateQueries({ queryKey: QK.assignmentHistory(variables.rideId) });
+      setSelectedAssignmentRideId(null);
+      addToast("Rider reassigned successfully", "success");
+    },
+    onError: (err: Error) => addToast(err.message || "Failed to reassign rider", "error")
+  });
+
+  const unassignRiderMutation = useMutation({
+    mutationFn: async ({ rideId }: { rideId: string }) =>
+      postJson(`/admin/rides/${rideId}/unassign-rider`, {}, token),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: QK.activeRides });
+      queryClient.invalidateQueries({ queryKey: QK.availableRiders(variables.rideId) });
+      addToast("Rider unassigned", "success");
+    },
+    onError: (err: Error) => addToast(err.message || "Failed to unassign rider", "error")
+  });
+
+  const autoAssignMutation = useMutation({
+    mutationFn: async ({ rideId }: { rideId: string }) =>
+      postJson(`/admin/rides/${rideId}/auto-assign`, {}, token),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: QK.activeRides });
+      queryClient.invalidateQueries({ queryKey: QK.availableRiders(variables.rideId) });
+      setSelectedAssignmentRideId(null);
+      addToast("Auto-assignment completed", "success");
+    },
+    onError: (err: Error) => addToast(err.message || "Auto-assignment failed", "error")
+  });
+
   const { data: escalationRulesData, isPending: escalationRulesPending } = useQuery<EscalationRuleRecord[]>({
     queryKey: QK.escalationRules,
     queryFn: () => requestJson("/admin/escalation-rules", { token }),
@@ -2313,6 +2385,10 @@ export function useAdminData(
     rolesPermissions: [
       { label: "Admins", value: `${adminAccounts.length}` },
       { label: "Roles", value: `${adminRoleEntries.length}` }
+    ],
+    riderAssignment: [
+      { label: "Active rides", value: `${assignmentActiveRidesData?.length ?? 0}` },
+      { label: "Unassigned", value: `${(assignmentActiveRidesData ?? []).filter((r: { assignmentStatus: string }) => r.assignmentStatus === "unassigned").length}` }
     ]
   }), [
     opsSummary, liveSnapshot, liveOnlineCount, activeRides, activeRiders, adminCurrency, totalDashboardRevenue,
@@ -2587,6 +2663,18 @@ export function useAdminData(
     ticketMessages: ticketMessagesData ?? [],
     ticketMessagesPending,
     sendTicketMessageMutation,
+
+    // Rider Assignment
+    assignmentActiveRides: assignmentActiveRidesData ?? [],
+    assignmentActiveRidesPending,
+    selectedAssignmentRideId, setSelectedAssignmentRideId,
+    availableRidersData,
+    availableRidersPending,
+    assignRiderMutation,
+    reassignRiderMutation,
+    unassignRiderMutation,
+    autoAssignMutation,
+
     liveSos, liveOpsConnected, liveOpsTimestamp,
     opsSummary,
     financeSummary,
