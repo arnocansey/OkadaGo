@@ -28,14 +28,6 @@ interface RolesPermissionsScreenProps {
   onReassignAdmin?: (userId: string) => void;
 }
 
-const SAMPLE_ROLES = [
-  "super_admin",
-  "admin",
-  "support_agent",
-  "finance_viewer",
-  "operations_manager",
-] as const;
-
 const PERMISSION_CATEGORIES = [
   "dashboard",
   "rides",
@@ -49,69 +41,6 @@ const PERMISSION_CATEGORIES = [
   "admins",
 ] as const;
 
-const PERMISSION_MATRIX: Record<string, Record<string, boolean>> = {
-  super_admin: {
-    dashboard: true,
-    rides: true,
-    deliveries: true,
-    riders: true,
-    passengers: true,
-    finance: true,
-    promotions: true,
-    support: true,
-    settings: true,
-    admins: true,
-  },
-  admin: {
-    dashboard: true,
-    rides: true,
-    deliveries: true,
-    riders: true,
-    passengers: true,
-    finance: true,
-    promotions: true,
-    support: true,
-    settings: false,
-    admins: false,
-  },
-  support_agent: {
-    dashboard: true,
-    rides: true,
-    deliveries: false,
-    riders: true,
-    passengers: true,
-    finance: false,
-    promotions: false,
-    support: true,
-    settings: false,
-    admins: false,
-  },
-  finance_viewer: {
-    dashboard: true,
-    rides: false,
-    deliveries: false,
-    riders: false,
-    passengers: false,
-    finance: true,
-    promotions: false,
-    support: false,
-    settings: false,
-    admins: false,
-  },
-  operations_manager: {
-    dashboard: true,
-    rides: true,
-    deliveries: true,
-    riders: true,
-    passengers: true,
-    finance: true,
-    promotions: true,
-    support: false,
-    settings: false,
-    admins: false,
-  },
-};
-
 export function RolesPermissionsScreen({
   adminAccounts,
   adminRoleEntries,
@@ -121,7 +50,6 @@ export function RolesPermissionsScreen({
 }: RolesPermissionsScreenProps) {
   const [activeTab, setActiveTab] = React.useState<string>("roles");
   const [searchQuery, setSearchQuery] = React.useState<string>("");
-  const [showRoleForm, setShowRoleForm] = React.useState(false);
   const { addToast } = useAdminToast();
 
   const roleCounts = React.useMemo(() => {
@@ -138,7 +66,7 @@ export function RolesPermissionsScreen({
     return sum + (perms?.length || 0);
   }, 0);
 
-  const filteredRoles = SAMPLE_ROLES.filter((role) =>
+  const filteredRoles = Object.keys(roleCounts).filter((role) =>
     role.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -180,7 +108,7 @@ export function RolesPermissionsScreen({
               </td>
               <td>
                 <span className="rp-badge rp-badge-info">
-                  {Object.values(PERMISSION_MATRIX[role] || {}).filter(Boolean).length}
+                  {adminRoleEntries.find(([r]) => r === role)?.[1]?.length ?? 0}
                 </span>
               </td>
               <td>
@@ -214,41 +142,54 @@ export function RolesPermissionsScreen({
     </div>
   );
 
-  const renderMatrixTab = () => (
-    <div className="rp-table-container rp-matrix-container">
-      <table className="rp-table rp-matrix-table">
-        <thead>
-          <tr>
-            <th className="rp-matrix-header">Permission</th>
-            {SAMPLE_ROLES.map((role) => (
-              <th key={role} className="rp-matrix-header">
-                {role}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {PERMISSION_CATEGORIES.map((category) => (
-            <tr key={category}>
-              <td className="rp-matrix-label">
-                <Lock className="rp-matrix-label-icon" />
-                {category}
-              </td>
-              {SAMPLE_ROLES.map((role) => (
-                <td key={role} className="rp-matrix-cell">
-                  {PERMISSION_MATRIX[role]?.[category] ? (
-                    <span className="rp-check rp-check-active">&#10003;</span>
-                  ) : (
-                    <span className="rp-check rp-check-inactive">&mdash;</span>
-                  )}
-                </td>
+  const renderMatrixTab = () => {
+    const roles = Object.keys(roleCounts);
+    const allPermissions = new Set<string>();
+    adminRoleEntries.forEach(([, perms]) => {
+      if (perms) perms.forEach((p) => allPermissions.add(p));
+    });
+    const categories = allPermissions.size > 0 ? Array.from(allPermissions).sort() : PERMISSION_CATEGORIES;
+
+    return (
+      <div className="rp-table-container rp-matrix-container">
+        <table className="rp-table rp-matrix-table">
+          <thead>
+            <tr>
+              <th className="rp-matrix-header">Permission</th>
+              {roles.map((role) => (
+                <th key={role} className="rp-matrix-header">
+                  {role}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+          </thead>
+          <tbody>
+            {categories.map((category) => (
+              <tr key={category}>
+                <td className="rp-matrix-label">
+                  <Lock className="rp-matrix-label-icon" />
+                  {category}
+                </td>
+                {roles.map((role) => {
+                  const rolePerms = adminRoleEntries.find(([r]) => r === role)?.[1] ?? [];
+                  const hasPerm = rolePerms.includes(category);
+                  return (
+                    <td key={role} className="rp-matrix-cell">
+                      {hasPerm ? (
+                        <span className="rp-check rp-check-active">&#10003;</span>
+                      ) : (
+                        <span className="rp-check rp-check-inactive">&mdash;</span>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
 
   const renderAssignmentsTab = () => (
     <div className="rp-table-container">

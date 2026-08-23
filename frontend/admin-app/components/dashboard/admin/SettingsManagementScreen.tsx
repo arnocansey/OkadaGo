@@ -196,7 +196,7 @@ export function SettingsManagementScreen({
           <PaymentsTab adminCurrency={adminCurrency} platformSettings={platformSettings} onSave={onSaveSettings} saving={settingsSaving} token={token} />
         )}
         {activeTab === "integrations" && (
-          <IntegrationsTab />
+          <IntegrationsTab platformSettings={platformSettings} />
         )}
         {activeTab === "taxes" && (
           <TaxesTab platformSettings={platformSettings} onSave={onSaveSettings} saving={settingsSaving} />
@@ -519,6 +519,7 @@ function PaymentsTab({
   saving: boolean;
   token?: string | null;
 }) {
+  const [gateway, setGateway] = useState(typeof platformSettings?.paymentGateway === "string" ? platformSettings.paymentGateway as string : "momo");
   return (
     <div className="mgmt-settings-grid">
       <div className="mgmt-settings-card">
@@ -530,7 +531,7 @@ function PaymentsTab({
           </label>
           <label className="mgmt-settings-field">
             <span>Payment Gateway</span>
-            <select defaultValue="momo">
+            <select value={gateway} onChange={(e) => setGateway(e.target.value)}>
               <option value="momo">Mobile Money (MoMo)</option>
               <option value="card">Card Payments</option>
               <option value="both">Both</option>
@@ -547,30 +548,35 @@ function PaymentsTab({
    INTEGRATIONS TAB
    ═══════════════════════════════════════════════════════════════════════════ */
 
-function IntegrationsTab() {
+function IntegrationsTab({ platformSettings }: { platformSettings?: Record<string, unknown> }) {
   const integrations = [
-    { name: "Google Maps", status: "connected", desc: "Route planning & geocoding" },
-    { name: "Twilio", status: "connected", desc: "SMS notifications" },
-    { name: "SendGrid", status: "disconnected", desc: "Email delivery" },
-    { name: "Paystack", status: "disconnected", desc: "Card payments" }
+    { name: "Google Maps", key: "googleMaps", desc: "Route planning & geocoding" },
+    { name: "Twilio", key: "twilio", desc: "SMS notifications" },
+    { name: "SendGrid", key: "sendgrid", desc: "Email delivery" },
+    { name: "Paystack", key: "paystack", desc: "Card payments" },
+    { name: "MoMo", key: "momo", desc: "Mobile money payments" },
   ];
 
   return (
     <div className="mgmt-settings-grid">
       <div className="mgmt-settings-card">
         <h3 className="mgmt-settings-card-title"><Plug size={15} /> Third-Party Integrations</h3>
+        <p className="mgmt-settings-hint">Integration status is derived from platform configuration. Toggle keys in Settings to enable or disable.</p>
         <div className="mgmt-settings-integrations">
-          {integrations.map((intg) => (
-            <div key={intg.name} className="mgmt-settings-integration">
-              <div className="mgmt-settings-integration-info">
-                <strong>{intg.name}</strong>
-                <span>{intg.desc}</span>
+          {integrations.map((intg) => {
+            const connected = platformSettings?.[`${intg.key}Enabled`] === true || platformSettings?.[intg.key] != null;
+            return (
+              <div key={intg.name} className="mgmt-settings-integration">
+                <div className="mgmt-settings-integration-info">
+                  <strong>{intg.name}</strong>
+                  <span>{intg.desc}</span>
+                </div>
+                <span className={`mgmt-settings-badge ${connected ? "success" : "neutral"}`}>
+                  {connected ? "Configured" : "Not Configured"}
+                </span>
               </div>
-              <span className={`mgmt-settings-badge ${intg.status === "connected" ? "success" : "neutral"}`}>
-                {intg.status === "connected" ? "Connected" : "Not Connected"}
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

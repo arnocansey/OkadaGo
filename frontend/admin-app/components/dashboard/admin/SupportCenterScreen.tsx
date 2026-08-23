@@ -44,7 +44,7 @@ export type SupportCenterScreenProps = {
   deliveries: DeliveryRecord[];
   adminCurrency: string;
   dataLoading?: boolean;
-  onTicketAction?: (ticketId: string, action: "assign" | "resolve" | "close" | "escalate", value?: string) => void;
+  onTicketAction?: (ticketId: string, action: "assign" | "resolve" | "close" | "escalate" | "message", value?: string) => void;
   onServerExport?: (entity: "support-tickets") => void;
 };
 
@@ -195,7 +195,7 @@ export function SupportCenterScreen({
 
   const handleSendMessage = useCallback(() => {
     if (!messageText.trim() || !selectedTicket) return;
-    if (onTicketAction) onTicketAction(selectedTicket.id, "assign", messageText.trim());
+    if (onTicketAction) onTicketAction(selectedTicket.id, "message", messageText.trim());
     setMessageText("");
   }, [messageText, selectedTicket, onTicketAction]);
 

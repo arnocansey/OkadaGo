@@ -244,7 +244,7 @@ export function MessageTemplatesScreen({ dataLoading = false, messageTemplates, 
                 <td>
                   <span
                     className="mt-badge"
-                    style={{ background: CATEGORY_COLORS[tpl.category].bg, color: CATEGORY_COLORS[tpl.category].text }}
+                    style={{ background: CATEGORY_COLORS[tpl.category]?.bg ?? "#333", color: CATEGORY_COLORS[tpl.category]?.text ?? "#ccc" }}
                   >
                     {tpl.category}
                   </span>
@@ -252,7 +252,7 @@ export function MessageTemplatesScreen({ dataLoading = false, messageTemplates, 
                 <td>
                   <span
                     className="mt-badge"
-                    style={{ background: CHANNEL_COLORS[tpl.channel].bg, color: CHANNEL_COLORS[tpl.channel].text }}
+                    style={{ background: CHANNEL_COLORS[tpl.channel]?.bg ?? "#333", color: CHANNEL_COLORS[tpl.channel]?.text ?? "#ccc" }}
                   >
                     {tpl.channel}
                   </span>
@@ -315,7 +315,7 @@ export function MessageTemplatesScreen({ dataLoading = false, messageTemplates, 
                 <span className="mt-preview-label">Category</span>
                 <span
                   className="mt-badge"
-                  style={{ background: CATEGORY_COLORS[previewTemplate.category].bg, color: CATEGORY_COLORS[previewTemplate.category].text }}
+                  style={{ background: CATEGORY_COLORS[previewTemplate.category]?.bg ?? "#333", color: CATEGORY_COLORS[previewTemplate.category]?.text ?? "#ccc" }}
                 >
                   {previewTemplate.category}
                 </span>
@@ -324,7 +324,7 @@ export function MessageTemplatesScreen({ dataLoading = false, messageTemplates, 
                 <span className="mt-preview-label">Channel</span>
                 <span
                   className="mt-badge"
-                  style={{ background: CHANNEL_COLORS[previewTemplate.channel].bg, color: CHANNEL_COLORS[previewTemplate.channel].text }}
+                  style={{ background: CHANNEL_COLORS[previewTemplate.channel]?.bg ?? "#333", color: CHANNEL_COLORS[previewTemplate.channel]?.text ?? "#ccc" }}
                 >
                   {previewTemplate.channel}
                 </span>

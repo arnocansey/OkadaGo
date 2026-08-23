@@ -627,7 +627,10 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             deliveries={data.deliveries}
             adminCurrency={data.adminCurrency}
             dataLoading={data.dataLoading || data.supportTicketsPending}
-            onTicketAction={(id, action) => data.incidentReviewMutation.mutate({ incidentId: id, status: action === "resolve" ? "RESOLVED" : action === "close" ? "CLOSED" : action === "escalate" ? "UNDER_REVIEW" : "ACTIONED" })}
+            onTicketAction={(id, action, value) => {
+              if (action === "message") return; /* no message API yet */
+              data.incidentReviewMutation.mutate({ incidentId: id, status: action === "resolve" ? "RESOLVED" : action === "close" ? "CLOSED" : action === "escalate" ? "UNDER_REVIEW" : "ACTIONED" });
+            }}
           />
         );
 
@@ -891,12 +894,12 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
           <RiderPayoutDashboardScreen
             payoutRequests={data.payoutRequests}
             payoutRequestsTotal={data.payoutRequestsTotal}
-            payoutStatusFilter=""
-            onPayoutStatusChange={() => {}}
-            payoutPage={0}
+            payoutStatusFilter={data.payoutStatusFilter}
+            onPayoutStatusChange={data.setPayoutStatusFilter}
+            payoutPage={data.payoutPage}
             payoutTotal={data.payoutRequestsTotal}
             listPageSize={20}
-            onPayoutPageChange={() => {}}
+            onPayoutPageChange={data.setPayoutPage}
             pendingPayoutValue={data.pendingPayoutValue}
             payoutOutflow={data.payoutOutflow}
             totalRiderPayoutValue={data.totalRiderPayoutValue}
@@ -912,12 +915,12 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
       case "wallet":
         return (
           <RiderWalletScreen
-            riderWalletTransactions={data.walletTransactions}
-            riderWalletCredits={data.walletTransactions.filter((t) => t.direction === "credit").reduce((s, t) => s + Math.abs(Number(t.amount)), 0)}
-            riderWalletDebits={data.walletTransactions.filter((t) => t.direction === "debit").reduce((s, t) => s + Math.abs(Number(t.amount)), 0)}
-            riderWalletAvailableBalance={data.pendingPayoutValue}
-            riderWalletLockedBalance={0}
-            riderWalletMovementTotal={data.walletTransactions.length}
+            riderWalletTransactions={data.riderWalletTransactions}
+            riderWalletCredits={data.riderWalletCredits}
+            riderWalletDebits={data.riderWalletDebits}
+            riderWalletAvailableBalance={data.riderWalletAvailableBalance}
+            riderWalletLockedBalance={data.riderWalletLockedBalance}
+            riderWalletMovementTotal={data.riderWalletMovementTotal}
             adminCurrency={data.adminCurrency}
             dataLoading={data.dataLoading}
           />
