@@ -14,7 +14,7 @@ import {
   MapPin,
   Calendar,
   Navigation,
-  DollarSign,
+  Banknote,
   Package,
   Wallet,
   CreditCard,

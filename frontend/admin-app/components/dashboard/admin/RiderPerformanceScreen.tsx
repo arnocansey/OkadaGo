@@ -4,7 +4,7 @@ import {
   TrendingUp,
   Bike,
   Users,
-  DollarSign,
+  Banknote,
   Activity,
   Search,
   ChevronUp,
@@ -458,7 +458,7 @@ export function RiderPerformanceScreen({
           { label: "Completed Trips", value: completedTrips.toLocaleString(), hint: `${activeTrips} in progress`, icon: <Bike size={18} />, tone: "green" },
           { label: "Active Trips", value: activeTrips.toLocaleString(), hint: "Currently in progress", icon: <Activity size={18} />, tone: "yellow" },
           { label: "Avg. Rating", value: averageRating.toFixed(1), hint: `${ratedRiders.length} rated riders`, icon: <Star size={18} />, tone: "yellow" },
-          { label: "Total Earnings", value: formatMoney(adminCurrency, totalEarnings), hint: "Net after commission", icon: <DollarSign size={18} />, tone: "yellow" },
+          { label: "Total Earnings", value: formatMoney(adminCurrency, totalEarnings), hint: "Net after commission", icon: <Banknote size={18} />, tone: "yellow" },
           { label: "Earning Riders", value: earningRiders, hint: "With positive earnings", icon: <Users size={18} />, tone: "neutral" },
         ]}
       />

@@ -9,7 +9,7 @@ import type { AdminFinanceSummary } from "./useAdminFinanceSummary";
 import type { WalletTransactionRecord, RideRecord, DeliveryRecord } from "./types";
 import { parseNumber, formatDateTime } from "./utils";
 import {
-  DollarSign,
+  Banknote,
   TrendingUp,
   TrendingDown,
   Users,
@@ -246,7 +246,7 @@ export function FinanceDashboardScreen({
       {/* ── KPI Cards ── */}
       <section className="fd-kpis">
         <article className="fd-kpi fd-kpi--revenue">
-          <div className="fd-kpi-icon"><DollarSign size={18} /></div>
+          <div className="fd-kpi-icon"><Banknote size={18} /></div>
           <div className="fd-kpi-body">
             <span className="fd-kpi-label">Gross Revenue</span>
             <strong className="fd-kpi-value">{formatMoney(adminCurrency, filteredRevenue.total)}</strong>

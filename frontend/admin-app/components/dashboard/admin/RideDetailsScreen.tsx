@@ -12,7 +12,7 @@ import {
   Bike,
   MapPin,
   Clock,
-  DollarSign,
+  Banknote,
   User,
   Phone,
   Mail,
@@ -274,7 +274,7 @@ export function RideDetailsScreen({ ride, loading = false, error = null }: RideD
         {/* Fare Breakdown Card */}
         <section className="rd-card">
           <div className="rd-card-header">
-            <DollarSign size={14} />
+            <Banknote size={14} />
             <h4>Fare Breakdown</h4>
           </div>
           <div className="rd-card-body">

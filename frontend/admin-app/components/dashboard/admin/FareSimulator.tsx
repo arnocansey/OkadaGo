@@ -10,7 +10,7 @@ import {
   RotateCcw,
   MapPin,
   Clock,
-  DollarSign,
+  Banknote,
   TrendingUp,
   Wallet,
   ChevronDown
@@ -235,7 +235,7 @@ export function FareSimulator({
           <div className="fs-sim-row">
             <div className="fs-sim-field">
               <label className="fs-sim-label">
-                <DollarSign size={13} /> Commission Override %
+                <Banknote size={13} /> Commission Override %
               </label>
               <input
                 type="number"
@@ -250,7 +250,7 @@ export function FareSimulator({
             </div>
             <div className="fs-sim-field">
               <label className="fs-sim-label">
-                <DollarSign size={13} /> Booking Fee
+                <Banknote size={13} /> Booking Fee
               </label>
               <input
                 type="number"

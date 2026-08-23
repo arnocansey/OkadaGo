@@ -9,7 +9,7 @@ import {
   CreditCard,
   TrendingUp,
   TrendingDown,
-  DollarSign,
+  Banknote,
   Award,
   Target,
   BarChart3,
@@ -156,7 +156,7 @@ export function RiderEarningsScreen({
 
       <AdminKpiRow
         items={[
-          { label: "Total Earnings", value: formatMoney(adminCurrency, totalRiderGrossRevenue), hint: "+12.5% vs last period", icon: <DollarSign size={18} />, tone: "yellow" },
+          { label: "Total Earnings", value: formatMoney(adminCurrency, totalRiderGrossRevenue), hint: "+12.5% vs last period", icon: <Banknote size={18} />, tone: "yellow" },
           { label: "Trip Earnings", value: formatMoney(adminCurrency, tripEarnings), hint: "+8.2% vs last period", icon: <TrendingUp size={18} />, tone: "green" },
           { label: "Incentives", value: formatMoney(adminCurrency, incentives), hint: "+24.1% vs last period", icon: <Award size={18} />, tone: "yellow" },
           { label: "Commissions", value: formatMoney(adminCurrency, totalRiderCommission), hint: "-3.4% vs last period", icon: <Target size={18} />, tone: "red" },

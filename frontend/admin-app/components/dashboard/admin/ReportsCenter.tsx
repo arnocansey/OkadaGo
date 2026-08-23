@@ -25,7 +25,7 @@ import {
   Bike,
   Package,
   Users,
-  DollarSign,
+  Banknote,
   Shield,
   TrendingUp,
   Clock,
@@ -65,7 +65,7 @@ type ExportFormat = "csv" | "excel" | "pdf";
 
 const TABS: Array<{ key: ReportTab; label: string; icon: typeof FileText }> = [
   { key: "operations", label: "Operations", icon: BarChart3 },
-  { key: "finance", label: "Finance", icon: DollarSign },
+  { key: "finance", label: "Finance", icon: Banknote },
   { key: "riders", label: "Riders", icon: Users },
   { key: "passengers", label: "Passengers", icon: Users },
   { key: "deliveries", label: "Deliveries", icon: Package },
@@ -617,9 +617,9 @@ function FinanceReport({ metrics, rides, deliveries, walletTransactions, payoutR
   return (
     <div className="rc-section">
       <div className="rc-kpi-grid">
-        <div className="rc-kpi"><div className="rc-kpi-icon rc-kpi-icon--green"><DollarSign size={18} /></div><div><span className="rc-kpi-value">{formatMoney(adminCurrency, metrics.grossRevenue)}</span><span className="rc-kpi-label">Gross Revenue</span></div></div>
+        <div className="rc-kpi"><div className="rc-kpi-icon rc-kpi-icon--green"><Banknote size={18} /></div><div><span className="rc-kpi-value">{formatMoney(adminCurrency, metrics.grossRevenue)}</span><span className="rc-kpi-label">Gross Revenue</span></div></div>
         <div className="rc-kpi"><div className="rc-kpi-icon rc-kpi-icon--orange"><TrendingUp size={18} /></div><div><span className="rc-kpi-value">{formatMoney(adminCurrency, metrics.commission)}</span><span className="rc-kpi-label">Platform Commission</span></div></div>
-        <div className="rc-kpi"><div className="rc-kpi-icon rc-kpi-icon--blue"><DollarSign size={18} /></div><div><span className="rc-kpi-value">{formatMoney(adminCurrency, metrics.riderEarnings)}</span><span className="rc-kpi-label">Rider Earnings</span></div></div>
+        <div className="rc-kpi"><div className="rc-kpi-icon rc-kpi-icon--blue"><Banknote size={18} /></div><div><span className="rc-kpi-value">{formatMoney(adminCurrency, metrics.riderEarnings)}</span><span className="rc-kpi-label">Rider Earnings</span></div></div>
         <div className="rc-kpi"><div className="rc-kpi-icon rc-kpi-icon--red"><XCircle size={18} /></div><div><span className="rc-kpi-value">{formatMoney(adminCurrency, metrics.refunds)}</span><span className="rc-kpi-label">Refunds</span></div></div>
         <div className="rc-kpi"><div className="rc-kpi-icon rc-kpi-icon--yellow"><Clock size={18} /></div><div><span className="rc-kpi-value">{formatMoney(adminCurrency, metrics.pendingPayouts)}</span><span className="rc-kpi-label">Pending Payouts</span></div></div>
         <div className="rc-kpi"><div className="rc-kpi-icon rc-kpi-icon--green"><CheckCircle size={18} /></div><div><span className="rc-kpi-value">{formatMoney(adminCurrency, metrics.completedPayouts)}</span><span className="rc-kpi-label">Completed Payouts</span></div></div>
@@ -829,7 +829,7 @@ function PassengersReport({ metrics, passengers, rides, deliveries, adminCurrenc
         <div className="rc-kpi"><div className="rc-kpi-icon rc-kpi-icon--blue"><Users size={18} /></div><div><span className="rc-kpi-value">{metrics.total}</span><span className="rc-kpi-label">Total Passengers</span></div></div>
         <div className="rc-kpi"><div className="rc-kpi-icon rc-kpi-icon--green"><CheckCircle size={18} /></div><div><span className="rc-kpi-value">{metrics.active}</span><span className="rc-kpi-label">Active</span></div></div>
         <div className="rc-kpi"><div className="rc-kpi-icon rc-kpi-icon--orange"><TrendingUp size={18} /></div><div><span className="rc-kpi-value">{formatMoney(adminCurrency, metrics.totalSpend)}</span><span className="rc-kpi-label">Total Spend (period)</span></div></div>
-        <div className="rc-kpi"><div className="rc-kpi-icon rc-kpi-icon--yellow"><DollarSign size={18} /></div><div><span className="rc-kpi-value">{formatMoney(adminCurrency, metrics.avgSpend)}</span><span className="rc-kpi-label">Avg Spend / User</span></div></div>
+        <div className="rc-kpi"><div className="rc-kpi-icon rc-kpi-icon--yellow"><Banknote size={18} /></div><div><span className="rc-kpi-value">{formatMoney(adminCurrency, metrics.avgSpend)}</span><span className="rc-kpi-label">Avg Spend / User</span></div></div>
       </div>
 
       <article className="rc-card">
@@ -897,7 +897,7 @@ function DeliveriesReport({ metrics, deliveries, adminCurrency, onServerExport }
         <div className="rc-kpi"><div className="rc-kpi-icon rc-kpi-icon--blue"><Package size={18} /></div><div><span className="rc-kpi-value">{metrics.total}</span><span className="rc-kpi-label">Total Deliveries</span></div></div>
         <div className="rc-kpi"><div className="rc-kpi-icon rc-kpi-icon--green"><CheckCircle size={18} /></div><div><span className="rc-kpi-value">{metrics.completed}</span><span className="rc-kpi-label">Completed</span></div></div>
         <div className="rc-kpi"><div className="rc-kpi-icon rc-kpi-icon--orange"><TrendingUp size={18} /></div><div><span className="rc-kpi-value">{metrics.inTransit}</span><span className="rc-kpi-label">In Transit</span></div></div>
-        <div className="rc-kpi"><div className="rc-kpi-icon rc-kpi-icon--green"><DollarSign size={18} /></div><div><span className="rc-kpi-value">{formatMoney(adminCurrency, metrics.revenue)}</span><span className="rc-kpi-label">Revenue</span></div></div>
+        <div className="rc-kpi"><div className="rc-kpi-icon rc-kpi-icon--green"><Banknote size={18} /></div><div><span className="rc-kpi-value">{formatMoney(adminCurrency, metrics.revenue)}</span><span className="rc-kpi-label">Revenue</span></div></div>
       </div>
 
       <article className="rc-card">

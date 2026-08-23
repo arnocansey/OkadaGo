@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Users2, TrendingUp, DollarSign, Gift, Search, X } from "lucide-react";
+import { Users2, TrendingUp, Banknote, Gift, Search, X } from "lucide-react";
 import { formatMoney } from "@/lib/currency";
 import { parseNumber } from "./utils";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
@@ -78,7 +78,7 @@ export function ReferralsScreen({
       {/* ── KPIs ── */}
       <section className="ref-kpis">
         <article className="ref-kpi ref-kpi--spend">
-          <div className="ref-kpi-icon"><DollarSign size={18} /></div>
+          <div className="ref-kpi-icon"><Banknote size={18} /></div>
           <div className="ref-kpi-body">
             <span className="ref-kpi-label">Total Referral Spend</span>
             <strong className="ref-kpi-value">{formatMoney(adminCurrency, referralSpend)}</strong>

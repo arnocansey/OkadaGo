@@ -1,4 +1,4 @@
-import { Download, Bike, MapPin, TrendingUp, Users, Package, DollarSign, Activity, Clock, Star } from "lucide-react";
+import { Download, Bike, MapPin, TrendingUp, Users, Package, Banknote, Activity, Clock, Star } from "lucide-react";
 import Link from "next/link";
 import { OperationsMap } from "@/components/maps/operations-map";
 import { formatMoney } from "@/lib/currency";
@@ -99,7 +99,7 @@ export function DashboardScreen({
       label: "Total Revenue",
       value: formatMoney(adminCurrency, totalDashboardRevenue),
       trend: `${rideRevenuePercent}% rides · ${deliveryRevenuePercent}% deliveries`,
-      icon: DollarSign,
+      icon: Banknote,
       tone: "success"
     },
     {
@@ -295,7 +295,7 @@ export function DashboardScreen({
         <article className="ops-card ops-revenue-card">
           <div className="ops-card-header">
             <div className="ops-card-header-left">
-              <DollarSign size={16} />
+              <Banknote size={16} />
               <div>
                 <h3>Revenue Analytics</h3>
                 <p>{formatMoney(adminCurrency, totalDashboardRevenue)} total captured</p>

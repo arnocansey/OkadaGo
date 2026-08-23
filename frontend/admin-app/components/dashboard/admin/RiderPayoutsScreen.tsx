@@ -10,7 +10,7 @@ import { parseNumber, formatDateTime, statusTone } from "./utils";
 import { canPayoutAction, readPayoutProviderMeta } from "./payoutActions";
 import type { PayoutRequestRecord } from "./types";
 import {
-  DollarSign,
+  Banknote,
   Clock,
   Cog,
   CheckCircle,
@@ -293,7 +293,7 @@ export function RiderPayoutsScreen({
 
       <AdminKpiRow
         items={[
-          { label: "Ready for Payout", value: formatMoney(adminCurrency, totalRiderPayoutValue), hint: "All requests in GHS", icon: <DollarSign size={18} />, tone: "yellow" },
+          { label: "Ready for Payout", value: formatMoney(adminCurrency, totalRiderPayoutValue), hint: "All requests in GHS", icon: <Banknote size={18} />, tone: "yellow" },
           { label: "Requested", value: requestedRiderPayouts.length, hint: "Awaiting review", icon: <Clock size={18} />, tone: "yellow" },
           { label: "Processing", value: processingCount, hint: "In progress", icon: <Cog size={18} />, tone: "neutral" },
           { label: "Paid", value: paidRiderPayouts.length, hint: "Successfully settled", icon: <CheckCircle size={18} />, tone: "green" },
@@ -590,7 +590,7 @@ export function RiderPayoutsScreen({
             <div style={{ background: "var(--bg-primary)", borderRadius: 8, padding: 14, marginBottom: 12, display: "flex", flexDirection: "column", gap: 10 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <span style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6 }}>
-                  <DollarSign size={13} /> Amount
+                  <Banknote size={13} /> Amount
                 </span>
                 <span style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)" }}>
                   {formatMoney(selectedDetail.currency, parseNumber(selectedDetail.amount))}

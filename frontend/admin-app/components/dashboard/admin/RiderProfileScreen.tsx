@@ -13,7 +13,7 @@ import {
   Mail,
   MapPin,
   Clock,
-  DollarSign,
+  Banknote,
   Star,
   Shield,
   ShieldCheck,
@@ -160,7 +160,7 @@ export function RiderProfileScreen({
     { id: "motorcycle", label: "Motorcycle", icon: Bike },
     { id: "documents", label: "Documents", icon: FileText },
     { id: "performance", label: "Performance", icon: TrendingUp },
-    { id: "earnings", label: "Earnings", icon: DollarSign },
+    { id: "earnings", label: "Earnings", icon: Banknote },
     { id: "trips", label: "Trips", icon: Navigation },
     { id: "deliveries", label: "Deliveries", icon: Package },
     { id: "payouts", label: "Payouts", icon: CreditCard },
@@ -404,7 +404,7 @@ export function RiderProfileScreen({
         {activeTab === "earnings" && (
           <div className="rp-section-grid">
             <div className="rp-card">
-              <h3 className="rp-card-title"><DollarSign size={15} /> Earnings Overview</h3>
+              <h3 className="rp-card-title"><Banknote size={15} /> Earnings Overview</h3>
               <div className="rp-kpi-grid">
                 <div className="rp-kpi">
                   <span className="rp-kpi-label">Total Earnings</span>

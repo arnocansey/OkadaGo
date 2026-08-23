@@ -15,7 +15,7 @@ import {
   Users,
   Bike,
   Package,
-  DollarSign,
+  Banknote,
   MapPin,
   Clock,
   Target,
@@ -297,7 +297,7 @@ export function AnalyticsDashboardScreen({
       {/* ── KPI Row 1: Core Metrics ── */}
       <section className="an-kpis">
         <article className="an-kpi an-kpi--revenue">
-          <div className="an-kpi-icon"><DollarSign size={18} /></div>
+          <div className="an-kpi-icon"><Banknote size={18} /></div>
           <div className="an-kpi-body">
             <span className="an-kpi-label">Revenue</span>
             <strong className="an-kpi-value">{formatMoney(adminCurrency, kpis.revenue)}</strong>

@@ -7,7 +7,7 @@ import { AdminPageSkeleton } from "./AdminSkeleton";
 import type { ServiceZoneRecord } from "./types";
 import { parseNumber } from "./utils";
 import {
-  DollarSign,
+  Banknote,
   MapPin,
   Clock,
   Tag,
@@ -51,7 +51,7 @@ type ServiceTab = "passenger" | "delivery";
 type PricingField = {
   key: string;
   label: string;
-  icon: typeof DollarSign;
+  icon: typeof Banknote;
   zoneKey: keyof ServiceZoneRecord;
   description: string;
   suffix?: string;
@@ -63,7 +63,7 @@ const SERVICE_TABS: Array<{ key: ServiceTab; label: string; icon: typeof Bike }>
 ];
 
 const PASSENGER_FIELDS: PricingField[] = [
-  { key: "baseFare", label: "Base Fare", icon: DollarSign, zoneKey: "baseFare", description: "Fixed charge when a ride starts" },
+  { key: "baseFare", label: "Base Fare", icon: Banknote, zoneKey: "baseFare", description: "Fixed charge when a ride starts" },
   { key: "perKmFee", label: "Per Kilometer", icon: MapPin, zoneKey: "perKmFee", description: "Charge per kilometer traveled" },
   { key: "perMinuteFee", label: "Per Minute", icon: Clock, zoneKey: "perMinuteFee", description: "Charge per minute of ride time" },
   { key: "minimumFare", label: "Minimum Fare", icon: Tag, zoneKey: "minimumFare", description: "Lowest fare for any completed trip" },
@@ -72,7 +72,7 @@ const PASSENGER_FIELDS: PricingField[] = [
 ];
 
 const DELIVERY_FIELDS: PricingField[] = [
-  { key: "baseFare", label: "Base Fare", icon: DollarSign, zoneKey: "baseFare", description: "Fixed charge when a delivery starts" },
+  { key: "baseFare", label: "Base Fare", icon: Banknote, zoneKey: "baseFare", description: "Fixed charge when a delivery starts" },
   { key: "perKmFee", label: "Per Kilometer", icon: MapPin, zoneKey: "perKmFee", description: "Charge per kilometer for delivery" },
   { key: "perMinuteFee", label: "Per Minute", icon: Clock, zoneKey: "perMinuteFee", description: "Charge per minute of delivery time" },
   { key: "minimumFare", label: "Minimum Fare", icon: Tag, zoneKey: "minimumFare", description: "Lowest fare for any completed delivery" },

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search, X, Package, Truck, CheckCircle, XCircle, Clock, DollarSign, MapPin, AlertTriangle } from "lucide-react";
+import { Search, X, Package, Truck, CheckCircle, XCircle, Clock, Banknote, MapPin, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { formatMoney } from "@/lib/currency";
 import { EmptyCard } from "./EmptyCard";
@@ -96,7 +96,7 @@ export function DeliveriesManagementScreen({
     {
       label: "Delivery Revenue",
       value: formatMoney(adminCurrency, deliveryRevenue),
-      icon: DollarSign,
+      icon: Banknote,
       tone: "accent" as const
     }
   ], [deliveriesTotal, deliveries, activeDeliveries, completedDeliveries, failedDeliveries, deliveryRevenue, adminCurrency]);

@@ -20,7 +20,7 @@ import {
   XCircle,
   AlertTriangle,
   Calendar,
-  DollarSign,
+  Banknote,
   User,
   Navigation,
   FileText,
@@ -415,7 +415,7 @@ export function RidesScreen({
 
               {/* ── Fare Breakdown ── */}
               <section className="rides-detail-section">
-                <h4><DollarSign size={14} /> Fare Breakdown</h4>
+                <h4><Banknote size={14} /> Fare Breakdown</h4>
                 <div className="rides-detail-fare-grid">
                   <div className="rides-detail-fare-row">
                     <span>Estimated Fare</span>
@@ -474,7 +474,7 @@ export function RidesScreen({
 
               {/* ── Payment Status ── */}
               <section className="rides-detail-section">
-                <h4><DollarSign size={14} /> Payment</h4>
+                <h4><Banknote size={14} /> Payment</h4>
                 <div className="rides-detail-info-grid">
                   <div className="rides-detail-info-item">
                     <span className="rides-detail-info-label">Method</span>

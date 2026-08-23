@@ -38,7 +38,7 @@ import {
   Users2,
   Shield,
   Receipt,
-  DollarSign,
+  Banknote,
   ArrowUpDown,
   Ticket,
   Megaphone,
@@ -335,7 +335,7 @@ export function AdminShell({
       {
         label: "Revenue",
         href: "/finance",
-        icon: DollarSign,
+        icon: Banknote,
         screen: "revenue",
         group: "finance",
         hint: "",

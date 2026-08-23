@@ -16,7 +16,7 @@ import {
   XCircle,
   RotateCcw,
   AlertTriangle,
-  DollarSign,
+  Banknote,
   TrendingDown,
   User,
   Bike,
@@ -26,7 +26,6 @@ import {
   ChevronRight,
   Eye,
   RefreshCw,
-  Banknote,
   Check,
   Ban,
   Percent
@@ -280,7 +279,7 @@ export function RefundManagementScreen({
       {/* ── KPIs ── */}
       <section className="rfm-kpis">
         <article className="rfm-kpi rfm-kpi--total">
-          <div className="rfm-kpi-icon"><DollarSign size={18} /></div>
+          <div className="rfm-kpi-icon"><Banknote size={18} /></div>
           <div className="rfm-kpi-body">
             <span className="rfm-kpi-label">Total Refunds</span>
             <strong className="rfm-kpi-value">{formatMoney(adminCurrency, kpis.totalRefunds)}</strong>

@@ -11,7 +11,7 @@ import {
   TrendingUp,
   Clock,
   MapPin,
-  DollarSign,
+  Banknote,
   Plus,
   Trash2,
   Save,
@@ -603,7 +603,7 @@ export function DynamicPricingScreen({
               </div>
 
               <div className="dp-form-field">
-                <label className="dp-form-label"><DollarSign size={13} /> Base Fare Override</label>
+                <label className="dp-form-label"><Banknote size={13} /> Base Fare Override</label>
                 <input
                   type="number"
                   step="0.01"

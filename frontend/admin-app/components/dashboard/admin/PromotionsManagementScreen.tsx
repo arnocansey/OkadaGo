@@ -13,7 +13,7 @@ import {
   Search,
   X,
   Percent,
-  DollarSign,
+  Banknote,
   Gift,
   TrendingUp,
   Clock,
@@ -232,7 +232,7 @@ export function PromotionsManagementScreen({
           </div>
         </article>
         <article className="pmg-kpi pmg-kpi--warning">
-          <div className="pmg-kpi-icon"><DollarSign size={18} /></div>
+          <div className="pmg-kpi-icon"><Banknote size={18} /></div>
           <div className="pmg-kpi-body">
             <span className="pmg-kpi-label">Total Spend</span>
             <strong className="pmg-kpi-value">{formatMoney(adminCurrency, promoSpend + referralSpend)}</strong>

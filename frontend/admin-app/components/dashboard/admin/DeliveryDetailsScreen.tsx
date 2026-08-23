@@ -10,7 +10,7 @@ import {
   Package,
   MapPin,
   Clock,
-  DollarSign,
+  Banknote,
   User,
   Phone,
   Mail,
@@ -248,7 +248,7 @@ export function DeliveryDetailsScreen({ delivery, loading = false, error = null 
         {/* Payment */}
         <div className="rd-card">
           <div className="rd-card-header">
-            <DollarSign size={16} />
+            <Banknote size={16} />
             <h4>Payment</h4>
           </div>
           <div className="rd-card-body">
