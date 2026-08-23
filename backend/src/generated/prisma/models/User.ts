@@ -290,6 +290,7 @@ export type UserWhereInput = {
   savedPlaces?: Prisma.SavedPlaceListRelationFilter
   createdTickets?: Prisma.SupportTicketListRelationFilter
   assignedTickets?: Prisma.SupportTicketListRelationFilter
+  ticketMessages?: Prisma.SupportTicketMessageListRelationFilter
   reportedIncidents?: Prisma.IncidentListRelationFilter
   assignedIncidents?: Prisma.IncidentListRelationFilter
   ratingsGiven?: Prisma.RatingListRelationFilter
@@ -334,6 +335,7 @@ export type UserOrderByWithRelationInput = {
   savedPlaces?: Prisma.SavedPlaceOrderByRelationAggregateInput
   createdTickets?: Prisma.SupportTicketOrderByRelationAggregateInput
   assignedTickets?: Prisma.SupportTicketOrderByRelationAggregateInput
+  ticketMessages?: Prisma.SupportTicketMessageOrderByRelationAggregateInput
   reportedIncidents?: Prisma.IncidentOrderByRelationAggregateInput
   assignedIncidents?: Prisma.IncidentOrderByRelationAggregateInput
   ratingsGiven?: Prisma.RatingOrderByRelationAggregateInput
@@ -381,6 +383,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   savedPlaces?: Prisma.SavedPlaceListRelationFilter
   createdTickets?: Prisma.SupportTicketListRelationFilter
   assignedTickets?: Prisma.SupportTicketListRelationFilter
+  ticketMessages?: Prisma.SupportTicketMessageListRelationFilter
   reportedIncidents?: Prisma.IncidentListRelationFilter
   assignedIncidents?: Prisma.IncidentListRelationFilter
   ratingsGiven?: Prisma.RatingListRelationFilter
@@ -471,6 +474,7 @@ export type UserCreateInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -515,6 +519,7 @@ export type UserUncheckedCreateInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -559,6 +564,7 @@ export type UserUpdateInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -603,6 +609,7 @@ export type UserUncheckedUpdateInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -1047,6 +1054,20 @@ export type UserUpdateOneWithoutAssignedTicketsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAssignedTicketsInput, Prisma.UserUpdateWithoutAssignedTicketsInput>, Prisma.UserUncheckedUpdateWithoutAssignedTicketsInput>
 }
 
+export type UserCreateNestedOneWithoutTicketMessagesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTicketMessagesInput, Prisma.UserUncheckedCreateWithoutTicketMessagesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTicketMessagesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutTicketMessagesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTicketMessagesInput, Prisma.UserUncheckedCreateWithoutTicketMessagesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTicketMessagesInput
+  upsert?: Prisma.UserUpsertWithoutTicketMessagesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutTicketMessagesInput, Prisma.UserUpdateWithoutTicketMessagesInput>, Prisma.UserUncheckedUpdateWithoutTicketMessagesInput>
+}
+
 export type UserCreateNestedOneWithoutReportedIncidentsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutReportedIncidentsInput, Prisma.UserUncheckedCreateWithoutReportedIncidentsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutReportedIncidentsInput
@@ -1150,6 +1171,7 @@ export type UserCreateWithoutSessionsInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -1193,6 +1215,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -1252,6 +1275,7 @@ export type UserUpdateWithoutSessionsInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -1295,6 +1319,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -1338,6 +1363,7 @@ export type UserCreateWithoutDevicesInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -1381,6 +1407,7 @@ export type UserUncheckedCreateWithoutDevicesInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -1440,6 +1467,7 @@ export type UserUpdateWithoutDevicesInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -1483,6 +1511,7 @@ export type UserUncheckedUpdateWithoutDevicesInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -1526,6 +1555,7 @@ export type UserCreateWithoutPassengerProfileInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -1569,6 +1599,7 @@ export type UserUncheckedCreateWithoutPassengerProfileInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -1628,6 +1659,7 @@ export type UserUpdateWithoutPassengerProfileInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -1671,6 +1703,7 @@ export type UserUncheckedUpdateWithoutPassengerProfileInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -1714,6 +1747,7 @@ export type UserCreateWithoutRiderProfileInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -1757,6 +1791,7 @@ export type UserUncheckedCreateWithoutRiderProfileInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -1816,6 +1851,7 @@ export type UserUpdateWithoutRiderProfileInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -1859,6 +1895,7 @@ export type UserUncheckedUpdateWithoutRiderProfileInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -1902,6 +1939,7 @@ export type UserCreateWithoutAdminProfileInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -1945,6 +1983,7 @@ export type UserUncheckedCreateWithoutAdminProfileInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -2004,6 +2043,7 @@ export type UserUpdateWithoutAdminProfileInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -2047,6 +2087,7 @@ export type UserUncheckedUpdateWithoutAdminProfileInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -2091,6 +2132,7 @@ export type UserCreateWithoutSavedPaymentMethodsInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -2134,6 +2176,7 @@ export type UserUncheckedCreateWithoutSavedPaymentMethodsInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -2193,6 +2236,7 @@ export type UserUpdateWithoutSavedPaymentMethodsInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -2236,6 +2280,7 @@ export type UserUncheckedUpdateWithoutSavedPaymentMethodsInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -2279,6 +2324,7 @@ export type UserCreateWithoutAdminNotesInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -2322,6 +2368,7 @@ export type UserUncheckedCreateWithoutAdminNotesInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -2381,6 +2428,7 @@ export type UserUpdateWithoutAdminNotesInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -2424,6 +2472,7 @@ export type UserUncheckedUpdateWithoutAdminNotesInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -2466,6 +2515,7 @@ export type UserCreateWithoutDispatcherProfileInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -2509,6 +2559,7 @@ export type UserUncheckedCreateWithoutDispatcherProfileInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -2568,6 +2619,7 @@ export type UserUpdateWithoutDispatcherProfileInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -2611,6 +2663,7 @@ export type UserUncheckedUpdateWithoutDispatcherProfileInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -2655,6 +2708,7 @@ export type UserCreateWithoutApprovedDocumentsInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -2698,6 +2752,7 @@ export type UserUncheckedCreateWithoutApprovedDocumentsInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -2757,6 +2812,7 @@ export type UserUpdateWithoutApprovedDocumentsInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -2800,6 +2856,7 @@ export type UserUncheckedUpdateWithoutApprovedDocumentsInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -2842,6 +2899,7 @@ export type UserCreateWithoutWalletsInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -2885,6 +2943,7 @@ export type UserUncheckedCreateWithoutWalletsInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -2944,6 +3003,7 @@ export type UserUpdateWithoutWalletsInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -2987,6 +3047,7 @@ export type UserUncheckedUpdateWithoutWalletsInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -3031,6 +3092,7 @@ export type UserCreateWithoutApprovedPayoutsInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -3074,6 +3136,7 @@ export type UserUncheckedCreateWithoutApprovedPayoutsInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -3133,6 +3196,7 @@ export type UserUpdateWithoutApprovedPayoutsInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -3176,6 +3240,7 @@ export type UserUncheckedUpdateWithoutApprovedPayoutsInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -3219,6 +3284,7 @@ export type UserCreateWithoutRatingsGivenInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsReceived?: Prisma.RatingCreateNestedManyWithoutRatedInput
@@ -3262,6 +3328,7 @@ export type UserUncheckedCreateWithoutRatingsGivenInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsReceived?: Prisma.RatingUncheckedCreateNestedManyWithoutRatedInput
@@ -3310,6 +3377,7 @@ export type UserCreateWithoutRatingsReceivedInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -3353,6 +3421,7 @@ export type UserUncheckedCreateWithoutRatingsReceivedInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -3412,6 +3481,7 @@ export type UserUpdateWithoutRatingsGivenInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsReceived?: Prisma.RatingUpdateManyWithoutRatedNestedInput
@@ -3455,6 +3525,7 @@ export type UserUncheckedUpdateWithoutRatingsGivenInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsReceived?: Prisma.RatingUncheckedUpdateManyWithoutRatedNestedInput
@@ -3509,6 +3580,7 @@ export type UserUpdateWithoutRatingsReceivedInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -3552,6 +3624,7 @@ export type UserUncheckedUpdateWithoutRatingsReceivedInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -3595,6 +3668,7 @@ export type UserCreateWithoutReviewsGivenInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -3638,6 +3712,7 @@ export type UserUncheckedCreateWithoutReviewsGivenInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -3697,6 +3772,7 @@ export type UserUpdateWithoutReviewsGivenInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -3740,6 +3816,7 @@ export type UserUncheckedUpdateWithoutReviewsGivenInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -3783,6 +3860,7 @@ export type UserCreateWithoutReferralsSentInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -3826,6 +3904,7 @@ export type UserUncheckedCreateWithoutReferralsSentInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -3874,6 +3953,7 @@ export type UserCreateWithoutReferralsReceivedInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -3917,6 +3997,7 @@ export type UserUncheckedCreateWithoutReferralsReceivedInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -3976,6 +4057,7 @@ export type UserUpdateWithoutReferralsSentInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -4019,6 +4101,7 @@ export type UserUncheckedUpdateWithoutReferralsSentInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -4073,6 +4156,7 @@ export type UserUpdateWithoutReferralsReceivedInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -4116,6 +4200,7 @@ export type UserUncheckedUpdateWithoutReferralsReceivedInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -4158,6 +4243,7 @@ export type UserCreateWithoutNotificationsInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -4201,6 +4287,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -4260,6 +4347,7 @@ export type UserUpdateWithoutNotificationsInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -4303,6 +4391,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -4346,6 +4435,7 @@ export type UserCreateWithoutCreatedTicketsInput = {
   emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -4389,6 +4479,7 @@ export type UserUncheckedCreateWithoutCreatedTicketsInput = {
   emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -4437,6 +4528,7 @@ export type UserCreateWithoutAssignedTicketsInput = {
   emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -4480,6 +4572,7 @@ export type UserUncheckedCreateWithoutAssignedTicketsInput = {
   emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -4539,6 +4632,7 @@ export type UserUpdateWithoutCreatedTicketsInput = {
   emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -4582,6 +4676,7 @@ export type UserUncheckedUpdateWithoutCreatedTicketsInput = {
   emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -4636,6 +4731,7 @@ export type UserUpdateWithoutAssignedTicketsInput = {
   emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -4679,6 +4775,199 @@ export type UserUncheckedUpdateWithoutAssignedTicketsInput = {
   emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
+  reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
+  assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
+  ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
+  ratingsReceived?: Prisma.RatingUncheckedUpdateManyWithoutRatedNestedInput
+  reviewsGiven?: Prisma.ReviewUncheckedUpdateManyWithoutAuthorNestedInput
+  referralsSent?: Prisma.ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+  referralsReceived?: Prisma.ReferralUncheckedUpdateManyWithoutRefereeNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
+  approvedDocuments?: Prisma.RiderDocumentUncheckedUpdateManyWithoutReviewerNestedInput
+  approvedPayouts?: Prisma.PayoutRequestUncheckedUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUncheckedUpdateManyWithoutAuthorNestedInput
+  savedPaymentMethods?: Prisma.SavedPaymentMethodUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutTicketMessagesInput = {
+  id?: string
+  role: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  fullName: string
+  email?: string | null
+  phoneCountryCode: string
+  phoneLocal: string
+  phoneE164: string
+  passwordHash?: string | null
+  avatarUrl?: string | null
+  isPhoneVerified?: boolean
+  isEmailVerified?: boolean
+  preferredCurrency: string
+  lastSeenAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  passengerProfile?: Prisma.PassengerProfileCreateNestedOneWithoutUserInput
+  riderProfile?: Prisma.RiderProfileCreateNestedOneWithoutUserInput
+  adminProfile?: Prisma.AdminProfileCreateNestedOneWithoutUserInput
+  dispatcherProfile?: Prisma.DispatcherProfileCreateNestedOneWithoutUserInput
+  sessions?: Prisma.UserSessionCreateNestedManyWithoutUserInput
+  devices?: Prisma.UserDeviceCreateNestedManyWithoutUserInput
+  wallets?: Prisma.WalletCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
+  createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
+  assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
+  assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
+  ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
+  ratingsReceived?: Prisma.RatingCreateNestedManyWithoutRatedInput
+  reviewsGiven?: Prisma.ReviewCreateNestedManyWithoutAuthorInput
+  referralsSent?: Prisma.ReferralCreateNestedManyWithoutReferrerInput
+  referralsReceived?: Prisma.ReferralCreateNestedManyWithoutRefereeInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
+  approvedDocuments?: Prisma.RiderDocumentCreateNestedManyWithoutReviewerInput
+  approvedPayouts?: Prisma.PayoutRequestCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteCreateNestedManyWithoutAuthorInput
+  savedPaymentMethods?: Prisma.SavedPaymentMethodCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutTicketMessagesInput = {
+  id?: string
+  role: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  fullName: string
+  email?: string | null
+  phoneCountryCode: string
+  phoneLocal: string
+  phoneE164: string
+  passwordHash?: string | null
+  avatarUrl?: string | null
+  isPhoneVerified?: boolean
+  isEmailVerified?: boolean
+  preferredCurrency: string
+  lastSeenAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  passengerProfile?: Prisma.PassengerProfileUncheckedCreateNestedOneWithoutUserInput
+  riderProfile?: Prisma.RiderProfileUncheckedCreateNestedOneWithoutUserInput
+  adminProfile?: Prisma.AdminProfileUncheckedCreateNestedOneWithoutUserInput
+  dispatcherProfile?: Prisma.DispatcherProfileUncheckedCreateNestedOneWithoutUserInput
+  sessions?: Prisma.UserSessionUncheckedCreateNestedManyWithoutUserInput
+  devices?: Prisma.UserDeviceUncheckedCreateNestedManyWithoutUserInput
+  wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
+  createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
+  assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
+  assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
+  ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
+  ratingsReceived?: Prisma.RatingUncheckedCreateNestedManyWithoutRatedInput
+  reviewsGiven?: Prisma.ReviewUncheckedCreateNestedManyWithoutAuthorInput
+  referralsSent?: Prisma.ReferralUncheckedCreateNestedManyWithoutReferrerInput
+  referralsReceived?: Prisma.ReferralUncheckedCreateNestedManyWithoutRefereeInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
+  approvedDocuments?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutReviewerInput
+  approvedPayouts?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutReviewerInput
+  adminNotes?: Prisma.AdminNoteUncheckedCreateNestedManyWithoutAuthorInput
+  savedPaymentMethods?: Prisma.SavedPaymentMethodUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutTicketMessagesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutTicketMessagesInput, Prisma.UserUncheckedCreateWithoutTicketMessagesInput>
+}
+
+export type UserUpsertWithoutTicketMessagesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutTicketMessagesInput, Prisma.UserUncheckedUpdateWithoutTicketMessagesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutTicketMessagesInput, Prisma.UserUncheckedCreateWithoutTicketMessagesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutTicketMessagesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutTicketMessagesInput, Prisma.UserUncheckedUpdateWithoutTicketMessagesInput>
+}
+
+export type UserUpdateWithoutTicketMessagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneCountryCode?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneLocal?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneE164?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPhoneVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  preferredCurrency?: Prisma.StringFieldUpdateOperationsInput | string
+  lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  passengerProfile?: Prisma.PassengerProfileUpdateOneWithoutUserNestedInput
+  riderProfile?: Prisma.RiderProfileUpdateOneWithoutUserNestedInput
+  adminProfile?: Prisma.AdminProfileUpdateOneWithoutUserNestedInput
+  dispatcherProfile?: Prisma.DispatcherProfileUpdateOneWithoutUserNestedInput
+  sessions?: Prisma.UserSessionUpdateManyWithoutUserNestedInput
+  devices?: Prisma.UserDeviceUpdateManyWithoutUserNestedInput
+  wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
+  createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
+  assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
+  assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
+  ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
+  ratingsReceived?: Prisma.RatingUpdateManyWithoutRatedNestedInput
+  reviewsGiven?: Prisma.ReviewUpdateManyWithoutAuthorNestedInput
+  referralsSent?: Prisma.ReferralUpdateManyWithoutReferrerNestedInput
+  referralsReceived?: Prisma.ReferralUpdateManyWithoutRefereeNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
+  approvedDocuments?: Prisma.RiderDocumentUpdateManyWithoutReviewerNestedInput
+  approvedPayouts?: Prisma.PayoutRequestUpdateManyWithoutReviewerNestedInput
+  adminNotes?: Prisma.AdminNoteUpdateManyWithoutAuthorNestedInput
+  savedPaymentMethods?: Prisma.SavedPaymentMethodUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutTicketMessagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneCountryCode?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneLocal?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneE164?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPhoneVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  preferredCurrency?: Prisma.StringFieldUpdateOperationsInput | string
+  lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  passengerProfile?: Prisma.PassengerProfileUncheckedUpdateOneWithoutUserNestedInput
+  riderProfile?: Prisma.RiderProfileUncheckedUpdateOneWithoutUserNestedInput
+  adminProfile?: Prisma.AdminProfileUncheckedUpdateOneWithoutUserNestedInput
+  dispatcherProfile?: Prisma.DispatcherProfileUncheckedUpdateOneWithoutUserNestedInput
+  sessions?: Prisma.UserSessionUncheckedUpdateManyWithoutUserNestedInput
+  devices?: Prisma.UserDeviceUncheckedUpdateManyWithoutUserNestedInput
+  wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
+  createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
+  assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -4723,6 +5012,7 @@ export type UserCreateWithoutReportedIncidentsInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
   ratingsReceived?: Prisma.RatingCreateNestedManyWithoutRatedInput
@@ -4766,6 +5056,7 @@ export type UserUncheckedCreateWithoutReportedIncidentsInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
   ratingsReceived?: Prisma.RatingUncheckedCreateNestedManyWithoutRatedInput
@@ -4814,6 +5105,7 @@ export type UserCreateWithoutAssignedIncidentsInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
   ratingsReceived?: Prisma.RatingCreateNestedManyWithoutRatedInput
@@ -4857,6 +5149,7 @@ export type UserUncheckedCreateWithoutAssignedIncidentsInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
   ratingsReceived?: Prisma.RatingUncheckedCreateNestedManyWithoutRatedInput
@@ -4916,6 +5209,7 @@ export type UserUpdateWithoutReportedIncidentsInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
   ratingsReceived?: Prisma.RatingUpdateManyWithoutRatedNestedInput
@@ -4959,6 +5253,7 @@ export type UserUncheckedUpdateWithoutReportedIncidentsInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
   ratingsReceived?: Prisma.RatingUncheckedUpdateManyWithoutRatedNestedInput
@@ -5013,6 +5308,7 @@ export type UserUpdateWithoutAssignedIncidentsInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
   ratingsReceived?: Prisma.RatingUpdateManyWithoutRatedNestedInput
@@ -5056,6 +5352,7 @@ export type UserUncheckedUpdateWithoutAssignedIncidentsInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
   ratingsReceived?: Prisma.RatingUncheckedUpdateManyWithoutRatedNestedInput
@@ -5098,6 +5395,7 @@ export type UserCreateWithoutEmergencyContactsInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -5141,6 +5439,7 @@ export type UserUncheckedCreateWithoutEmergencyContactsInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -5200,6 +5499,7 @@ export type UserUpdateWithoutEmergencyContactsInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -5243,6 +5543,7 @@ export type UserUncheckedUpdateWithoutEmergencyContactsInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -5286,6 +5587,7 @@ export type UserCreateWithoutSavedPlacesInput = {
   emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -5329,6 +5631,7 @@ export type UserUncheckedCreateWithoutSavedPlacesInput = {
   emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -5388,6 +5691,7 @@ export type UserUpdateWithoutSavedPlacesInput = {
   emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -5431,6 +5735,7 @@ export type UserUncheckedUpdateWithoutSavedPlacesInput = {
   emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -5475,6 +5780,7 @@ export type UserCreateWithoutAuditLogsInput = {
   savedPlaces?: Prisma.SavedPlaceCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingCreateNestedManyWithoutRaterInput
@@ -5518,6 +5824,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedCreateNestedManyWithoutUserInput
   createdTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutCreatedByInput
   assignedTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput
   reportedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutReporterInput
   assignedIncidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutAssignedToInput
   ratingsGiven?: Prisma.RatingUncheckedCreateNestedManyWithoutRaterInput
@@ -5577,6 +5884,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   savedPlaces?: Prisma.SavedPlaceUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUpdateManyWithoutRaterNestedInput
@@ -5620,6 +5928,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   savedPlaces?: Prisma.SavedPlaceUncheckedUpdateManyWithoutUserNestedInput
   createdTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  ticketMessages?: Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput
   reportedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutReporterNestedInput
   assignedIncidents?: Prisma.IncidentUncheckedUpdateManyWithoutAssignedToNestedInput
   ratingsGiven?: Prisma.RatingUncheckedUpdateManyWithoutRaterNestedInput
@@ -5647,6 +5956,7 @@ export type UserCountOutputType = {
   savedPlaces: number
   createdTickets: number
   assignedTickets: number
+  ticketMessages: number
   reportedIncidents: number
   assignedIncidents: number
   ratingsGiven: number
@@ -5670,6 +5980,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   savedPlaces?: boolean | UserCountOutputTypeCountSavedPlacesArgs
   createdTickets?: boolean | UserCountOutputTypeCountCreatedTicketsArgs
   assignedTickets?: boolean | UserCountOutputTypeCountAssignedTicketsArgs
+  ticketMessages?: boolean | UserCountOutputTypeCountTicketMessagesArgs
   reportedIncidents?: boolean | UserCountOutputTypeCountReportedIncidentsArgs
   assignedIncidents?: boolean | UserCountOutputTypeCountAssignedIncidentsArgs
   ratingsGiven?: boolean | UserCountOutputTypeCountRatingsGivenArgs
@@ -5748,6 +6059,13 @@ export type UserCountOutputTypeCountCreatedTicketsArgs<ExtArgs extends runtime.T
  */
 export type UserCountOutputTypeCountAssignedTicketsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.SupportTicketWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountTicketMessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SupportTicketMessageWhereInput
 }
 
 /**
@@ -5865,6 +6183,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   savedPlaces?: boolean | Prisma.User$savedPlacesArgs<ExtArgs>
   createdTickets?: boolean | Prisma.User$createdTicketsArgs<ExtArgs>
   assignedTickets?: boolean | Prisma.User$assignedTicketsArgs<ExtArgs>
+  ticketMessages?: boolean | Prisma.User$ticketMessagesArgs<ExtArgs>
   reportedIncidents?: boolean | Prisma.User$reportedIncidentsArgs<ExtArgs>
   assignedIncidents?: boolean | Prisma.User$assignedIncidentsArgs<ExtArgs>
   ratingsGiven?: boolean | Prisma.User$ratingsGivenArgs<ExtArgs>
@@ -5954,6 +6273,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   savedPlaces?: boolean | Prisma.User$savedPlacesArgs<ExtArgs>
   createdTickets?: boolean | Prisma.User$createdTicketsArgs<ExtArgs>
   assignedTickets?: boolean | Prisma.User$assignedTicketsArgs<ExtArgs>
+  ticketMessages?: boolean | Prisma.User$ticketMessagesArgs<ExtArgs>
   reportedIncidents?: boolean | Prisma.User$reportedIncidentsArgs<ExtArgs>
   assignedIncidents?: boolean | Prisma.User$assignedIncidentsArgs<ExtArgs>
   ratingsGiven?: boolean | Prisma.User$ratingsGivenArgs<ExtArgs>
@@ -5986,6 +6306,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     savedPlaces: Prisma.$SavedPlacePayload<ExtArgs>[]
     createdTickets: Prisma.$SupportTicketPayload<ExtArgs>[]
     assignedTickets: Prisma.$SupportTicketPayload<ExtArgs>[]
+    ticketMessages: Prisma.$SupportTicketMessagePayload<ExtArgs>[]
     reportedIncidents: Prisma.$IncidentPayload<ExtArgs>[]
     assignedIncidents: Prisma.$IncidentPayload<ExtArgs>[]
     ratingsGiven: Prisma.$RatingPayload<ExtArgs>[]
@@ -6423,6 +6744,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   savedPlaces<T extends Prisma.User$savedPlacesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$savedPlacesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SavedPlacePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   createdTickets<T extends Prisma.User$createdTicketsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$createdTicketsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SupportTicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   assignedTickets<T extends Prisma.User$assignedTicketsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$assignedTicketsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SupportTicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  ticketMessages<T extends Prisma.User$ticketMessagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ticketMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SupportTicketMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reportedIncidents<T extends Prisma.User$reportedIncidentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$reportedIncidentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$IncidentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   assignedIncidents<T extends Prisma.User$assignedIncidentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$assignedIncidentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$IncidentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ratingsGiven<T extends Prisma.User$ratingsGivenArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ratingsGivenArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RatingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -7139,6 +7461,30 @@ export type User$assignedTicketsArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.SupportTicketScalarFieldEnum | Prisma.SupportTicketScalarFieldEnum[]
+}
+
+/**
+ * User.ticketMessages
+ */
+export type User$ticketMessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SupportTicketMessage
+   */
+  select?: Prisma.SupportTicketMessageSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SupportTicketMessage
+   */
+  omit?: Prisma.SupportTicketMessageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SupportTicketMessageInclude<ExtArgs> | null
+  where?: Prisma.SupportTicketMessageWhereInput
+  orderBy?: Prisma.SupportTicketMessageOrderByWithRelationInput | Prisma.SupportTicketMessageOrderByWithRelationInput[]
+  cursor?: Prisma.SupportTicketMessageWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SupportTicketMessageScalarFieldEnum | Prisma.SupportTicketMessageScalarFieldEnum[]
 }
 
 /**

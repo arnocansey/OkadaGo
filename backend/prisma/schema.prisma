@@ -242,6 +242,7 @@ model User {
   savedPlaces       SavedPlace[]
   createdTickets    SupportTicket[]    @relation("TicketCreator")
   assignedTickets   SupportTicket[]    @relation("TicketAssignee")
+  ticketMessages    SupportTicketMessage[] @relation("TicketAuthor")
   reportedIncidents Incident[]         @relation("IncidentReporter")
   assignedIncidents Incident[]         @relation("IncidentAssignee")
   ratingsGiven      Rating[]           @relation("RatingRater")
@@ -998,6 +999,7 @@ model SupportTicketMessage {
   attachments Json?
   createdAt   DateTime      @default(now())
   ticket      SupportTicket @relation(fields: [ticketId], references: [id])
+  author      User          @relation("TicketAuthor", fields: [authorId], references: [id])
 
   @@index([ticketId, createdAt])
 }

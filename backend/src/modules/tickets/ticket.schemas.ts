@@ -28,3 +28,11 @@ export const adminUpdateTicketSchema = z.object({
   priority: z.enum(["LOW", "NORMAL", "HIGH", "CRITICAL"]).optional(),
   assignedToId: z.string().cuid().nullable().optional()
 });
+
+export const ticketMessageParamsSchema = z.object({
+  ticketId: z.string().cuid()
+});
+
+export const createTicketMessageSchema = z.object({
+  body: z.string().trim().min(1).max(1000)
+});

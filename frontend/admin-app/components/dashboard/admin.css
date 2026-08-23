@@ -11330,6 +11330,70 @@
 .sc-conv-messages-empty span { font-size: 0.74rem; }
 .sc-conv-messages-empty small { font-size: 0.62rem; opacity: 0.6; }
 
+.sc-msg {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+}
+.sc-msg--admin {
+  flex-direction: row-reverse;
+}
+.sc-msg--admin .sc-msg-body {
+  background: rgba(255, 107, 0, 0.08);
+  border: 1px solid rgba(255, 107, 0, 0.15);
+}
+.sc-msg-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-surface, rgba(255, 255, 255, 0.06));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+.sc-msg-body {
+  background: var(--bg-surface, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+  border-radius: 10px;
+  padding: 8px 12px;
+  max-width: 80%;
+}
+.sc-msg-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.sc-msg-author {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.sc-msg-role {
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.sc-msg-time {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+.sc-msg-text {
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+  margin: 0;
+}
+
 /* ── Composer ── */
 
 .sc-conv-composer {

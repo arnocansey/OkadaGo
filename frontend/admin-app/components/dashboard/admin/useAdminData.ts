@@ -458,6 +458,27 @@ export function useAdminData(
     staleTime: 25000
   });
 
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+
+  const { data: ticketMessagesData, isPending: ticketMessagesPending } = useQuery<
+    Array<{ id: string; authorId: string; body: string; createdAt: string; author: { id: string; fullName: string; role: string } }>
+  >({
+    queryKey: QK.ticketMessages(selectedTicketId ?? ""),
+    queryFn: () => requestJson(`/admin/support/tickets/${selectedTicketId}/messages`, { token }),
+    enabled: !!selectedTicketId && want("supportTickets"),
+    staleTime: 5000
+  });
+
+  const sendTicketMessageMutation = useMutation({
+    mutationFn: async ({ ticketId, body }: { ticketId: string; body: string }) =>
+      postJson(`/admin/support/tickets/${ticketId}/messages`, { body }, token),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: QK.ticketMessages(variables.ticketId) });
+      addToast("Message sent", "success");
+    },
+    onError: (err: Error) => addToast(err.message || "Failed to send message", "error")
+  });
+
   const { data: escalationRulesData, isPending: escalationRulesPending } = useQuery<EscalationRuleRecord[]>({
     queryKey: QK.escalationRules,
     queryFn: () => requestJson("/admin/escalation-rules", { token }),
@@ -2562,6 +2583,10 @@ export function useAdminData(
     supportTickets, escalationRules, scheduledBroadcasts, opsJobStatus,
     platformSettings,
     riderDocuments,
+    selectedTicketId, setSelectedTicketId,
+    ticketMessages: ticketMessagesData ?? [],
+    ticketMessagesPending,
+    sendTicketMessageMutation,
     liveSos, liveOpsConnected, liveOpsTimestamp,
     opsSummary,
     financeSummary,

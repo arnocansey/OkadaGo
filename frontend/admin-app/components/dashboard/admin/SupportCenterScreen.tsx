@@ -35,6 +35,14 @@ import {
 
 /* ── Types ────────────────────────────────────────────────────────────────── */
 
+interface TicketMessageApi {
+  id: string;
+  authorId: string;
+  body: string;
+  createdAt: string;
+  author: { id: string; fullName: string; role: string };
+}
+
 export type SupportCenterScreenProps = {
   supportTickets: AdminSupportTicketRecord[];
   openSupportTickets: AdminSupportTicketRecord[];
@@ -44,6 +52,12 @@ export type SupportCenterScreenProps = {
   deliveries: DeliveryRecord[];
   adminCurrency: string;
   dataLoading?: boolean;
+  ticketMessages?: TicketMessageApi[];
+  ticketMessagesLoading?: boolean;
+  selectedTicketId?: string | null;
+  onSelectTicket?: (ticketId: string | null) => void;
+  onSendMessage?: (ticketId: string, body: string) => void;
+  isSendingMessage?: boolean;
   onTicketAction?: (ticketId: string, action: "assign" | "resolve" | "close" | "escalate" | "message", value?: string) => void;
   onServerExport?: (entity: "support-tickets") => void;
 };
@@ -148,6 +162,12 @@ export function SupportCenterScreen({
   deliveries,
   adminCurrency,
   dataLoading = false,
+  ticketMessages = [],
+  ticketMessagesLoading = false,
+  selectedTicketId: externalSelectedTicketId,
+  onSelectTicket,
+  onSendMessage,
+  isSendingMessage = false,
   onTicketAction,
   onServerExport
 }: SupportCenterScreenProps) {
@@ -189,15 +209,20 @@ export function SupportCenterScreen({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
+  const selectTicket = useCallback((ticket: AdminSupportTicketRecord | null) => {
+    setSelectedTicket(ticket);
+    onSelectTicket?.(ticket?.id ?? null);
+  }, [onSelectTicket]);
+
   useEffect(() => {
     scrollToBottom();
-  }, [selectedTicket, scrollToBottom]);
+  }, [ticketMessages, scrollToBottom]);
 
   const handleSendMessage = useCallback(() => {
     if (!messageText.trim() || !selectedTicket) return;
-    if (onTicketAction) onTicketAction(selectedTicket.id, "message", messageText.trim());
+    onSendMessage?.(selectedTicket.id, messageText.trim());
     setMessageText("");
-  }, [messageText, selectedTicket, onTicketAction]);
+  }, [messageText, selectedTicket, onSendMessage]);
 
   if (dataLoading) {
     return <AdminPageSkeleton variant="table" kpis={5} rows={6} cols={6} />;
@@ -284,7 +309,7 @@ export function SupportCenterScreen({
                 <div
                   key={ticket.id}
                   className={`sc-ticket-card${selectedTicket?.id === ticket.id ? " selected" : ""}`}
-                  onClick={() => setSelectedTicket(ticket)}
+                  onClick={() => selectTicket(ticket)}
                 >
                   <div className="sc-ticket-card-header">
                     <span className={`sc-priority-dot sc-priority-dot--${PRIORITY_TONE[ticket.priority] ?? "normal"}`} />
@@ -364,11 +389,34 @@ export function SupportCenterScreen({
 
               {/* ── Messages ── */}
               <div className="sc-conv-messages">
-                <div className="sc-conv-messages-empty">
-                  <MessageSquare size={20} />
-                  <span>Conversation messages will appear here once the message API is connected.</span>
-                  <small>Ticket #{selectedTicket.id.slice(0, 8)} — {selectedTicket.title}</small>
-                </div>
+                {ticketMessagesLoading ? (
+                  <div className="sc-conv-messages-empty">
+                    <MessageSquare size={20} />
+                    <span>Loading messages…</span>
+                  </div>
+                ) : ticketMessages.length === 0 ? (
+                  <div className="sc-conv-messages-empty">
+                    <MessageSquare size={20} />
+                    <span>No messages yet. Send a reply to start the conversation.</span>
+                    <small>Ticket #{selectedTicket.id.slice(0, 8)} — {selectedTicket.title}</small>
+                  </div>
+                ) : (
+                  ticketMessages.map((msg) => (
+                    <div key={msg.id} className={`sc-msg${msg.author.role === "ADMIN" ? " sc-msg--admin" : ""}`}>
+                      <div className="sc-msg-avatar">
+                        <User size={12} />
+                      </div>
+                      <div className="sc-msg-body">
+                        <div className="sc-msg-meta">
+                          <span className="sc-msg-author">{msg.author.fullName}</span>
+                          <span className="sc-msg-role">{msg.author.role}</span>
+                          <span className="sc-msg-time">{formatDateTime(msg.createdAt)}</span>
+                        </div>
+                        <p className="sc-msg-text">{msg.body}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
                 <div ref={messagesEndRef} />
               </div>
 
@@ -394,7 +442,7 @@ export function SupportCenterScreen({
                   type="button"
                   className={`sc-composer-send${messageText.trim() ? " active" : ""}`}
                   onClick={handleSendMessage}
-                  disabled={!messageText.trim()}
+                  disabled={!messageText.trim() || isSendingMessage}
                 >
                   <Send size={16} />
                 </button>

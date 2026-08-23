@@ -5,6 +5,7 @@ import {
   adminTicketsQuerySchema,
   adminUpdateTicketSchema,
   createSupportTicketSchema,
+  createTicketMessageSchema,
   ticketParamsSchema
 } from "./ticket.schemas.js";
 import { ticketService } from "./ticket.service.js";
@@ -41,5 +42,19 @@ export const ticketRoutes: FastifyPluginAsync = async (server) => {
     const params = parseParams(request, ticketParamsSchema);
     const input = parseBody(request, adminUpdateTicketSchema);
     return ticketService.updateAdminTicket(token, params.ticketId, input);
+  });
+
+  server.get("/admin/support/tickets/:ticketId/messages", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, ticketParamsSchema);
+    return ticketService.listTicketMessages(token, params.ticketId);
+  });
+
+  server.post("/admin/support/tickets/:ticketId/messages", async (request, reply) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, ticketParamsSchema);
+    const input = parseBody(request, createTicketMessageSchema);
+    const message = await ticketService.createTicketMessage(token, params.ticketId, input);
+    return reply.status(201).send(message);
   });
 };

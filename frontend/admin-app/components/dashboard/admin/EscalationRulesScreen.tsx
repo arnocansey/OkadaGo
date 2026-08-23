@@ -53,6 +53,7 @@ const EscalationRulesScreen: FC<EscalationRulesScreenProps> = ({
 }) => {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   if (dataLoading) {
     return <AdminPageSkeleton variant="split" kpis={3} rows={4} cols={4} />;
@@ -61,7 +62,11 @@ const EscalationRulesScreen: FC<EscalationRulesScreenProps> = ({
   const activeRules = rules.filter((r) => r.enabled).length;
 
   function submit() {
-    if (!form.name.trim() || !form.description.trim()) return;
+    const errors: Record<string, string> = {};
+    if (!form.name.trim()) errors.name = "Name is required";
+    if (!form.description.trim()) errors.description = "Description is required";
+    if (Object.keys(errors).length > 0) { setFormErrors(errors); return; }
+    setFormErrors({});
     onCreateRule({
       ...form,
       name: form.name.trim(),
@@ -103,7 +108,8 @@ const EscalationRulesScreen: FC<EscalationRulesScreenProps> = ({
           <div className="admin-form-grid">
             <label>
               Name
-              <input className="admin-search-input" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
+              <input className="admin-search-input" style={formErrors.name ? { borderColor: "#ef4444" } : undefined} value={form.name} onChange={(e) => { setForm((f) => ({ ...f, name: e.target.value })); setFormErrors((e) => ({ ...e, name: "" })); }} />
+              {formErrors.name && <small style={{ color: "#ef4444", fontSize: "0.72rem" }}>{formErrors.name}</small>}
             </label>
             <label>
               Trigger
@@ -129,7 +135,8 @@ const EscalationRulesScreen: FC<EscalationRulesScreenProps> = ({
             </label>
             <label className="admin-form-span">
               Description
-              <input className="admin-search-input" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
+              <input className="admin-search-input" style={formErrors.description ? { borderColor: "#ef4444" } : undefined} value={form.description} onChange={(e) => { setForm((f) => ({ ...f, description: e.target.value })); setFormErrors((e) => ({ ...e, description: "" })); }} />
+              {formErrors.description && <small style={{ color: "#ef4444", fontSize: "0.72rem" }}>{formErrors.description}</small>}
             </label>
           </div>
           <div className="admin-page-header-actions" style={{ marginTop: 16 }}>

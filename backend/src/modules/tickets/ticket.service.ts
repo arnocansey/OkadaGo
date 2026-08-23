@@ -4,13 +4,15 @@ import { TicketStatus, UserRole } from "../../generated/prisma/enums.js";
 import type {
   adminTicketsQuerySchema,
   adminUpdateTicketSchema,
-  createSupportTicketSchema
+  createSupportTicketSchema,
+  createTicketMessageSchema
 } from "./ticket.schemas.js";
 import type { z } from "zod";
 
 type CreateTicketInput = z.infer<typeof createSupportTicketSchema>;
 type AdminTicketsQuery = z.infer<typeof adminTicketsQuerySchema>;
 type AdminUpdateTicketInput = z.infer<typeof adminUpdateTicketSchema>;
+type CreateMessageInput = z.infer<typeof createTicketMessageSchema>;
 
 export class TicketService {
   private async getActiveSession(token: string) {
@@ -201,6 +203,61 @@ export class TicketService {
         }
       }
     });
+  }
+
+  async listTicketMessages(token: string, ticketId: string) {
+    await this.requireAdmin(token);
+
+    const ticket = await prisma.supportTicket.findUnique({ where: { id: ticketId } });
+
+    if (!ticket || ticket.deletedAt) {
+      throw new AppError("Support ticket not found", 404, "TICKET_NOT_FOUND");
+    }
+
+    return prisma.supportTicketMessage.findMany({
+      where: { ticketId },
+      orderBy: { createdAt: "asc" },
+      include: {
+        author: {
+          select: { id: true, fullName: true, role: true }
+        }
+      }
+    });
+  }
+
+  async createTicketMessage(token: string, ticketId: string, input: CreateMessageInput) {
+    const session = await this.requireAdmin(token);
+
+    const ticket = await prisma.supportTicket.findUnique({ where: { id: ticketId } });
+
+    if (!ticket || ticket.deletedAt) {
+      throw new AppError("Support ticket not found", 404, "TICKET_NOT_FOUND");
+    }
+
+    const closedStatuses: TicketStatus[] = [TicketStatus.RESOLVED, TicketStatus.CLOSED];
+    if (closedStatuses.includes(ticket.status)) {
+      throw new AppError("Cannot send messages to a closed ticket", 400, "TICKET_CLOSED");
+    }
+
+    const message = await prisma.supportTicketMessage.create({
+      data: {
+        ticketId,
+        authorId: session.user.id,
+        body: input.body
+      },
+      include: {
+        author: {
+          select: { id: true, fullName: true, role: true }
+        }
+      }
+    });
+
+    await prisma.supportTicket.update({
+      where: { id: ticketId },
+      data: { updatedAt: new Date() }
+    });
+
+    return message;
   }
 }
 

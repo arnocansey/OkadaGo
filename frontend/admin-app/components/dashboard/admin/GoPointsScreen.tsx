@@ -101,6 +101,8 @@ export function GoPointsScreen({
   const [showRedemptionForm, setShowRedemptionForm] = useState(false);
   const [ruleForm, setRuleForm] = useState({ name: "", description: "", eventType: "", points: 10, perUnit: 1, minSpend: "", active: true });
   const [redemptionForm, setRedemptionForm] = useState({ name: "", description: "", pointsCost: 500, cashValue: 5, available: true });
+  const [ruleErrors, setRuleErrors] = useState<Record<string, string>>({});
+  const [redemptionErrors, setRedemptionErrors] = useState<Record<string, string>>({});
 
   const totalIssued = useMemo(() => goPointBalances.reduce((s, b) => s + b.totalEarned, 0), [goPointBalances]);
   const totalRedeemed = useMemo(() => goPointBalances.reduce((s, b) => s + b.totalRedeemed, 0), [goPointBalances]);
@@ -133,7 +135,13 @@ export function GoPointsScreen({
   }, [goPointBalances, search]);
 
   function submitRule() {
-    if (!ruleForm.name.trim() || !ruleForm.eventType.trim()) return;
+    const errors: Record<string, string> = {};
+    if (!ruleForm.name.trim()) errors.name = "Rule name is required";
+    if (!ruleForm.eventType.trim()) errors.eventType = "Event type is required";
+    if (ruleForm.points < 1) errors.points = "Points must be at least 1";
+    if (ruleForm.perUnit < 1) errors.perUnit = "Per unit must be at least 1";
+    if (Object.keys(errors).length > 0) { setRuleErrors(errors); return; }
+    setRuleErrors({});
     if (editingRuleId) {
       onUpdateRule(editingRuleId, {
         name: ruleForm.name.trim(),
@@ -175,7 +183,12 @@ export function GoPointsScreen({
   }
 
   function submitRedemption() {
-    if (!redemptionForm.name.trim()) return;
+    const errors: Record<string, string> = {};
+    if (!redemptionForm.name.trim()) errors.name = "Name is required";
+    if (redemptionForm.pointsCost < 1) errors.pointsCost = "Points cost must be at least 1";
+    if (redemptionForm.cashValue < 0.01) errors.cashValue = "Cash value must be at least 0.01";
+    if (Object.keys(errors).length > 0) { setRedemptionErrors(errors); return; }
+    setRedemptionErrors({});
     onCreateRedemption({
       name: redemptionForm.name.trim(),
       description: redemptionForm.description.trim() || undefined,
@@ -221,19 +234,23 @@ export function GoPointsScreen({
           <div className="admin-form-grid">
             <label>
               Rule Name
-              <input className="admin-search-input" value={ruleForm.name} onChange={(e) => setRuleForm((f) => ({ ...f, name: e.target.value }))} placeholder="e.g. Per Ride Bonus" />
+              <input className="admin-search-input" style={ruleErrors.name ? { borderColor: "#ef4444" } : undefined} value={ruleForm.name} onChange={(e) => { setRuleForm((f) => ({ ...f, name: e.target.value })); setRuleErrors((e) => ({ ...e, name: "" })); }} placeholder="e.g. Per Ride Bonus" />
+              {ruleErrors.name && <small style={{ color: "#ef4444", fontSize: "0.72rem" }}>{ruleErrors.name}</small>}
             </label>
             <label>
               Event Type
-              <input className="admin-search-input" value={ruleForm.eventType} onChange={(e) => setRuleForm((f) => ({ ...f, eventType: e.target.value }))} placeholder="e.g. ride_completed" />
+              <input className="admin-search-input" style={ruleErrors.eventType ? { borderColor: "#ef4444" } : undefined} value={ruleForm.eventType} onChange={(e) => { setRuleForm((f) => ({ ...f, eventType: e.target.value })); setRuleErrors((e) => ({ ...e, eventType: "" })); }} placeholder="e.g. ride_completed" />
+              {ruleErrors.eventType && <small style={{ color: "#ef4444", fontSize: "0.72rem" }}>{ruleErrors.eventType}</small>}
             </label>
             <label>
               Points
-              <input className="admin-search-input" type="number" min={1} value={ruleForm.points} onChange={(e) => setRuleForm((f) => ({ ...f, points: Number(e.target.value) }))} />
+              <input className="admin-search-input" type="number" min={1} style={ruleErrors.points ? { borderColor: "#ef4444" } : undefined} value={ruleForm.points} onChange={(e) => { setRuleForm((f) => ({ ...f, points: Number(e.target.value) })); setRuleErrors((e) => ({ ...e, points: "" })); }} />
+              {ruleErrors.points && <small style={{ color: "#ef4444", fontSize: "0.72rem" }}>{ruleErrors.points}</small>}
             </label>
             <label>
               Per Unit
-              <input className="admin-search-input" type="number" min={1} value={ruleForm.perUnit} onChange={(e) => setRuleForm((f) => ({ ...f, perUnit: Number(e.target.value) }))} />
+              <input className="admin-search-input" type="number" min={1} style={ruleErrors.perUnit ? { borderColor: "#ef4444" } : undefined} value={ruleForm.perUnit} onChange={(e) => { setRuleForm((f) => ({ ...f, perUnit: Number(e.target.value) })); setRuleErrors((e) => ({ ...e, perUnit: "" })); }} />
+              {ruleErrors.perUnit && <small style={{ color: "#ef4444", fontSize: "0.72rem" }}>{ruleErrors.perUnit}</small>}
             </label>
             <label>
               Min Spend (optional)

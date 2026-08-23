@@ -187,6 +187,7 @@ export type SupportTicketMessageWhereInput = {
   attachments?: Prisma.JsonNullableFilter<"SupportTicketMessage">
   createdAt?: Prisma.DateTimeFilter<"SupportTicketMessage"> | Date | string
   ticket?: Prisma.XOR<Prisma.SupportTicketScalarRelationFilter, Prisma.SupportTicketWhereInput>
+  author?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
 
 export type SupportTicketMessageOrderByWithRelationInput = {
@@ -197,6 +198,7 @@ export type SupportTicketMessageOrderByWithRelationInput = {
   attachments?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   ticket?: Prisma.SupportTicketOrderByWithRelationInput
+  author?: Prisma.UserOrderByWithRelationInput
 }
 
 export type SupportTicketMessageWhereUniqueInput = Prisma.AtLeast<{
@@ -210,6 +212,7 @@ export type SupportTicketMessageWhereUniqueInput = Prisma.AtLeast<{
   attachments?: Prisma.JsonNullableFilter<"SupportTicketMessage">
   createdAt?: Prisma.DateTimeFilter<"SupportTicketMessage"> | Date | string
   ticket?: Prisma.XOR<Prisma.SupportTicketScalarRelationFilter, Prisma.SupportTicketWhereInput>
+  author?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }, "id">
 
 export type SupportTicketMessageOrderByWithAggregationInput = {
@@ -238,11 +241,11 @@ export type SupportTicketMessageScalarWhereWithAggregatesInput = {
 
 export type SupportTicketMessageCreateInput = {
   id?: string
-  authorId: string
   body: string
   attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   ticket: Prisma.SupportTicketCreateNestedOneWithoutMessagesInput
+  author: Prisma.UserCreateNestedOneWithoutTicketMessagesInput
 }
 
 export type SupportTicketMessageUncheckedCreateInput = {
@@ -256,11 +259,11 @@ export type SupportTicketMessageUncheckedCreateInput = {
 
 export type SupportTicketMessageUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  authorId?: Prisma.StringFieldUpdateOperationsInput | string
   body?: Prisma.StringFieldUpdateOperationsInput | string
   attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ticket?: Prisma.SupportTicketUpdateOneRequiredWithoutMessagesNestedInput
+  author?: Prisma.UserUpdateOneRequiredWithoutTicketMessagesNestedInput
 }
 
 export type SupportTicketMessageUncheckedUpdateInput = {
@@ -283,7 +286,6 @@ export type SupportTicketMessageCreateManyInput = {
 
 export type SupportTicketMessageUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  authorId?: Prisma.StringFieldUpdateOperationsInput | string
   body?: Prisma.StringFieldUpdateOperationsInput | string
   attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -333,6 +335,48 @@ export type SupportTicketMessageMinOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
 }
 
+export type SupportTicketMessageCreateNestedManyWithoutAuthorInput = {
+  create?: Prisma.XOR<Prisma.SupportTicketMessageCreateWithoutAuthorInput, Prisma.SupportTicketMessageUncheckedCreateWithoutAuthorInput> | Prisma.SupportTicketMessageCreateWithoutAuthorInput[] | Prisma.SupportTicketMessageUncheckedCreateWithoutAuthorInput[]
+  connectOrCreate?: Prisma.SupportTicketMessageCreateOrConnectWithoutAuthorInput | Prisma.SupportTicketMessageCreateOrConnectWithoutAuthorInput[]
+  createMany?: Prisma.SupportTicketMessageCreateManyAuthorInputEnvelope
+  connect?: Prisma.SupportTicketMessageWhereUniqueInput | Prisma.SupportTicketMessageWhereUniqueInput[]
+}
+
+export type SupportTicketMessageUncheckedCreateNestedManyWithoutAuthorInput = {
+  create?: Prisma.XOR<Prisma.SupportTicketMessageCreateWithoutAuthorInput, Prisma.SupportTicketMessageUncheckedCreateWithoutAuthorInput> | Prisma.SupportTicketMessageCreateWithoutAuthorInput[] | Prisma.SupportTicketMessageUncheckedCreateWithoutAuthorInput[]
+  connectOrCreate?: Prisma.SupportTicketMessageCreateOrConnectWithoutAuthorInput | Prisma.SupportTicketMessageCreateOrConnectWithoutAuthorInput[]
+  createMany?: Prisma.SupportTicketMessageCreateManyAuthorInputEnvelope
+  connect?: Prisma.SupportTicketMessageWhereUniqueInput | Prisma.SupportTicketMessageWhereUniqueInput[]
+}
+
+export type SupportTicketMessageUpdateManyWithoutAuthorNestedInput = {
+  create?: Prisma.XOR<Prisma.SupportTicketMessageCreateWithoutAuthorInput, Prisma.SupportTicketMessageUncheckedCreateWithoutAuthorInput> | Prisma.SupportTicketMessageCreateWithoutAuthorInput[] | Prisma.SupportTicketMessageUncheckedCreateWithoutAuthorInput[]
+  connectOrCreate?: Prisma.SupportTicketMessageCreateOrConnectWithoutAuthorInput | Prisma.SupportTicketMessageCreateOrConnectWithoutAuthorInput[]
+  upsert?: Prisma.SupportTicketMessageUpsertWithWhereUniqueWithoutAuthorInput | Prisma.SupportTicketMessageUpsertWithWhereUniqueWithoutAuthorInput[]
+  createMany?: Prisma.SupportTicketMessageCreateManyAuthorInputEnvelope
+  set?: Prisma.SupportTicketMessageWhereUniqueInput | Prisma.SupportTicketMessageWhereUniqueInput[]
+  disconnect?: Prisma.SupportTicketMessageWhereUniqueInput | Prisma.SupportTicketMessageWhereUniqueInput[]
+  delete?: Prisma.SupportTicketMessageWhereUniqueInput | Prisma.SupportTicketMessageWhereUniqueInput[]
+  connect?: Prisma.SupportTicketMessageWhereUniqueInput | Prisma.SupportTicketMessageWhereUniqueInput[]
+  update?: Prisma.SupportTicketMessageUpdateWithWhereUniqueWithoutAuthorInput | Prisma.SupportTicketMessageUpdateWithWhereUniqueWithoutAuthorInput[]
+  updateMany?: Prisma.SupportTicketMessageUpdateManyWithWhereWithoutAuthorInput | Prisma.SupportTicketMessageUpdateManyWithWhereWithoutAuthorInput[]
+  deleteMany?: Prisma.SupportTicketMessageScalarWhereInput | Prisma.SupportTicketMessageScalarWhereInput[]
+}
+
+export type SupportTicketMessageUncheckedUpdateManyWithoutAuthorNestedInput = {
+  create?: Prisma.XOR<Prisma.SupportTicketMessageCreateWithoutAuthorInput, Prisma.SupportTicketMessageUncheckedCreateWithoutAuthorInput> | Prisma.SupportTicketMessageCreateWithoutAuthorInput[] | Prisma.SupportTicketMessageUncheckedCreateWithoutAuthorInput[]
+  connectOrCreate?: Prisma.SupportTicketMessageCreateOrConnectWithoutAuthorInput | Prisma.SupportTicketMessageCreateOrConnectWithoutAuthorInput[]
+  upsert?: Prisma.SupportTicketMessageUpsertWithWhereUniqueWithoutAuthorInput | Prisma.SupportTicketMessageUpsertWithWhereUniqueWithoutAuthorInput[]
+  createMany?: Prisma.SupportTicketMessageCreateManyAuthorInputEnvelope
+  set?: Prisma.SupportTicketMessageWhereUniqueInput | Prisma.SupportTicketMessageWhereUniqueInput[]
+  disconnect?: Prisma.SupportTicketMessageWhereUniqueInput | Prisma.SupportTicketMessageWhereUniqueInput[]
+  delete?: Prisma.SupportTicketMessageWhereUniqueInput | Prisma.SupportTicketMessageWhereUniqueInput[]
+  connect?: Prisma.SupportTicketMessageWhereUniqueInput | Prisma.SupportTicketMessageWhereUniqueInput[]
+  update?: Prisma.SupportTicketMessageUpdateWithWhereUniqueWithoutAuthorInput | Prisma.SupportTicketMessageUpdateWithWhereUniqueWithoutAuthorInput[]
+  updateMany?: Prisma.SupportTicketMessageUpdateManyWithWhereWithoutAuthorInput | Prisma.SupportTicketMessageUpdateManyWithWhereWithoutAuthorInput[]
+  deleteMany?: Prisma.SupportTicketMessageScalarWhereInput | Prisma.SupportTicketMessageScalarWhereInput[]
+}
+
 export type SupportTicketMessageCreateNestedManyWithoutTicketInput = {
   create?: Prisma.XOR<Prisma.SupportTicketMessageCreateWithoutTicketInput, Prisma.SupportTicketMessageUncheckedCreateWithoutTicketInput> | Prisma.SupportTicketMessageCreateWithoutTicketInput[] | Prisma.SupportTicketMessageUncheckedCreateWithoutTicketInput[]
   connectOrCreate?: Prisma.SupportTicketMessageCreateOrConnectWithoutTicketInput | Prisma.SupportTicketMessageCreateOrConnectWithoutTicketInput[]
@@ -375,12 +419,66 @@ export type SupportTicketMessageUncheckedUpdateManyWithoutTicketNestedInput = {
   deleteMany?: Prisma.SupportTicketMessageScalarWhereInput | Prisma.SupportTicketMessageScalarWhereInput[]
 }
 
-export type SupportTicketMessageCreateWithoutTicketInput = {
+export type SupportTicketMessageCreateWithoutAuthorInput = {
   id?: string
-  authorId: string
   body: string
   attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
+  ticket: Prisma.SupportTicketCreateNestedOneWithoutMessagesInput
+}
+
+export type SupportTicketMessageUncheckedCreateWithoutAuthorInput = {
+  id?: string
+  ticketId: string
+  body: string
+  attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+}
+
+export type SupportTicketMessageCreateOrConnectWithoutAuthorInput = {
+  where: Prisma.SupportTicketMessageWhereUniqueInput
+  create: Prisma.XOR<Prisma.SupportTicketMessageCreateWithoutAuthorInput, Prisma.SupportTicketMessageUncheckedCreateWithoutAuthorInput>
+}
+
+export type SupportTicketMessageCreateManyAuthorInputEnvelope = {
+  data: Prisma.SupportTicketMessageCreateManyAuthorInput | Prisma.SupportTicketMessageCreateManyAuthorInput[]
+  skipDuplicates?: boolean
+}
+
+export type SupportTicketMessageUpsertWithWhereUniqueWithoutAuthorInput = {
+  where: Prisma.SupportTicketMessageWhereUniqueInput
+  update: Prisma.XOR<Prisma.SupportTicketMessageUpdateWithoutAuthorInput, Prisma.SupportTicketMessageUncheckedUpdateWithoutAuthorInput>
+  create: Prisma.XOR<Prisma.SupportTicketMessageCreateWithoutAuthorInput, Prisma.SupportTicketMessageUncheckedCreateWithoutAuthorInput>
+}
+
+export type SupportTicketMessageUpdateWithWhereUniqueWithoutAuthorInput = {
+  where: Prisma.SupportTicketMessageWhereUniqueInput
+  data: Prisma.XOR<Prisma.SupportTicketMessageUpdateWithoutAuthorInput, Prisma.SupportTicketMessageUncheckedUpdateWithoutAuthorInput>
+}
+
+export type SupportTicketMessageUpdateManyWithWhereWithoutAuthorInput = {
+  where: Prisma.SupportTicketMessageScalarWhereInput
+  data: Prisma.XOR<Prisma.SupportTicketMessageUpdateManyMutationInput, Prisma.SupportTicketMessageUncheckedUpdateManyWithoutAuthorInput>
+}
+
+export type SupportTicketMessageScalarWhereInput = {
+  AND?: Prisma.SupportTicketMessageScalarWhereInput | Prisma.SupportTicketMessageScalarWhereInput[]
+  OR?: Prisma.SupportTicketMessageScalarWhereInput[]
+  NOT?: Prisma.SupportTicketMessageScalarWhereInput | Prisma.SupportTicketMessageScalarWhereInput[]
+  id?: Prisma.StringFilter<"SupportTicketMessage"> | string
+  ticketId?: Prisma.StringFilter<"SupportTicketMessage"> | string
+  authorId?: Prisma.StringFilter<"SupportTicketMessage"> | string
+  body?: Prisma.StringFilter<"SupportTicketMessage"> | string
+  attachments?: Prisma.JsonNullableFilter<"SupportTicketMessage">
+  createdAt?: Prisma.DateTimeFilter<"SupportTicketMessage"> | Date | string
+}
+
+export type SupportTicketMessageCreateWithoutTicketInput = {
+  id?: string
+  body: string
+  attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  author: Prisma.UserCreateNestedOneWithoutTicketMessagesInput
 }
 
 export type SupportTicketMessageUncheckedCreateWithoutTicketInput = {
@@ -417,16 +515,36 @@ export type SupportTicketMessageUpdateManyWithWhereWithoutTicketInput = {
   data: Prisma.XOR<Prisma.SupportTicketMessageUpdateManyMutationInput, Prisma.SupportTicketMessageUncheckedUpdateManyWithoutTicketInput>
 }
 
-export type SupportTicketMessageScalarWhereInput = {
-  AND?: Prisma.SupportTicketMessageScalarWhereInput | Prisma.SupportTicketMessageScalarWhereInput[]
-  OR?: Prisma.SupportTicketMessageScalarWhereInput[]
-  NOT?: Prisma.SupportTicketMessageScalarWhereInput | Prisma.SupportTicketMessageScalarWhereInput[]
-  id?: Prisma.StringFilter<"SupportTicketMessage"> | string
-  ticketId?: Prisma.StringFilter<"SupportTicketMessage"> | string
-  authorId?: Prisma.StringFilter<"SupportTicketMessage"> | string
-  body?: Prisma.StringFilter<"SupportTicketMessage"> | string
-  attachments?: Prisma.JsonNullableFilter<"SupportTicketMessage">
-  createdAt?: Prisma.DateTimeFilter<"SupportTicketMessage"> | Date | string
+export type SupportTicketMessageCreateManyAuthorInput = {
+  id?: string
+  ticketId: string
+  body: string
+  attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+}
+
+export type SupportTicketMessageUpdateWithoutAuthorInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  body?: Prisma.StringFieldUpdateOperationsInput | string
+  attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ticket?: Prisma.SupportTicketUpdateOneRequiredWithoutMessagesNestedInput
+}
+
+export type SupportTicketMessageUncheckedUpdateWithoutAuthorInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ticketId?: Prisma.StringFieldUpdateOperationsInput | string
+  body?: Prisma.StringFieldUpdateOperationsInput | string
+  attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type SupportTicketMessageUncheckedUpdateManyWithoutAuthorInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ticketId?: Prisma.StringFieldUpdateOperationsInput | string
+  body?: Prisma.StringFieldUpdateOperationsInput | string
+  attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SupportTicketMessageCreateManyTicketInput = {
@@ -439,10 +557,10 @@ export type SupportTicketMessageCreateManyTicketInput = {
 
 export type SupportTicketMessageUpdateWithoutTicketInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  authorId?: Prisma.StringFieldUpdateOperationsInput | string
   body?: Prisma.StringFieldUpdateOperationsInput | string
   attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  author?: Prisma.UserUpdateOneRequiredWithoutTicketMessagesNestedInput
 }
 
 export type SupportTicketMessageUncheckedUpdateWithoutTicketInput = {
@@ -471,6 +589,7 @@ export type SupportTicketMessageSelect<ExtArgs extends runtime.Types.Extensions.
   attachments?: boolean
   createdAt?: boolean
   ticket?: boolean | Prisma.SupportTicketDefaultArgs<ExtArgs>
+  author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["supportTicketMessage"]>
 
 export type SupportTicketMessageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -481,6 +600,7 @@ export type SupportTicketMessageSelectCreateManyAndReturn<ExtArgs extends runtim
   attachments?: boolean
   createdAt?: boolean
   ticket?: boolean | Prisma.SupportTicketDefaultArgs<ExtArgs>
+  author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["supportTicketMessage"]>
 
 export type SupportTicketMessageSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -491,6 +611,7 @@ export type SupportTicketMessageSelectUpdateManyAndReturn<ExtArgs extends runtim
   attachments?: boolean
   createdAt?: boolean
   ticket?: boolean | Prisma.SupportTicketDefaultArgs<ExtArgs>
+  author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["supportTicketMessage"]>
 
 export type SupportTicketMessageSelectScalar = {
@@ -505,18 +626,22 @@ export type SupportTicketMessageSelectScalar = {
 export type SupportTicketMessageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ticketId" | "authorId" | "body" | "attachments" | "createdAt", ExtArgs["result"]["supportTicketMessage"]>
 export type SupportTicketMessageInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ticket?: boolean | Prisma.SupportTicketDefaultArgs<ExtArgs>
+  author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type SupportTicketMessageIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ticket?: boolean | Prisma.SupportTicketDefaultArgs<ExtArgs>
+  author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type SupportTicketMessageIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ticket?: boolean | Prisma.SupportTicketDefaultArgs<ExtArgs>
+  author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 
 export type $SupportTicketMessagePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "SupportTicketMessage"
   objects: {
     ticket: Prisma.$SupportTicketPayload<ExtArgs>
+    author: Prisma.$UserPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -920,6 +1045,7 @@ readonly fields: SupportTicketMessageFieldRefs;
 export interface Prisma__SupportTicketMessageClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   ticket<T extends Prisma.SupportTicketDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SupportTicketDefaultArgs<ExtArgs>>): Prisma.Prisma__SupportTicketClient<runtime.Types.Result.GetResult<Prisma.$SupportTicketPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  author<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.

@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth";
 
 import { AccessState } from "./admin/AccessState";
 import { AdminShell } from "./admin/AdminShell";
+import { AdminErrorBoundary } from "./admin/ErrorBoundary";
 import { useAdminData } from "./admin/useAdminData";
 import { RiderProfileModal } from "./admin/RiderProfileModal";
 import { AdminPageSkeleton } from "./admin/AdminSkeleton";
@@ -627,8 +628,13 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             deliveries={data.deliveries}
             adminCurrency={data.adminCurrency}
             dataLoading={data.dataLoading || data.supportTicketsPending}
+            ticketMessages={data.ticketMessages}
+            ticketMessagesLoading={data.ticketMessagesPending}
+            selectedTicketId={data.selectedTicketId}
+            onSelectTicket={data.setSelectedTicketId}
+            onSendMessage={(ticketId, body) => data.sendTicketMessageMutation.mutate({ ticketId, body })}
+            isSendingMessage={data.sendTicketMessageMutation.isPending}
             onTicketAction={(id, action, value) => {
-              if (action === "message") return; /* no message API yet */
               data.incidentReviewMutation.mutate({ incidentId: id, status: action === "resolve" ? "RESOLVED" : action === "close" ? "CLOSED" : action === "escalate" ? "UNDER_REVIEW" : "ACTIONED" });
             }}
           />
@@ -1032,7 +1038,9 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
       userName={session?.user?.fullName ?? "Admin"}
       adminRoleEntries={data.adminRoleEntries}
     >
-      {renderScreen()}
+      <AdminErrorBoundary>
+        {renderScreen()}
+      </AdminErrorBoundary>
     </AdminShell>
   );
 }

@@ -50,6 +50,7 @@ export function MessageTemplatesScreen({ dataLoading = false, messageTemplates, 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", category: "Ride", channel: "SMS", subject: "", body: "" });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const filteredTemplates = useMemo(() => {
     let templates = messageTemplates;
@@ -70,7 +71,12 @@ export function MessageTemplatesScreen({ dataLoading = false, messageTemplates, 
   const pushCount = messageTemplates.filter((t) => t.channel === "Push" || t.channel === "PUSH").length;
 
   function submitTemplate() {
-    if (!form.name.trim() || !form.subject.trim() || !form.body.trim()) return;
+    const errors: Record<string, string> = {};
+    if (!form.name.trim()) errors.name = "Template name is required";
+    if (!form.subject.trim()) errors.subject = "Subject is required";
+    if (!form.body.trim()) errors.body = "Body is required";
+    if (Object.keys(errors).length > 0) { setFormErrors(errors); return; }
+    setFormErrors({});
     if (editingId) {
       onUpdateTemplate(editingId, { ...form, name: form.name.trim(), subject: form.subject.trim(), body: form.body.trim() });
     } else {
@@ -126,7 +132,8 @@ export function MessageTemplatesScreen({ dataLoading = false, messageTemplates, 
           <div className="admin-form-grid">
             <label>
               Template Name
-              <input className="admin-search-input" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="e.g. Ride Assigned" />
+              <input className="admin-search-input" style={formErrors.name ? { borderColor: "#ef4444" } : undefined} value={form.name} onChange={(e) => { setForm((f) => ({ ...f, name: e.target.value })); setFormErrors((e) => ({ ...e, name: "" })); }} placeholder="e.g. Ride Assigned" />
+              {formErrors.name && <small style={{ color: "#ef4444", fontSize: "0.72rem" }}>{formErrors.name}</small>}
             </label>
             <label>
               Category
@@ -144,11 +151,13 @@ export function MessageTemplatesScreen({ dataLoading = false, messageTemplates, 
             </label>
             <label className="admin-form-span">
               Subject
-              <input className="admin-search-input" value={form.subject} onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))} placeholder="Notification subject" />
+              <input className="admin-search-input" style={formErrors.subject ? { borderColor: "#ef4444" } : undefined} value={form.subject} onChange={(e) => { setForm((f) => ({ ...f, subject: e.target.value })); setFormErrors((e) => ({ ...e, subject: "" })); }} placeholder="Notification subject" />
+              {formErrors.subject && <small style={{ color: "#ef4444", fontSize: "0.72rem" }}>{formErrors.subject}</small>}
             </label>
             <label className="admin-form-span">
               Body
-              <textarea className="admin-search-input" rows={3} value={form.body} onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))} placeholder="Use {{variable}} for dynamic values" style={{ resize: "vertical" }} />
+              <textarea className="admin-search-input" rows={3} style={formErrors.body ? { borderColor: "#ef4444" } : undefined} value={form.body} onChange={(e) => { setForm((f) => ({ ...f, body: e.target.value })); setFormErrors((e) => ({ ...e, body: "" })); }} placeholder="Use {{variable}} for dynamic values" />
+              {formErrors.body && <small style={{ color: "#ef4444", fontSize: "0.72rem" }}>{formErrors.body}</small>}
             </label>
           </div>
           <div className="admin-page-header-actions" style={{ marginTop: 16 }}>

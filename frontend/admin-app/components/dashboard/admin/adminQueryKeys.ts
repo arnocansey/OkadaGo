@@ -17,6 +17,7 @@ export const QK = {
   zones: ["service-zones"] as const,
   auditLogs: ["admin-audit-logs"] as const,
   supportTickets: ["admin-support-tickets"] as const,
+  ticketMessages: (ticketId: string) => ["admin-ticket-messages", ticketId] as const,
   escalationRules: ["admin-escalation-rules"] as const,
   scheduledBroadcasts: ["admin-scheduled-broadcasts"] as const,
   opsJobStatus: ["admin-ops-jobs-status"] as const,
