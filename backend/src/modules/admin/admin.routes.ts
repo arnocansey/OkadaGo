@@ -402,4 +402,95 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
     // Keep the reply open; Fastify must not try to serialize a return value.
     return reply;
   });
+
+  // ── GoPoints ────────────────────────────────────────────────────────────
+
+  server.get("/admin/go-points/rules", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    await authService.listAdmins(token);
+    return prisma.goPointRule.findMany({ orderBy: { createdAt: "desc" } });
+  });
+
+  server.post("/admin/go-points/rules", async (request, reply) => {
+    const token = extractBearerToken(request.headers.authorization);
+    await authService.listAdmins(token);
+    const body = request.body as { name: string; description?: string; eventType: string; points: number; perUnit?: number; minSpend?: number; active?: boolean };
+    const rule = await prisma.goPointRule.create({ data: body });
+    return reply.status(201).send(rule);
+  });
+
+  server.put("/admin/go-points/rules/:id", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    await authService.listAdmins(token);
+    const params = request.params as { id: string };
+    const body = request.body as Record<string, unknown>;
+    return prisma.goPointRule.update({ where: { id: params.id }, data: body });
+  });
+
+  server.get("/admin/go-points/balances", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    await authService.listAdmins(token);
+    return prisma.goPointBalance.findMany({
+      include: { passenger: { include: { user: { select: { fullName: true, phoneE164: true } } } } },
+      orderBy: { points: "desc" }
+    });
+  });
+
+  server.get("/admin/go-points/ledger", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    await authService.listAdmins(token);
+    const query = request.query as { passengerId?: string; limit?: string };
+    const limit = Math.min(parseInt(query.limit ?? "100", 10) || 100, 500);
+    return prisma.goPointLedger.findMany({
+      where: query.passengerId ? { passengerId: query.passengerId } : {},
+      include: { passenger: { include: { user: { select: { fullName: true } } } } },
+      orderBy: { createdAt: "desc" },
+      take: limit
+    });
+  });
+
+  server.get("/admin/go-points/redemptions", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    await authService.listAdmins(token);
+    return prisma.goPointRedemption.findMany({ orderBy: { pointsCost: "asc" } });
+  });
+
+  server.post("/admin/go-points/redemptions", async (request, reply) => {
+    const token = extractBearerToken(request.headers.authorization);
+    await authService.listAdmins(token);
+    const body = request.body as { name: string; description?: string; pointsCost: number; cashValue: number; available?: boolean };
+    const item = await prisma.goPointRedemption.create({ data: body });
+    return reply.status(201).send(item);
+  });
+
+  // ── Message Templates ───────────────────────────────────────────────────
+
+  server.get("/admin/message-templates", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    await authService.listAdmins(token);
+    return prisma.messageTemplate.findMany({ orderBy: { updatedAt: "desc" } });
+  });
+
+  server.post("/admin/message-templates", async (request, reply) => {
+    const token = extractBearerToken(request.headers.authorization);
+    await authService.listAdmins(token);
+    const body = request.body as { name: string; category: string; channel: string; subject: string; body: string; active?: boolean };
+    const template = await prisma.messageTemplate.create({ data: body });
+    return reply.status(201).send(template);
+  });
+
+  server.put("/admin/message-templates/:id", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    await authService.listAdmins(token);
+    const params = request.params as { id: string };
+    const body = request.body as Record<string, unknown>;
+    return prisma.messageTemplate.update({ where: { id: params.id }, data: body });
+  });
+
+  server.delete("/admin/message-templates/:id", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    await authService.listAdmins(token);
+    const params = request.params as { id: string };
+    return prisma.messageTemplate.delete({ where: { id: params.id } });
+  });
 };

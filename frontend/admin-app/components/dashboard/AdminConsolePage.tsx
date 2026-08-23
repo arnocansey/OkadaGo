@@ -909,6 +909,20 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
           />
         );
 
+      case "wallet":
+        return (
+          <RiderWalletScreen
+            riderWalletTransactions={data.walletTransactions}
+            riderWalletCredits={data.walletTransactions.filter((t) => t.direction === "credit").reduce((s, t) => s + Math.abs(Number(t.amount)), 0)}
+            riderWalletDebits={data.walletTransactions.filter((t) => t.direction === "debit").reduce((s, t) => s + Math.abs(Number(t.amount)), 0)}
+            riderWalletAvailableBalance={data.pendingPayoutValue}
+            riderWalletLockedBalance={0}
+            riderWalletMovementTotal={data.walletTransactions.length}
+            adminCurrency={data.adminCurrency}
+            dataLoading={data.dataLoading}
+          />
+        );
+
       case "referrals":
         return (
           <ReferralsScreen
@@ -925,6 +939,10 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
           <GoPointsScreen
             adminCurrency={data.adminCurrency}
             dataLoading={data.dataLoading}
+            goPointRules={data.goPointRules}
+            goPointBalances={data.goPointBalances}
+            goPointLedger={data.goPointLedger}
+            goPointRedemptions={data.goPointRedemptions}
           />
         );
 
@@ -932,6 +950,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
         return (
           <MessageTemplatesScreen
             dataLoading={data.dataLoading}
+            messageTemplates={data.messageTemplates}
           />
         );
 

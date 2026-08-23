@@ -22,5 +22,10 @@ export const QK = {
   opsJobStatus: ["admin-ops-jobs-status"] as const,
   riderDocuments: ["admin-rider-documents"] as const,
   platformSettings: ["admin-platform-settings"] as const,
-  promoCodes: ["admin-promo-codes"] as const
+  promoCodes: ["admin-promo-codes"] as const,
+  goPointRules: ["admin-go-point-rules"] as const,
+  goPointBalances: ["admin-go-point-balances"] as const,
+  goPointLedger: ["admin-go-point-ledger"] as const,
+  goPointRedemptions: ["admin-go-point-redemptions"] as const,
+  messageTemplates: ["admin-message-templates"] as const
 } as const;

@@ -25,6 +25,8 @@ export type AdminQueryNeed =
   | "riderDocuments"
   | "platformSettings"
   | "promoCodes"
+  | "goPoints"
+  | "messageTemplates"
   | "liveStream";
 
 /** Shell badges + dashboard KPIs — one aggregate, not sample list pages. */
@@ -56,11 +58,11 @@ const SCREEN_EXTRA: Record<AdminConsoleScreen, AdminQueryNeed[]> = {
   promotions: ["rides", "zones"],
   promoManagement: ["rides", "zones", "promoCodes"],
   referrals: ["rides", "zones", "promoCodes"],
-  goPoints: [],
+  goPoints: ["goPoints"],
   wallet: ["walletTx", "payout"],
   zones: ["zones", "riders", "rides"],
   supportTickets: ["supportTickets"],
-  messageTemplates: [],
+  messageTemplates: ["messageTemplates"],
   sosIncidents: ["incidents", "liveStream", "adminAccounts"],
   safetyCenter: ["incidents", "escalationRules", "riders"],
   analytics: ["financeSummary", "rides", "deliveries", "riders"],

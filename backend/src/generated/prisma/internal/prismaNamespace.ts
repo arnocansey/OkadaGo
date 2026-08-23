@@ -423,7 +423,12 @@ export const ModelName = {
   AuditLog: 'AuditLog',
   EscalationRule: 'EscalationRule',
   ScheduledBroadcast: 'ScheduledBroadcast',
-  OpsJobHeartbeat: 'OpsJobHeartbeat'
+  OpsJobHeartbeat: 'OpsJobHeartbeat',
+  GoPointRule: 'GoPointRule',
+  GoPointBalance: 'GoPointBalance',
+  GoPointLedger: 'GoPointLedger',
+  GoPointRedemption: 'GoPointRedemption',
+  MessageTemplate: 'MessageTemplate'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -439,7 +444,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "riderOnlineLog" | "adminProfile" | "savedPaymentMethod" | "adminNote" | "platformSetting" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "deliveryRequest" | "deliveryStop" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "riderPayoutAccount" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog" | "escalationRule" | "scheduledBroadcast" | "opsJobHeartbeat"
+    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "riderOnlineLog" | "adminProfile" | "savedPaymentMethod" | "adminNote" | "platformSetting" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "deliveryRequest" | "deliveryStop" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "riderPayoutAccount" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog" | "escalationRule" | "scheduledBroadcast" | "opsJobHeartbeat" | "goPointRule" | "goPointBalance" | "goPointLedger" | "goPointRedemption" | "messageTemplate"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3403,6 +3408,376 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    GoPointRule: {
+      payload: Prisma.$GoPointRulePayload<ExtArgs>
+      fields: Prisma.GoPointRuleFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GoPointRuleFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRulePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GoPointRuleFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRulePayload>
+        }
+        findFirst: {
+          args: Prisma.GoPointRuleFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRulePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GoPointRuleFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRulePayload>
+        }
+        findMany: {
+          args: Prisma.GoPointRuleFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRulePayload>[]
+        }
+        create: {
+          args: Prisma.GoPointRuleCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRulePayload>
+        }
+        createMany: {
+          args: Prisma.GoPointRuleCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GoPointRuleCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRulePayload>[]
+        }
+        delete: {
+          args: Prisma.GoPointRuleDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRulePayload>
+        }
+        update: {
+          args: Prisma.GoPointRuleUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRulePayload>
+        }
+        deleteMany: {
+          args: Prisma.GoPointRuleDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GoPointRuleUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GoPointRuleUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRulePayload>[]
+        }
+        upsert: {
+          args: Prisma.GoPointRuleUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRulePayload>
+        }
+        aggregate: {
+          args: Prisma.GoPointRuleAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGoPointRule>
+        }
+        groupBy: {
+          args: Prisma.GoPointRuleGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GoPointRuleGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GoPointRuleCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GoPointRuleCountAggregateOutputType> | number
+        }
+      }
+    }
+    GoPointBalance: {
+      payload: Prisma.$GoPointBalancePayload<ExtArgs>
+      fields: Prisma.GoPointBalanceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GoPointBalanceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointBalancePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GoPointBalanceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointBalancePayload>
+        }
+        findFirst: {
+          args: Prisma.GoPointBalanceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointBalancePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GoPointBalanceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointBalancePayload>
+        }
+        findMany: {
+          args: Prisma.GoPointBalanceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointBalancePayload>[]
+        }
+        create: {
+          args: Prisma.GoPointBalanceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointBalancePayload>
+        }
+        createMany: {
+          args: Prisma.GoPointBalanceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GoPointBalanceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointBalancePayload>[]
+        }
+        delete: {
+          args: Prisma.GoPointBalanceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointBalancePayload>
+        }
+        update: {
+          args: Prisma.GoPointBalanceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointBalancePayload>
+        }
+        deleteMany: {
+          args: Prisma.GoPointBalanceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GoPointBalanceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GoPointBalanceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointBalancePayload>[]
+        }
+        upsert: {
+          args: Prisma.GoPointBalanceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointBalancePayload>
+        }
+        aggregate: {
+          args: Prisma.GoPointBalanceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGoPointBalance>
+        }
+        groupBy: {
+          args: Prisma.GoPointBalanceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GoPointBalanceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GoPointBalanceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GoPointBalanceCountAggregateOutputType> | number
+        }
+      }
+    }
+    GoPointLedger: {
+      payload: Prisma.$GoPointLedgerPayload<ExtArgs>
+      fields: Prisma.GoPointLedgerFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GoPointLedgerFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointLedgerPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GoPointLedgerFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointLedgerPayload>
+        }
+        findFirst: {
+          args: Prisma.GoPointLedgerFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointLedgerPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GoPointLedgerFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointLedgerPayload>
+        }
+        findMany: {
+          args: Prisma.GoPointLedgerFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointLedgerPayload>[]
+        }
+        create: {
+          args: Prisma.GoPointLedgerCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointLedgerPayload>
+        }
+        createMany: {
+          args: Prisma.GoPointLedgerCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GoPointLedgerCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointLedgerPayload>[]
+        }
+        delete: {
+          args: Prisma.GoPointLedgerDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointLedgerPayload>
+        }
+        update: {
+          args: Prisma.GoPointLedgerUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointLedgerPayload>
+        }
+        deleteMany: {
+          args: Prisma.GoPointLedgerDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GoPointLedgerUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GoPointLedgerUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointLedgerPayload>[]
+        }
+        upsert: {
+          args: Prisma.GoPointLedgerUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointLedgerPayload>
+        }
+        aggregate: {
+          args: Prisma.GoPointLedgerAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGoPointLedger>
+        }
+        groupBy: {
+          args: Prisma.GoPointLedgerGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GoPointLedgerGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GoPointLedgerCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GoPointLedgerCountAggregateOutputType> | number
+        }
+      }
+    }
+    GoPointRedemption: {
+      payload: Prisma.$GoPointRedemptionPayload<ExtArgs>
+      fields: Prisma.GoPointRedemptionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GoPointRedemptionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRedemptionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GoPointRedemptionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRedemptionPayload>
+        }
+        findFirst: {
+          args: Prisma.GoPointRedemptionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRedemptionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GoPointRedemptionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRedemptionPayload>
+        }
+        findMany: {
+          args: Prisma.GoPointRedemptionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRedemptionPayload>[]
+        }
+        create: {
+          args: Prisma.GoPointRedemptionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRedemptionPayload>
+        }
+        createMany: {
+          args: Prisma.GoPointRedemptionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GoPointRedemptionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRedemptionPayload>[]
+        }
+        delete: {
+          args: Prisma.GoPointRedemptionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRedemptionPayload>
+        }
+        update: {
+          args: Prisma.GoPointRedemptionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRedemptionPayload>
+        }
+        deleteMany: {
+          args: Prisma.GoPointRedemptionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GoPointRedemptionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GoPointRedemptionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRedemptionPayload>[]
+        }
+        upsert: {
+          args: Prisma.GoPointRedemptionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GoPointRedemptionPayload>
+        }
+        aggregate: {
+          args: Prisma.GoPointRedemptionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGoPointRedemption>
+        }
+        groupBy: {
+          args: Prisma.GoPointRedemptionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GoPointRedemptionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GoPointRedemptionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GoPointRedemptionCountAggregateOutputType> | number
+        }
+      }
+    }
+    MessageTemplate: {
+      payload: Prisma.$MessageTemplatePayload<ExtArgs>
+      fields: Prisma.MessageTemplateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MessageTemplateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageTemplatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MessageTemplateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageTemplatePayload>
+        }
+        findFirst: {
+          args: Prisma.MessageTemplateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageTemplatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MessageTemplateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageTemplatePayload>
+        }
+        findMany: {
+          args: Prisma.MessageTemplateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageTemplatePayload>[]
+        }
+        create: {
+          args: Prisma.MessageTemplateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageTemplatePayload>
+        }
+        createMany: {
+          args: Prisma.MessageTemplateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MessageTemplateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageTemplatePayload>[]
+        }
+        delete: {
+          args: Prisma.MessageTemplateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageTemplatePayload>
+        }
+        update: {
+          args: Prisma.MessageTemplateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageTemplatePayload>
+        }
+        deleteMany: {
+          args: Prisma.MessageTemplateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MessageTemplateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MessageTemplateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageTemplatePayload>[]
+        }
+        upsert: {
+          args: Prisma.MessageTemplateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageTemplatePayload>
+        }
+        aggregate: {
+          args: Prisma.MessageTemplateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMessageTemplate>
+        }
+        groupBy: {
+          args: Prisma.MessageTemplateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MessageTemplateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MessageTemplateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MessageTemplateCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -4205,6 +4580,77 @@ export const OpsJobHeartbeatScalarFieldEnum = {
 export type OpsJobHeartbeatScalarFieldEnum = (typeof OpsJobHeartbeatScalarFieldEnum)[keyof typeof OpsJobHeartbeatScalarFieldEnum]
 
 
+export const GoPointRuleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  eventType: 'eventType',
+  points: 'points',
+  perUnit: 'perUnit',
+  minSpend: 'minSpend',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GoPointRuleScalarFieldEnum = (typeof GoPointRuleScalarFieldEnum)[keyof typeof GoPointRuleScalarFieldEnum]
+
+
+export const GoPointBalanceScalarFieldEnum = {
+  id: 'id',
+  passengerId: 'passengerId',
+  points: 'points',
+  totalEarned: 'totalEarned',
+  totalRedeemed: 'totalRedeemed',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GoPointBalanceScalarFieldEnum = (typeof GoPointBalanceScalarFieldEnum)[keyof typeof GoPointBalanceScalarFieldEnum]
+
+
+export const GoPointLedgerScalarFieldEnum = {
+  id: 'id',
+  passengerId: 'passengerId',
+  type: 'type',
+  points: 'points',
+  description: 'description',
+  referenceId: 'referenceId',
+  createdAt: 'createdAt'
+} as const
+
+export type GoPointLedgerScalarFieldEnum = (typeof GoPointLedgerScalarFieldEnum)[keyof typeof GoPointLedgerScalarFieldEnum]
+
+
+export const GoPointRedemptionScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  pointsCost: 'pointsCost',
+  cashValue: 'cashValue',
+  available: 'available',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GoPointRedemptionScalarFieldEnum = (typeof GoPointRedemptionScalarFieldEnum)[keyof typeof GoPointRedemptionScalarFieldEnum]
+
+
+export const MessageTemplateScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  category: 'category',
+  channel: 'channel',
+  subject: 'subject',
+  body: 'body',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MessageTemplateScalarFieldEnum = (typeof MessageTemplateScalarFieldEnum)[keyof typeof MessageTemplateScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -4961,6 +5407,11 @@ export type GlobalOmitConfig = {
   escalationRule?: Prisma.EscalationRuleOmit
   scheduledBroadcast?: Prisma.ScheduledBroadcastOmit
   opsJobHeartbeat?: Prisma.OpsJobHeartbeatOmit
+  goPointRule?: Prisma.GoPointRuleOmit
+  goPointBalance?: Prisma.GoPointBalanceOmit
+  goPointLedger?: Prisma.GoPointLedgerOmit
+  goPointRedemption?: Prisma.GoPointRedemptionOmit
+  messageTemplate?: Prisma.MessageTemplateOmit
 }
 
 /* Types for Logging */

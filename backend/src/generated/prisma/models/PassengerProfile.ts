@@ -264,6 +264,8 @@ export type PassengerProfileWhereInput = {
   rides?: Prisma.RideListRelationFilter
   deliveries?: Prisma.DeliveryRequestListRelationFilter
   promoRedemptions?: Prisma.PromoRedemptionListRelationFilter
+  goPointBalance?: Prisma.XOR<Prisma.GoPointBalanceNullableScalarRelationFilter, Prisma.GoPointBalanceWhereInput> | null
+  goPointLedger?: Prisma.GoPointLedgerListRelationFilter
 }
 
 export type PassengerProfileOrderByWithRelationInput = {
@@ -281,6 +283,8 @@ export type PassengerProfileOrderByWithRelationInput = {
   rides?: Prisma.RideOrderByRelationAggregateInput
   deliveries?: Prisma.DeliveryRequestOrderByRelationAggregateInput
   promoRedemptions?: Prisma.PromoRedemptionOrderByRelationAggregateInput
+  goPointBalance?: Prisma.GoPointBalanceOrderByWithRelationInput
+  goPointLedger?: Prisma.GoPointLedgerOrderByRelationAggregateInput
 }
 
 export type PassengerProfileWhereUniqueInput = Prisma.AtLeast<{
@@ -301,6 +305,8 @@ export type PassengerProfileWhereUniqueInput = Prisma.AtLeast<{
   rides?: Prisma.RideListRelationFilter
   deliveries?: Prisma.DeliveryRequestListRelationFilter
   promoRedemptions?: Prisma.PromoRedemptionListRelationFilter
+  goPointBalance?: Prisma.XOR<Prisma.GoPointBalanceNullableScalarRelationFilter, Prisma.GoPointBalanceWhereInput> | null
+  goPointLedger?: Prisma.GoPointLedgerListRelationFilter
 }, "id" | "userId" | "referralCode">
 
 export type PassengerProfileOrderByWithAggregationInput = {
@@ -351,6 +357,8 @@ export type PassengerProfileCreateInput = {
   rides?: Prisma.RideCreateNestedManyWithoutPassengerInput
   deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutPassengerInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutPassengerInput
+  goPointBalance?: Prisma.GoPointBalanceCreateNestedOneWithoutPassengerInput
+  goPointLedger?: Prisma.GoPointLedgerCreateNestedManyWithoutPassengerInput
 }
 
 export type PassengerProfileUncheckedCreateInput = {
@@ -367,6 +375,8 @@ export type PassengerProfileUncheckedCreateInput = {
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutPassengerInput
   deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutPassengerInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutPassengerInput
+  goPointBalance?: Prisma.GoPointBalanceUncheckedCreateNestedOneWithoutPassengerInput
+  goPointLedger?: Prisma.GoPointLedgerUncheckedCreateNestedManyWithoutPassengerInput
 }
 
 export type PassengerProfileUpdateInput = {
@@ -383,6 +393,8 @@ export type PassengerProfileUpdateInput = {
   rides?: Prisma.RideUpdateManyWithoutPassengerNestedInput
   deliveries?: Prisma.DeliveryRequestUpdateManyWithoutPassengerNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutPassengerNestedInput
+  goPointBalance?: Prisma.GoPointBalanceUpdateOneWithoutPassengerNestedInput
+  goPointLedger?: Prisma.GoPointLedgerUpdateManyWithoutPassengerNestedInput
 }
 
 export type PassengerProfileUncheckedUpdateInput = {
@@ -399,6 +411,8 @@ export type PassengerProfileUncheckedUpdateInput = {
   rides?: Prisma.RideUncheckedUpdateManyWithoutPassengerNestedInput
   deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutPassengerNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutPassengerNestedInput
+  goPointBalance?: Prisma.GoPointBalanceUncheckedUpdateOneWithoutPassengerNestedInput
+  goPointLedger?: Prisma.GoPointLedgerUncheckedUpdateManyWithoutPassengerNestedInput
 }
 
 export type PassengerProfileCreateManyInput = {
@@ -592,6 +606,34 @@ export type PassengerProfileUpdateOneRequiredWithoutPromoRedemptionsNestedInput 
   update?: Prisma.XOR<Prisma.XOR<Prisma.PassengerProfileUpdateToOneWithWhereWithoutPromoRedemptionsInput, Prisma.PassengerProfileUpdateWithoutPromoRedemptionsInput>, Prisma.PassengerProfileUncheckedUpdateWithoutPromoRedemptionsInput>
 }
 
+export type PassengerProfileCreateNestedOneWithoutGoPointBalanceInput = {
+  create?: Prisma.XOR<Prisma.PassengerProfileCreateWithoutGoPointBalanceInput, Prisma.PassengerProfileUncheckedCreateWithoutGoPointBalanceInput>
+  connectOrCreate?: Prisma.PassengerProfileCreateOrConnectWithoutGoPointBalanceInput
+  connect?: Prisma.PassengerProfileWhereUniqueInput
+}
+
+export type PassengerProfileUpdateOneRequiredWithoutGoPointBalanceNestedInput = {
+  create?: Prisma.XOR<Prisma.PassengerProfileCreateWithoutGoPointBalanceInput, Prisma.PassengerProfileUncheckedCreateWithoutGoPointBalanceInput>
+  connectOrCreate?: Prisma.PassengerProfileCreateOrConnectWithoutGoPointBalanceInput
+  upsert?: Prisma.PassengerProfileUpsertWithoutGoPointBalanceInput
+  connect?: Prisma.PassengerProfileWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PassengerProfileUpdateToOneWithWhereWithoutGoPointBalanceInput, Prisma.PassengerProfileUpdateWithoutGoPointBalanceInput>, Prisma.PassengerProfileUncheckedUpdateWithoutGoPointBalanceInput>
+}
+
+export type PassengerProfileCreateNestedOneWithoutGoPointLedgerInput = {
+  create?: Prisma.XOR<Prisma.PassengerProfileCreateWithoutGoPointLedgerInput, Prisma.PassengerProfileUncheckedCreateWithoutGoPointLedgerInput>
+  connectOrCreate?: Prisma.PassengerProfileCreateOrConnectWithoutGoPointLedgerInput
+  connect?: Prisma.PassengerProfileWhereUniqueInput
+}
+
+export type PassengerProfileUpdateOneRequiredWithoutGoPointLedgerNestedInput = {
+  create?: Prisma.XOR<Prisma.PassengerProfileCreateWithoutGoPointLedgerInput, Prisma.PassengerProfileUncheckedCreateWithoutGoPointLedgerInput>
+  connectOrCreate?: Prisma.PassengerProfileCreateOrConnectWithoutGoPointLedgerInput
+  upsert?: Prisma.PassengerProfileUpsertWithoutGoPointLedgerInput
+  connect?: Prisma.PassengerProfileWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PassengerProfileUpdateToOneWithWhereWithoutGoPointLedgerInput, Prisma.PassengerProfileUpdateWithoutGoPointLedgerInput>, Prisma.PassengerProfileUncheckedUpdateWithoutGoPointLedgerInput>
+}
+
 export type PassengerProfileCreateWithoutUserInput = {
   id?: string
   referralCode: string
@@ -605,6 +647,8 @@ export type PassengerProfileCreateWithoutUserInput = {
   rides?: Prisma.RideCreateNestedManyWithoutPassengerInput
   deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutPassengerInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutPassengerInput
+  goPointBalance?: Prisma.GoPointBalanceCreateNestedOneWithoutPassengerInput
+  goPointLedger?: Prisma.GoPointLedgerCreateNestedManyWithoutPassengerInput
 }
 
 export type PassengerProfileUncheckedCreateWithoutUserInput = {
@@ -620,6 +664,8 @@ export type PassengerProfileUncheckedCreateWithoutUserInput = {
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutPassengerInput
   deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutPassengerInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutPassengerInput
+  goPointBalance?: Prisma.GoPointBalanceUncheckedCreateNestedOneWithoutPassengerInput
+  goPointLedger?: Prisma.GoPointLedgerUncheckedCreateNestedManyWithoutPassengerInput
 }
 
 export type PassengerProfileCreateOrConnectWithoutUserInput = {
@@ -651,6 +697,8 @@ export type PassengerProfileUpdateWithoutUserInput = {
   rides?: Prisma.RideUpdateManyWithoutPassengerNestedInput
   deliveries?: Prisma.DeliveryRequestUpdateManyWithoutPassengerNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutPassengerNestedInput
+  goPointBalance?: Prisma.GoPointBalanceUpdateOneWithoutPassengerNestedInput
+  goPointLedger?: Prisma.GoPointLedgerUpdateManyWithoutPassengerNestedInput
 }
 
 export type PassengerProfileUncheckedUpdateWithoutUserInput = {
@@ -666,6 +714,8 @@ export type PassengerProfileUncheckedUpdateWithoutUserInput = {
   rides?: Prisma.RideUncheckedUpdateManyWithoutPassengerNestedInput
   deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutPassengerNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutPassengerNestedInput
+  goPointBalance?: Prisma.GoPointBalanceUncheckedUpdateOneWithoutPassengerNestedInput
+  goPointLedger?: Prisma.GoPointLedgerUncheckedUpdateManyWithoutPassengerNestedInput
 }
 
 export type PassengerProfileCreateWithoutRidesInput = {
@@ -681,6 +731,8 @@ export type PassengerProfileCreateWithoutRidesInput = {
   user: Prisma.UserCreateNestedOneWithoutPassengerProfileInput
   deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutPassengerInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutPassengerInput
+  goPointBalance?: Prisma.GoPointBalanceCreateNestedOneWithoutPassengerInput
+  goPointLedger?: Prisma.GoPointLedgerCreateNestedManyWithoutPassengerInput
 }
 
 export type PassengerProfileUncheckedCreateWithoutRidesInput = {
@@ -696,6 +748,8 @@ export type PassengerProfileUncheckedCreateWithoutRidesInput = {
   deletedAt?: Date | string | null
   deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutPassengerInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutPassengerInput
+  goPointBalance?: Prisma.GoPointBalanceUncheckedCreateNestedOneWithoutPassengerInput
+  goPointLedger?: Prisma.GoPointLedgerUncheckedCreateNestedManyWithoutPassengerInput
 }
 
 export type PassengerProfileCreateOrConnectWithoutRidesInput = {
@@ -727,6 +781,8 @@ export type PassengerProfileUpdateWithoutRidesInput = {
   user?: Prisma.UserUpdateOneRequiredWithoutPassengerProfileNestedInput
   deliveries?: Prisma.DeliveryRequestUpdateManyWithoutPassengerNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutPassengerNestedInput
+  goPointBalance?: Prisma.GoPointBalanceUpdateOneWithoutPassengerNestedInput
+  goPointLedger?: Prisma.GoPointLedgerUpdateManyWithoutPassengerNestedInput
 }
 
 export type PassengerProfileUncheckedUpdateWithoutRidesInput = {
@@ -742,6 +798,8 @@ export type PassengerProfileUncheckedUpdateWithoutRidesInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutPassengerNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutPassengerNestedInput
+  goPointBalance?: Prisma.GoPointBalanceUncheckedUpdateOneWithoutPassengerNestedInput
+  goPointLedger?: Prisma.GoPointLedgerUncheckedUpdateManyWithoutPassengerNestedInput
 }
 
 export type PassengerProfileCreateWithoutDeliveriesInput = {
@@ -757,6 +815,8 @@ export type PassengerProfileCreateWithoutDeliveriesInput = {
   user: Prisma.UserCreateNestedOneWithoutPassengerProfileInput
   rides?: Prisma.RideCreateNestedManyWithoutPassengerInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutPassengerInput
+  goPointBalance?: Prisma.GoPointBalanceCreateNestedOneWithoutPassengerInput
+  goPointLedger?: Prisma.GoPointLedgerCreateNestedManyWithoutPassengerInput
 }
 
 export type PassengerProfileUncheckedCreateWithoutDeliveriesInput = {
@@ -772,6 +832,8 @@ export type PassengerProfileUncheckedCreateWithoutDeliveriesInput = {
   deletedAt?: Date | string | null
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutPassengerInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutPassengerInput
+  goPointBalance?: Prisma.GoPointBalanceUncheckedCreateNestedOneWithoutPassengerInput
+  goPointLedger?: Prisma.GoPointLedgerUncheckedCreateNestedManyWithoutPassengerInput
 }
 
 export type PassengerProfileCreateOrConnectWithoutDeliveriesInput = {
@@ -803,6 +865,8 @@ export type PassengerProfileUpdateWithoutDeliveriesInput = {
   user?: Prisma.UserUpdateOneRequiredWithoutPassengerProfileNestedInput
   rides?: Prisma.RideUpdateManyWithoutPassengerNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutPassengerNestedInput
+  goPointBalance?: Prisma.GoPointBalanceUpdateOneWithoutPassengerNestedInput
+  goPointLedger?: Prisma.GoPointLedgerUpdateManyWithoutPassengerNestedInput
 }
 
 export type PassengerProfileUncheckedUpdateWithoutDeliveriesInput = {
@@ -818,6 +882,8 @@ export type PassengerProfileUncheckedUpdateWithoutDeliveriesInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rides?: Prisma.RideUncheckedUpdateManyWithoutPassengerNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutPassengerNestedInput
+  goPointBalance?: Prisma.GoPointBalanceUncheckedUpdateOneWithoutPassengerNestedInput
+  goPointLedger?: Prisma.GoPointLedgerUncheckedUpdateManyWithoutPassengerNestedInput
 }
 
 export type PassengerProfileCreateWithoutPromoRedemptionsInput = {
@@ -833,6 +899,8 @@ export type PassengerProfileCreateWithoutPromoRedemptionsInput = {
   user: Prisma.UserCreateNestedOneWithoutPassengerProfileInput
   rides?: Prisma.RideCreateNestedManyWithoutPassengerInput
   deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutPassengerInput
+  goPointBalance?: Prisma.GoPointBalanceCreateNestedOneWithoutPassengerInput
+  goPointLedger?: Prisma.GoPointLedgerCreateNestedManyWithoutPassengerInput
 }
 
 export type PassengerProfileUncheckedCreateWithoutPromoRedemptionsInput = {
@@ -848,6 +916,8 @@ export type PassengerProfileUncheckedCreateWithoutPromoRedemptionsInput = {
   deletedAt?: Date | string | null
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutPassengerInput
   deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutPassengerInput
+  goPointBalance?: Prisma.GoPointBalanceUncheckedCreateNestedOneWithoutPassengerInput
+  goPointLedger?: Prisma.GoPointLedgerUncheckedCreateNestedManyWithoutPassengerInput
 }
 
 export type PassengerProfileCreateOrConnectWithoutPromoRedemptionsInput = {
@@ -879,6 +949,8 @@ export type PassengerProfileUpdateWithoutPromoRedemptionsInput = {
   user?: Prisma.UserUpdateOneRequiredWithoutPassengerProfileNestedInput
   rides?: Prisma.RideUpdateManyWithoutPassengerNestedInput
   deliveries?: Prisma.DeliveryRequestUpdateManyWithoutPassengerNestedInput
+  goPointBalance?: Prisma.GoPointBalanceUpdateOneWithoutPassengerNestedInput
+  goPointLedger?: Prisma.GoPointLedgerUpdateManyWithoutPassengerNestedInput
 }
 
 export type PassengerProfileUncheckedUpdateWithoutPromoRedemptionsInput = {
@@ -894,6 +966,176 @@ export type PassengerProfileUncheckedUpdateWithoutPromoRedemptionsInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rides?: Prisma.RideUncheckedUpdateManyWithoutPassengerNestedInput
   deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutPassengerNestedInput
+  goPointBalance?: Prisma.GoPointBalanceUncheckedUpdateOneWithoutPassengerNestedInput
+  goPointLedger?: Prisma.GoPointLedgerUncheckedUpdateManyWithoutPassengerNestedInput
+}
+
+export type PassengerProfileCreateWithoutGoPointBalanceInput = {
+  id?: string
+  referralCode: string
+  preferredPayment?: $Enums.PaymentMethod | null
+  defaultServiceCity?: string | null
+  ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalTrips?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  user: Prisma.UserCreateNestedOneWithoutPassengerProfileInput
+  rides?: Prisma.RideCreateNestedManyWithoutPassengerInput
+  deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutPassengerInput
+  promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutPassengerInput
+  goPointLedger?: Prisma.GoPointLedgerCreateNestedManyWithoutPassengerInput
+}
+
+export type PassengerProfileUncheckedCreateWithoutGoPointBalanceInput = {
+  id?: string
+  userId: string
+  referralCode: string
+  preferredPayment?: $Enums.PaymentMethod | null
+  defaultServiceCity?: string | null
+  ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalTrips?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  rides?: Prisma.RideUncheckedCreateNestedManyWithoutPassengerInput
+  deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutPassengerInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutPassengerInput
+  goPointLedger?: Prisma.GoPointLedgerUncheckedCreateNestedManyWithoutPassengerInput
+}
+
+export type PassengerProfileCreateOrConnectWithoutGoPointBalanceInput = {
+  where: Prisma.PassengerProfileWhereUniqueInput
+  create: Prisma.XOR<Prisma.PassengerProfileCreateWithoutGoPointBalanceInput, Prisma.PassengerProfileUncheckedCreateWithoutGoPointBalanceInput>
+}
+
+export type PassengerProfileUpsertWithoutGoPointBalanceInput = {
+  update: Prisma.XOR<Prisma.PassengerProfileUpdateWithoutGoPointBalanceInput, Prisma.PassengerProfileUncheckedUpdateWithoutGoPointBalanceInput>
+  create: Prisma.XOR<Prisma.PassengerProfileCreateWithoutGoPointBalanceInput, Prisma.PassengerProfileUncheckedCreateWithoutGoPointBalanceInput>
+  where?: Prisma.PassengerProfileWhereInput
+}
+
+export type PassengerProfileUpdateToOneWithWhereWithoutGoPointBalanceInput = {
+  where?: Prisma.PassengerProfileWhereInput
+  data: Prisma.XOR<Prisma.PassengerProfileUpdateWithoutGoPointBalanceInput, Prisma.PassengerProfileUncheckedUpdateWithoutGoPointBalanceInput>
+}
+
+export type PassengerProfileUpdateWithoutGoPointBalanceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  referralCode?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredPayment?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  defaultServiceCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalTrips?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  user?: Prisma.UserUpdateOneRequiredWithoutPassengerProfileNestedInput
+  rides?: Prisma.RideUpdateManyWithoutPassengerNestedInput
+  deliveries?: Prisma.DeliveryRequestUpdateManyWithoutPassengerNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutPassengerNestedInput
+  goPointLedger?: Prisma.GoPointLedgerUpdateManyWithoutPassengerNestedInput
+}
+
+export type PassengerProfileUncheckedUpdateWithoutGoPointBalanceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  referralCode?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredPayment?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  defaultServiceCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalTrips?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rides?: Prisma.RideUncheckedUpdateManyWithoutPassengerNestedInput
+  deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutPassengerNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutPassengerNestedInput
+  goPointLedger?: Prisma.GoPointLedgerUncheckedUpdateManyWithoutPassengerNestedInput
+}
+
+export type PassengerProfileCreateWithoutGoPointLedgerInput = {
+  id?: string
+  referralCode: string
+  preferredPayment?: $Enums.PaymentMethod | null
+  defaultServiceCity?: string | null
+  ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalTrips?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  user: Prisma.UserCreateNestedOneWithoutPassengerProfileInput
+  rides?: Prisma.RideCreateNestedManyWithoutPassengerInput
+  deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutPassengerInput
+  promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutPassengerInput
+  goPointBalance?: Prisma.GoPointBalanceCreateNestedOneWithoutPassengerInput
+}
+
+export type PassengerProfileUncheckedCreateWithoutGoPointLedgerInput = {
+  id?: string
+  userId: string
+  referralCode: string
+  preferredPayment?: $Enums.PaymentMethod | null
+  defaultServiceCity?: string | null
+  ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalTrips?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  rides?: Prisma.RideUncheckedCreateNestedManyWithoutPassengerInput
+  deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutPassengerInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutPassengerInput
+  goPointBalance?: Prisma.GoPointBalanceUncheckedCreateNestedOneWithoutPassengerInput
+}
+
+export type PassengerProfileCreateOrConnectWithoutGoPointLedgerInput = {
+  where: Prisma.PassengerProfileWhereUniqueInput
+  create: Prisma.XOR<Prisma.PassengerProfileCreateWithoutGoPointLedgerInput, Prisma.PassengerProfileUncheckedCreateWithoutGoPointLedgerInput>
+}
+
+export type PassengerProfileUpsertWithoutGoPointLedgerInput = {
+  update: Prisma.XOR<Prisma.PassengerProfileUpdateWithoutGoPointLedgerInput, Prisma.PassengerProfileUncheckedUpdateWithoutGoPointLedgerInput>
+  create: Prisma.XOR<Prisma.PassengerProfileCreateWithoutGoPointLedgerInput, Prisma.PassengerProfileUncheckedCreateWithoutGoPointLedgerInput>
+  where?: Prisma.PassengerProfileWhereInput
+}
+
+export type PassengerProfileUpdateToOneWithWhereWithoutGoPointLedgerInput = {
+  where?: Prisma.PassengerProfileWhereInput
+  data: Prisma.XOR<Prisma.PassengerProfileUpdateWithoutGoPointLedgerInput, Prisma.PassengerProfileUncheckedUpdateWithoutGoPointLedgerInput>
+}
+
+export type PassengerProfileUpdateWithoutGoPointLedgerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  referralCode?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredPayment?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  defaultServiceCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalTrips?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  user?: Prisma.UserUpdateOneRequiredWithoutPassengerProfileNestedInput
+  rides?: Prisma.RideUpdateManyWithoutPassengerNestedInput
+  deliveries?: Prisma.DeliveryRequestUpdateManyWithoutPassengerNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutPassengerNestedInput
+  goPointBalance?: Prisma.GoPointBalanceUpdateOneWithoutPassengerNestedInput
+}
+
+export type PassengerProfileUncheckedUpdateWithoutGoPointLedgerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  referralCode?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredPayment?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  defaultServiceCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalTrips?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rides?: Prisma.RideUncheckedUpdateManyWithoutPassengerNestedInput
+  deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutPassengerNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutPassengerNestedInput
+  goPointBalance?: Prisma.GoPointBalanceUncheckedUpdateOneWithoutPassengerNestedInput
 }
 
 
@@ -905,12 +1147,14 @@ export type PassengerProfileCountOutputType = {
   rides: number
   deliveries: number
   promoRedemptions: number
+  goPointLedger: number
 }
 
 export type PassengerProfileCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   rides?: boolean | PassengerProfileCountOutputTypeCountRidesArgs
   deliveries?: boolean | PassengerProfileCountOutputTypeCountDeliveriesArgs
   promoRedemptions?: boolean | PassengerProfileCountOutputTypeCountPromoRedemptionsArgs
+  goPointLedger?: boolean | PassengerProfileCountOutputTypeCountGoPointLedgerArgs
 }
 
 /**
@@ -944,6 +1188,13 @@ export type PassengerProfileCountOutputTypeCountPromoRedemptionsArgs<ExtArgs ext
   where?: Prisma.PromoRedemptionWhereInput
 }
 
+/**
+ * PassengerProfileCountOutputType without action
+ */
+export type PassengerProfileCountOutputTypeCountGoPointLedgerArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.GoPointLedgerWhereInput
+}
+
 
 export type PassengerProfileSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -960,6 +1211,8 @@ export type PassengerProfileSelect<ExtArgs extends runtime.Types.Extensions.Inte
   rides?: boolean | Prisma.PassengerProfile$ridesArgs<ExtArgs>
   deliveries?: boolean | Prisma.PassengerProfile$deliveriesArgs<ExtArgs>
   promoRedemptions?: boolean | Prisma.PassengerProfile$promoRedemptionsArgs<ExtArgs>
+  goPointBalance?: boolean | Prisma.PassengerProfile$goPointBalanceArgs<ExtArgs>
+  goPointLedger?: boolean | Prisma.PassengerProfile$goPointLedgerArgs<ExtArgs>
   _count?: boolean | Prisma.PassengerProfileCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["passengerProfile"]>
 
@@ -1010,6 +1263,8 @@ export type PassengerProfileInclude<ExtArgs extends runtime.Types.Extensions.Int
   rides?: boolean | Prisma.PassengerProfile$ridesArgs<ExtArgs>
   deliveries?: boolean | Prisma.PassengerProfile$deliveriesArgs<ExtArgs>
   promoRedemptions?: boolean | Prisma.PassengerProfile$promoRedemptionsArgs<ExtArgs>
+  goPointBalance?: boolean | Prisma.PassengerProfile$goPointBalanceArgs<ExtArgs>
+  goPointLedger?: boolean | Prisma.PassengerProfile$goPointLedgerArgs<ExtArgs>
   _count?: boolean | Prisma.PassengerProfileCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PassengerProfileIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1026,6 +1281,8 @@ export type $PassengerProfilePayload<ExtArgs extends runtime.Types.Extensions.In
     rides: Prisma.$RidePayload<ExtArgs>[]
     deliveries: Prisma.$DeliveryRequestPayload<ExtArgs>[]
     promoRedemptions: Prisma.$PromoRedemptionPayload<ExtArgs>[]
+    goPointBalance: Prisma.$GoPointBalancePayload<ExtArgs> | null
+    goPointLedger: Prisma.$GoPointLedgerPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1436,6 +1693,8 @@ export interface Prisma__PassengerProfileClient<T, Null = never, ExtArgs extends
   rides<T extends Prisma.PassengerProfile$ridesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PassengerProfile$ridesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RidePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   deliveries<T extends Prisma.PassengerProfile$deliveriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PassengerProfile$deliveriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeliveryRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   promoRedemptions<T extends Prisma.PassengerProfile$promoRedemptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PassengerProfile$promoRedemptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PromoRedemptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  goPointBalance<T extends Prisma.PassengerProfile$goPointBalanceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PassengerProfile$goPointBalanceArgs<ExtArgs>>): Prisma.Prisma__GoPointBalanceClient<runtime.Types.Result.GetResult<Prisma.$GoPointBalancePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  goPointLedger<T extends Prisma.PassengerProfile$goPointLedgerArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PassengerProfile$goPointLedgerArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GoPointLedgerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1945,6 +2204,49 @@ export type PassengerProfile$promoRedemptionsArgs<ExtArgs extends runtime.Types.
   take?: number
   skip?: number
   distinct?: Prisma.PromoRedemptionScalarFieldEnum | Prisma.PromoRedemptionScalarFieldEnum[]
+}
+
+/**
+ * PassengerProfile.goPointBalance
+ */
+export type PassengerProfile$goPointBalanceArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the GoPointBalance
+   */
+  select?: Prisma.GoPointBalanceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the GoPointBalance
+   */
+  omit?: Prisma.GoPointBalanceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GoPointBalanceInclude<ExtArgs> | null
+  where?: Prisma.GoPointBalanceWhereInput
+}
+
+/**
+ * PassengerProfile.goPointLedger
+ */
+export type PassengerProfile$goPointLedgerArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the GoPointLedger
+   */
+  select?: Prisma.GoPointLedgerSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the GoPointLedger
+   */
+  omit?: Prisma.GoPointLedgerOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GoPointLedgerInclude<ExtArgs> | null
+  where?: Prisma.GoPointLedgerWhereInput
+  orderBy?: Prisma.GoPointLedgerOrderByWithRelationInput | Prisma.GoPointLedgerOrderByWithRelationInput[]
+  cursor?: Prisma.GoPointLedgerWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.GoPointLedgerScalarFieldEnum | Prisma.GoPointLedgerScalarFieldEnum[]
 }
 
 /**

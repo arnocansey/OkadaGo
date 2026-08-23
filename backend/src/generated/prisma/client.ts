@@ -243,3 +243,28 @@ export type ScheduledBroadcast = Prisma.ScheduledBroadcastModel
  * 
  */
 export type OpsJobHeartbeat = Prisma.OpsJobHeartbeatModel
+/**
+ * Model GoPointRule
+ * 
+ */
+export type GoPointRule = Prisma.GoPointRuleModel
+/**
+ * Model GoPointBalance
+ * 
+ */
+export type GoPointBalance = Prisma.GoPointBalanceModel
+/**
+ * Model GoPointLedger
+ * 
+ */
+export type GoPointLedger = Prisma.GoPointLedgerModel
+/**
+ * Model GoPointRedemption
+ * 
+ */
+export type GoPointRedemption = Prisma.GoPointRedemptionModel
+/**
+ * Model MessageTemplate
+ * 
+ */
+export type MessageTemplate = Prisma.MessageTemplateModel

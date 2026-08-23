@@ -546,6 +546,48 @@ export function useAdminData(
   });
   const promoCodes = useMemo(() => promoCodesData ?? [], [promoCodesData]);
 
+  // ── GoPoints queries ─────────────────────────────────────────────────────
+  const { data: goPointRulesData } = useQuery<{ id: string; name: string; description?: string; eventType: string; points: number; perUnit: number; minSpend?: number; active: boolean; createdAt: string }[]>({
+    queryKey: QK.goPointRules,
+    queryFn: () => requestJson("/admin/go-point-rules", { token }),
+    enabled: want("goPoints"),
+    staleTime: 30000
+  });
+  const goPointRules = useMemo(() => goPointRulesData ?? [], [goPointRulesData]);
+
+  const { data: goPointBalancesData } = useQuery<{ id: string; passengerId: string; points: number; totalEarned: number; totalRedeemed: number; passenger: { user: { fullName: string; phoneE164: string } } }[]>({
+    queryKey: QK.goPointBalances,
+    queryFn: () => requestJson("/admin/go-point-balances", { token }),
+    enabled: want("goPoints"),
+    staleTime: 30000
+  });
+  const goPointBalances = useMemo(() => goPointBalancesData ?? [], [goPointBalancesData]);
+
+  const { data: goPointLedgerData } = useQuery<{ id: string; passengerId: string; type: string; points: number; description?: string; referenceId?: string; createdAt: string; passenger: { user: { fullName: string } } }[]>({
+    queryKey: QK.goPointLedger,
+    queryFn: () => requestJson("/admin/go-point-ledger?limit=200", { token }),
+    enabled: want("goPoints"),
+    staleTime: 30000
+  });
+  const goPointLedger = useMemo(() => goPointLedgerData ?? [], [goPointLedgerData]);
+
+  const { data: goPointRedemptionsData } = useQuery<{ id: string; name: string; description?: string; pointsCost: number; cashValue: number; available: boolean }[]>({
+    queryKey: QK.goPointRedemptions,
+    queryFn: () => requestJson("/admin/go-point-redemptions", { token }),
+    enabled: want("goPoints"),
+    staleTime: 30000
+  });
+  const goPointRedemptions = useMemo(() => goPointRedemptionsData ?? [], [goPointRedemptionsData]);
+
+  // ── Message Templates ────────────────────────────────────────────────────
+  const { data: messageTemplatesData } = useQuery<{ id: string; name: string; category: string; channel: string; subject: string; body: string; active: boolean; createdAt: string; updatedAt: string }[]>({
+    queryKey: QK.messageTemplates,
+    queryFn: () => requestJson("/admin/message-templates", { token }),
+    enabled: want("messageTemplates"),
+    staleTime: 30000
+  });
+  const messageTemplates = useMemo(() => messageTemplatesData ?? [], [messageTemplatesData]);
+
   // ── live ops stream (SSE) — map / SOS screens only ──────────────────────────
   const { liveSnapshot, liveSos, liveOpsConnected, liveOpsTimestamp } = useAdminLiveOps({
     enabled: want("liveStream") && tabVisible,
@@ -2235,8 +2277,14 @@ export function useAdminData(
       { label: "Referral spend", value: `${adminCurrency} ${referralSpend.toFixed(0)}` },
       { label: "Promo rides", value: `${promoAdjustedTrips.length}` }
     ],
-    goPoints: [],
-    messageTemplates: [],
+    goPoints: [
+      { label: "Rules", value: `${goPointRules.length}` },
+      { label: "Members", value: `${goPointBalances.length}` }
+    ],
+    messageTemplates: [
+      { label: "Templates", value: `${messageTemplates.length}` },
+      { label: "Active", value: `${messageTemplates.filter((t) => t.active).length}` }
+    ],
     safetyCenter: [
       { label: "Open incidents", value: `${openSosCount}` },
       { label: "Escalation rules", value: `${escalationRules.length}` }
@@ -2255,7 +2303,7 @@ export function useAdminData(
     blockedUsers, totalRevenue, pendingPayoutRequests, ratings, promoAdjustedTrips, promoSpend,
     zones, openTickets, resolvedTickets, auditLogs, adminAccounts, eligiblePassengers,
     supportTickets, openSosCount, incidents, scheduledBroadcasts, escalationRules,
-    walletTransactions
+    walletTransactions, goPointRules, goPointBalances, messageTemplates
   ]);
 
   // ── platform settings persistence ───────────────────────────────────────────
@@ -2480,6 +2528,8 @@ export function useAdminData(
     userLocationSnapshot, userLocationMax, recentManagedUsers,
     promoAdjustedTrips, topDiscountedRides, promoSpend, referralSpend, promotionZoneSnapshot,
     promoCodes, promoCodesPending,
+    goPointRules, goPointBalances, goPointLedger, goPointRedemptions,
+    messageTemplates,
     ridersPerZone, ridesPerZone,
     rideZoneSnapshot, riderCitySnapshot, riderZoneSnapshot,
     rideStatusGroups, visibleRequestCards, visibleDeliveryRequestCards,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { formatMoney } from "@/lib/currency";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 import {
@@ -17,9 +17,54 @@ import {
 
 /* ── Types ────────────────────────────────────────────────────────────────── */
 
+export type GoPointRuleRecord = {
+  id: string;
+  name: string;
+  description?: string;
+  eventType: string;
+  points: number;
+  perUnit: number;
+  minSpend?: number;
+  active: boolean;
+  createdAt: string;
+};
+
+export type GoPointBalanceRecord = {
+  id: string;
+  passengerId: string;
+  points: number;
+  totalEarned: number;
+  totalRedeemed: number;
+  passenger: { user: { fullName: string; phoneE164: string } };
+};
+
+export type GoPointLedgerRecord = {
+  id: string;
+  passengerId: string;
+  type: string;
+  points: number;
+  description?: string;
+  referenceId?: string;
+  createdAt: string;
+  passenger: { user: { fullName: string } };
+};
+
+export type GoPointRedemptionRecord = {
+  id: string;
+  name: string;
+  description?: string;
+  pointsCost: number;
+  cashValue: number;
+  available: boolean;
+};
+
 export type GoPointsScreenProps = {
   adminCurrency: string;
   dataLoading?: boolean;
+  goPointRules: GoPointRuleRecord[];
+  goPointBalances: GoPointBalanceRecord[];
+  goPointLedger: GoPointLedgerRecord[];
+  goPointRedemptions: GoPointRedemptionRecord[];
 };
 
 type TabId = "earn" | "redemption" | "ledger" | "balances";
@@ -31,44 +76,48 @@ const TABS: Array<{ id: TabId; label: string }> = [
   { id: "balances", label: "Member Balances" },
 ];
 
-/* ── Sample Data ──────────────────────────────────────────────────────────── */
-
-const EARN_RULES = [
-  { rule: "Per Ride (GHS 1 base)", perUnit: 10, minSpend: "—", status: "active" },
-  { rule: "Per KM Bonus", perUnit: 5, minSpend: "—", status: "active" },
-  { rule: "First Ride Bonus", perUnit: 100, minSpend: "—", status: "active" },
-  { rule: "Referral Bonus", perUnit: 250, minSpend: "—", status: "active" },
-  { rule: "Rating Bonus (5★)", perUnit: 50, minSpend: "—", status: "inactive" },
-];
-
-const REDEMPTION_CATALOG = [
-  { reward: "GHS 5 Credit", points: 500, cashValue: 5, available: true },
-  { reward: "GHS 10 Credit", points: 950, cashValue: 10, available: true },
-  { reward: "Free Ride (up to GHS 15)", points: 1400, cashValue: 15, available: true },
-  { reward: "GHS 20 Credit", points: 1800, cashValue: 20, available: false },
-];
-
-const LEDGER_ENTRIES = [
-  { date: "2026-08-15 14:22", user: "Kwame A.", action: "Ride Completed", points: 45, balance: 1230 },
-  { date: "2026-08-15 11:05", user: "Ama D.", action: "Referral Bonus", points: 250, balance: 250 },
-  { date: "2026-08-14 18:40", user: "Kofi M.", action: "Points Redeemed", points: -500, balance: 890 },
-  { date: "2026-08-14 09:12", user: "Efua S.", action: "First Ride Bonus", points: 100, balance: 100 },
-  { date: "2026-08-13 16:55", user: "Kwame A.", action: "Ride Completed", points: 30, balance: 1185 },
-];
-
-const MEMBER_BALANCES = [
-  { user: "Kwame Asante", earned: 2450, redeemed: 1220, balance: 1230, tier: "Gold" },
-  { user: "Ama Darko", earned: 1800, redeemed: 850, balance: 950, tier: "Silver" },
-  { user: "Kofi Mensah", earned: 1390, redeemed: 500, balance: 890, tier: "Silver" },
-  { user: "Efua Sarpong", earned: 100, redeemed: 0, balance: 100, tier: "Bronze" },
-  { user: "Yaw Boateng", earned: 3200, redeemed: 2100, balance: 1100, tier: "Gold" },
-];
-
 /* ══════════════════════════════════════════════════════════════════════════════ */
 
-export function GoPointsScreen({ adminCurrency, dataLoading = false }: GoPointsScreenProps) {
+export function GoPointsScreen({
+  adminCurrency,
+  dataLoading = false,
+  goPointRules,
+  goPointBalances,
+  goPointLedger,
+  goPointRedemptions,
+}: GoPointsScreenProps) {
   const [activeTab, setActiveTab] = useState<TabId>("earn");
   const [search, setSearch] = useState("");
+
+  const totalIssued = useMemo(() => goPointBalances.reduce((s, b) => s + b.totalEarned, 0), [goPointBalances]);
+  const totalRedeemed = useMemo(() => goPointBalances.reduce((s, b) => s + b.totalRedeemed, 0), [goPointBalances]);
+  const activeMembers = goPointBalances.length;
+  const outstandingPoints = useMemo(() => goPointBalances.reduce((s, b) => s + b.points, 0), [goPointBalances]);
+  const redemptionRate = totalIssued > 0 ? ((totalRedeemed / totalIssued) * 100).toFixed(1) : "0.0";
+
+  const filteredRules = useMemo(() => {
+    if (!search) return goPointRules;
+    const q = search.toLowerCase();
+    return goPointRules.filter((r) => r.name.toLowerCase().includes(q) || r.eventType.toLowerCase().includes(q));
+  }, [goPointRules, search]);
+
+  const filteredRedemptions = useMemo(() => {
+    if (!search) return goPointRedemptions;
+    const q = search.toLowerCase();
+    return goPointRedemptions.filter((r) => r.name.toLowerCase().includes(q));
+  }, [goPointRedemptions, search]);
+
+  const filteredLedger = useMemo(() => {
+    if (!search) return goPointLedger;
+    const q = search.toLowerCase();
+    return goPointLedger.filter((l) => l.passenger.user.fullName.toLowerCase().includes(q) || l.type.toLowerCase().includes(q));
+  }, [goPointLedger, search]);
+
+  const filteredBalances = useMemo(() => {
+    if (!search) return goPointBalances;
+    const q = search.toLowerCase();
+    return goPointBalances.filter((b) => b.passenger.user.fullName.toLowerCase().includes(q));
+  }, [goPointBalances, search]);
 
   if (dataLoading) {
     return (
@@ -99,7 +148,7 @@ export function GoPointsScreen({ adminCurrency, dataLoading = false }: GoPointsS
           <div className="gp-kpi-icon"><Award size={18} /></div>
           <div>
             <span>Total Points Issued</span>
-            <strong>245,000</strong>
+            <strong>{totalIssued.toLocaleString()}</strong>
             <small>All time</small>
           </div>
         </article>
@@ -107,32 +156,32 @@ export function GoPointsScreen({ adminCurrency, dataLoading = false }: GoPointsS
           <div className="gp-kpi-icon gp-kpi-icon--green"><Gift size={18} /></div>
           <div>
             <span>Points Redeemed</span>
-            <strong>89,500</strong>
-            <small>36.5% of issued</small>
+            <strong>{totalRedeemed.toLocaleString()}</strong>
+            <small>{redemptionRate}% of issued</small>
           </div>
         </article>
         <article className="gp-kpi-card gp-kpi--blue">
           <div className="gp-kpi-icon gp-kpi-icon--blue"><Users size={18} /></div>
           <div>
             <span>Active Members</span>
-            <strong>1,247</strong>
+            <strong>{activeMembers.toLocaleString()}</strong>
             <small>Enrolled in GoPoints</small>
           </div>
         </article>
         <article className="gp-kpi-card gp-kpi--purple">
           <div className="gp-kpi-icon gp-kpi-icon--purple"><Coins size={18} /></div>
           <div>
-            <span>Points Value</span>
-            <strong>{formatMoney(adminCurrency, 45600)}</strong>
-            <small>Outstanding liability</small>
+            <span>Outstanding Points</span>
+            <strong>{outstandingPoints.toLocaleString()}</strong>
+            <small>Not yet redeemed</small>
           </div>
         </article>
         <article className="gp-kpi-card gp-kpi--orange">
           <div className="gp-kpi-icon gp-kpi-icon--orange"><TrendingUp size={18} /></div>
           <div>
-            <span>Redemption Rate</span>
-            <strong>36.5%</strong>
-            <small>Healthy engagement</small>
+            <span>Earn Rules</span>
+            <strong>{goPointRules.length}</strong>
+            <small>{goPointRules.filter((r) => r.active).length} active</small>
           </div>
         </article>
       </section>
@@ -178,20 +227,26 @@ export function GoPointsScreen({ adminCurrency, dataLoading = false }: GoPointsS
               <thead>
                 <tr>
                   <th>Rule</th>
-                  <th>Points per Unit</th>
-                  <th>Minimum Spend</th>
+                  <th>Event Type</th>
+                  <th>Points</th>
+                  <th>Per Unit</th>
+                  <th>Min Spend</th>
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
-                {EARN_RULES.map((row) => (
-                  <tr key={row.rule}>
-                    <td><strong>{row.rule}</strong></td>
-                    <td><span className="gp-points-badge">+{row.perUnit}</span></td>
-                    <td>{row.minSpend}</td>
+                {filteredRules.length === 0 ? (
+                  <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--text-muted)", padding: 24 }}>No earn rules found</td></tr>
+                ) : filteredRules.map((row) => (
+                  <tr key={row.id}>
+                    <td><strong>{row.name}</strong></td>
+                    <td className="gp-muted">{row.eventType}</td>
+                    <td><span className="gp-points-badge">+{row.points}</span></td>
+                    <td>{row.perUnit}</td>
+                    <td>{row.minSpend != null ? formatMoney(adminCurrency, row.minSpend) : "—"}</td>
                     <td>
-                      <span className={`gp-status gp-status--${row.status}`}>
-                        {row.status === "active" ? "Active" : "Inactive"}
+                      <span className={`gp-status gp-status--${row.active ? "active" : "inactive"}`}>
+                        {row.active ? "Active" : "Inactive"}
                       </span>
                     </td>
                   </tr>
@@ -219,10 +274,12 @@ export function GoPointsScreen({ adminCurrency, dataLoading = false }: GoPointsS
                 </tr>
               </thead>
               <tbody>
-                {REDEMPTION_CATALOG.map((row) => (
-                  <tr key={row.reward}>
-                    <td><strong>{row.reward}</strong></td>
-                    <td><span className="gp-points-badge">{row.points.toLocaleString()}</span></td>
+                {filteredRedemptions.length === 0 ? (
+                  <tr><td colSpan={4} style={{ textAlign: "center", color: "var(--text-muted)", padding: 24 }}>No redemption items found</td></tr>
+                ) : filteredRedemptions.map((row) => (
+                  <tr key={row.id}>
+                    <td><strong>{row.name}</strong></td>
+                    <td><span className="gp-points-badge">{row.pointsCost.toLocaleString()}</span></td>
                     <td>{formatMoney(adminCurrency, row.cashValue)}</td>
                     <td>
                       <span className={`gp-status gp-status--${row.available ? "active" : "inactive"}`}>
@@ -249,23 +306,25 @@ export function GoPointsScreen({ adminCurrency, dataLoading = false }: GoPointsS
                 <tr>
                   <th>Date</th>
                   <th>User</th>
-                  <th>Action</th>
+                  <th>Type</th>
+                  <th>Description</th>
                   <th>Points</th>
-                  <th>Balance</th>
                 </tr>
               </thead>
               <tbody>
-                {LEDGER_ENTRIES.map((row, i) => (
-                  <tr key={i}>
-                    <td className="gp-muted">{row.date}</td>
-                    <td><strong>{row.user}</strong></td>
-                    <td>{row.action}</td>
+                {filteredLedger.length === 0 ? (
+                  <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--text-muted)", padding: 24 }}>No ledger entries found</td></tr>
+                ) : filteredLedger.map((row) => (
+                  <tr key={row.id}>
+                    <td className="gp-muted">{new Date(row.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</td>
+                    <td><strong>{row.passenger.user.fullName}</strong></td>
+                    <td>{row.type}</td>
+                    <td className="gp-muted">{row.description ?? "—"}</td>
                     <td>
                       <span className={`gp-points-change ${row.points < 0 ? "gp-points-change--negative" : ""}`}>
                         {row.points > 0 ? "+" : ""}{row.points}
                       </span>
                     </td>
-                    <td>{row.balance.toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
@@ -288,22 +347,17 @@ export function GoPointsScreen({ adminCurrency, dataLoading = false }: GoPointsS
                   <th>Total Earned</th>
                   <th>Total Redeemed</th>
                   <th>Current Balance</th>
-                  <th>Tier</th>
                 </tr>
               </thead>
               <tbody>
-                {MEMBER_BALANCES.map((row) => (
-                  <tr key={row.user}>
-                    <td><strong>{row.user}</strong></td>
-                    <td>{row.earned.toLocaleString()}</td>
-                    <td>{row.redeemed.toLocaleString()}</td>
-                    <td><span className="gp-points-badge">{row.balance.toLocaleString()}</span></td>
-                    <td>
-                      <span className={`gp-tier gp-tier--${row.tier.toLowerCase()}`}>
-                        {row.tier === "Gold" && <Star size={12} />}
-                        {row.tier}
-                      </span>
-                    </td>
+                {filteredBalances.length === 0 ? (
+                  <tr><td colSpan={4} style={{ textAlign: "center", color: "var(--text-muted)", padding: 24 }}>No member balances found</td></tr>
+                ) : filteredBalances.map((row) => (
+                  <tr key={row.id}>
+                    <td><strong>{row.passenger.user.fullName}</strong></td>
+                    <td>{row.totalEarned.toLocaleString()}</td>
+                    <td>{row.totalRedeemed.toLocaleString()}</td>
+                    <td><span className="gp-points-badge">{row.points.toLocaleString()}</span></td>
                   </tr>
                 ))}
               </tbody>

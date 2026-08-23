@@ -90,7 +90,12 @@ export const ModelName = {
   AuditLog: 'AuditLog',
   EscalationRule: 'EscalationRule',
   ScheduledBroadcast: 'ScheduledBroadcast',
-  OpsJobHeartbeat: 'OpsJobHeartbeat'
+  OpsJobHeartbeat: 'OpsJobHeartbeat',
+  GoPointRule: 'GoPointRule',
+  GoPointBalance: 'GoPointBalance',
+  GoPointLedger: 'GoPointLedger',
+  GoPointRedemption: 'GoPointRedemption',
+  MessageTemplate: 'MessageTemplate'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -870,6 +875,77 @@ export const OpsJobHeartbeatScalarFieldEnum = {
 } as const
 
 export type OpsJobHeartbeatScalarFieldEnum = (typeof OpsJobHeartbeatScalarFieldEnum)[keyof typeof OpsJobHeartbeatScalarFieldEnum]
+
+
+export const GoPointRuleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  eventType: 'eventType',
+  points: 'points',
+  perUnit: 'perUnit',
+  minSpend: 'minSpend',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GoPointRuleScalarFieldEnum = (typeof GoPointRuleScalarFieldEnum)[keyof typeof GoPointRuleScalarFieldEnum]
+
+
+export const GoPointBalanceScalarFieldEnum = {
+  id: 'id',
+  passengerId: 'passengerId',
+  points: 'points',
+  totalEarned: 'totalEarned',
+  totalRedeemed: 'totalRedeemed',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GoPointBalanceScalarFieldEnum = (typeof GoPointBalanceScalarFieldEnum)[keyof typeof GoPointBalanceScalarFieldEnum]
+
+
+export const GoPointLedgerScalarFieldEnum = {
+  id: 'id',
+  passengerId: 'passengerId',
+  type: 'type',
+  points: 'points',
+  description: 'description',
+  referenceId: 'referenceId',
+  createdAt: 'createdAt'
+} as const
+
+export type GoPointLedgerScalarFieldEnum = (typeof GoPointLedgerScalarFieldEnum)[keyof typeof GoPointLedgerScalarFieldEnum]
+
+
+export const GoPointRedemptionScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  pointsCost: 'pointsCost',
+  cashValue: 'cashValue',
+  available: 'available',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GoPointRedemptionScalarFieldEnum = (typeof GoPointRedemptionScalarFieldEnum)[keyof typeof GoPointRedemptionScalarFieldEnum]
+
+
+export const MessageTemplateScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  category: 'category',
+  channel: 'channel',
+  subject: 'subject',
+  body: 'body',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MessageTemplateScalarFieldEnum = (typeof MessageTemplateScalarFieldEnum)[keyof typeof MessageTemplateScalarFieldEnum]
 
 
 export const SortOrder = {

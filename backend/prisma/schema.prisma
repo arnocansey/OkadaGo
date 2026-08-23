@@ -305,6 +305,8 @@ model PassengerProfile {
   rides              Ride[]            @relation("PassengerRides")
   deliveries         DeliveryRequest[] @relation("PassengerDeliveries")
   promoRedemptions   PromoRedemption[]
+  goPointBalance     GoPointBalance?
+  goPointLedger      GoPointLedger[]
 
   @@index([defaultServiceCity])
 }
@@ -1134,4 +1136,72 @@ model OpsJobHeartbeat {
   lastError      String?   @db.VarChar(500)
   lastStats      Json?
   updatedAt      DateTime  @updatedAt
+}
+
+model GoPointRule {
+  id          String   @id @default(cuid())
+  name        String   @db.VarChar(120)
+  description String?  @db.VarChar(300)
+  eventType   String   @db.VarChar(60)
+  points      Int      @default(0)
+  perUnit     Int      @default(1)
+  minSpend    Float?   
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([active])
+}
+
+model GoPointBalance {
+  id          String   @id @default(cuid())
+  passengerId String   @unique
+  points      Int      @default(0)
+  totalEarned Int      @default(0)
+  totalRedeemed Int    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  passenger   PassengerProfile @relation(fields: [passengerId], references: [id])
+
+  @@index([passengerId])
+}
+
+model GoPointLedger {
+  id          String   @id @default(cuid())
+  passengerId String
+  type        String   @db.VarChar(30)
+  points      Int
+  description String?  @db.VarChar(200)
+  referenceId String?
+  createdAt   DateTime @default(now())
+  passenger   PassengerProfile @relation(fields: [passengerId], references: [id])
+
+  @@index([passengerId, createdAt])
+}
+
+model GoPointRedemption {
+  id          String   @id @default(cuid())
+  name        String   @db.VarChar(120)
+  description String?  @db.VarChar(300)
+  pointsCost  Int
+  cashValue   Float
+  available   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([available])
+}
+
+model MessageTemplate {
+  id        String   @id @default(cuid())
+  name      String   @db.VarChar(120)
+  category  String   @db.VarChar(60)
+  channel   String   @db.VarChar(20)
+  subject   String   @db.VarChar(160)
+  body      String   @db.VarChar(1000)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category, active])
 }

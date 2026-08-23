@@ -4,43 +4,34 @@ import { useState, useMemo } from "react";
 import { Mail, MessageSquare, Plus, Search, X, Edit3, Trash2, Copy, Eye, Tag } from "lucide-react";
 import { AdminPageHeader } from "./ui/AdminPageHeader";
 
-export type MessageTemplatesScreenProps = {
-  dataLoading?: boolean;
-};
-
-type Channel = "SMS" | "Push" | "Email";
-type Category = "Ride" | "Delivery" | "Promotion" | "Account" | "Safety";
-
-interface MessageTemplate {
+export type MessageTemplatesScreenRecord = {
   id: string;
   name: string;
-  category: Category;
-  channel: Channel;
+  category: string;
+  channel: string;
   subject: string;
   body: string;
+  active: boolean;
+  createdAt: string;
   updatedAt: string;
-}
+};
 
-const CATEGORY_CHIPS: Category[] = ["Ride", "Delivery", "Promotion", "Account", "Safety"];
+export type MessageTemplatesScreenProps = {
+  dataLoading?: boolean;
+  messageTemplates: MessageTemplatesScreenRecord[];
+};
 
-const SAMPLE_TEMPLATES: MessageTemplate[] = [
-  { id: "1", name: "Ride Assigned", category: "Ride", channel: "Push", subject: "Ride Confirmation", body: "Your ride with {{riderName}} is on the way!", updatedAt: "2026-08-10" },
-  { id: "2", name: "Ride Completed", category: "Ride", channel: "SMS", subject: "Trip Receipt", body: "Thanks for riding! You paid {{amount}} via {{paymentMethod}}.", updatedAt: "2026-08-09" },
-  { id: "3", name: "Promo Alert", category: "Promotion", channel: "Push", subject: "Special Offer", body: "Use code {{code}} for {{discount}} off your next ride!", updatedAt: "2026-08-08" },
-  { id: "4", name: "Rider Verification", category: "Account", channel: "SMS", subject: "Document Status", body: "Your documents have been {{status}}.", updatedAt: "2026-08-07" },
-  { id: "5", name: "SOS Alert", category: "Safety", channel: "SMS", subject: "Emergency Alert", body: "Emergency alert from {{userName}} at {{location}}", updatedAt: "2026-08-06" },
-  { id: "6", name: "Payment Received", category: "Delivery", channel: "Push", subject: "Payment Notification", body: "You received {{amount}} from {{payerName}}", updatedAt: "2026-08-05" },
-  { id: "7", name: "Weekly Summary", category: "Account", channel: "Email", subject: "Weekly Report", body: "This week: {{tripCount}} trips, {{earnings}} earned", updatedAt: "2026-08-04" },
-  { id: "8", name: "Referral Bonus", category: "Promotion", channel: "Push", subject: "Referral Reward", body: "{{refereeName}} joined! You earned {{points}} GoPoints", updatedAt: "2026-08-03" },
-];
+const CATEGORY_CHIPS: string[] = ["Ride", "Delivery", "Promotion", "Account", "Safety"];
 
-const CHANNEL_COLORS: Record<Channel, { bg: string; text: string }> = {
+const CHANNEL_COLORS: Record<string, { bg: string; text: string }> = {
   SMS: { bg: "#1e3a5f", text: "#60a5fa" },
+  PUSH: { bg: "#1a3c2a", text: "#4ade80" },
+  EMAIL: { bg: "#3c2a1a", text: "#fbbf24" },
   Push: { bg: "#1a3c2a", text: "#4ade80" },
   Email: { bg: "#3c2a1a", text: "#fbbf24" },
 };
 
-const CATEGORY_COLORS: Record<Category, { bg: string; text: string }> = {
+const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
   Ride: { bg: "#1e3a5f", text: "#60a5fa" },
   Delivery: { bg: "#1a3c2a", text: "#4ade80" },
   Promotion: { bg: "#3c2a1a", text: "#fbbf24" },
@@ -48,13 +39,13 @@ const CATEGORY_COLORS: Record<Category, { bg: string; text: string }> = {
   Safety: { bg: "#3c1a1a", text: "#f87171" },
 };
 
-export function MessageTemplatesScreen({ dataLoading = false }: MessageTemplatesScreenProps) {
+export function MessageTemplatesScreen({ dataLoading = false, messageTemplates }: MessageTemplatesScreenProps) {
   const [search, setSearch] = useState("");
-  const [activeCategory, setActiveCategory] = useState<Category | "All">("All");
-  const [previewTemplate, setPreviewTemplate] = useState<MessageTemplate | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string | "All">("All");
+  const [previewTemplate, setPreviewTemplate] = useState<MessageTemplatesScreenRecord | null>(null);
 
   const filteredTemplates = useMemo(() => {
-    let templates = SAMPLE_TEMPLATES;
+    let templates = messageTemplates;
     if (activeCategory !== "All") {
       templates = templates.filter((t) => t.category === activeCategory);
     }
@@ -65,11 +56,11 @@ export function MessageTemplatesScreen({ dataLoading = false }: MessageTemplates
       );
     }
     return templates;
-  }, [search, activeCategory]);
+  }, [search, activeCategory, messageTemplates]);
 
-  const activeCount = SAMPLE_TEMPLATES.filter((t) => t.category !== "Safety").length;
-  const smsCount = SAMPLE_TEMPLATES.filter((t) => t.channel === "SMS").length;
-  const pushCount = SAMPLE_TEMPLATES.filter((t) => t.channel === "Push").length;
+  const activeCount = messageTemplates.filter((t) => t.active).length;
+  const smsCount = messageTemplates.filter((t) => t.channel === "SMS").length;
+  const pushCount = messageTemplates.filter((t) => t.channel === "Push" || t.channel === "PUSH").length;
 
   if (dataLoading) {
     return (
@@ -97,7 +88,7 @@ export function MessageTemplatesScreen({ dataLoading = false }: MessageTemplates
         <div className="mt-kpi-card">
           <div className="mt-kpi-icon"><Mail size={18} /></div>
           <div className="mt-kpi-content">
-            <span className="mt-kpi-value">{SAMPLE_TEMPLATES.length}</span>
+            <span className="mt-kpi-value">{messageTemplates.length}</span>
             <span className="mt-kpi-label">Total Templates</span>
           </div>
         </div>
@@ -193,7 +184,7 @@ export function MessageTemplatesScreen({ dataLoading = false }: MessageTemplates
                   <div className="mt-template-body">{tpl.body}</div>
                 </td>
                 <td>
-                  <small>{tpl.updatedAt}</small>
+                  <small>{new Date(tpl.updatedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</small>
                 </td>
                 <td>
                   <div className="mt-action-btns">
@@ -270,7 +261,7 @@ export function MessageTemplatesScreen({ dataLoading = false }: MessageTemplates
               </div>
               <div className="mt-preview-row">
                 <span className="mt-preview-label">Last Updated</span>
-                <span className="mt-preview-value">{previewTemplate.updatedAt}</span>
+                <span className="mt-preview-value">{new Date(previewTemplate.updatedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</span>
               </div>
             </div>
           </div>
