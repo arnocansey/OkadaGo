@@ -161,11 +161,7 @@ export default function OnboardingMotorcycleScreen() {
       // Clear onboarding data
       await AsyncStorage.removeItem(ONBOARDING_KEY);
 
-      if (result.user.isPhoneVerified === false) {
-        router.replace("/(auth)/verify-phone");
-      } else {
-        router.replace("/(main)");
-      }
+      router.replace("/(main)");
     } catch (e) {
       Alert.alert("Error", e instanceof Error ? e.message : "Could not complete registration. Please try again.");
     } finally {

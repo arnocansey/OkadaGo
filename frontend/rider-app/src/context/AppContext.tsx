@@ -60,7 +60,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setMessage("");
     try {
       const riderProfileId = current.user.riderProfileId;
-      const [walletData, txData, ownRideData, searchingRideData, ownDeliveryData, searchingDeliveryData, zoneData, payoutData] = await Promise.all([
+      const [walletData, txData, ownRideData, searchingRideData, ownDeliveryData, searchingDeliveryData, zoneData, payoutData, riderProfileData] = await Promise.all([
         api<Wallet[]>(`/wallets/users/${current.user.id}`, { token: current.token }),
         api<WalletTransaction[]>(`/wallets/users/${current.user.id}/transactions`, { token: current.token }),
         riderProfileId
@@ -73,6 +73,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         api<Delivery[]>("/deliveries?status=searching&limit=50", { token: current.token }).catch(() => []),
         api<ServiceZone[]>("/bootstrap/service-zones?limit=30", { token: current.token }),
         api<PayoutRequest[]>("/wallets/rider/payout-requests", { token: current.token }).catch(() => []),
+        riderProfileId
+          ? api<{ onlineStatus: boolean }>(`/riders/${riderProfileId}`, { token: current.token }).catch(() => null)
+          : Promise.resolve(null),
       ]);
 
       const combinedRides = [
@@ -93,6 +96,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setDeliveries(uniqueDeliveries);
       setZones(Array.isArray(zoneData) ? zoneData : []);
       setPayouts(Array.isArray(payoutData) ? payoutData : []);
+
+      if (riderProfileData && typeof riderProfileData === "object" && "onlineStatus" in riderProfileData) {
+        setOnline(Boolean(riderProfileData.onlineStatus));
+      }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to load rider data.");
     } finally {
@@ -198,20 +205,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!session?.user.riderProfileId) return;
     const nextOnline = !online;
     try {
+      const body: Record<string, unknown> = {
+        onlineStatus: nextOnline,
+        ...(location
+          ? {
+              latitude: location.latitude,
+              longitude: location.longitude,
+              isMocked: location.isMocked,
+            }
+          : {}),
+      };
+      if (zones[0]?.id) body.serviceZoneId = zones[0].id;
       await api(`/riders/${session.user.riderProfileId}/availability`, {
         method: "PATCH",
         token: session.token,
-        body: {
-          onlineStatus: nextOnline,
-          serviceZoneId: zones[0]?.id,
-          ...(location
-            ? {
-                latitude: location.latitude,
-                longitude: location.longitude,
-                isMocked: location.isMocked,
-              }
-            : {}),
-        },
+        body,
       });
       setOnline(nextOnline);
     } catch (error) {

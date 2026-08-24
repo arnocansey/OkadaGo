@@ -93,8 +93,10 @@
     "subtitle": "Fast rides, food & deliveries across Accra",
     "signIn": "Sign in",
     "signUp": "Sign up",
+    "forgotPassword": "Forgot password?",
     "fullName": "Full name",
     "phone": "Phone",
+    "email": "Email",
     "password": "Password",
     "continue": "Continue",
     "authFailed": "Authentication failed."

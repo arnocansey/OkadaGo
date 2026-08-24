@@ -1218,7 +1218,7 @@ export class AuthService {
 
       await smsService.sendOtpSms({ to: input.phoneE164, code });
     } else {
-      console.info(`[otp] ${input.phoneE164} -> ${code}`);
+      console.info(`[otp] code sent to ${input.phoneE164}`);
     }
 
     return {
@@ -1728,7 +1728,7 @@ export class AuthService {
       }
       await smsService.sendOtpSms({ to: input.phoneE164, code });
     } else {
-      console.info(`[forgot-password] ${input.phoneE164} -> ${code}`);
+      console.info(`[forgot-password] code sent to ${input.phoneE164}`);
     }
 
     return {

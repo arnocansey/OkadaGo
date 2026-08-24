@@ -53,7 +53,6 @@ type RiderProfile = {
   totalTrips?: number;
   memberSince?: string;
   riderApprovalStatus?: string;
-  isPhoneVerified?: boolean;
   isIdVerified?: boolean;
   isBackgroundChecked?: boolean;
   motorcycle?: {
@@ -254,13 +253,6 @@ export default function ProfileScreen() {
         description: "Criminal background screening passed",
         verified: riderProfile?.isBackgroundChecked ?? false,
         icon: <ShieldAlert size={16} color={brand.primary} />,
-      },
-      {
-        id: "phone",
-        label: "Phone Verified",
-        description: "Phone number confirmed",
-        verified: riderProfile?.isPhoneVerified ?? user.isPhoneVerified ?? false,
-        icon: <PhoneCall size={16} color={brand.primary} />,
       },
     ],
     [riderProfile, user],
@@ -904,18 +896,6 @@ export default function ProfileScreen() {
               <ChevronRight size={16} color={colors.textMuted} />
             </Pressable>
 
-            {user.isPhoneVerified === false && (
-              <Pressable
-                style={s.menuRow}
-                onPress={() => router.push("/(auth)/verify-phone")}
-              >
-                <View style={[s.menuIcon, { backgroundColor: "#F59E0B15" }]}>
-                  <PhoneCall size={16} color="#F59E0B" />
-                </View>
-                <Text style={s.menuLabel}>{t("profile.verifyPhone")}</Text>
-                <ChevronRight size={16} color={colors.textMuted} />
-              </Pressable>
-            )}
 
             <Pressable
               style={s.menuRow}

@@ -332,6 +332,27 @@ export class RideService {
     };
   }
 
+  async getRiderProfile(riderProfileId: string) {
+    const riderProfile = await prisma.riderProfile.findUnique({
+      where: { id: riderProfileId },
+      select: {
+        id: true,
+        onlineStatus: true,
+        approvalStatus: true,
+        serviceZoneId: true,
+        currentLatitude: true,
+        currentLongitude: true,
+        lastOnlineAt: true,
+      }
+    });
+
+    if (!riderProfile) {
+      throw new AppError("Rider profile was not found", 404, "RIDER_NOT_FOUND");
+    }
+
+    return riderProfile;
+  }
+
   async updateRiderAvailability(riderProfileId: string, input: RiderAvailabilityInput) {
     const riderProfile = await prisma.riderProfile.findUnique({
       where: {

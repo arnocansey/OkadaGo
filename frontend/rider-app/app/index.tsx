@@ -34,6 +34,6 @@ export default function Index() {
   }
 
   if (!session) return <Redirect href="/(auth)/login" />;
-  if (session.user.isPhoneVerified === false) return <Redirect href="/(auth)/verify-phone" />;
+
   return <Redirect href="/(main)" />;
 }

@@ -120,9 +120,8 @@ export default function ForgotPasswordScreen() {
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.hero}>
             <View style={styles.logoWrap}>
-              <BrandLogo variant="icon" size={60} />
+              <BrandLogo variant="wordmark" size={28} />
             </View>
-            <BrandLogo variant="wordmark" size={28} />
             <Text style={styles.title}>
               {step === "phone" ? "Reset your password" : step === "otp" ? "Enter code" : "New password"}
             </Text>

@@ -38,6 +38,7 @@ export default function LoginScreen() {
         tabTextActive: { color: colors.primary },
         form: { gap: spacing.lg },
         error: { ...typography.caption, color: colors.danger },
+        forgotLink: { ...typography.captionMedium, color: colors.primary, textAlign: "right" },
         fieldGroup: { gap: spacing.sm },
         fieldLabel: { ...typography.captionMedium, color: colors.textSecondary },
         chipRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
@@ -105,10 +106,6 @@ export default function LoginScreen() {
       const result = await api<AuthResponse>(path, { method: "POST", body });
       await signIn({ token: result.token, expiresAt: result.expiresAt, user: result.user });
       registerPushToken(result.token).catch(() => undefined);
-      if (result.user.isPhoneVerified === false) {
-        router.replace("/(auth)/verify-phone");
-        return;
-      }
       router.replace("/(main)");
     } catch (e) {
       setError(e instanceof Error ? e.message : t("auth.authFailed"));
@@ -123,9 +120,8 @@ export default function LoginScreen() {
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.hero}>
             <View style={styles.logoWrap}>
-              <BrandLogo variant="icon" size={60} />
+              <BrandLogo variant="wordmark" size={28} />
             </View>
-            <BrandLogo variant="wordmark" size={28} />
             <Text style={styles.title}>{mode === "login" ? t("auth.welcomeBack") : t("auth.createAccount")}</Text>
             <Text style={styles.subtitle}>{t("auth.subtitle")}</Text>
           </View>
@@ -164,7 +160,7 @@ export default function LoginScreen() {
 
             {mode === "login" ? (
               <Pressable onPress={() => router.push("/(auth)/forgot-password")}>
-                <Text style={styles.error}>{t("auth.forgotPassword") ?? "Forgot password?"}</Text>
+                <Text style={styles.forgotLink}>{t("auth.forgotPassword") ?? "Forgot password?"}</Text>
               </Pressable>
             ) : null}
 

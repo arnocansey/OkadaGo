@@ -1,14 +1,8 @@
 import { Tabs } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useTranslation } from "react-i18next";
-import { useTheme } from "@/context/ThemeContext";
 import { useRef, useEffect } from "react";
-import { Animated, StyleSheet, View } from "react-native";
+import { Animated } from "react-native";
 
 export default function MainLayout() {
-  const insets = useSafeAreaInsets();
-  const { colors, isDark } = useTheme();
-  const { t } = useTranslation();
   const opacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {

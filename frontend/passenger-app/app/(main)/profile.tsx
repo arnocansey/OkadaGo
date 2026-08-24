@@ -280,12 +280,6 @@ export default function ProfileScreen() {
           </Pressable>
           <Text style={s.profileName}>{user.fullName}</Text>
           <Text style={s.profilePhone}>{settings?.phoneE164 ?? ""}</Text>
-          {user.isPhoneVerified ? (
-            <View style={s.verifiedBadge}>
-              <Shield size={12} color="#22C55E" />
-              <Text style={s.verifiedText}>Verified</Text>
-            </View>
-          ) : null}
         </View>
 
         {/* ─── Account ──────────────────────────────────── */}

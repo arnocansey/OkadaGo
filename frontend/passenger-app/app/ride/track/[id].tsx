@@ -712,7 +712,6 @@ export default function TrackScreen() {
                   return null;
                 })(),
                 vehicle: trip.rider.vehicle,
-                isPhoneVerified: trip.rider.user.isPhoneVerified,
                 isApproved: trip.rider.approvalStatus === "APPROVED",
                 bio: trip.rider.bio,
               }}
@@ -901,7 +900,6 @@ export default function TrackScreen() {
             joinedAt: trip.rider.createdAt ?? null,
             distanceKm: livePreview?.distanceKm ?? null,
             vehicle: trip.rider.vehicle ?? null,
-            isPhoneVerified: true,
             isApproved: (trip.rider as { status?: string })?.status === "APPROVED" || true,
             documentsVerified: true,
             bio: (trip.rider as { bio?: string })?.bio ?? "OkadaGo verified professional rider.",

@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
 import { parseBody, parseParams, parseQuery } from "../../common/validation.js";
+import { appConfig } from "../../common/config.js";
 import {
   createRideRequestSchema,
   matchingPreviewSchema,
@@ -30,6 +31,11 @@ export const rideRoutes: FastifyPluginAsync = async (server) => {
   server.post("/matching/preview", async (request) => {
     const input = parseBody(request, matchingPreviewSchema);
     return rideService.previewMatching(input);
+  });
+
+  server.get("/riders/:riderProfileId", async (request) => {
+    const params = parseParams(request, riderAvailabilityParamsSchema);
+    return rideService.getRiderProfile(params.riderProfileId);
   });
 
   server.patch("/riders/:riderProfileId/availability", async (request) => {
@@ -79,7 +85,7 @@ export const rideRoutes: FastifyPluginAsync = async (server) => {
             },
           }
         : null,
-      shareableUrl: `https://okadago-backend.onrender.com/v1/rides/${ride.id}/share`,
+      shareableUrl: `${appConfig.apiPublicUrl}/rides/${ride.id}/share`,
     };
   });
 

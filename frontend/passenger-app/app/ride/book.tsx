@@ -419,12 +419,6 @@ export default function BookRideScreen() {
   }
 
   useEffect(() => {
-    if (session?.user.isPhoneVerified === false) {
-      router.replace("/(auth)/verify-phone");
-    }
-  }, [session?.user.isPhoneVerified]);
-
-  useEffect(() => {
     if (!session?.token || !placeId) return;
     api<SavedPlace[]>("/places/saved", { token: session.token })
       .then((places) => {

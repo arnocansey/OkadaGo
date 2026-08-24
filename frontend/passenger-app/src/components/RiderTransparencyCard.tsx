@@ -19,7 +19,6 @@ export type RiderProfile = {
     plateNumber?: string | null;
     color?: string | null;
   } | null;
-  isPhoneVerified?: boolean;
   isApproved?: boolean;
   documentsVerified?: boolean;
   bio?: string | null;
@@ -316,13 +315,6 @@ export function RiderTransparencyCard({ rider, matchReason, onCall, style }: Pro
               <Text style={styles.pendingBadgeText}>Pending verification</Text>
             </View>
           )}
-
-          {rider.isPhoneVerified ? (
-            <View style={styles.verifiedBadge}>
-              <Phone size={14} color={colors.success} />
-              <Text style={styles.verifiedBadgeText}>Phone verified</Text>
-            </View>
-          ) : null}
 
           {rider.documentsVerified ? (
             <View style={styles.verifiedBadge}>

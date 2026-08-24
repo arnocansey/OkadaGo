@@ -212,6 +212,17 @@ export default function RiderHome() {
         );
         return;
       }
+      if (error instanceof ApiError && error.code === "RIDER_OFFLINE_DEFICIT_LOCKED") {
+        Alert.alert(
+          "Deficit must be cleared",
+          error.message || "Your wallet deficit exceeds the limit. Clear it before going online.",
+          [
+            { text: t("common.cancel"), style: "cancel" },
+            { text: "View Wallet", onPress: () => router.push("/(main)/wallet") },
+          ],
+        );
+        return;
+      }
       if (error instanceof ApiError) {
         Alert.alert("Could not go online", error.message);
       }
@@ -392,7 +403,7 @@ export default function RiderHome() {
         /* ─── Online Status Control (Pill) ──────────────────────── */
         statusControlWrap: {
           position: "absolute",
-          bottom: 140,
+          bottom: insets.bottom + 90,
           left: 16,
           right: 16,
           zIndex: layers.floatingAction,
@@ -401,7 +412,7 @@ export default function RiderHome() {
         /* ─── Active Trip Banner ────────────────────────────────── */
         activeTripWrap: {
           position: "absolute",
-          bottom: 240,
+          bottom: insets.bottom + 170,
           left: 16,
           right: 16,
           zIndex: layers.floatingAction,
@@ -540,7 +551,7 @@ export default function RiderHome() {
           markers={riderMarkers}
           autoCenterOnLocation={hasFix}
           showCenterButton
-          centerButtonInset={{ bottom: 160, right: 16 }}
+          centerButtonInset={{ bottom: insets.bottom + 130, right: 16 }}
         />
       </View>
 

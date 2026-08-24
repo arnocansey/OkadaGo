@@ -62,7 +62,6 @@ export default function Index() {
 
   if (!hasSeenOnboarding) return <Redirect href="/(auth)/onboarding" />;
   if (!session) return <Redirect href="/(auth)/login" />;
-  if (session.user.isPhoneVerified === false) return <Redirect href="/(auth)/verify-phone" />;
   if (!locationPrompted) return <Redirect href="/(auth)/location-permission" />;
   return <Redirect href="/(main)" />;
 }
