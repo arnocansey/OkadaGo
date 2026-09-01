@@ -184,6 +184,14 @@ export function PromotionsManagementScreen({
 
   const handleCreate = () => {
     if (!onCreatePromo || !form.code.trim() || !form.name.trim() || !form.discountValue) return;
+
+    const parseEnd = (val: string) => {
+      if (!val) return undefined;
+      return val.length === 10
+        ? new Date(`${val}T23:59:59.999Z`).toISOString()
+        : new Date(val).toISOString();
+    };
+
     onCreatePromo({
       code: form.code.trim(),
       name: form.name.trim(),
@@ -195,7 +203,7 @@ export function PromotionsManagementScreen({
       perUserLimit: form.perUserLimit ? parseInt(form.perUserLimit) : undefined,
       city: form.city.trim() || undefined,
       startsAt: form.startsAt ? new Date(form.startsAt).toISOString() : undefined,
-      endsAt: form.endsAt ? new Date(form.endsAt).toISOString() : undefined
+      endsAt: parseEnd(form.endsAt)
     });
     setForm({ code: "", name: "", type: "PERCENTAGE", discountValue: "", maxDiscount: "", minRideAmount: "", maxRedemptions: "", perUserLimit: "", city: "", startsAt: "", endsAt: "" });
     setShowForm(false);

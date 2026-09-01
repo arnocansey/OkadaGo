@@ -1096,10 +1096,15 @@ export default function BookRideScreen() {
             {showPaymentSheet && (
               <PaymentSelectionSheet
                 fare={money(Math.max(0, estimatedFare - promoDiscount), zones[0]?.currency)}
+                originalFare={estimate ? money(estimatedFare, zones[0]?.currency) : undefined}
                 selected={paymentMethod}
                 onSelect={setPaymentMethod}
                 onConfirm={submit}
                 loading={loading}
+                promoCode={promoCode}
+                onPromoCodeChange={setPromoCode}
+                promoMessage={promoMessage}
+                promoDiscount={promoDiscount}
               />
             )}
           </>

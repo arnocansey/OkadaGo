@@ -1,16 +1,21 @@
 import { useMemo } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Check, CreditCard, Banknote, Smartphone, Wallet } from "lucide-react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Check, CreditCard, Banknote, Smartphone, Wallet, Tag, XCircle, Sparkles } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/context/ThemeContext";
 import type { PaymentMethod } from "@/types";
 
 type Props = {
   fare: string;
+  originalFare?: string;
   selected: PaymentMethod;
   onSelect: (method: PaymentMethod) => void;
   onConfirm: () => void;
   loading?: boolean;
+  promoCode?: string;
+  onPromoCodeChange?: (code: string) => void;
+  promoMessage?: string;
+  promoDiscount?: number;
 };
 
 const METHODS: Array<{
@@ -22,7 +27,7 @@ const METHODS: Array<{
   {
     id: "mobile_money",
     label: "Mobile Money",
-    subtitle: "MTN, Vodafone, AirtelTigo",
+    subtitle: "MTN, Telecel, AT Money",
     icon: Smartphone,
   },
   {
@@ -45,39 +50,22 @@ const METHODS: Array<{
   },
 ];
 
-/**
- * PaymentSelectionSheet — Payment method picker
- *
- * ┌──────────────────────────────────────┐
- * │  ─── handle ───                      │
- * │                                      │
- * │  Total fare                          │
- * │  ┌──────────────────────────────┐   │
- * │  │       GHS 24.50              │   │  ← Prominent fare
- * │  └──────────────────────────────┘   │
- * │                                      │
- * │  Payment method                      │
- * │  ┌──────────────────────────────┐   │
- * │  │ 📱 Mobile Money  ✓          │   │  ← Selected row
- * │  │ 💵 Cash                     │   │
- * │  │ 💳 Card                     │   │
- * │  │ 👛 OkadaGo Wallet           │   │
- * │  └──────────────────────────────┘   │
- * │                                      │
- * │  ┌──────────────────────────────┐   │
- * │  │      Confirm Ride  →         │   │  ← Fixed CTA
- * │  └──────────────────────────────┘   │
- * └──────────────────────────────────────┘
- */
 export function PaymentSelectionSheet({
   fare,
+  originalFare,
   selected,
   onSelect,
   onConfirm,
   loading,
+  promoCode = "",
+  onPromoCodeChange,
+  promoMessage,
+  promoDiscount = 0,
 }: Props) {
   const insets = useSafeAreaInsets();
   const { colors, isDark } = useTheme();
+
+  const hasDiscount = promoDiscount > 0;
 
   const s = useMemo(
     () =>
@@ -87,7 +75,7 @@ export function PaymentSelectionSheet({
           bottom: 0,
           left: 0,
           right: 0,
-          maxHeight: "55%",
+          maxHeight: "72%",
           backgroundColor: isDark ? colors.surface : "#FFFFFF",
           borderTopLeftRadius: 24,
           borderTopRightRadius: 24,
@@ -114,11 +102,11 @@ export function PaymentSelectionSheet({
         /* ─── Fare Display ──────────────────────────────── */
         fareSection: {
           alignItems: "center",
-          marginBottom: 24,
+          marginBottom: 16,
         },
         fareLabel: {
-          fontSize: 13,
-          fontWeight: "500",
+          fontSize: 12,
+          fontWeight: "600",
           color: colors.textMuted,
           textTransform: "uppercase",
           letterSpacing: 0.5,
@@ -128,15 +116,84 @@ export function PaymentSelectionSheet({
           backgroundColor: isDark ? "rgba(250,204,21,0.08)" : "rgba(250,204,21,0.06)",
           borderRadius: 16,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(250,204,21,0.15)" : "rgba(250,204,21,0.12)",
-          paddingHorizontal: 32,
-          paddingVertical: 16,
+          borderColor: isDark ? "rgba(250,204,21,0.18)" : "rgba(250,204,21,0.15)",
+          paddingHorizontal: 24,
+          paddingVertical: 12,
+          alignItems: "center",
+        },
+        fareRow: {
+          flexDirection: "row",
+          alignItems: "baseline",
+          gap: 8,
+        },
+        originalFareText: {
+          fontSize: 18,
+          fontWeight: "600",
+          color: colors.textMuted,
+          textDecorationLine: "line-through",
         },
         fareAmount: {
-          fontSize: 32,
-          fontWeight: "700",
+          fontSize: 28,
+          fontWeight: "800",
           color: colors.primary,
           textAlign: "center",
+        },
+        discountBadge: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 4,
+          backgroundColor: isDark ? "rgba(34,197,94,0.15)" : "#DCFCE7",
+          paddingHorizontal: 8,
+          paddingVertical: 2,
+          borderRadius: 8,
+          marginTop: 4,
+        },
+        discountBadgeText: {
+          fontSize: 12,
+          fontWeight: "700",
+          color: isDark ? "#4ade80" : "#16a34a",
+        },
+
+        /* ─── Promo Section ─────────────────────────────── */
+        promoSection: {
+          marginBottom: 16,
+        },
+        promoInputWrap: {
+          flexDirection: "row",
+          alignItems: "center",
+          backgroundColor: isDark ? colors.surfaceOverlay : "#F8F9FA",
+          borderRadius: 12,
+          borderWidth: 1.5,
+          borderColor: hasDiscount
+            ? colors.success
+            : isDark
+              ? colors.border
+              : "#E2E8F0",
+          paddingHorizontal: 12,
+          height: 48,
+          gap: 8,
+        },
+        promoInput: {
+          flex: 1,
+          fontSize: 14,
+          fontWeight: "700",
+          color: colors.text,
+          letterSpacing: 1,
+        },
+        promoClearBtn: {
+          padding: 4,
+        },
+        promoFeedback: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 6,
+          marginTop: 6,
+          paddingHorizontal: 4,
+        },
+        promoFeedbackText: {
+          fontSize: 12,
+          fontWeight: "600",
+          color: colors.success,
         },
 
         /* ─── Section Label ─────────────────────────────── */
@@ -146,7 +203,7 @@ export function PaymentSelectionSheet({
           color: colors.textMuted,
           textTransform: "uppercase",
           letterSpacing: 0.5,
-          marginBottom: 10,
+          marginBottom: 8,
         },
 
         /* ─── Payment Rows ──────────────────────────────── */
@@ -154,7 +211,7 @@ export function PaymentSelectionSheet({
           flexDirection: "row",
           alignItems: "center",
           gap: 14,
-          paddingVertical: 14,
+          paddingVertical: 12,
           paddingHorizontal: 16,
           borderRadius: 14,
           backgroundColor: isDark ? colors.surfaceOverlay : "#F8F9FA",
@@ -167,8 +224,8 @@ export function PaymentSelectionSheet({
           backgroundColor: isDark ? "rgba(250,204,21,0.06)" : "rgba(250,204,21,0.04)",
         },
         methodIcon: {
-          width: 40,
-          height: 40,
+          width: 38,
+          height: 38,
           borderRadius: 12,
           backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
           alignItems: "center",
@@ -181,7 +238,7 @@ export function PaymentSelectionSheet({
           flex: 1,
         },
         methodLabel: {
-          fontSize: 15,
+          fontSize: 14,
           fontWeight: "600",
           color: colors.text,
         },
@@ -194,9 +251,9 @@ export function PaymentSelectionSheet({
           marginTop: 1,
         },
         checkCircle: {
-          width: 24,
-          height: 24,
-          borderRadius: 12,
+          width: 22,
+          height: 22,
+          borderRadius: 11,
           borderWidth: 2,
           borderColor: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.12)",
           alignItems: "center",
@@ -210,15 +267,15 @@ export function PaymentSelectionSheet({
         /* ─── CTA ──────────────────────────────────────── */
         ctaWrap: {
           paddingHorizontal: 20,
-          paddingTop: 12,
-          paddingBottom: insets.bottom ? 0 : 12,
+          paddingTop: 10,
+          paddingBottom: insets.bottom ? 0 : 10,
         },
         ctaBtn: {
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
           gap: 8,
-          height: 56,
+          height: 52,
           borderRadius: 16,
           backgroundColor: colors.primary,
           shadowColor: colors.primary,
@@ -236,7 +293,7 @@ export function PaymentSelectionSheet({
           opacity: 0.5,
         },
       }),
-    [colors, isDark, insets.bottom],
+    [colors, isDark, insets.bottom, hasDiscount],
   );
 
   return (
@@ -250,11 +307,56 @@ export function PaymentSelectionSheet({
       >
         {/* ─── Total Fare ────────────────────────────────── */}
         <View style={s.fareSection}>
-          <Text style={s.fareLabel}>Total fare</Text>
+          <Text style={s.fareLabel}>Estimated Fare</Text>
           <View style={s.fareCard}>
-            <Text style={s.fareAmount}>{fare}</Text>
+            <View style={s.fareRow}>
+              {hasDiscount && originalFare ? (
+                <Text style={s.originalFareText}>{originalFare}</Text>
+              ) : null}
+              <Text style={s.fareAmount}>{fare}</Text>
+            </View>
+            {hasDiscount ? (
+              <View style={s.discountBadge}>
+                <Sparkles size={11} color={isDark ? "#4ade80" : "#16a34a"} />
+                <Text style={s.discountBadgeText}>Promo applied</Text>
+              </View>
+            ) : null}
           </View>
         </View>
+
+        {/* ─── Promo Code Input Section ──────────────────── */}
+        {onPromoCodeChange ? (
+          <View style={s.promoSection}>
+            <Text style={s.sectionLabel}>Promo code</Text>
+            <View style={s.promoInputWrap}>
+              <Tag size={18} color={hasDiscount ? colors.success : colors.primary} />
+              <TextInput
+                style={s.promoInput}
+                placeholder="Enter promo code (e.g. ACCRA10)"
+                placeholderTextColor={colors.textMuted}
+                value={promoCode}
+                onChangeText={onPromoCodeChange}
+                autoCapitalize="characters"
+                autoCorrect={false}
+              />
+              {promoCode ? (
+                <Pressable
+                  style={s.promoClearBtn}
+                  onPress={() => onPromoCodeChange("")}
+                  hitSlop={8}
+                >
+                  <XCircle size={18} color={colors.textMuted} />
+                </Pressable>
+              ) : null}
+            </View>
+            {promoMessage ? (
+              <View style={s.promoFeedback}>
+                <Check size={14} color={colors.success} />
+                <Text style={s.promoFeedbackText}>{promoMessage}</Text>
+              </View>
+            ) : null}
+          </View>
+        ) : null}
 
         {/* ─── Payment Methods ───────────────────────────── */}
         <Text style={s.sectionLabel}>Payment method</Text>
@@ -274,7 +376,7 @@ export function PaymentSelectionSheet({
               accessibilityState={{ checked: isActive }}
             >
               <View style={[s.methodIcon, isActive && s.methodIconActive]}>
-                <Icon size={20} color={isActive ? colors.primary : colors.textSecondary} />
+                <Icon size={18} color={isActive ? colors.primary : colors.textSecondary} />
               </View>
               <View style={s.methodBody}>
                 <Text style={[s.methodLabel, isActive && s.methodLabelActive]}>
@@ -283,7 +385,7 @@ export function PaymentSelectionSheet({
                 <Text style={s.methodSubtitle}>{method.subtitle}</Text>
               </View>
               <View style={[s.checkCircle, isActive && s.checkCircleActive]}>
-                {isActive && <Check size={14} color="#000000" strokeWidth={3} />}
+                {isActive && <Check size={12} color="#000000" strokeWidth={3} />}
               </View>
             </Pressable>
           );
@@ -303,7 +405,7 @@ export function PaymentSelectionSheet({
           accessibilityLabel="Confirm ride"
         >
           <Text style={s.ctaLabel}>
-            {loading ? "Confirming..." : "Confirm Ride"}
+            {loading ? "Finding rider..." : "Confirm Ride"}
           </Text>
         </Pressable>
       </View>

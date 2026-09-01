@@ -14,6 +14,19 @@ type CreatePromoInput = z.infer<typeof createPromoCodeSchema>;
 type UpdatePromoInput = z.infer<typeof updatePromoCodeSchema>;
 type PromoQuery = z.infer<typeof promoCodeQuerySchema>;
 
+function parsePromoEndDate(dateStr?: string | null): Date | undefined {
+  if (!dateStr || !dateStr.trim()) return undefined;
+  const d = new Date(dateStr.trim());
+  if (isNaN(d.getTime())) return undefined;
+  if (
+    dateStr.trim().length === 10 ||
+    (d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && d.getUTCSeconds() === 0)
+  ) {
+    d.setUTCHours(23, 59, 59, 999);
+  }
+  return d;
+}
+
 export class PromotionService {
   private async requireAdmin(token: string) {
     const session = await prisma.userSession.findUnique({
@@ -90,8 +103,18 @@ export class PromotionService {
       throw new AppError("Promo code is not yet valid", 409, "PROMO_NOT_STARTED");
     }
 
-    if (promo.endsAt && promo.endsAt < now) {
-      throw new AppError("Promo code has expired", 409, "PROMO_EXPIRED");
+    if (promo.endsAt) {
+      const effectiveEnd = new Date(promo.endsAt);
+      if (
+        effectiveEnd.getUTCHours() === 0 &&
+        effectiveEnd.getUTCMinutes() === 0 &&
+        effectiveEnd.getUTCSeconds() === 0
+      ) {
+        effectiveEnd.setUTCHours(23, 59, 59, 999);
+      }
+      if (effectiveEnd < now) {
+        throw new AppError("Promo code has expired", 409, "PROMO_EXPIRED");
+      }
     }
 
     if (promo.maxRedemptions != null && promo._count.redemptions >= promo.maxRedemptions) {
@@ -212,7 +235,7 @@ export class PromotionService {
         city: input.city,
         currency: input.currency,
         startsAt: input.startsAt ? new Date(input.startsAt) : undefined,
-        endsAt: input.endsAt ? new Date(input.endsAt) : undefined,
+        endsAt: parsePromoEndDate(input.endsAt),
       },
     });
   }
@@ -240,7 +263,7 @@ export class PromotionService {
         ...(input.city !== undefined ? { city: input.city } : {}),
         ...(input.currency !== undefined ? { currency: input.currency } : {}),
         ...(input.startsAt ? { startsAt: new Date(input.startsAt) } : {}),
-        ...(input.endsAt ? { endsAt: new Date(input.endsAt) } : {}),
+        ...(input.endsAt ? { endsAt: parsePromoEndDate(input.endsAt) } : {}),
       },
     });
   }
