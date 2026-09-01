@@ -30,7 +30,7 @@ export function useAddressAutocomplete({
 
   useEffect(() => {
     const trimmed = query.trim();
-    if (!enabled || !token || trimmed.length < 2) {
+    if (!enabled || trimmed.length < 2) {
       setSuggestions([]);
       setLoading(false);
       setError(null);
@@ -75,26 +75,30 @@ export function useAddressAutocomplete({
         typeof suggestion.longitude === "number"
       ) {
         return {
-          address: suggestion.fullAddress,
+          address: suggestion.fullAddress || suggestion.name,
           latitude: suggestion.latitude,
           longitude: suggestion.longitude,
         };
       }
 
-      if (!token) {
-        throw new Error("Sign in to select a place.");
+      try {
+        const details = await api<PlaceDetails>(
+          `/bootstrap/places/details?placeId=${encodeURIComponent(suggestion.placeId)}`,
+          token ? { token } : {},
+        );
+
+        return {
+          address: details.address || suggestion.fullAddress || suggestion.name,
+          latitude: details.latitude,
+          longitude: details.longitude,
+        };
+      } catch (err) {
+        return {
+          address: suggestion.fullAddress || suggestion.name,
+          latitude: suggestion.latitude ?? 5.6037,
+          longitude: suggestion.longitude ?? -0.1870,
+        };
       }
-
-      const details = await api<PlaceDetails>(
-        `/bootstrap/places/details?placeId=${encodeURIComponent(suggestion.placeId)}`,
-        { token },
-      );
-
-      return {
-        address: details.address || suggestion.fullAddress,
-        latitude: details.latitude,
-        longitude: details.longitude,
-      };
     },
     [token],
   );

@@ -31,15 +31,7 @@ async function getStableDeviceId() {
 
 export function configureNotificationHandler() {
   try {
-    const Notifications = require("expo-notifications") as {
-      setNotificationHandler: (handler: {
-        handleNotification: () => Promise<{
-          shouldShowAlert: boolean;
-          shouldPlaySound: boolean;
-          shouldSetBadge: boolean;
-        }>;
-      }) => void;
-    };
+    const Notifications = require("expo-notifications");
     Notifications.setNotificationHandler({
       handleNotification: async () => ({
         shouldShowAlert: true,
@@ -47,6 +39,18 @@ export function configureNotificationHandler() {
         shouldSetBadge: true,
       }),
     });
+
+    if (Platform.OS === "android") {
+      Notifications.setNotificationChannelAsync("default", {
+        name: "OkadaGo Updates",
+        importance: Notifications.AndroidImportance.HIGH,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: "#EAB308",
+        sound: "default",
+        enableVibrate: true,
+        enableLights: true,
+      }).catch(() => undefined);
+    }
   } catch {
     // expo-notifications unavailable in some environments
   }

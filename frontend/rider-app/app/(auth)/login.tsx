@@ -84,12 +84,18 @@ export default function LoginScreen() {
       const hasVehicleDetails = vehicleMake.trim() && vehicleModel.trim() && vehiclePlate.trim();
       const body =
         mode === "login"
-          ? { phoneE164: phoneData.phoneE164, password }
+          ? {
+              phoneE164: phoneData.phoneE164,
+              phoneLocal: phoneData.phoneLocal,
+              phoneCountryCode: phoneData.phoneCountryCode,
+              password,
+            }
           : {
               fullName,
               email: email.trim() || undefined,
               phoneCountryCode: phoneData.phoneCountryCode,
               phoneLocal: phoneData.phoneLocal,
+              phoneE164: phoneData.phoneE164,
               password,
               preferredCurrency: "GHS",
               jobPreference,

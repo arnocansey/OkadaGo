@@ -62,9 +62,15 @@ export function useRideLocationReporter(options: {
       );
 
       if (cancelled) {
-        watch.remove();
+        try {
+          watch.remove();
+        } catch {}
       } else {
-        return () => watch.remove();
+        return () => {
+          try {
+            watch.remove();
+          } catch {}
+        };
       }
     })();
 

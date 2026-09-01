@@ -1,8 +1,8 @@
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { Alert, Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Clock, LocateFixed, MapPinned, Navigation, Plus, Trash2 } from "lucide-react-native";
+import { ArrowLeft, Clock, LocateFixed, MapPinned, Navigation, Plus, Trash2 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { api, money } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
@@ -167,7 +167,26 @@ export default function BookRideScreen() {
     () =>
       StyleSheet.create({
         screen: { flex: 1, backgroundColor: colors.background },
-        mapSection: { overflow: "hidden" },
+        mapSection: { overflow: "hidden", position: "relative" },
+        floatingBackBtn: {
+          position: "absolute",
+          top: 16,
+          left: 16,
+          width: 42,
+          height: 42,
+          borderRadius: 21,
+          backgroundColor: colors.surface,
+          alignItems: "center",
+          justifyContent: "center",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.15,
+          shadowRadius: 6,
+          elevation: 5,
+          zIndex: 10,
+          borderWidth: 1,
+          borderColor: colors.border,
+        },
         searchBanner: {
           paddingHorizontal: spacing.xl,
           paddingVertical: spacing.sm,
@@ -255,16 +274,23 @@ export default function BookRideScreen() {
   const [pickupLandmark, setPickupLandmark] = useState("");
   const [destLandmark, setDestLandmark] = useState("");
   const [additionalStops, setAdditionalStops] = useState<ExtraStop[]>([]);
-  const [destination, setDestination] = useState("");
+  const initialDestCoords = useMemo(() => {
+    if (destLat && destLng && !isNaN(parseFloat(destLat)) && !isNaN(parseFloat(destLng))) {
+      return { latitude: parseFloat(destLat), longitude: parseFloat(destLng) };
+    }
+    return FALLBACK_DEST;
+  }, [destLat, destLng]);
+
+  const [destination, setDestination] = useState(destParam || "");
   const [pickupFocused, setPickupFocused] = useState(false);
   const [destinationFocused, setDestinationFocused] = useState(false);
-  const [destSelected, setDestSelected] = useState(false);
+  const [destSelected, setDestSelected] = useState(Boolean(destParam && destLat && destLng));
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
   const [packageDesc, setPackageDesc] = useState("");
   const [packageType, setPackageType] = useState("parcel");
   const [rideType, setRideType] = useState<RideType>("standard");
-  const [destCoords, setDestCoords] = useState(FALLBACK_DEST);
+  const [destCoords, setDestCoords] = useState(initialDestCoords);
   const [estimate, setEstimate] = useState<RoutePreview | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("mobile_money");
   const [promoCode, setPromoCode] = useState("");
@@ -431,7 +457,7 @@ export default function BookRideScreen() {
         });
         setDestSelected(true);
         setShowBookingSheet(false);
-      setShowPaymentSheet(false);
+        setShowPaymentSheet(false);
       })
       .catch(() => undefined);
   }, [session?.token, placeId]);
@@ -440,8 +466,8 @@ export default function BookRideScreen() {
     if (!destParam) return;
     setDestination(destParam);
     setShowBookingSheet(false);
-      setShowPaymentSheet(false);
-    if (destLat && destLng) {
+    setShowPaymentSheet(false);
+    if (destLat && destLng && !isNaN(parseFloat(destLat)) && !isNaN(parseFloat(destLng))) {
       setDestCoords({ latitude: parseFloat(destLat), longitude: parseFloat(destLng) });
       setDestSelected(true);
     }
@@ -449,30 +475,45 @@ export default function BookRideScreen() {
 
   useEffect(() => {
     if (!destination.trim() || !session || destSelected) return;
+    let cancelled = false;
     const timer = setTimeout(() => {
       api<LocationResult>(`/bootstrap/forward-geocode?q=${encodeURIComponent(destination.trim())}`, {
         token: session.token,
       })
-        .then((result) => setDestCoords({ latitude: result.latitude, longitude: result.longitude }))
-        .catch(() => setDestCoords(FALLBACK_DEST));
+        .then((result) => {
+          if (!cancelled) {
+            setDestCoords({ latitude: result.latitude, longitude: result.longitude });
+          }
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setDestCoords(FALLBACK_DEST);
+          }
+        });
     }, 600);
-    return () => clearTimeout(timer);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [destination, session, destSelected]);
 
-  const destResolved = destCoords !== FALLBACK_DEST;
+  const destResolved = destCoords !== FALLBACK_DEST || destSelected;
 
   useEffect(() => {
-    if (!destination.trim() || !destResolved || !session || !hasPickupCoords) return;
+    if (!destination.trim() || !destResolved || !hasPickupCoords) return;
     const params = new URLSearchParams({
       startLat: `${pickupCoords.latitude}`,
       startLon: `${pickupCoords.longitude}`,
       endLat: `${destCoords.latitude}`,
       endLon: `${destCoords.longitude}`,
     });
-    api<RoutePreview>(`/bootstrap/route-preview?${params.toString()}`, { token: session.token })
+    api<RoutePreview>(
+      `/bootstrap/route-preview?${params.toString()}`,
+      session?.token ? { token: session.token } : {},
+    )
       .then(setEstimate)
       .catch(() => setEstimate(null));
-  }, [destination, destResolved, session, hasPickupCoords, pickupCoords, destCoords]);
+  }, [destination, destResolved, session?.token, hasPickupCoords, pickupCoords, destCoords]);
 
   const estimatedFare = useMemo(() => {
     if (!estimate) return 0;
@@ -560,13 +601,10 @@ export default function BookRideScreen() {
     setError("");
     setLoading(true);
     try {
-      const passengerProfileId = session!.user.passengerProfileId;
-      const serviceZoneId = zones[0]?.id;
+      const passengerProfileId = session?.user?.passengerProfileId;
+      const serviceZoneId = zones[0]?.id || undefined;
       if (!passengerProfileId) {
-        throw new Error("Passenger profile missing. Sign out and sign back in.");
-      }
-      if (!serviceZoneId) {
-        throw new Error("No service zone configured yet.");
+        throw new Error("Passenger profile missing. Please sign in to book a ride.");
       }
       if (!destination.trim() || !destResolved) {
         throw new Error("Set a valid destination first.");
@@ -656,7 +694,9 @@ export default function BookRideScreen() {
         return;
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Booking failed.");
+      const msg = e instanceof Error ? e.message : "Booking failed.";
+      setError(msg);
+      Alert.alert("Booking Failed", msg);
     } finally {
       setLoading(false);
     }
@@ -668,6 +708,27 @@ export default function BookRideScreen() {
         options={{
           headerShown: true,
           title: isDelivery ? "Send package" : "Book ride",
+          headerLeft: () => (
+            <Pressable
+              onPress={() => {
+                if (router.canGoBack()) {
+                  router.back();
+                } else {
+                  router.replace("/(main)");
+                }
+              }}
+              style={{
+                padding: 8,
+                marginLeft: Platform.OS === "web" ? 4 : 0,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              hitSlop={12}
+              accessibilityLabel="Back"
+            >
+              <ArrowLeft size={22} color={colors.text} />
+            </Pressable>
+          ),
           ...stackHeaderOptions,
         }}
       />
@@ -699,6 +760,20 @@ export default function BookRideScreen() {
                         : undefined
                 }
               />
+              <Pressable
+                style={styles.floatingBackBtn}
+                onPress={() => {
+                  if (router.canGoBack()) {
+                    router.back();
+                  } else {
+                    router.replace("/(main)");
+                  }
+                }}
+                hitSlop={12}
+                accessibilityLabel="Go back"
+              >
+                <ArrowLeft size={20} color={colors.text} />
+              </Pressable>
             </View>
           ) : (
             <View style={styles.searchBanner}>
@@ -718,7 +793,7 @@ export default function BookRideScreen() {
           <ScrollView
             style={styles.formSection}
             contentContainerStyle={styles.content}
-            keyboardShouldPersistTaps="handled"
+            keyboardShouldPersistTaps="always"
           >
           <View style={styles.pickupRow}>
             <View style={[styles.pickupInput, { zIndex: 2 }]}>
@@ -727,7 +802,7 @@ export default function BookRideScreen() {
                 value={pickup}
                 onChangeText={setPickup}
                 onFocus={() => setPickupFocused(true)}
-                onBlur={() => setTimeout(() => setPickupFocused(false), 150)}
+                onBlur={() => setTimeout(() => setPickupFocused(false), 300)}
                 placeholder={t("book.pickupPlaceholder")}
                 hint={pickupHint ?? undefined}
                 multiline
@@ -848,7 +923,7 @@ export default function BookRideScreen() {
                   setDestSelected(false);
                 }}
                 onFocus={() => setDestinationFocused(true)}
-                onBlur={() => setTimeout(() => setDestinationFocused(false), 150)}
+                onBlur={() => setTimeout(() => setDestinationFocused(false), 300)}
                 placeholder={t("book.destinationPlaceholder")}
                 suggestions={destinationAutocomplete.suggestions}
                 suggestionsLoading={destinationAutocomplete.loading}

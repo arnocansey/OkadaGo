@@ -34,7 +34,7 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [mode, setMode] = useState<ThemeMode>("dark");
+  const [mode, setMode] = useState<ThemeMode>("light");
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -42,6 +42,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       .then((saved) => {
         if (saved === "light" || saved === "dark") {
           setMode(saved);
+        } else {
+          setMode("light");
         }
       })
       .finally(() => setReady(true));

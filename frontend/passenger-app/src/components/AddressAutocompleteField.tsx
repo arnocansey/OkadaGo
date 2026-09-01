@@ -97,7 +97,7 @@ export function AddressAutocompleteField({
       {visible ? (
         <ScrollView
           style={styles.dropdown}
-          keyboardShouldPersistTaps="handled"
+          keyboardShouldPersistTaps="always"
           nestedScrollEnabled
           bounces={false}
         >

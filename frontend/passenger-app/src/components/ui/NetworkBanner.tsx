@@ -23,6 +23,7 @@ export function NetworkBanner() {
         const timeout = setTimeout(() => controller.abort(), 5000);
         await fetch("https://clients3.google.com/generate_204", {
           method: "HEAD",
+          mode: "no-cors",
           signal: controller.signal,
         });
         clearTimeout(timeout);

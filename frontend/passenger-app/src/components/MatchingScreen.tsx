@@ -24,8 +24,6 @@ import {
   isGoogleMapsApiKeyConfigured,
 } from "@/lib/googleMapsConfig";
 
-const NUM_MOTORCYCLES = 3;
-const ORBIT_RADIUS = 60;
 const PULSE_COUNT = 3;
 
 type RiderData = {
@@ -64,45 +62,6 @@ type Props = {
   /** Destination address to display during searching state */
   destinationAddress?: string;
 };
-
-function MotorcycleDot({ index, total, animValue }: { index: number; total: number; animValue: Animated.Value }) {
-  const { colors } = useTheme();
-  const angle = (index / total) * Math.PI * 2;
-
-  const x = animValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [Math.cos(angle) * ORBIT_RADIUS, Math.cos(angle + Math.PI * 2) * ORBIT_RADIUS],
-  });
-
-  const y = animValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [Math.sin(angle) * ORBIT_RADIUS, Math.sin(angle + Math.PI * 2) * ORBIT_RADIUS],
-  });
-
-  const opacity = animValue.interpolate({
-    inputRange: [0, 0.25, 0.5, 0.75, 1],
-    outputRange: [0.4, 1, 0.4, 1, 0.4],
-  });
-
-  return (
-    <Animated.View
-      style={{
-        position: "absolute",
-        width: 20,
-        height: 20,
-        borderRadius: 10,
-        backgroundColor: colors.primary,
-        alignItems: "center",
-        justifyContent: "center",
-        transform: [{ translateX: x }, { translateY: y }],
-        opacity,
-        ...shadows.sm,
-      }}
-    >
-      <Text style={{ fontSize: 10 }}>🏍</Text>
-    </Animated.View>
-  );
-}
 
 function PulseRing({ index, delay }: { index: number; delay: number }) {
   const { colors } = useTheme();
@@ -170,7 +129,6 @@ export function MatchingScreen({ tripId, isDelivery, onCancel, onMatched, fare, 
   const [matched, setMatched] = useState(false);
 
   const orbitAnim = useRef(new Animated.Value(0)).current;
-  const cardHeight = useRef(new Animated.Value(90)).current;
   const cardOpacity = useRef(new Animated.Value(1)).current;
   const matchPulse = useRef(new Animated.Value(0)).current;
 
@@ -219,22 +177,13 @@ export function MatchingScreen({ tripId, isDelivery, onCancel, onMatched, fare, 
         if (data.status === "assigned" || data.status === "arriving") {
           setMatched(true);
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          // Animate card expansion
-          Animated.parallel([
-            Animated.timing(cardHeight, {
-              toValue: 280,
-              duration: 400,
-              easing: Easing.out(Easing.ease),
-              useNativeDriver: false,
+          Animated.sequence([
+            Animated.delay(100),
+            Animated.spring(matchPulse, {
+              toValue: 1,
+              friction: 4,
+              useNativeDriver: true,
             }),
-            Animated.sequence([
-              Animated.delay(200),
-              Animated.spring(matchPulse, {
-                toValue: 1,
-                friction: 4,
-                useNativeDriver: true,
-              }),
-            ]),
           ]).start(() => {
             // Notify parent after animation
             setTimeout(() => onMatched(data), 800);
@@ -251,7 +200,7 @@ export function MatchingScreen({ tripId, isDelivery, onCancel, onMatched, fare, 
       active = false;
       clearInterval(timer);
     };
-  }, [tripId, onMatched, cardHeight, matchPulse]);
+  }, [tripId, onMatched, matchPulse]);
 
   const rider = trip?.rider;
 
@@ -266,15 +215,38 @@ export function MatchingScreen({ tripId, isDelivery, onCancel, onMatched, fare, 
     return pts;
   }, [pickupLat, pickupLon, destLat, destLon, colors]);
 
+  const [roadRoute, setRoadRoute] = useState<Array<{ latitude: number; longitude: number }> | undefined>();
+
+  useEffect(() => {
+    if (!pickupLat || !pickupLon || !destLat || !destLon) return;
+    let active = true;
+    const params = new URLSearchParams({
+      startLat: `${pickupLat}`,
+      startLon: `${pickupLon}`,
+      endLat: `${destLat}`,
+      endLon: `${destLon}`,
+    });
+
+    api<{ route?: Array<[number, number]> }>(`/bootstrap/route-preview?${params.toString()}`, {})
+      .then((res) => {
+        if (!active) return;
+        if (Array.isArray(res.route) && res.route.length > 1) {
+          setRoadRoute(res.route.map(([lat, lon]) => ({ latitude: lat, longitude: lon })));
+        }
+      })
+      .catch(() => undefined);
+
+    return () => {
+      active = false;
+    };
+  }, [pickupLat, pickupLon, destLat, destLon]);
+
   const routeCoordinates = useMemo(() => {
-    if (pickupLat && pickupLon && destLat && destLon) {
-      return [
-        { latitude: pickupLat, longitude: pickupLon },
-        { latitude: destLat, longitude: destLon },
-      ];
+    if (roadRoute && roadRoute.length > 1) {
+      return roadRoute;
     }
     return undefined;
-  }, [pickupLat, pickupLon, destLat, destLon]);
+  }, [roadRoute]);
 
   const styles = useMemo(
     () =>
@@ -286,6 +258,23 @@ export function MatchingScreen({ tripId, isDelivery, onCancel, onMatched, fare, 
           alignItems: "center",
           justifyContent: "center",
         },
+        topHeaderPill: {
+          position: "absolute",
+          top: insets.top + 16,
+          alignSelf: "center",
+          backgroundColor: isDark ? "rgba(26,29,33,0.92)" : "rgba(255,255,255,0.95)",
+          paddingHorizontal: 20,
+          paddingVertical: 10,
+          borderRadius: radius.full,
+          alignItems: "center",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.12,
+          shadowRadius: 10,
+          elevation: 6,
+          borderWidth: 1,
+          borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
+        },
         searchArea: {
           alignItems: "center",
           justifyContent: "center",
@@ -294,22 +283,21 @@ export function MatchingScreen({ tripId, isDelivery, onCancel, onMatched, fare, 
         },
         searchingLabel: {
           fontSize: 15,
-          fontWeight: "600",
+          fontWeight: "700",
           color: colors.text,
           textAlign: "center",
-          marginTop: ORBIT_RADIUS + 30,
         },
         searchingSub: {
-          fontSize: 13,
+          fontSize: 12,
           color: colors.textSecondary,
           textAlign: "center",
-          marginTop: 4,
+          marginTop: 2,
         },
 
         /* ─── Status Card ─────────────────────────────── */
         cardWrap: {
           position: "absolute",
-          bottom: insets.bottom + 16,
+          bottom: insets.bottom + 20,
           left: 16,
           right: 16,
         },
@@ -537,11 +525,12 @@ export function MatchingScreen({ tripId, isDelivery, onCancel, onMatched, fare, 
             region={{
               latitude: pickupLat || ACCRA_REGION.latitude,
               longitude: pickupLon || ACCRA_REGION.longitude,
-              latitudeDelta: 0.015,
-              longitudeDelta: 0.015,
+              latitudeDelta: 0.02,
+              longitudeDelta: 0.02,
             }}
             routeCoordinates={routeCoordinates}
             markers={markers}
+            fitToMarkers={markers.length >= 2 || Boolean(routeCoordinates?.length)}
           />
         </View>
       ) : (
@@ -550,22 +539,16 @@ export function MatchingScreen({ tripId, isDelivery, onCancel, onMatched, fare, 
 
       {/* Searching Animation — Motorcycle Indicators */}
       {!matched ? (
-        <View style={styles.overlay}>
+        <View style={styles.overlay} pointerEvents="box-none">
+          <View style={styles.topHeaderPill}>
+            <Text style={styles.searchingLabel}>Finding your rider</Text>
+            <Text style={styles.searchingSub}>Nearby riders are being matched to you</Text>
+          </View>
           <View style={styles.searchArea}>
             {Array.from({ length: PULSE_COUNT }).map((_, i) => (
               <PulseRing key={`pulse-${i}`} index={i} delay={0} />
             ))}
-            {Array.from({ length: NUM_MOTORCYCLES }).map((_, i) => (
-              <MotorcycleDot
-                key={`mc-${i}`}
-                index={i}
-                total={NUM_MOTORCYCLES}
-                animValue={orbitAnim}
-              />
-            ))}
           </View>
-          <Text style={styles.searchingLabel}>Finding your rider</Text>
-          <Text style={styles.searchingSub}>Nearby riders are being matched to you</Text>
         </View>
       ) : null}
 
@@ -688,7 +671,7 @@ export function MatchingScreen({ tripId, isDelivery, onCancel, onMatched, fare, 
             </View>
           </Animated.View>
         ) : (
-          <Animated.View style={[styles.statusCard, { height: cardHeight }]}>
+          <View style={styles.statusCard}>
             <View style={styles.statusRow}>
               <Animated.View
                 style={[
@@ -723,7 +706,7 @@ export function MatchingScreen({ tripId, isDelivery, onCancel, onMatched, fare, 
                 ) : null}
               </View>
             ) : null}
-          </Animated.View>
+          </View>
         )}
       </View>
     </View>

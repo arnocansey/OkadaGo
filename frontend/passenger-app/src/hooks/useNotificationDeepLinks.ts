@@ -42,6 +42,10 @@ export function useNotificationDeepLinks(enabled: boolean) {
       // expo-notifications unavailable
     }
 
-    return () => responseSub?.remove();
+    return () => {
+      try {
+        responseSub?.remove();
+      } catch {}
+    };
   }, [enabled]);
 }

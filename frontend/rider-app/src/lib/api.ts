@@ -1,5 +1,40 @@
-export const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_BASE_URL ?? "https://okadago-backend.onrender.com/v1";
+import { Platform } from "react-native";
+import Constants from "expo-constants";
+
+export function getApiBaseUrl(): string {
+  const envUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
+
+  // 1. Explicit remote production URL (e.g. Render, Railway, custom domain)
+  if (envUrl && envUrl.startsWith("https://")) {
+    return envUrl;
+  }
+
+  // 2. Web browser: dynamically use the current browser hostname
+  if (Platform.OS === "web" && typeof window !== "undefined" && window.location?.hostname) {
+    const hostname = window.location.hostname || "localhost";
+    return `http://${hostname}:4000/v1`;
+  }
+
+  // 3. Expo Go on physical device: auto-detect computer LAN IP from Metro host URI
+  const hostUri =
+    Constants.expoConfig?.hostUri ??
+    (Constants as unknown as { manifest?: { debuggerHost?: string } }).manifest?.debuggerHost;
+  if (hostUri) {
+    const hostIp = hostUri.split(":")[0];
+    if (hostIp) {
+      return `http://${hostIp}:4000/v1`;
+    }
+  }
+
+  // 4. Android emulator fallback
+  if (Platform.OS === "android") {
+    return "http://10.0.2.2:4000/v1";
+  }
+
+  return envUrl ?? "http://localhost:4000/v1";
+}
+
+export const API_BASE_URL = getApiBaseUrl();
 
 export class ApiError extends Error {
   constructor(
@@ -17,7 +52,8 @@ export async function api<T>(
   path: string,
   options: { method?: string; token?: string; body?: unknown } = {},
 ) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const baseUrl = getApiBaseUrl();
+  const response = await fetch(`${baseUrl}${path}`, {
     method: options.method ?? "GET",
     headers: {
       ...(options.body ? { "Content-Type": "application/json" } : {}),

@@ -10,7 +10,11 @@ const updatesEnabled = process.env.EXPO_USE_UPDATES === "1";
 const PLACEHOLDER_PATTERNS = [/^your-/i, /^<.*>$/, /will-be-overridden/i, /set in \.env/i];
 
 function resolveMapsKey(envName) {
-  const value = (process.env[envName] || "").trim();
+  const value = (
+    process.env[envName] ||
+    process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ||
+    ""
+  ).trim();
   const isPlaceholder = !value || PLACEHOLDER_PATTERNS.some((pattern) => pattern.test(value));
 
   if (isPlaceholder && process.env.EAS_BUILD === "true") {

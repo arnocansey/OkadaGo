@@ -9,6 +9,13 @@ const PLACEHOLDER_PATTERNS = [
 ];
 
 export function getGoogleMapsApiKey(): string {
+  const directKey =
+    process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ||
+    process.env.EXPO_PUBLIC_GOOGLE_MAPS_WEB_API_KEY ||
+    process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY;
+
+  if (directKey) return directKey;
+
   if (Platform.OS === "android") {
     return (
       process.env.EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_API_KEY ||
@@ -19,6 +26,7 @@ export function getGoogleMapsApiKey(): string {
 
   return (
     process.env.EXPO_PUBLIC_GOOGLE_MAPS_IOS_API_KEY ||
+    process.env.EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_API_KEY ||
     Constants.expoConfig?.ios?.config?.googleMapsApiKey ||
     ""
   );
@@ -31,4 +39,4 @@ export function isGoogleMapsApiKeyConfigured(key: string): boolean {
 }
 
 export const GOOGLE_MAPS_SETUP_HINT =
-  "Set EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_API_KEY as an EAS secret (production environment), enable Maps SDK for Android on the key, and add the EAS release SHA-1 in Google Cloud Console.";
+  "Set EXPO_PUBLIC_GOOGLE_MAPS_API_KEY in .env with your Google Maps API key.";

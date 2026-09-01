@@ -1,11 +1,5 @@
 import { z } from "zod";
 
-const phoneSchema = z.object({
-  phoneCountryCode: z.string().min(1).max(6),
-  phoneLocal: z.string().min(4).max(20),
-  phoneE164: z.string().min(8).max(24)
-});
-
 const passwordSchema = z.string().min(8).max(128);
 const deviceSchema = z.object({
   deviceId: z.string().max(191).optional(),
@@ -20,8 +14,31 @@ export const passengerSignupSchema = z.object({
   defaultServiceCity: z.string().max(120).optional(),
   preferredPayment: z.enum(["cash", "card", "wallet", "mobile_money"]).optional(),
   password: passwordSchema,
+  phoneCountryCode: z.string().min(1).max(6).optional().default("+233"),
+  phoneLocal: z.string().min(4).max(20).optional(),
+  phoneE164: z.string().min(8).max(24).optional(),
   device: deviceSchema.optional()
-}).and(phoneSchema);
+}).transform((val) => {
+  let e164 = val.phoneE164;
+  let local = val.phoneLocal;
+  const country = val.phoneCountryCode || "+233";
+
+  if (!e164 && local) {
+    const cleanLocal = local.startsWith("0") ? local.slice(1) : local;
+    e164 = `${country}${cleanLocal}`;
+  } else if (e164 && !local) {
+    local = e164.startsWith("+233") ? e164.slice(4) : e164.startsWith("233") ? e164.slice(3) : e164;
+  }
+  return {
+    ...val,
+    phoneCountryCode: country,
+    phoneLocal: local || "",
+    phoneE164: e164 || ""
+  };
+}).refine((val) => Boolean(val.phoneE164 && val.phoneE164.length >= 8), {
+  message: "Valid phone number is required",
+  path: ["phoneE164"]
+});
 
 export const riderSignupSchema = z.object({
   fullName: z.string().min(2).max(160),
@@ -32,6 +49,9 @@ export const riderSignupSchema = z.object({
   commissionPercent: z.number().min(0).max(100).optional(),
   jobPreference: z.enum(["rides_only", "delivery_only", "both"]).default("both"),
   password: passwordSchema,
+  phoneCountryCode: z.string().min(1).max(6).optional().default("+233"),
+  phoneLocal: z.string().min(4).max(20).optional(),
+  phoneE164: z.string().min(8).max(24).optional(),
   device: deviceSchema.optional(),
   vehicle: z
     .object({
@@ -43,7 +63,27 @@ export const riderSignupSchema = z.object({
       vehicleType: z.enum(["okada", "tricycle", "bicycle"]).default("okada")
     })
     .optional()
-}).and(phoneSchema);
+}).transform((val) => {
+  let e164 = val.phoneE164;
+  let local = val.phoneLocal;
+  const country = val.phoneCountryCode || "+233";
+
+  if (!e164 && local) {
+    const cleanLocal = local.startsWith("0") ? local.slice(1) : local;
+    e164 = `${country}${cleanLocal}`;
+  } else if (e164 && !local) {
+    local = e164.startsWith("+233") ? e164.slice(4) : e164.startsWith("233") ? e164.slice(3) : e164;
+  }
+  return {
+    ...val,
+    phoneCountryCode: country,
+    phoneLocal: local || "",
+    phoneE164: e164 || ""
+  };
+}).refine((val) => Boolean(val.phoneE164 && val.phoneE164.length >= 8), {
+  message: "Valid phone number is required",
+  path: ["phoneE164"]
+});
 
 export const adminRegisterSchema = z.object({
   fullName: z.string().min(2).max(160),
@@ -69,9 +109,20 @@ export const adminPromoteSchema = z.object({
 export const passengerLoginSchema = z.object({
   phoneE164: z.string().min(8).max(24).optional(),
   phoneLocal: z.string().min(4).max(20).optional(),
+  phoneCountryCode: z.string().min(1).max(6).optional().default("+233"),
   password: passwordSchema,
   device: deviceSchema.optional()
-}).refine((value) => value.phoneE164 || value.phoneLocal, {
+}).transform((val) => {
+  let e164 = val.phoneE164;
+  if (!e164 && val.phoneLocal) {
+    const clean = val.phoneLocal.startsWith("0") ? val.phoneLocal.slice(1) : val.phoneLocal;
+    e164 = `${val.phoneCountryCode || "+233"}${clean}`;
+  }
+  return {
+    ...val,
+    phoneE164: e164
+  };
+}).refine((value) => Boolean(value.phoneE164), {
   message: "Either phoneE164 or phoneLocal is required",
   path: ["phoneE164"]
 });

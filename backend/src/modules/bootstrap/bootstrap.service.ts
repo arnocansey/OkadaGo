@@ -94,7 +94,7 @@ type MapboxForwardResponse = Partial<{
 }>;
 
 type RoutePreviewResult = {
-  provider: "mapbox" | "osrm";
+  provider: "google" | "mapbox" | "osrm" | "direct";
   distanceKm: number;
   durationMinutes: number;
   route: Array<[number, number]>;
@@ -161,6 +161,59 @@ let reverseGeocodeQueue = Promise.resolve();
 
 function wait(milliseconds: number) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+function decodePolyline(encoded: string): Array<[number, number]> {
+  const points: Array<[number, number]> = [];
+  let index = 0;
+  let lat = 0;
+  let lng = 0;
+
+  while (index < encoded.length) {
+    let b: number;
+    let shift = 0;
+    let result = 0;
+    do {
+      b = encoded.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+    const dlat = result & 1 ? ~(result >> 1) : result >> 1;
+    lat += dlat;
+
+    shift = 0;
+    result = 0;
+    do {
+      b = encoded.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+    const dlng = result & 1 ? ~(result >> 1) : result >> 1;
+    lng += dlng;
+
+    points.push([lat / 1e5, lng / 1e5]);
+  }
+
+  return points;
+}
+
+function haversineDistanceKm(
+  fromLatitude: number,
+  fromLongitude: number,
+  toLatitude: number,
+  toLongitude: number
+) {
+  const earthRadiusKm = 6371;
+  const degreesToRadians = (degrees: number) => (degrees * Math.PI) / 180;
+  const deltaLatitude = degreesToRadians(toLatitude - fromLatitude);
+  const deltaLongitude = degreesToRadians(toLongitude - fromLongitude);
+  const a =
+    Math.sin(deltaLatitude / 2) ** 2 +
+    Math.cos(degreesToRadians(fromLatitude)) *
+      Math.cos(degreesToRadians(toLatitude)) *
+      Math.sin(deltaLongitude / 2) ** 2;
+
+  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 function compactAddressPart(value?: string | null) {
@@ -1448,6 +1501,28 @@ export class BootstrapService {
         }
       }
 
+      if (appConfig.googlePlacesApiKey && !formattedAddress) {
+        try {
+          const googleUrl = new URL("https://maps.googleapis.com/maps/api/geocode/json");
+          googleUrl.searchParams.set("latlng", `${latitude},${longitude}`);
+          googleUrl.searchParams.set("key", appConfig.googlePlacesApiKey);
+
+          const googleRes = await fetch(googleUrl);
+          if (googleRes.ok) {
+            const googleData = (await googleRes.json()) as {
+              status?: string;
+              results?: Array<{ formatted_address?: string }>;
+            };
+            if (googleData.status === "OK" && googleData.results?.[0]?.formatted_address) {
+              formattedAddress = googleData.results[0].formatted_address;
+              label = formattedAddress.split(",")[0]?.trim() || "Current location";
+            }
+          }
+        } catch {
+          // fallback to OSM
+        }
+      }
+
       if (!formattedAddress) {
         const requestUrl = new URL(`${appConfig.geocodingBaseUrl}/reverse`);
         requestUrl.searchParams.set("format", "jsonv2");
@@ -1510,6 +1585,44 @@ export class BootstrapService {
     }
 
     const result = await queueReverseGeocodeRequest(async () => {
+      if (appConfig.googlePlacesApiKey) {
+        try {
+          const googleUrl = new URL("https://maps.googleapis.com/maps/api/geocode/json");
+          googleUrl.searchParams.set("address", normalizedQuery);
+          googleUrl.searchParams.set("components", "country:GH");
+          googleUrl.searchParams.set("key", appConfig.googlePlacesApiKey);
+
+          const googleRes = await fetch(googleUrl);
+          if (googleRes.ok) {
+            const googleData = (await googleRes.json()) as {
+              status?: string;
+              results?: Array<{
+                formatted_address?: string;
+                geometry?: { location?: { lat: number; lng: number } };
+              }>;
+            };
+
+            if (googleData.status === "OK" && googleData.results?.[0]?.geometry?.location) {
+              const first = googleData.results[0];
+              const lat = first.geometry!.location!.lat;
+              const lng = first.geometry!.location!.lng;
+              const formattedAddress = first.formatted_address || normalizedQuery;
+
+              return {
+                label: normalizedQuery,
+                displayName: formattedAddress,
+                formattedAddress,
+                shortLabel: buildShortLabelFromFormatted(formattedAddress),
+                latitude: lat,
+                longitude: lng
+              } satisfies ForwardGeocodeResult;
+            }
+          }
+        } catch {
+          // fallback to mapbox / nominatim
+        }
+      }
+
       if (appConfig.mapboxAccessToken) {
         const mapboxUrl = new URL("https://api.mapbox.com/search/geocode/v6/forward");
         mapboxUrl.searchParams.set("q", normalizedQuery);
@@ -1635,64 +1748,136 @@ export class BootstrapService {
 
     let result: RoutePreviewResult | null = null;
 
-    if (appConfig.mapboxAccessToken) {
-      const mapboxUrl = new URL(
-        `https://api.mapbox.com/directions/v5/mapbox/driving/${input.startLongitude},${input.startLatitude};${input.endLongitude},${input.endLatitude}`
-      );
-      mapboxUrl.searchParams.set("access_token", appConfig.mapboxAccessToken);
-      mapboxUrl.searchParams.set("overview", "full");
-      mapboxUrl.searchParams.set("geometries", "geojson");
-      mapboxUrl.searchParams.set("alternatives", "false");
-      mapboxUrl.searchParams.set("steps", "false");
+    // 1. Primary: Google Directions API
+    const googleApiKey = appConfig.googlePlacesApiKey;
+    if (googleApiKey) {
+      try {
+        const googleUrl = new URL("https://maps.googleapis.com/maps/api/directions/json");
+        googleUrl.searchParams.set("origin", `${input.startLatitude},${input.startLongitude}`);
+        googleUrl.searchParams.set("destination", `${input.endLatitude},${input.endLongitude}`);
+        googleUrl.searchParams.set("mode", "driving");
+        googleUrl.searchParams.set("key", googleApiKey);
 
-      const mapboxResponse = await fetch(mapboxUrl, {
-        headers: {
-          "Content-Type": "application/json"
+        const googleResponse = await fetch(googleUrl.toString());
+        if (googleResponse.ok) {
+          const payload = (await googleResponse.json()) as any;
+          if (payload.status === "OK" && payload.routes?.[0]) {
+            const route = payload.routes[0];
+            const leg = route.legs?.[0];
+            const encoded = route.overview_polyline?.points;
+            if (encoded && leg) {
+              const decodedCoords = decodePolyline(encoded);
+              if (decodedCoords.length > 1) {
+                result = {
+                  provider: "google",
+                  distanceKm: round((leg.distance?.value ?? 0) / 1000),
+                  durationMinutes: Math.max(1, Math.round((leg.duration?.value ?? 60) / 60)),
+                  route: decodedCoords
+                };
+              }
+            }
+          }
         }
-      });
+      } catch {
+        // Fall back to Mapbox or OSRM
+      }
+    }
 
-      if (mapboxResponse.ok) {
-        const payload = (await mapboxResponse.json()) as MapboxDirectionsResponse;
-        const route = payload.routes?.[0];
-        const geometry = route?.geometry?.coordinates;
+    // 2. Secondary: Mapbox Directions API
+    if (!result && appConfig.mapboxAccessToken) {
+      try {
+        const mapboxUrl = new URL(
+          `https://api.mapbox.com/directions/v5/mapbox/driving/${input.startLongitude},${input.startLatitude};${input.endLongitude},${input.endLatitude}`
+        );
+        mapboxUrl.searchParams.set("access_token", appConfig.mapboxAccessToken);
+        mapboxUrl.searchParams.set("overview", "full");
+        mapboxUrl.searchParams.set("geometries", "geojson");
+        mapboxUrl.searchParams.set("alternatives", "false");
+        mapboxUrl.searchParams.set("steps", "false");
 
-        if (geometry && geometry.length > 1 && typeof route.distance === "number" && typeof route.duration === "number") {
-          result = {
-            provider: "mapbox",
-            distanceKm: round(route.distance / 1000),
-            durationMinutes: Math.max(1, Math.round(route.duration / 60)),
-            route: geometry.map(([longitude, latitude]) => [latitude, longitude] as [number, number])
-          };
+        const mapboxResponse = await fetch(mapboxUrl, {
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+
+        if (mapboxResponse.ok) {
+          const payload = (await mapboxResponse.json()) as MapboxDirectionsResponse;
+          const route = payload.routes?.[0];
+          const geometry = route?.geometry?.coordinates;
+
+          if (geometry && geometry.length > 1 && typeof route.distance === "number" && typeof route.duration === "number") {
+            result = {
+              provider: "mapbox",
+              distanceKm: round(route.distance / 1000),
+              durationMinutes: Math.max(1, Math.round(route.duration / 60)),
+              route: geometry.map(([longitude, latitude]) => [latitude, longitude] as [number, number])
+            };
+          }
         }
+      } catch {
+        // Fall back to OSRM
+      }
+    }
+
+    // 3. Fallback: OSRM
+    if (!result) {
+      try {
+        const osrmUrl = new URL(
+          `https://router.project-osrm.org/route/v1/driving/${input.startLongitude},${input.startLatitude};${input.endLongitude},${input.endLatitude}`
+        );
+        osrmUrl.searchParams.set("overview", "full");
+        osrmUrl.searchParams.set("geometries", "geojson");
+
+        const osrmResponse = await fetch(osrmUrl);
+
+        if (osrmResponse.ok) {
+          const payload = (await osrmResponse.json()) as OsrmRouteResponse;
+          const route = payload.routes?.[0];
+          const geometry = route?.geometry?.coordinates;
+
+          if (geometry && geometry.length > 1 && typeof route.distance === "number" && typeof route.duration === "number") {
+            result = {
+              provider: "osrm",
+              distanceKm: round(route.distance / 1000),
+              durationMinutes: Math.max(1, Math.round(route.duration / 60)),
+              route: geometry.map(([longitude, latitude]) => [latitude, longitude] as [number, number])
+            };
+          }
+        }
+      } catch {
+        // Handled below
       }
     }
 
     if (!result) {
-      const osrmUrl = new URL(
-        `https://router.project-osrm.org/route/v1/driving/${input.startLongitude},${input.startLatitude};${input.endLongitude},${input.endLatitude}`
-      );
-      osrmUrl.searchParams.set("overview", "full");
-      osrmUrl.searchParams.set("geometries", "geojson");
-
-      const osrmResponse = await fetch(osrmUrl);
-
-      if (!osrmResponse.ok) {
-        throw new Error(`Route preview failed with status ${osrmResponse.status}.`);
-      }
-
-      const payload = (await osrmResponse.json()) as OsrmRouteResponse;
-      const route = payload.routes?.[0];
-      const geometry = route?.geometry?.coordinates;
-
-      if (!geometry || geometry.length < 2 || typeof route.distance !== "number" || typeof route.duration !== "number") {
-        throw new Error("Route preview is unavailable for this trip.");
-      }
-
       result = {
-        provider: "osrm",
-        distanceKm: round(route.distance / 1000),
-        durationMinutes: Math.max(1, Math.round(route.duration / 60)),
-        route: geometry.map(([longitude, latitude]) => [latitude, longitude] as [number, number])
+        provider: "direct",
+        distanceKm: round(
+          haversineDistanceKm(
+            input.startLatitude,
+            input.startLongitude,
+            input.endLatitude,
+            input.endLongitude
+          )
+        ),
+        durationMinutes: Math.max(
+          1,
+          Math.round(
+            (haversineDistanceKm(
+              input.startLatitude,
+              input.startLongitude,
+              input.endLatitude,
+              input.endLongitude
+            ) /
+              22) *
+              60
+          )
+        ),
+        route: [
+          [input.startLatitude, input.startLongitude],
+          [input.endLatitude, input.endLongitude]
+        ]
       };
     }
 
@@ -1734,6 +1919,18 @@ export class BootstrapService {
 
     if (suggestions.length === 0) {
       suggestions = await suggestPlacesNominatim(normalizedQuery);
+    }
+
+    const GHANA_POST_REGEX = /^[A-Z]{2}[-\s]?\d{3,4}[-\s]?\d{3,4}$/i;
+    if (GHANA_POST_REGEX.test(normalizedQuery)) {
+      const formattedCode = normalizedQuery.toUpperCase().replace(/\s+/g, "-");
+      suggestions.unshift({
+        placeId: `ghanapost_${formattedCode}`,
+        name: `GhanaPostGPS: ${formattedCode}`,
+        fullAddress: `${formattedCode}, Greater Accra, Ghana`,
+        latitude: input.latitude ?? 5.6037,
+        longitude: input.longitude ?? -0.1870,
+      });
     }
 
     return { suggestions };

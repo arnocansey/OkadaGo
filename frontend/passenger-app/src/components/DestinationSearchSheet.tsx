@@ -115,13 +115,16 @@ export function DestinationSearchSheet({
           longitude: resolved.longitude,
         });
         setDestinationQuery(resolved.address);
+        onSelectDestination(resolved);
       } catch {
-        setSelectedDest({
-          address: suggestion.name,
-          latitude: suggestion.latitude ?? userLocation?.latitude ?? 0,
-          longitude: suggestion.longitude ?? userLocation?.longitude ?? 0,
-        });
+        const fallback = {
+          address: suggestion.fullAddress || suggestion.name,
+          latitude: suggestion.latitude ?? userLocation?.latitude ?? 5.6037,
+          longitude: suggestion.longitude ?? userLocation?.longitude ?? -0.1870,
+        };
+        setSelectedDest(fallback);
         setDestinationQuery(suggestion.name);
+        onSelectDestination(fallback);
       }
     },
     [destinationAutocomplete, onSelectDestination, userLocation],
@@ -169,7 +172,7 @@ export function DestinationSearchSheet({
       StyleSheet.create({
         backdrop: {
           ...StyleSheet.absoluteFillObject,
-          backgroundColor: "rgba(0,0,0,0.6)",
+          backgroundColor: isDark ? "rgba(8, 14, 26, 0.98)" : "rgba(248, 250, 252, 0.98)",
           zIndex: 100,
         },
         sheet: {
@@ -179,10 +182,12 @@ export function DestinationSearchSheet({
           right: 0,
           bottom: 0,
           zIndex: 101,
+          backgroundColor: isDark ? "#080E1A" : "#F8FAFC",
         },
         container: {
           flex: 1,
-          paddingTop: insets.top,
+          paddingTop: Math.max(insets.top, 12),
+          backgroundColor: isDark ? "#080E1A" : "#F8FAFC",
         },
 
         /* ─── Header ──────────────────────────────────────── */
@@ -192,6 +197,7 @@ export function DestinationSearchSheet({
           paddingHorizontal: 16,
           paddingBottom: 12,
           gap: 12,
+          backgroundColor: isDark ? "#080E1A" : "#F8FAFC",
         },
         backBtn: {
           width: 36,
@@ -199,12 +205,12 @@ export function DestinationSearchSheet({
           borderRadius: 18,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
+          backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)",
         },
         headerTitle: {
           flex: 1,
           fontSize: 18,
-          fontWeight: "600",
+          fontWeight: "700",
           color: colors.text,
         },
 
@@ -212,7 +218,7 @@ export function DestinationSearchSheet({
         fieldsCard: {
           marginHorizontal: 16,
           marginBottom: 12,
-          backgroundColor: isDark ? "rgba(17, 24, 39, 0.97)" : "rgba(255, 255, 255, 0.97)",
+          backgroundColor: isDark ? "#121A28" : "#FFFFFF",
           borderRadius: 16,
           padding: 14,
           shadowColor: "#000",
@@ -274,6 +280,7 @@ export function DestinationSearchSheet({
         scrollArea: {
           flex: 1,
           marginHorizontal: 16,
+          backgroundColor: isDark ? "#080E1A" : "#F8FAFC",
         },
         sectionLabel: {
           fontSize: 11,
@@ -281,50 +288,58 @@ export function DestinationSearchSheet({
           color: colors.textMuted,
           textTransform: "uppercase",
           letterSpacing: 0.6,
-          marginBottom: 6,
-          marginTop: 14,
+          marginBottom: 8,
+          marginTop: 16,
           paddingHorizontal: 4,
         },
         sectionLabelFirst: {
-          marginTop: 0,
+          marginTop: 4,
         },
 
         /* ─── Compact Row ─────────────────────────────────── */
         row: {
           flexDirection: "row",
           alignItems: "center",
-          gap: 10,
-          paddingVertical: 10,
-          paddingHorizontal: 12,
-          borderRadius: 12,
-          marginBottom: 4,
+          gap: 12,
+          paddingVertical: 12,
+          paddingHorizontal: 14,
+          borderRadius: 14,
+          marginBottom: 8,
+          backgroundColor: isDark ? "#121A28" : "#FFFFFF",
+          borderWidth: 1,
+          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: isDark ? 0.2 : 0.05,
+          shadowRadius: 4,
+          elevation: 2,
         },
         rowPressed: {
-          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          backgroundColor: isDark ? "#1A2538" : "#F1F5F9",
         },
         rowIcon: {
-          width: 32,
-          height: 32,
+          width: 34,
+          height: 34,
           borderRadius: 10,
-          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
           alignItems: "center",
           justifyContent: "center",
         },
         rowIconSaved: {
-          backgroundColor: isDark ? "rgba(250, 204, 21, 0.1)" : "rgba(250, 204, 21, 0.08)",
+          backgroundColor: isDark ? "rgba(250, 204, 21, 0.15)" : "rgba(250, 204, 21, 0.1)",
         },
         rowBody: {
           flex: 1,
         },
         rowName: {
-          fontSize: 14,
+          fontSize: 15,
           fontWeight: "600",
           color: colors.text,
         },
         rowAddress: {
           fontSize: 12,
           color: colors.textMuted,
-          marginTop: 1,
+          marginTop: 2,
         },
 
         /* ─── Loading ─────────────────────────────────────── */
@@ -332,8 +347,11 @@ export function DestinationSearchSheet({
           flexDirection: "row",
           alignItems: "center",
           gap: 10,
-          paddingVertical: 12,
-          paddingHorizontal: 12,
+          paddingVertical: 14,
+          paddingHorizontal: 14,
+          backgroundColor: isDark ? "#121A28" : "#FFFFFF",
+          borderRadius: 14,
+          marginBottom: 8,
         },
         loadingText: {
           fontSize: 13,
@@ -343,11 +361,12 @@ export function DestinationSearchSheet({
         /* ─── Error ───────────────────────────────────────── */
         errorRow: {
           paddingVertical: 12,
-          paddingHorizontal: 12,
-          borderRadius: 12,
+          paddingHorizontal: 14,
+          borderRadius: 14,
           borderWidth: 1,
           borderColor: colors.danger,
-          marginBottom: 4,
+          marginBottom: 8,
+          backgroundColor: isDark ? "#121A28" : "#FFFFFF",
         },
         errorText: {
           fontSize: 13,
@@ -357,7 +376,8 @@ export function DestinationSearchSheet({
         /* ─── Empty State ─────────────────────────────────── */
         emptyState: {
           alignItems: "center",
-          paddingTop: 48,
+          paddingTop: 36,
+          paddingBottom: 24,
           gap: 8,
         },
         emptyText: {
@@ -369,10 +389,10 @@ export function DestinationSearchSheet({
         bottomBar: {
           paddingHorizontal: 16,
           paddingTop: 12,
-          paddingBottom: insets.bottom + 12,
-          backgroundColor: isDark ? "rgba(17, 24, 39, 0.97)" : "rgba(255, 255, 255, 0.97)",
+          paddingBottom: Math.max(insets.bottom, 16),
+          backgroundColor: isDark ? "#080E1A" : "#FFFFFF",
           borderTopWidth: 1,
-          borderTopColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+          borderTopColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
         },
         continueBtn: {
           height: 52,
@@ -476,7 +496,7 @@ export function DestinationSearchSheet({
           {/* ─── Scrollable Content ──────────────────────── */}
           <ScrollView
             style={s.scrollArea}
-            keyboardShouldPersistTaps="handled"
+            keyboardShouldPersistTaps="always"
             keyboardDismissMode="on-drag"
             contentContainerStyle={{ paddingBottom: 20 }}
           >

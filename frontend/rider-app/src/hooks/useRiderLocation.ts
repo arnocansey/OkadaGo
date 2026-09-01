@@ -66,7 +66,9 @@ export function useRiderLocation(params: {
 
     return () => {
       cancelled = true;
-      watchRef.current?.remove();
+      try {
+        watchRef.current?.remove();
+      } catch {}
       watchRef.current = null;
     };
   }, [params.token, params.riderProfileId, params.activeTrip?.id, params.online]);

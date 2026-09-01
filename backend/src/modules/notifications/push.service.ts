@@ -5,6 +5,11 @@ import { NotificationChannel, NotificationStatus } from "../../generated/prisma/
 type PushPayload = {
   title: string;
   body: string;
+  subtitle?: string;
+  sound?: string;
+  channelId?: string;
+  priority?: "high" | "normal" | "default";
+  ttl?: number;
   data?: Record<string, unknown>;
 };
 
@@ -39,10 +44,15 @@ export class PushService {
 
     const messages = tokens.map((to) => ({
       to,
-      sound: "default" as const,
+      sound: payload.sound ?? ("default" as const),
       title: payload.title,
+      subtitle: payload.subtitle,
       body: payload.body,
-        data: (payload.data ?? {}) as Prisma.InputJsonValue,
+      data: (payload.data ?? {}) as Prisma.InputJsonValue,
+      channelId: payload.channelId ?? "ride-alerts",
+      priority: payload.priority ?? "high",
+      ttl: payload.ttl ?? 60,
+      _displayInForeground: true,
     }));
 
     try {

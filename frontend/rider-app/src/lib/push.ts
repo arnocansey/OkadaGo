@@ -41,15 +41,7 @@ export async function setPushEnabled(enabled: boolean) {
 
 export function configureNotificationHandler() {
   try {
-    const Notifications = require("expo-notifications") as {
-      setNotificationHandler: (handler: {
-        handleNotification: () => Promise<{
-          shouldShowAlert: boolean;
-          shouldPlaySound: boolean;
-          shouldSetBadge: boolean;
-        }>;
-      }) => void;
-    };
+    const Notifications = require("expo-notifications");
     Notifications.setNotificationHandler({
       handleNotification: async () => ({
         shouldShowAlert: true,
@@ -57,6 +49,20 @@ export function configureNotificationHandler() {
         shouldSetBadge: true,
       }),
     });
+
+    if (Platform.OS === "android") {
+      Notifications.setNotificationChannelAsync("ride-alerts", {
+        name: "Ride & Delivery Alerts",
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 500, 200, 500, 200, 500],
+        lightColor: "#EAB308",
+        sound: "default",
+        enableVibrate: true,
+        enableLights: true,
+        lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+        bypassDnd: true,
+      }).catch(() => undefined);
+    }
   } catch {
     // expo-notifications unavailable in some environments
   }

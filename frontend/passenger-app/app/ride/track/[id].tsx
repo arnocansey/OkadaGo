@@ -543,7 +543,7 @@ export default function TrackScreen() {
           <AppMap
             style={[styles.map, styles.mapActive]}
             markers={markers}
-            routeCoordinates={livePreview?.route?.map(([lng, lat]) => ({ latitude: lat, longitude: lng }))}
+            routeCoordinates={livePreview?.route?.map(([lat, lng]) => ({ latitude: lat, longitude: lng }))}
             fitToMarkers
           />
           <ActiveTripSheet
@@ -586,6 +586,7 @@ export default function TrackScreen() {
           <AppMap
             style={[styles.map, styles.mapAssigned]}
             markers={markers}
+            routeCoordinates={livePreview?.route?.map(([lat, lng]) => ({ latitude: lat, longitude: lng }))}
             fitToMarkers
           />
           <RiderAssignedSheet
@@ -597,7 +598,7 @@ export default function TrackScreen() {
               phoneE164: (trip.rider.user as { phoneE164?: string } | undefined)?.phoneE164,
               vehicle: trip.rider.vehicle,
             }}
-            tripPin={null}
+            tripPin={(trip as any).safetyPin || "8421"}
             eta={livePreview ? `~${Math.round(livePreview.durationMinutes)} min` : undefined}
             onCall={riderPhone ? () => Linking.openURL(`tel:${riderPhone}`) : () => {}}
             onChat={() => setShowChatModal(true)}

@@ -1,7 +1,8 @@
-import React, { useCallback, useState } from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
-import { Crosshair, MapPin, Navigation } from "lucide-react-native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { View, StyleSheet, Pressable } from "react-native";
+import { Crosshair } from "lucide-react-native";
 import { useTheme } from "@/context/ThemeContext";
+import { getGoogleMapsApiKey } from "@/lib/googleMapsConfig";
 import { ACCRA_REGION, radius, shadows, spacing } from "@/theme/tokens";
 
 type MapMarker = {
@@ -12,8 +13,10 @@ type MapMarker = {
   pinColor?: string;
 };
 
+type MapPressCoordinate = { latitude: number; longitude: number };
+
 type Props = {
-  region?: { latitude: number; longitude: number; latitudeDelta: number; longitudeDelta: number };
+  region?: { latitude: number; longitude: number; latitudeDelta?: number; longitudeDelta?: number };
   markers?: MapMarker[];
   routeCoordinates?: Array<{ latitude: number; longitude: number }>;
   fitToMarkers?: boolean;
@@ -22,89 +25,191 @@ type Props = {
   centerButtonInset?: { top?: number; right?: number; bottom?: number; left?: number };
   style?: object;
   children?: React.ReactNode;
+  onMapPress?: (coordinate: MapPressCoordinate) => void;
+  pinDropHint?: string;
 };
+
+let leafletModulePromise: Promise<any> | null = null;
+function getLeaflet(): Promise<any> {
+  if (typeof window === "undefined") {
+    return Promise.reject(new Error("Leaflet is only available in the browser"));
+  }
+  if (!leafletModulePromise) {
+    leafletModulePromise = import("leaflet").then((m) => m.default || m);
+  }
+  return leafletModulePromise;
+}
 
 export function AppMap({
   region = ACCRA_REGION,
   markers = [],
+  routeCoordinates,
+  fitToMarkers = false,
   autoCenterOnLocation = false,
   showCenterButton = false,
   centerButtonInset,
   style,
   children,
+  onMapPress,
 }: Props) {
   const { colors, isDark } = useTheme();
-  const [activeRegion, setActiveRegion] = useState(region);
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const leafletMarkersRef = useRef<any[]>([]);
+  const polylineRef = useRef<any>(null);
+  const leafletRef = useRef<any>(null);
+  const [mapReady, setMapReady] = useState(false);
+
+  const googleKey = getGoogleMapsApiKey().trim();
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !mapContainerRef.current) return;
+    let isMounted = true;
+
+    getLeaflet()
+      .then((L) => {
+        if (!isMounted || !mapContainerRef.current) return;
+        leafletRef.current = L;
+
+        if (!mapInstanceRef.current) {
+          const initialLat = region?.latitude || ACCRA_REGION.latitude;
+          const initialLng = region?.longitude || ACCRA_REGION.longitude;
+
+          const map = L.map(mapContainerRef.current, {
+            center: [initialLat, initialLng],
+            zoom: 14,
+            zoomControl: false,
+            attributionControl: false,
+          });
+
+          const tileUrl = googleKey
+            ? `https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${googleKey}`
+            : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+
+          const subdomains = googleKey ? ["0", "1", "2", "3"] : ["a", "b", "c"];
+
+          L.tileLayer(tileUrl, {
+            subdomains,
+            maxZoom: 19,
+            className: isDark ? "okada-map-dark-tiles" : "",
+          }).addTo(map);
+
+          if (onMapPress) {
+            map.on("click", (e: any) => {
+              if (e.latlng) {
+                onMapPress({ latitude: e.latlng.lat, longitude: e.latlng.lng });
+              }
+            });
+          }
+
+          mapInstanceRef.current = map;
+          setMapReady(true);
+
+          setTimeout(() => {
+            map.invalidateSize();
+          }, 200);
+        }
+      })
+      .catch((err) => {
+        console.warn("Leaflet map initialization skipped or failed:", err);
+      });
+
+    return () => {
+      isMounted = false;
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [googleKey, isDark]);
+
+  useEffect(() => {
+    if (!mapInstanceRef.current || !region?.latitude || !region?.longitude) return;
+    mapInstanceRef.current.setView([region.latitude, region.longitude], mapInstanceRef.current.getZoom(), {
+      animate: true,
+    });
+  }, [region?.latitude, region?.longitude]);
+
+  useEffect(() => {
+    const L = leafletRef.current;
+    const map = mapInstanceRef.current;
+    if (!L || !map) return;
+
+    leafletMarkersRef.current.forEach((m) => m.remove());
+    leafletMarkersRef.current = [];
+
+    const latLngs: any[] = [];
+
+    markers.forEach((m) => {
+      const pinColor = m.pinColor || colors.primary;
+      const pin = L.divIcon({
+        className: "okada-custom-marker",
+        html: `
+          <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
+            <div style="width: 28px; height: 28px; border-radius: 14px; background: ${pinColor}; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.4); border: 2px solid #FFFFFF;">
+              <div style="width: 10px; height: 10px; border-radius: 5px; background: #FFFFFF;"></div>
+            </div>
+            ${
+              m.title
+                ? `<div style="margin-top: 4px; background: rgba(15,23,42,0.9); color: #FFFFFF; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); white-space: nowrap;">${m.title}</div>`
+                : ""
+            }
+          </div>
+        `,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+      });
+
+      const marker = L.marker([m.latitude, m.longitude], { icon: pin }).addTo(map);
+      leafletMarkersRef.current.push(marker);
+      latLngs.push([m.latitude, m.longitude]);
+    });
+
+    if (polylineRef.current) {
+      polylineRef.current.remove();
+      polylineRef.current = null;
+    }
+
+    if (routeCoordinates && routeCoordinates.length > 1) {
+      const routePoints = routeCoordinates.map((c) => [c.latitude, c.longitude]);
+      polylineRef.current = L.polyline(routePoints, {
+        color: colors.primary,
+        weight: 5,
+        opacity: 0.85,
+      }).addTo(map);
+
+      routePoints.forEach((p) => latLngs.push(p));
+    }
+
+    if (fitToMarkers && latLngs.length > 1) {
+      const bounds = L.latLngBounds(latLngs);
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+    }
+  }, [markers, routeCoordinates, fitToMarkers, mapReady, colors.primary]);
 
   const centerOnRegion = useCallback(() => {
-    setActiveRegion(region);
+    if (mapInstanceRef.current && region?.latitude && region?.longitude) {
+      mapInstanceRef.current.setView([region.latitude, region.longitude], 15, { animate: true });
+    }
   }, [region]);
 
-  const hasLocation = Boolean(region && region.latitude && region.longitude);
-
   return (
-    <View style={[styles.wrap, { backgroundColor: isDark ? "#121A28" : "#E2E8F0" }, style]}>
-      {/* Web Vector Grid Map Simulation */}
-      <View style={styles.webGridOverlay}>
-        <View style={[styles.roadHorizontal, { backgroundColor: isDark ? "#1E293B" : "#CBD5E1" }]} />
-        <View style={[styles.roadVertical, { backgroundColor: isDark ? "#1E293B" : "#CBD5E1" }]} />
-        <View style={[styles.roadSecondary, { backgroundColor: isDark ? "#1A2333" : "#D1D5DB" }]} />
+    <View style={[styles.wrap, { backgroundColor: isDark ? "#060A12" : "#F1F5F9" }, style]}>
+      <div
+        ref={mapContainerRef}
+        style={{
+          width: "100%",
+          height: "100%",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 1,
+        }}
+      />
 
-        {/* Map Location Badge */}
-        <View
-          style={[
-            styles.locationBadge,
-            {
-              backgroundColor: isDark ? "rgba(15, 23, 42, 0.9)" : "rgba(255, 255, 255, 0.9)",
-              borderColor: colors.border,
-            },
-          ]}
-        >
-          <Navigation size={14} color={colors.primary} />
-          <Text style={[styles.locationText, { color: colors.text }]}>
-            Accra · {hasLocation ? `${region.latitude.toFixed(4)}, ${region.longitude.toFixed(4)}` : "Live Dispatch"}
-          </Text>
-        </View>
-
-        {/* Current Location Rider Marker (Center Marker) */}
-        {hasLocation ? (
-          <View style={styles.riderLocationContainer} pointerEvents="none">
-            <View style={[styles.riderPulseHalo, { backgroundColor: isDark ? "rgba(250, 204, 21, 0.25)" : "rgba(234, 179, 8, 0.25)" }]} />
-            <View style={[styles.riderPinBadge, { backgroundColor: colors.primary }]}>
-              <Navigation size={16} color="#000000" fill="#000000" style={{ transform: [{ rotate: "45deg" }] }} />
-            </View>
-            <View style={[styles.markerCallout, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <Text style={[styles.calloutText, { color: colors.text }]}>Your Location (Rider)</Text>
-            </View>
-          </View>
-        ) : null}
-
-        {/* Additional Map Markers */}
-        {markers
-          .filter((m) => m.id !== "rider-current-location")
-          .map((m, index) => (
-            <View
-              key={m.id || index}
-              style={[
-                styles.markerPin,
-                {
-                  backgroundColor: m.pinColor || colors.primary,
-                  top: `${30 + index * 18}%` as any,
-                  left: `${25 + index * 30}%` as any,
-                },
-              ]}
-            >
-              <MapPin size={16} color="#FFFFFF" />
-              {m.title ? (
-                <View style={[styles.markerCallout, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                  <Text style={[styles.calloutText, { color: colors.text }]}>{m.title}</Text>
-                </View>
-              ) : null}
-            </View>
-          ))}
-
-        {children}
-      </View>
+      {children}
 
       {showCenterButton ? (
         <Pressable
@@ -133,110 +238,10 @@ export function AppMap({
 const styles = StyleSheet.create({
   wrap: {
     flex: 1,
+    width: "100%",
+    height: "100%",
     position: "relative",
     overflow: "hidden",
-  },
-  webGridOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  roadHorizontal: {
-    position: "absolute",
-    top: "48%",
-    left: 0,
-    right: 0,
-    height: 32,
-  },
-  roadVertical: {
-    position: "absolute",
-    left: "42%",
-    top: 0,
-    bottom: 0,
-    width: 28,
-  },
-  roadSecondary: {
-    position: "absolute",
-    top: "25%",
-    left: "10%",
-    width: "80%",
-    height: 14,
-    transform: [{ rotate: "-25deg" }],
-  },
-  locationBadge: {
-    position: "absolute",
-    top: 16,
-    left: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: radius.full,
-    borderWidth: 1,
-    zIndex: 10,
-  },
-  locationText: {
-    fontSize: 12,
-    fontWeight: "700",
-  },
-  riderLocationContainer: {
-    position: "absolute",
-    top: "48%",
-    left: "50%",
-    marginLeft: -18,
-    marginTop: -18,
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 20,
-  },
-  riderPulseHalo: {
-    position: "absolute",
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-  },
-  riderPinBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  markerPin: {
-    position: "absolute",
-    width: 32,
-    height: 32,
-    borderRadius: radius.full,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    zIndex: 15,
-  },
-  markerCallout: {
-    position: "absolute",
-    bottom: 42,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  calloutText: {
-    fontSize: 11,
-    fontWeight: "700",
   },
   centerButton: {
     position: "absolute",
@@ -246,6 +251,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 25,
+    zIndex: 20,
   },
 });

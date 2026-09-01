@@ -41,7 +41,7 @@ export const rideEstimateSchema = z.object({
 
 export const createRideRequestSchema = z.object({
   passengerProfileId: z.string().cuid(),
-  serviceZoneId: z.string().cuid(),
+  serviceZoneId: z.string().cuid().optional(),
   paymentMethod: z.enum(["cash", "card", "wallet", "mobile_money"]),
   pickup: locationSchema,
   destination: locationSchema,
@@ -84,7 +84,9 @@ export const rideStatusUpdateSchema = z.object({
   actorRole: z.enum(["passenger", "rider", "admin", "dispatcher", "system"]),
   actorUserId: z.string().cuid().optional(),
   riderProfileId: z.string().cuid().optional(),
-  cancellationReason: z.string().max(300).optional()
+  cancellationReason: z.string().max(300).optional(),
+  pin: z.string().min(4).max(6).optional(),
+  tipAmount: z.number().nonnegative().optional()
 });
 
 export const rideIdParamsSchema = z.object({

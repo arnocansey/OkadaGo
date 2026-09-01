@@ -19,7 +19,7 @@ async function main() {
 
     attachRealtimeServer(server.server);
     server.log.info(`OkadaGo backend listening on ${appConfig.host}:${appConfig.port}`);
-    server.log.info("Realtime websocket server attached at /socket.io");
+    server.log.info("Realtime websocket server attached at /socket.io"); // reloaded
 
     const postgisEnabled = await detectPostgisSupport();
     if (postgisEnabled) {

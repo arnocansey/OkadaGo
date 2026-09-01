@@ -1,6 +1,5 @@
 import { Socket, io } from "socket.io-client";
-
-const BACKEND_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? "https://okadago-backend.onrender.com/v1";
+import { getApiBaseUrl } from "./api";
 
 export class RiderWebSocketService {
   private socket: Socket | null = null;
@@ -9,7 +8,8 @@ export class RiderWebSocketService {
   connect(token: string): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        this.socket = io(BACKEND_URL.replace("/v1", ""), {
+        const backendUrl = getApiBaseUrl().replace("/v1", "");
+        this.socket = io(backendUrl, {
           auth: { token },
           reconnection: true,
           reconnectionDelay: 1000,

@@ -1617,6 +1617,7 @@ export class WalletService {
         amount: String(toSubunit(input.amount)),
         currency,
         reference,
+        channels: ["mobile_money", "card"],
         callback_url: `${appConfig.apiPublicUrl}/v1/wallets/top-up/paystack/callback`,
         metadata: JSON.stringify({
           userId: session.user.id,

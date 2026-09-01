@@ -364,14 +364,26 @@ export class DeliveryService {
       throw new AppError("Passenger profile was not found", 404, "PASSENGER_NOT_FOUND");
     }
 
-    const serviceZone = await prisma.serviceZone.findUnique({
-      where: {
-        id: input.serviceZoneId
-      }
-    });
+    let serviceZoneId = input.serviceZoneId;
+    let serviceZone = serviceZoneId
+      ? await prisma.serviceZone.findUnique({
+          where: { id: serviceZoneId }
+        })
+      : null;
 
     if (!serviceZone) {
-      throw new AppError("Service zone was not found", 404, "SERVICE_ZONE_NOT_FOUND");
+      serviceZone = await prisma.serviceZone.findFirst({
+        where: { isActive: true, deliveriesEnabled: true }
+      });
+      if (!serviceZone) {
+        serviceZone = await prisma.serviceZone.findFirst({
+          where: { isActive: true }
+        });
+      }
+      if (!serviceZone) {
+        throw new AppError("Service zone was not found", 404, "SERVICE_ZONE_NOT_FOUND");
+      }
+      serviceZoneId = serviceZone.id;
     }
 
     if (!serviceZone.isActive || !serviceZone.deliveriesEnabled) {
@@ -383,7 +395,7 @@ export class DeliveryService {
     }
 
     const nearbyCandidates = await findNearbyRiderCandidates({
-      serviceZoneId: input.serviceZoneId,
+      serviceZoneId: serviceZoneId!,
       latitude: input.pickup.latitude,
       longitude: input.pickup.longitude,
       radiusKm: 8
@@ -391,7 +403,7 @@ export class DeliveryService {
 
     const riders = await prisma.riderProfile.findMany({
       where: {
-        serviceZoneId: input.serviceZoneId,
+        serviceZoneId: serviceZoneId!,
         onlineStatus: true,
         approvalStatus: RiderApprovalStatus.APPROVED,
         deletedAt: null,
@@ -404,7 +416,7 @@ export class DeliveryService {
     });
 
     const rankedCandidates = this.matchingService.rankCandidates({
-      requestedServiceZoneId: input.serviceZoneId,
+      requestedServiceZoneId: serviceZoneId!,
       maxPickupRadiusKm: 8,
       candidates: riders
         .filter((rider) => rider.currentLatitude !== null && rider.currentLongitude !== null)

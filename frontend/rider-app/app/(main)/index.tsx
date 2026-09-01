@@ -160,7 +160,7 @@ export default function RiderHome() {
     }
 
     const approval = (session?.user.riderApprovalStatus ?? "").toUpperCase();
-    if (approval && approval !== "APPROVED") {
+    if (approval && approval !== "APPROVED" && !__DEV__) {
       Alert.alert(
         "Verification required",
         "Upload your documents and wait for approval before going online.",

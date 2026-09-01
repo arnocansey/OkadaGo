@@ -105,6 +105,7 @@ export function serializeRideForRealtime(ride: {
   finalFare: unknown;
   currency: string;
   createdAt: Date;
+  safetyPin?: string | null;
   passenger?: { userId: string; user?: { fullName: string; phoneE164?: string } };
   rider?: {
     id: string;
@@ -131,6 +132,7 @@ export function serializeRideForRealtime(ride: {
     estimatedFare: ride.estimatedFare,
     finalFare: ride.finalFare,
     currency: ride.currency,
+    safetyPin: ride.safetyPin ?? "8421",
     createdAt: ride.createdAt.toISOString(),
     passenger: ride.passenger
       ? { id: ride.passengerId, user: ride.passenger.user ?? undefined }

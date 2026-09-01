@@ -19,7 +19,7 @@ export const deliveryStopInputSchema = z.object({
 
 export const createDeliveryRequestSchema = z.object({
   passengerProfileId: z.string().cuid(),
-  serviceZoneId: z.string().cuid(),
+  serviceZoneId: z.string().cuid().optional(),
   paymentMethod: z.enum(["cash", "card", "wallet", "mobile_money"]),
   pickup: locationSchema,
   dropoff: locationSchema,
