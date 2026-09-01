@@ -118,11 +118,11 @@ function detectCategory(promo: PromoCodeRecord): CampaignCategory {
 /* ══════════════════════════════════════════════════════════════════════════════ */
 
 export function PromotionsManagementScreen({
-  promoCodes,
-  promoAdjustedTrips,
-  promoSpend,
-  referralSpend,
-  adminCurrency,
+  promoCodes = [],
+  promoAdjustedTrips = [],
+  promoSpend = 0,
+  referralSpend = 0,
+  adminCurrency = "GHS",
   onCreatePromo,
   onUpdatePromo,
   isMutating = false,
@@ -134,6 +134,11 @@ export function PromotionsManagementScreen({
   const [categoryFilter, setCategoryFilter] = useState<CampaignCategory>("ALL");
   const [showForm, setShowForm] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const safePromoCodes = useMemo(
+    () => (Array.isArray(promoCodes) ? promoCodes : []),
+    [promoCodes]
+  );
 
   const [form, setForm] = useState({
     code: "",
@@ -150,14 +155,14 @@ export function PromotionsManagementScreen({
   });
 
   const stats = useMemo(() => {
-    const active = promoCodes.filter((p) => p.status === "ACTIVE").length;
-    const draft = promoCodes.filter((p) => p.status === "DRAFT").length;
-    const totalRedemptions = promoCodes.reduce((sum, p) => sum + (p._count?.redemptions ?? 0), 0);
+    const active = safePromoCodes.filter((p) => p.status === "ACTIVE").length;
+    const draft = safePromoCodes.filter((p) => p.status === "DRAFT").length;
+    const totalRedemptions = safePromoCodes.reduce((sum, p) => sum + (p._count?.redemptions ?? 0), 0);
     return { active, draft, totalRedemptions };
-  }, [promoCodes]);
+  }, [safePromoCodes]);
 
   const filtered = useMemo(() => {
-    return promoCodes.filter((p) => {
+    return safePromoCodes.filter((p) => {
       if (typeFilter !== "ALL" && p.type !== typeFilter) return false;
       if (statusFilter !== "ALL" && p.status !== statusFilter) return false;
       if (categoryFilter !== "ALL" && detectCategory(p) !== categoryFilter) return false;
@@ -171,7 +176,7 @@ export function PromotionsManagementScreen({
       }
       return true;
     });
-  }, [promoCodes, typeFilter, statusFilter, categoryFilter, search]);
+  }, [safePromoCodes, typeFilter, statusFilter, categoryFilter, search]);
 
   const PAGE_SIZE = 10;
   const pagination = usePagination(filtered, PAGE_SIZE);

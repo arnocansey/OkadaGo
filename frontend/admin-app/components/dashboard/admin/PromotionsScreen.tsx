@@ -17,20 +17,21 @@ export type PromotionsScreenProps = {
 };
 
 export function PromotionsScreen({
-  promoAdjustedTrips,
-  topDiscountedRides,
-  promotionZoneSnapshot,
-  promoSpend,
-  referralSpend,
-  adminCurrency,
+  promoAdjustedTrips = [],
+  topDiscountedRides = [],
+  promotionZoneSnapshot = [],
+  promoSpend = 0,
+  referralSpend = 0,
+  adminCurrency = "GHS",
   dataLoading = false
 }: PromotionsScreenProps) {
   if (dataLoading) {
     return <AdminPageSkeleton variant="table" kpis={4} rows={5} cols={5} />;
   }
 
+  const trips = Array.isArray(promoAdjustedTrips) ? promoAdjustedTrips : [];
   const totalDiscount = promoSpend + referralSpend;
-  const discountedRideCount = promoAdjustedTrips.length;
+  const discountedRideCount = trips.length;
   const avgDiscountPerRide =
     discountedRideCount > 0 ? totalDiscount / discountedRideCount : 0;
 

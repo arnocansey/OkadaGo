@@ -56,7 +56,7 @@ const SCREEN_EXTRA: Record<AdminConsoleScreen, AdminQueryNeed[]> = {
   pricing: ["zones", "rides"],
   dynamicPricing: ["zones", "rides", "riders"],
   ratings: ["ratings"],
-  promotions: ["rides", "zones"],
+  promotions: ["rides", "zones", "promoCodes"],
   promoManagement: ["rides", "zones", "promoCodes"],
   referrals: ["rides", "zones", "promoCodes"],
   goPoints: ["goPoints"],

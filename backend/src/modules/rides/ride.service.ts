@@ -214,7 +214,7 @@ export class RideService {
       serviceZoneId: params.serviceZoneId,
       latitude: params.pickupLatitude,
       longitude: params.pickupLongitude,
-      radiusKm: 8
+      radiusKm: 25
     });
 
     const riders = await prisma.riderProfile.findMany({
@@ -224,23 +224,31 @@ export class RideService {
         approvalStatus: RiderApprovalStatus.APPROVED,
         deletedAt: null,
         jobPreference: { in: ridesJobPreferenceFilter },
-        vehicle: { vehicleType: params.requiredVehicleType },
-        ...(nearbyCandidates ? { id: { in: nearbyCandidates.map((candidate) => candidate.id) } } : {})
+        OR: [
+          { vehicle: null },
+          { vehicle: { vehicleType: params.requiredVehicleType } },
+          { vehicle: { vehicleType: VehicleType.OKADA } },
+        ],
+        ...(nearbyCandidates && nearbyCandidates.length > 0
+          ? { id: { in: nearbyCandidates.map((candidate) => candidate.id) } }
+          : {})
       },
       include: {
-        user: true
+        user: true,
+        vehicle: true
       }
     });
 
     const rankedCandidates = this.matchingService.rankCandidates({
       requestedServiceZoneId: params.serviceZoneId,
-      maxPickupRadiusKm: 8,
+      maxPickupRadiusKm: 25,
       candidates: riders
-        .filter((rider) => rider.currentLatitude !== null && rider.currentLongitude !== null)
         .map((rider) => {
+          const lat = Number(rider.currentLatitude ?? params.pickupLatitude);
+          const lon = Number(rider.currentLongitude ?? params.pickupLongitude);
           const distanceToPickupKm = haversineDistanceKm(
-            Number(rider.currentLatitude),
-            Number(rider.currentLongitude),
+            lat,
+            lon,
             params.pickupLatitude,
             params.pickupLongitude
           );
@@ -252,9 +260,9 @@ export class RideService {
             serviceZoneId: rider.serviceZoneId ?? "",
             distanceToPickupKm,
             etaMinutes,
-            ratingAverage: Number(rider.ratingAverage),
-            acceptanceRate: Number(rider.acceptanceRate),
-            cancellationRate: Number(rider.cancellationRate),
+            ratingAverage: Number(rider.ratingAverage ?? 5.0),
+            acceptanceRate: Number(rider.acceptanceRate ?? 100),
+            cancellationRate: Number(rider.cancellationRate ?? 0),
             isOnline: rider.onlineStatus,
             isApproved: rider.approvalStatus === RiderApprovalStatus.APPROVED,
             isAvailable: true
@@ -1130,7 +1138,7 @@ export class RideService {
           serviceZoneId: ride.serviceZoneId,
           latitude: Number(ride.pickupLatitude),
           longitude: Number(ride.pickupLongitude),
-          radiusKm: 8
+          radiusKm: 25
         });
 
     const riderWhere = {
@@ -1139,8 +1147,14 @@ export class RideService {
       approvalStatus: RiderApprovalStatus.APPROVED,
       deletedAt: null,
       jobPreference: { in: ridesJobPreferenceFilter },
-      vehicle: { vehicleType: requiredVehicleType },
-      ...(nearbyCandidates ? { id: { in: nearbyCandidates.map((candidate) => candidate.id) } } : {})
+      OR: [
+        { vehicle: null },
+        { vehicle: { vehicleType: requiredVehicleType } },
+        { vehicle: { vehicleType: VehicleType.OKADA } },
+      ],
+      ...(nearbyCandidates && nearbyCandidates.length > 0
+        ? { id: { in: nearbyCandidates.map((candidate) => candidate.id) } }
+        : {})
     };
 
     const riders = await prisma.riderProfile.findMany({

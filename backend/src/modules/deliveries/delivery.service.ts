@@ -234,7 +234,7 @@ export class DeliveryService {
           serviceZoneId: delivery.serviceZoneId,
           latitude: Number(delivery.pickupLatitude),
           longitude: Number(delivery.pickupLongitude),
-          radiusKm: 8
+          radiusKm: 25
         });
 
     const riderWhere = {
@@ -243,7 +243,9 @@ export class DeliveryService {
       approvalStatus: RiderApprovalStatus.APPROVED,
       deletedAt: null,
       jobPreference: { in: deliveryJobPreferenceFilter },
-      ...(nearbyCandidates ? { id: { in: nearbyCandidates.map((candidate) => candidate.id) } } : {})
+      ...(nearbyCandidates && nearbyCandidates.length > 0
+        ? { id: { in: nearbyCandidates.map((candidate) => candidate.id) } }
+        : {})
     };
 
     const riders = await prisma.riderProfile.findMany({
@@ -398,7 +400,7 @@ export class DeliveryService {
       serviceZoneId: serviceZoneId!,
       latitude: input.pickup.latitude,
       longitude: input.pickup.longitude,
-      radiusKm: 8
+      radiusKm: 25
     });
 
     const riders = await prisma.riderProfile.findMany({
@@ -408,7 +410,9 @@ export class DeliveryService {
         approvalStatus: RiderApprovalStatus.APPROVED,
         deletedAt: null,
         jobPreference: { in: deliveryJobPreferenceFilter },
-        ...(nearbyCandidates ? { id: { in: nearbyCandidates.map((candidate) => candidate.id) } } : {})
+        ...(nearbyCandidates && nearbyCandidates.length > 0
+          ? { id: { in: nearbyCandidates.map((candidate) => candidate.id) } }
+          : {})
       },
       include: {
         user: true
@@ -417,13 +421,14 @@ export class DeliveryService {
 
     const rankedCandidates = this.matchingService.rankCandidates({
       requestedServiceZoneId: serviceZoneId!,
-      maxPickupRadiusKm: 8,
+      maxPickupRadiusKm: 25,
       candidates: riders
-        .filter((rider) => rider.currentLatitude !== null && rider.currentLongitude !== null)
         .map((rider) => {
+          const lat = Number(rider.currentLatitude ?? input.pickup.latitude);
+          const lon = Number(rider.currentLongitude ?? input.pickup.longitude);
           const distanceToPickupKm = haversineDistanceKm(
-            Number(rider.currentLatitude),
-            Number(rider.currentLongitude),
+            lat,
+            lon,
             input.pickup.latitude,
             input.pickup.longitude
           );
