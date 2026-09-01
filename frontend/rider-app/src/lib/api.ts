@@ -115,17 +115,20 @@ export function compactDate(value?: string) {
 }
 
 export function nextRideStatus(status: string) {
-  return ({ assigned: "arriving", arriving: "arrived", arrived: "started", started: "completed" } as Record<
-    string,
-    string | undefined
-  >)[status.toLowerCase()];
+  return ({
+    assigned: "arrived",
+    arriving: "arrived",
+    arrived: "started",
+    started: "completed",
+  } as Record<string, string | undefined>)[status.toLowerCase()];
 }
 
 export function nextDeliveryStatus(status: string) {
-  return ({ assigned: "picked_up", picked_up: "in_transit", in_transit: "delivered" } as Record<
-    string,
-    string | undefined
-  >)[status.toLowerCase()];
+  return ({
+    assigned: "picked_up",
+    picked_up: "in_transit",
+    in_transit: "delivered",
+  } as Record<string, string | undefined>)[status.toLowerCase()];
 }
 
 export type AuthResponse = {

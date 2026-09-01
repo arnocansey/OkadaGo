@@ -49,10 +49,10 @@ type RideStatusUpdateInput = z.infer<typeof rideStatusUpdateSchema>;
 
 const lifecycleTransitions: Record<string, string[]> = {
   scheduled: ["searching", "assigned", "cancelled"],
-  searching: ["assigned", "cancelled"],
-  assigned: ["arriving", "cancelled"],
-  arriving: ["arrived", "cancelled"],
-  arrived: ["started", "cancelled"],
+  searching: ["assigned", "arriving", "cancelled"],
+  assigned: ["arriving", "arrived", "started", "cancelled"],
+  arriving: ["arrived", "started", "cancelled"],
+  arrived: ["started", "completed", "cancelled"],
   started: ["completed", "cancelled"],
   completed: [],
   cancelled: []

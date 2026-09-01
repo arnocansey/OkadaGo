@@ -1,9 +1,10 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
   LayoutChangeEvent,
   PanResponder,
+  Pressable,
   StyleSheet,
   Text,
   View,
@@ -36,49 +37,99 @@ export function SlideToAccept({
 
   const maxDx = Math.max(0, containerWidth - HANDLE_SIZE - PADDING * 2);
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => !disabled && !loading && !submitted,
-      onMoveShouldSetPanResponder: () => !disabled && !loading && !submitted,
-      onPanResponderMove: (_, gestureState) => {
-        if (maxDx <= 0) return;
-        const nextX = Math.min(maxDx, Math.max(0, gestureState.dx));
-        pan.setValue(nextX);
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        if (maxDx <= 0) return;
-        if (gestureState.dx >= maxDx * 0.7) {
-          setSubmitted(true);
-          Animated.timing(pan, {
-            toValue: maxDx,
-            duration: 150,
-            useNativeDriver: false,
-          }).start(() => {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-            onAccept();
-          });
-        } else {
-          Animated.spring(pan, {
-            toValue: 0,
-            friction: 6,
-            tension: 40,
-            useNativeDriver: false,
-          }).start();
-        }
-      },
-      onPanResponderTerminate: () => {
+  const maxDxRef = useRef(maxDx);
+  const onAcceptRef = useRef(onAccept);
+  const disabledRef = useRef(disabled);
+  const loadingRef = useRef(loading);
+  const submittedRef = useRef(submitted);
+
+  useEffect(() => {
+    maxDxRef.current = maxDx;
+    onAcceptRef.current = onAccept;
+    disabledRef.current = disabled;
+    loadingRef.current = loading;
+    submittedRef.current = submitted;
+  });
+
+  useEffect(() => {
+    if (!loading && submitted) {
+      // If action failed or finished, allow retry
+      const t = setTimeout(() => {
+        setSubmitted(false);
         Animated.spring(pan, {
           toValue: 0,
-          friction: 6,
-          tension: 40,
           useNativeDriver: false,
         }).start();
-      },
-    }),
-  ).current;
+      }, 2000);
+      return () => clearTimeout(t);
+    }
+  }, [loading, submitted]);
+
+  const triggerAccept = () => {
+    if (disabledRef.current || loadingRef.current || submittedRef.current) return;
+    const target = maxDxRef.current;
+    setSubmitted(true);
+    Animated.timing(pan, {
+      toValue: target,
+      duration: 180,
+      useNativeDriver: false,
+    }).start(() => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      onAcceptRef.current();
+    });
+  };
+
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () =>
+          !disabledRef.current && !loadingRef.current && !submittedRef.current,
+        onMoveShouldSetPanResponder: (_, gestureState) =>
+          !disabledRef.current &&
+          !loadingRef.current &&
+          !submittedRef.current &&
+          Math.abs(gestureState.dx) > 4,
+        onPanResponderMove: (_, gestureState) => {
+          const limit = maxDxRef.current;
+          if (limit <= 0) return;
+          const nextX = Math.min(limit, Math.max(0, gestureState.dx));
+          pan.setValue(nextX);
+        },
+        onPanResponderRelease: (_, gestureState) => {
+          const limit = maxDxRef.current;
+          if (limit <= 0) {
+            triggerAccept();
+            return;
+          }
+          if (gestureState.dx >= limit * 0.5 || gestureState.vx > 0.5) {
+            triggerAccept();
+          } else {
+            Animated.spring(pan, {
+              toValue: 0,
+              friction: 7,
+              tension: 50,
+              useNativeDriver: false,
+            }).start();
+          }
+        },
+        onPanResponderTerminate: () => {
+          Animated.spring(pan, {
+            toValue: 0,
+            friction: 7,
+            tension: 50,
+            useNativeDriver: false,
+          }).start();
+        },
+      }),
+    [],
+  );
 
   const handleLayout = (e: LayoutChangeEvent) => {
-    setContainerWidth(e.nativeEvent.layout.width);
+    const w = e.nativeEvent.layout.width;
+    if (w > 0 && w !== containerWidth) {
+      setContainerWidth(w);
+      maxDxRef.current = Math.max(0, w - HANDLE_SIZE - PADDING * 2);
+    }
   };
 
   const textOpacity = pan.interpolate({
@@ -153,10 +204,16 @@ export function SlideToAccept({
     <View style={styles.container} onLayout={handleLayout}>
       <Animated.View style={[styles.fill, { width: fillWidth }]} />
 
-      <Animated.View style={[styles.labelContainer, { opacity: textOpacity }]}>
-        <Text style={styles.label}>{label}</Text>
-        <ChevronsRight size={20} color={colors.textSecondary} />
-      </Animated.View>
+      <Pressable
+        style={styles.labelContainer}
+        onPress={triggerAccept}
+        disabled={disabled || loading || submitted}
+      >
+        <Animated.View style={[styles.labelContainer, { opacity: textOpacity }]}>
+          <Text style={styles.label}>{label}</Text>
+          <ChevronsRight size={20} color={colors.textSecondary} />
+        </Animated.View>
+      </Pressable>
 
       <Animated.View
         style={[

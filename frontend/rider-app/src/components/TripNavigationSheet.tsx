@@ -170,15 +170,16 @@ export function TripNavigationSheet({
 
   const actionLabel = useMemo(() => {
     switch (status) {
+      case "assigned":
       case "arriving":
-        return "Arrived at Pickup";
+        return "I Have Arrived";
       case "arrived":
-        return "VERIFY PASSENGER";
+        return "Verify & Start Trip";
       case "started":
       case "in_transit":
         return "Complete Trip";
       default:
-        return "Arrived";
+        return "I Have Arrived";
     }
   }, [status]);
 

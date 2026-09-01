@@ -36,9 +36,9 @@ type DeliveryStatusUpdateInput = z.infer<typeof deliveryStatusUpdateSchema>;
 type CompleteDeliveryStopInput = z.infer<typeof completeDeliveryStopSchema>;
 
 const deliveryTransitions: Record<string, string[]> = {
-  searching: ["assigned", "cancelled"],
-  assigned: ["picked_up", "cancelled"],
-  picked_up: ["in_transit", "cancelled"],
+  searching: ["assigned", "picked_up", "cancelled"],
+  assigned: ["picked_up", "in_transit", "cancelled"],
+  picked_up: ["in_transit", "delivered", "cancelled"],
   in_transit: ["delivered", "cancelled"],
   delivered: [],
   cancelled: []
