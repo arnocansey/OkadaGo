@@ -408,38 +408,46 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
 
   // ── GoPoints ────────────────────────────────────────────────────────────
 
-  server.get("/admin/go-points/rules", async (request) => {
+  const handleGetGoPointRules = async (request: any) => {
     const token = extractBearerToken(request.headers.authorization);
     await authService.listAdmins(token);
     return prisma.goPointRule.findMany({ orderBy: { createdAt: "desc" } });
-  });
+  };
+  server.get("/admin/go-points/rules", handleGetGoPointRules);
+  server.get("/admin/go-point-rules", handleGetGoPointRules);
 
-  server.post("/admin/go-points/rules", async (request, reply) => {
+  const handlePostGoPointRules = async (request: any, reply: any) => {
     const token = extractBearerToken(request.headers.authorization);
     await authService.listAdmins(token);
     const body = request.body as { name: string; description?: string; eventType: string; points: number; perUnit?: number; minSpend?: number; active?: boolean };
     const rule = await prisma.goPointRule.create({ data: body });
     return reply.status(201).send(rule);
-  });
+  };
+  server.post("/admin/go-points/rules", handlePostGoPointRules);
+  server.post("/admin/go-point-rules", handlePostGoPointRules);
 
-  server.put("/admin/go-points/rules/:id", async (request) => {
+  const handlePutGoPointRules = async (request: any) => {
     const token = extractBearerToken(request.headers.authorization);
     await authService.listAdmins(token);
     const params = request.params as { id: string };
     const body = request.body as Record<string, unknown>;
     return prisma.goPointRule.update({ where: { id: params.id }, data: body });
-  });
+  };
+  server.put("/admin/go-points/rules/:id", handlePutGoPointRules);
+  server.put("/admin/go-point-rules/:id", handlePutGoPointRules);
 
-  server.get("/admin/go-points/balances", async (request) => {
+  const handleGetGoPointBalances = async (request: any) => {
     const token = extractBearerToken(request.headers.authorization);
     await authService.listAdmins(token);
     return prisma.goPointBalance.findMany({
       include: { passenger: { include: { user: { select: { fullName: true, phoneE164: true } } } } },
       orderBy: { points: "desc" }
     });
-  });
+  };
+  server.get("/admin/go-points/balances", handleGetGoPointBalances);
+  server.get("/admin/go-point-balances", handleGetGoPointBalances);
 
-  server.get("/admin/go-points/ledger", async (request) => {
+  const handleGetGoPointLedger = async (request: any) => {
     const token = extractBearerToken(request.headers.authorization);
     await authService.listAdmins(token);
     const query = request.query as { passengerId?: string; limit?: string };
@@ -450,21 +458,27 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
       orderBy: { createdAt: "desc" },
       take: limit
     });
-  });
+  };
+  server.get("/admin/go-points/ledger", handleGetGoPointLedger);
+  server.get("/admin/go-point-ledger", handleGetGoPointLedger);
 
-  server.get("/admin/go-points/redemptions", async (request) => {
+  const handleGetGoPointRedemptions = async (request: any) => {
     const token = extractBearerToken(request.headers.authorization);
     await authService.listAdmins(token);
     return prisma.goPointRedemption.findMany({ orderBy: { pointsCost: "asc" } });
-  });
+  };
+  server.get("/admin/go-points/redemptions", handleGetGoPointRedemptions);
+  server.get("/admin/go-point-redemptions", handleGetGoPointRedemptions);
 
-  server.post("/admin/go-points/redemptions", async (request, reply) => {
+  const handlePostGoPointRedemptions = async (request: any, reply: any) => {
     const token = extractBearerToken(request.headers.authorization);
     await authService.listAdmins(token);
     const body = request.body as { name: string; description?: string; pointsCost: number; cashValue: number; available?: boolean };
     const item = await prisma.goPointRedemption.create({ data: body });
     return reply.status(201).send(item);
-  });
+  };
+  server.post("/admin/go-points/redemptions", handlePostGoPointRedemptions);
+  server.post("/admin/go-point-redemptions", handlePostGoPointRedemptions);
 
   // ── Message Templates ───────────────────────────────────────────────────
 
