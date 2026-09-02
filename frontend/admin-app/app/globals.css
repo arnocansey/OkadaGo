@@ -695,20 +695,27 @@ main {
   transform: translateZ(0);
 }
 
+.leaflet-container {
+  background: #0b0f19 !important;
+}
+
 .leaflet-control-attribution {
   border-radius: 12px 0 0 0;
-  background: rgba(255, 255, 255, 0.92) !important;
-  color: #475569 !important;
+  background: rgba(15, 23, 42, 0.88) !important;
+  color: #94a3b8 !important;
   backdrop-filter: blur(10px);
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 .leaflet-control-attribution a {
-  color: #166534 !important;
+  color: #facc15 !important;
 }
 
+.map-shell .leaflet-tile-pane,
+.leaflet-map-surface .leaflet-tile-pane,
 .leaflet-dark-tiles,
-.leaflet-dark-tiles .leaflet-tile {
+.leaflet-dark-tiles .leaflet-tile,
+.leaflet-dark-tiles img {
   filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7) !important;
 }
 

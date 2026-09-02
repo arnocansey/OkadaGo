@@ -190,9 +190,9 @@ function InitialSize() {
   return null;
 }
 
-function useResolvedBasemap(basemap: LeafletBasemap = "auto"): "light" | "dark" | "streets" {
+function useResolvedBasemap(basemap: LeafletBasemap = "dark"): "light" | "dark" | "streets" {
   const [resolved, setResolved] = useState<"light" | "dark" | "streets">(
-    basemap === "auto" ? "light" : basemap
+    basemap === "auto" ? "dark" : basemap
   );
 
   useEffect(() => {
@@ -206,7 +206,7 @@ function useResolvedBasemap(basemap: LeafletBasemap = "auto"): "light" | "dark" 
       setResolved(theme);
       return;
     }
-    setResolved(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    setResolved(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "dark");
   }, [basemap]);
 
   return resolved;
@@ -223,7 +223,7 @@ export function LeafletMap({
   showFitAll = false,
   className = "leaflet-map-surface",
   style = { width: "100%", height: "100%", minHeight: 440 },
-  basemap = "streets"
+  basemap = "dark"
 }: LeafletMapProps) {
   const isMobile = useIsMobile();
   const [tilesReady, setTilesReady] = useState(false);
