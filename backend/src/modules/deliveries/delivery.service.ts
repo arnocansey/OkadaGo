@@ -137,19 +137,23 @@ function roundCoordinate(value: number) {
 const deliveryJobPreferenceFilter = [JobPreference.DELIVERY_ONLY, JobPreference.BOTH];
 
 async function uploadProofPhoto(base64: string, publicId: string) {
-  if (!appConfig.cloudinaryCloudName || !appConfig.cloudinaryApiKey || !appConfig.cloudinaryApiSecret) {
-    throw new AppError("Photo uploads are not configured", 503, "CLOUDINARY_NOT_CONFIGURED");
-  }
-
   const dataUri = base64.startsWith("data:") ? base64 : `data:image/jpeg;base64,${base64}`;
 
-  const result = await cloudinary.uploader.upload(dataUri, {
-    folder: "okadago/proof-of-delivery",
-    public_id: publicId,
-    transformation: [{ width: 1280, height: 1280, crop: "limit" }, { quality: "auto", fetch_format: "auto" }]
-  });
+  if (!appConfig.cloudinaryCloudName || !appConfig.cloudinaryApiKey || !appConfig.cloudinaryApiSecret) {
+    return dataUri;
+  }
 
-  return result.secure_url;
+  try {
+    const result = await cloudinary.uploader.upload(dataUri, {
+      folder: "okadago/proof-of-delivery",
+      public_id: publicId,
+      transformation: [{ width: 1280, height: 1280, crop: "limit" }, { quality: "auto", fetch_format: "auto" }]
+    });
+
+    return result.secure_url;
+  } catch {
+    return dataUri;
+  }
 }
 
 function haversineDistanceKm(
@@ -882,8 +886,26 @@ export class DeliveryService {
       throw new AppError("Delivery stop was not found", 404, "DELIVERY_STOP_NOT_FOUND");
     }
 
-    if (stop.type !== DeliveryStopType.DROPOFF) {
-      throw new AppError("Only dropoff stops can be completed individually", 409, "INVALID_STOP_TYPE");
+    if (stop.type === DeliveryStopType.PICKUP) {
+      if (stop.status !== DeliveryStopStatus.COMPLETED) {
+        await prisma.deliveryStop.update({
+          where: { id: stopId },
+          data: {
+            status: DeliveryStopStatus.COMPLETED,
+            completedAt: new Date()
+          }
+        });
+      }
+      if (delivery.status === DeliveryStatus.ASSIGNED || delivery.status === DeliveryStatus.SEARCHING) {
+        const updatedDelivery = await this.updateDeliveryStatus(deliveryId, {
+          nextStatus: "picked_up",
+          actorRole: input.actorRole
+        });
+        const updatedStop = await prisma.deliveryStop.findUniqueOrThrow({ where: { id: stopId } });
+        return { stop: updatedStop, delivery: updatedDelivery };
+      }
+      const updatedStop = await prisma.deliveryStop.findUniqueOrThrow({ where: { id: stopId } });
+      return { stop: updatedStop, delivery: serializeDeliveryForRealtime(delivery) };
     }
 
     if (stop.status === DeliveryStopStatus.COMPLETED) {

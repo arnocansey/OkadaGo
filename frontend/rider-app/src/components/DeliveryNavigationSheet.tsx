@@ -7,6 +7,7 @@ import {
   Modal,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -248,26 +249,16 @@ export function DeliveryNavigationSheet({
   const currency = delivery.currency ?? "GH₵";
 
   const actionLabel = useMemo(() => {
-    if (isPickupPhase) return "Navigate to Pickup";
-    if (isAtPickup) return "CONFIRM PICKUP";
-    if (isDeliveryPhase) return "Navigate to Dropoff";
-    if (isAtDropoff) return "CONFIRM DELIVERY";
+    if (isPickupPhase || isAtPickup) return "CONFIRM PICKUP";
+    if (isDeliveryPhase || isAtDropoff) return "CONFIRM DELIVERY";
     return "Continue";
-  }, [status, isPickupPhase, isAtPickup, isDeliveryPhase, isAtDropoff]);
+  }, [isPickupPhase, isAtPickup, isDeliveryPhase, isAtDropoff]);
 
   async function handleConfirmPickup(photoUri?: string) {
-    if (!currentStop) {
-      onAdvance();
-      return;
-    }
-
     setConfirmingPickup(true);
     try {
-      if (onCompleteStop) {
-        await onCompleteStop(currentStop.id);
-      }
-      if (onVerifyPackage && currentStop) {
-        await onVerifyPackage(currentStop.id, photoUri ?? "");
+      if (onVerifyPackage && currentStop && photoUri) {
+        await onVerifyPackage(currentStop.id, photoUri);
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       onAdvance();
@@ -283,14 +274,9 @@ export function DeliveryNavigationSheet({
   }
 
   async function handleConfirmDelivery(pin?: string) {
-    if (!currentStop) {
-      onAdvance();
-      return;
-    }
-
     setConfirmingDelivery(true);
     try {
-      if (onCompleteStop) {
+      if (onCompleteStop && currentStop && currentStop.type === "DROPOFF") {
         await onCompleteStop(currentStop.id);
       }
       if (onVerifyPackage && currentStop && pin) {
@@ -312,15 +298,12 @@ export function DeliveryNavigationSheet({
   function handleAction() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    if (isAtPickup) {
-      // Show package verification sheet
-      setShowPackageVerification(true);
-    } else if (isAtDropoff) {
-      // Show delivery completion sheet
-      setShowDeliveryCompletion(true);
+    if (isPickupPhase || isAtPickup) {
+      handleConfirmPickup();
+    } else if (isDeliveryPhase || isAtDropoff) {
+      handleConfirmDelivery();
     } else {
-      // Open in-app navigation modal instead of external maps
-      setShowInAppNav(true);
+      onAdvance();
     }
   }
 
@@ -332,15 +315,15 @@ export function DeliveryNavigationSheet({
           backgroundColor: colors.bg,
         },
 
-        /* ─── Map Area (70%) ──────────────────────────────────── */
+        /* ─── Map Area ────────────────────────────────────────── */
         mapArea: {
-          flex: 70,
+          flex: 52,
           position: "relative",
         },
 
-        /* ─── Bottom Sheet (30%) ──────────────────────────────── */
+        /* ─── Bottom Sheet ────────────────────────────────────── */
         sheet: {
-          flex: 30,
+          flex: 48,
           backgroundColor: isDark ? colors.surface : "#FFFFFF",
           borderTopLeftRadius: 24,
           borderTopRightRadius: 24,
@@ -353,11 +336,13 @@ export function DeliveryNavigationSheet({
           borderBottomWidth: 0,
           borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
         },
-        sheetContent: {
+        sheetScroll: {
           flex: 1,
+        },
+        sheetContent: {
           paddingHorizontal: 20,
-          paddingTop: 16,
-          paddingBottom: insets.bottom + 12,
+          paddingTop: 12,
+          paddingBottom: insets.bottom + 24,
         },
 
         /* ─── Handle Bar ──────────────────────────────────────── */
@@ -807,12 +792,18 @@ export function DeliveryNavigationSheet({
         </View>
       </View>
 
-      {/* ─── Bottom Sheet (30%) ─────────────────────────────────── */}
+      {/* ─── Bottom Sheet ──────────────────────────────────────── */}
       <KeyboardAvoidingView
         style={s.sheet}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <View style={s.sheetContent}>
+        <ScrollView
+          style={s.sheetScroll}
+          contentContainerStyle={s.sheetContent}
+          showsVerticalScrollIndicator={false}
+          bounces={true}
+          nestedScrollEnabled={true}
+        >
           {/* Handle Bar */}
           <View style={s.handleBar} />
 
@@ -1190,7 +1181,7 @@ export function DeliveryNavigationSheet({
               )}
             </>
           )}
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
 
       {/* ─── In-App Motorcycle Navigation Modal ─────────────────── */}

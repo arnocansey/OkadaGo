@@ -1,72 +1,51 @@
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Animated,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  MapPin,
+  Navigation,
+  Package,
+  Shield,
+  Star,
+  User,
+  X,
+  Zap,
+} from "lucide-react-native";
 import { AppMap } from "@/components/AppMap";
 import { api, money } from "@/lib/api";
 import { requestAlarm } from "@/lib/alarm";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { markersForDelivery, markersForRide } from "@/lib/tripMap";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import { SlideToAccept } from "@/components/ui/SlideToAccept";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CancellationReasonModal } from "@/components/ui/CancellationReasonModal";
-import { radius, spacing } from "@/theme/tokens";
+import { brand } from "@/theme/design-system";
 
 export default function RequestScreen() {
   const { id, kind } = useLocalSearchParams<{ id: string; kind?: string }>();
   const { session, rides, deliveries, refresh, dismissRequest } = useApp();
-  const { colors, typography, stackHeaderOptions } = useTheme();
+  const { colors, isDark } = useTheme();
   const [acting, setActing] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
-  const styles = useMemo(
-    () =>
-      StyleSheet.create({
-        screen: { flex: 1, backgroundColor: colors.background },
-        body: { padding: spacing.xl, gap: spacing.lg },
-        progressTrack: { height: 4, backgroundColor: colors.surface },
-        progressBar: { height: 4, backgroundColor: colors.accent },
-        headerRow: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" },
-        kicker: { ...typography.label, color: colors.textMuted },
-        title: { ...typography.h1, marginTop: spacing.xs, color: colors.text },
-        farePill: {
-          backgroundColor: colors.primary,
-          borderRadius: radius.full,
-          paddingHorizontal: spacing.lg,
-          paddingVertical: spacing.sm,
-          alignSelf: "flex-start",
-          marginTop: spacing.xs,
-        },
-        fareText: { ...typography.bodySemibold, color: colors.textOnPrimary },
-        timerRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
-        timerLabel: { ...typography.caption, color: colors.textMuted },
-        routeCard: {
-          flexDirection: "row",
-          gap: spacing.md,
-          backgroundColor: colors.surface,
-          borderRadius: radius.lg,
-          padding: spacing.lg,
-        },
-        routeLine: { alignItems: "center", paddingTop: spacing.xs, gap: 0 },
-        dot: { width: 12, height: 12, borderRadius: 6 },
-        dotStart: { backgroundColor: colors.primary },
-        dotEnd: { backgroundColor: colors.danger },
-        connector: { flex: 1, width: 2, backgroundColor: colors.border, minHeight: 32, marginVertical: spacing.xs },
-        routeLabels: { flex: 1, justifyContent: "space-between", gap: spacing.lg },
-        routeItem: {},
-        routeItemEnd: {},
-        routeLabel: { ...typography.caption, color: colors.textMuted },
-        routeAddress: { ...typography.bodySemibold, marginTop: spacing.xs, color: colors.text },
-        actions: { gap: spacing.md },
-      }),
-    [colors, typography],
-  );
+
   const isRide = kind === "ride";
   const trip = isRide ? rides.find((r) => r.id === id) : deliveries.find((d) => d.id === id);
 
-  // Countdown timer — 20 seconds to decide
+  // Countdown timer — 20 seconds
   const [countdown, setCountdown] = useState(20);
   const progressAnim = useRef(new Animated.Value(1)).current;
 
@@ -77,7 +56,6 @@ export default function RequestScreen() {
       duration: 20000,
       useNativeDriver: false,
     });
-    requestAlarm.start();
     animation.start();
 
     const timer = setInterval(() => {
@@ -118,6 +96,7 @@ export default function RequestScreen() {
   async function accept() {
     if (!trip || !session || acting) return;
     requestAlarm.stop();
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     const nextStatus = isRide ? "arriving" : "assigned";
     setActing(true);
     try {
@@ -146,6 +125,7 @@ export default function RequestScreen() {
 
   async function decline(reason?: string) {
     requestAlarm.stop();
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (!trip || !session) return router.back();
     if (acting) return;
     setActing(true);
@@ -171,7 +151,7 @@ export default function RequestScreen() {
 
   if (!trip) {
     return (
-      <SafeAreaView style={styles.screen}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
         <EmptyState title="Request expired" message="This request is no longer available." />
       </SafeAreaView>
     );
@@ -183,32 +163,226 @@ export default function RequestScreen() {
     ? (trip as typeof rides[0]).estimatedFare
     : (trip as typeof deliveries[0]).estimatedFee;
 
-  const estMins = trip.estimatedDurationMinutes ? Math.round(Number(trip.estimatedDurationMinutes)) : 5;
-  const estKm = trip.estimatedDistanceKm ? Number(trip.estimatedDistanceKm).toFixed(1) : null;
-  const rawRideType = isRide ? (trip as typeof rides[0]).rideType : (trip as typeof deliveries[0]).packageType;
-  const rideTypeLabel = rawRideType
-    ? rawRideType.toUpperCase() === "STANDARD"
-      ? "Standard Okada"
-      : rawRideType.toUpperCase() === "EXPRESS"
-        ? "Express Okada"
-        : rawRideType.toUpperCase() === "COMFORT" || rawRideType.toUpperCase() === "VIP"
-          ? "Okada Comfort"
-          : rawRideType
-    : isRide
-      ? "Standard Okada"
-      : "Parcel Delivery";
+  const estMins = trip.estimatedDurationMinutes ? Math.round(Number(trip.estimatedDurationMinutes)) : 6;
+  const estKm = trip.estimatedDistanceKm ? Number(trip.estimatedDistanceKm).toFixed(1) : "2.4";
+  const currency = trip.currency ?? "GH₵";
+
+  const s = StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: isDark ? "#0A0D14" : "#F3F4F6",
+    },
+    topBar: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      backgroundColor: isDark ? "#111827" : "#FFFFFF",
+      borderBottomWidth: 1,
+      borderBottomColor: isDark ? "rgba(255,255,255,0.08)" : "#E5E7EB",
+    },
+    declineBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 10,
+      backgroundColor: isDark ? "rgba(239, 68, 68, 0.15)" : "#FEE2E2",
+    },
+    declineText: {
+      fontSize: 13,
+      fontWeight: "700",
+      color: "#EF4444",
+    },
+    timerCapsule: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 20,
+      backgroundColor: countdown <= 5 ? "#EF4444" : brand.primary,
+    },
+    timerText: {
+      fontSize: 13,
+      fontWeight: "900",
+      color: "#000000",
+    },
+    progressTrack: {
+      height: 5,
+      backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "#E5E7EB",
+    },
+    progressBar: {
+      height: 5,
+      backgroundColor: countdown <= 5 ? "#EF4444" : brand.primary,
+    },
+    contentScroll: {
+      padding: 16,
+      gap: 12,
+    },
+
+    /* ─── Hero Earnings Card (Uber Driver Style) ─────────────── */
+    earningsHero: {
+      backgroundColor: isDark ? "#161D2F" : "#FFFFFF",
+      borderRadius: 24,
+      padding: 20,
+      alignItems: "center",
+      borderWidth: 1.5,
+      borderColor: brand.primary,
+      shadowColor: brand.primary,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.25,
+      shadowRadius: 16,
+      elevation: 8,
+      gap: 4,
+    },
+    earningsLabel: {
+      fontSize: 12,
+      fontWeight: "700",
+      color: isDark ? "#9CA3AF" : "#6B7280",
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+    },
+    earningsAmount: {
+      fontSize: 38,
+      fontWeight: "900",
+      color: brand.primary,
+      letterSpacing: -0.5,
+    },
+    earningsSub: {
+      fontSize: 13,
+      fontWeight: "600",
+      color: isDark ? "#E5E7EB" : "#374151",
+    },
+
+    /* ─── Trip Meta Row ──────────────────────────────────────── */
+    metaRow: {
+      flexDirection: "row",
+      gap: 8,
+    },
+    metaChip: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      paddingVertical: 10,
+      backgroundColor: isDark ? "#161D2F" : "#FFFFFF",
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: isDark ? "rgba(255,255,255,0.06)" : "#E5E7EB",
+    },
+    metaChipText: {
+      fontSize: 12,
+      fontWeight: "700",
+      color: colors.text,
+    },
+
+    /* ─── Route Card ─────────────────────────────────────────── */
+    routeCard: {
+      backgroundColor: isDark ? "#161D2F" : "#FFFFFF",
+      borderRadius: 20,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: isDark ? "rgba(255,255,255,0.06)" : "#E5E7EB",
+      gap: 14,
+    },
+    routeStep: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: 12,
+    },
+    dotPickup: {
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+      backgroundColor: brand.primary,
+      marginTop: 4,
+    },
+    dotDropoff: {
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+      backgroundColor: "#EF4444",
+      marginTop: 4,
+    },
+    routeStepContent: {
+      flex: 1,
+      gap: 2,
+    },
+    routeStepLabel: {
+      fontSize: 11,
+      fontWeight: "700",
+      color: isDark ? "#9CA3AF" : "#6B7280",
+      textTransform: "uppercase",
+    },
+    routeStepAddress: {
+      fontSize: 14,
+      fontWeight: "700",
+      color: colors.text,
+      lineHeight: 18,
+    },
+    routeDivider: {
+      height: 1,
+      backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "#E5E7EB",
+      marginLeft: 24,
+    },
+
+    /* ─── Bottom Accept Action (Huge Touch Surface) ──────────── */
+    acceptBtn: {
+      height: 64,
+      borderRadius: 20,
+      backgroundColor: brand.primary,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 10,
+      shadowColor: brand.primary,
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.4,
+      shadowRadius: 16,
+      elevation: 10,
+      marginTop: 6,
+    },
+    acceptBtnDisabled: {
+      opacity: 0.6,
+    },
+    acceptBtnText: {
+      fontSize: 18,
+      fontWeight: "900",
+      color: "#000000",
+      letterSpacing: 0.3,
+    },
+  });
 
   return (
     <>
-      <Stack.Screen options={{ presentation: "modal", title: "New request", headerShown: true, ...stackHeaderOptions }} />
-      <View style={styles.screen}>
-        <AppMap style={{ height: 200 }} markers={markers} fitToMarkers />
+      <Stack.Screen options={{ headerShown: false }} />
+      <SafeAreaView style={s.screen} edges={["top", "bottom"]}>
+        {/* ─── Top Bar with Countdown & Decline ──────────────── */}
+        <View style={s.topBar}>
+          <Pressable
+            style={s.declineBtn}
+            onPress={() => setShowDeclineModal(true)}
+            accessibilityRole="button"
+          >
+            <X size={16} color="#EF4444" />
+            <Text style={s.declineText}>Decline</Text>
+          </Pressable>
 
-        {/* Countdown progress bar */}
-        <View style={styles.progressTrack}>
+          <View style={s.timerCapsule}>
+            <Clock size={14} color="#000000" />
+            <Text style={s.timerText}>{countdown}s left</Text>
+          </View>
+        </View>
+
+        {/* Progress Bar */}
+        <View style={s.progressTrack}>
           <Animated.View
             style={[
-              styles.progressBar,
+              s.progressBar,
               {
                 width: progressAnim.interpolate({
                   inputRange: [0, 1],
@@ -219,55 +393,82 @@ export default function RequestScreen() {
           />
         </View>
 
-        <SafeAreaView edges={["bottom"]} style={styles.body}>
-          <View style={styles.headerRow}>
-            <View>
-              <Text style={styles.kicker}>{isRide ? "Ride request" : "Delivery request"}</Text>
-              <Text style={styles.title}>Accept this trip?</Text>
-            </View>
-            {fare ? (
-              <View style={styles.farePill}>
-                <Text style={styles.fareText}>{money(fare, trip.currency ?? "GHS")}</Text>
-              </View>
-            ) : null}
+        {/* ─── Route Map Preview ─────────────────────────────── */}
+        <AppMap style={{ height: 160 }} markers={markers} fitToMarkers />
+
+        <ScrollView contentContainerStyle={s.contentScroll} showsVerticalScrollIndicator={false}>
+          {/* ─── Hero Guaranteed Net Earnings ───────────────── */}
+          <View style={s.earningsHero}>
+            <Text style={s.earningsLabel}>Guaranteed Net Earnings</Text>
+            <Text style={s.earningsAmount}>
+              {fare ? money(fare, currency) : `${currency} 15.00`}
+            </Text>
+            <Text style={s.earningsSub}>
+              {isRide ? "🏍️ OkadaGo Passenger Trip" : "📦 Express Package Delivery"}
+            </Text>
           </View>
 
-          <View style={styles.timerRow}>
-            <Badge label={`${countdown}s`} tone={countdown <= 5 ? "danger" : "warning"} />
-            <Badge label={rideTypeLabel} tone="info" />
-            <Badge label={`⏱ ~${estMins} mins${estKm ? ` (${estKm} km)` : ""}`} tone="default" />
-          </View>
-
-          {/* Route visualization */}
-          <View style={styles.routeCard}>
-            <View style={styles.routeLine}>
-              <View style={[styles.dot, styles.dotStart]} />
-              <View style={styles.connector} />
-              <View style={[styles.dot, styles.dotEnd]} />
+          {/* ─── Trip Meta Pills ────────────────────────────── */}
+          <View style={s.metaRow}>
+            <View style={s.metaChip}>
+              <Navigation size={14} color={brand.primary} />
+              <Text style={s.metaChipText}>{estKm} km total</Text>
             </View>
-            <View style={styles.routeLabels}>
-              <View style={styles.routeItem}>
-                <Text style={styles.routeLabel}>Pickup</Text>
-                <Text style={styles.routeAddress}>{pickup}</Text>
-              </View>
-              <View style={[styles.routeItem, styles.routeItemEnd]}>
-                <Text style={styles.routeLabel}>Drop-off</Text>
-                <Text style={styles.routeAddress}>{dropoff}</Text>
-              </View>
+            <View style={s.metaChip}>
+              <Clock size={14} color={brand.primary} />
+              <Text style={s.metaChipText}>~{estMins} min trip</Text>
+            </View>
+            <View style={s.metaChip}>
+              <Star size={14} color="#FBBF24" />
+              <Text style={s.metaChipText}>4.9 ★</Text>
             </View>
           </View>
 
-          <View style={styles.actions}>
-            <SlideToAccept
-              onAccept={accept}
-              loading={acting}
-              disabled={acting}
-              label={isRide ? "SLIDE TO ACCEPT RIDE" : "SLIDE TO ACCEPT DELIVERY"}
-            />
-            <Button label="Decline Request" variant="ghost" disabled={acting} onPress={() => setShowDeclineModal(true)} fullWidth />
+          {/* ─── Route Details ──────────────────────────────── */}
+          <View style={s.routeCard}>
+            <View style={s.routeStep}>
+              <View style={s.dotPickup} />
+              <View style={s.routeStepContent}>
+                <Text style={s.routeStepLabel}>Pickup Location</Text>
+                <Text style={s.routeStepAddress} numberOfLines={2}>
+                  {pickup || "Accra Central"}
+                </Text>
+              </View>
+            </View>
+
+            <View style={s.routeDivider} />
+
+            <View style={s.routeStep}>
+              <View style={s.dotDropoff} />
+              <View style={s.routeStepContent}>
+                <Text style={s.routeStepLabel}>Drop-off Location</Text>
+                <Text style={s.routeStepAddress} numberOfLines={2}>
+                  {dropoff || "Destination"}
+                </Text>
+              </View>
+            </View>
           </View>
-        </SafeAreaView>
-      </View>
+
+          {/* ─── Giant Glove-Friendly Accept Button ─────────── */}
+          <Pressable
+            style={[s.acceptBtn, acting && s.acceptBtnDisabled]}
+            onPress={accept}
+            disabled={acting}
+            accessibilityRole="button"
+          >
+            {acting ? (
+              <ActivityIndicator size="small" color="#000000" />
+            ) : (
+              <>
+                <Text style={s.acceptBtnText}>
+                  TAP TO ACCEPT • {fare ? money(fare, currency) : `${currency} 15.00`}
+                </Text>
+                <ArrowRight size={22} color="#000000" />
+              </>
+            )}
+          </Pressable>
+        </ScrollView>
+      </SafeAreaView>
 
       <CancellationReasonModal
         visible={showDeclineModal}

@@ -17,6 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import {
   Camera,
+  CheckCircle2,
   MapPin,
   Navigation,
   Phone,
@@ -223,6 +224,85 @@ export default function TripScreen() {
     return undefined;
   }, [livePreview, latitude, longitude, navLat, navLon]);
 
+  async function captureProofOfDeliveryPhoto(): Promise<string | null> {
+    const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
+    if (cameraStatus !== "granted") {
+      Alert.alert(
+        "Permission needed",
+        "Allow camera access to capture proof of delivery.",
+      );
+      return null;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({ quality: 0.6 });
+    if (result.canceled || !result.assets?.[0]) return null;
+
+    const asset = result.assets[0];
+    const response = await fetch(asset.uri);
+    const blob = await response.blob();
+    return new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  async function advance() {
+    if (!trip || !session) return;
+    const curStatus = (trip.status ?? "assigned").toLowerCase();
+    const targetStatus = isRide
+      ? nextRideStatus(curStatus)
+      : nextDeliveryStatus(curStatus);
+    if (!targetStatus) return;
+
+    let proofPhotoBase64: string | undefined;
+    if (!isRide && targetStatus === "delivered") {
+      const photo = await captureProofOfDeliveryPhoto();
+      if (!photo) return;
+      proofPhotoBase64 = photo;
+    }
+
+    setLoading(true);
+    try {
+      if (isRide) {
+        await api(`/rides/${trip.id}/status`, {
+          method: "PATCH",
+          token: session.token,
+          body: {
+            nextStatus: targetStatus,
+            actorRole: "rider",
+            actorUserId: session.user.id,
+          },
+        });
+      } else {
+        await api(`/deliveries/${trip.id}/status`, {
+          method: "PATCH",
+          token: session.token,
+          body: {
+            nextStatus: targetStatus,
+            actorRole: "rider",
+            actorUserId: session.user.id,
+            proofPhotoBase64,
+          },
+        });
+      }
+      await refresh();
+      if (
+        !isRide &&
+        (targetStatus === "completed" || targetStatus === "delivered")
+      ) {
+        router.back();
+      }
+    } catch (e) {
+      Alert.alert(
+        "Update failed",
+        e instanceof Error ? e.message : "Could not update trip status.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   /* ─── Ride: Navigation-focused layout (Active Trip Only) ────────── */
   if (isRide && trip && isActiveTrip) {
     const ride = trip as (typeof rides)[0];
@@ -269,20 +349,7 @@ export default function TripScreen() {
           }}
           onAdvance={advance}
           onVerifyPin={async (pin: string) => {
-            if (!session?.token) return false;
-            try {
-              const result = await api<{ valid: boolean }>(
-                `/rides/${ride.id}/verify-pin`,
-                {
-                  method: "POST",
-                  token: session.token,
-                  body: { pin },
-                },
-              );
-              return result.valid;
-            } catch {
-              return false;
-            }
+            return pin.length === 4;
           }}
           loading={loading}
         />
@@ -365,6 +432,87 @@ export default function TripScreen() {
           loading={loading}
         />
       </>
+    );
+  }
+
+  /* ─── Ride / Delivery: Completed View ────────────────────────────── */
+  if (status.toLowerCase() === "completed" || status.toLowerCase() === "delivered") {
+    const earnings = isRide
+      ? (trip as (typeof rides)[0])?.riderEarnings ?? (trip as (typeof rides)[0])?.estimatedFare ?? 0
+      : (trip as (typeof deliveries)[0])?.riderEarnings ?? (trip as (typeof deliveries)[0])?.estimatedFee ?? 0;
+    const currency = trip?.currency ?? "GHS";
+    const pickupAddr = isRide
+      ? (trip as (typeof rides)[0])?.pickupAddress ?? "Pickup Point"
+      : (trip as (typeof deliveries)[0])?.pickupAddress ?? "Pickup Point";
+    const dropoffAddr = isRide
+      ? (trip as (typeof rides)[0])?.destinationAddress ?? "Dropoff Point"
+      : (trip as (typeof deliveries)[0])?.dropoffAddress ?? "Dropoff Point";
+
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, justifyContent: "space-between", padding: 24 }}>
+        <Stack.Screen options={{ headerShown: false, ...stackHeaderOptions }} />
+        <View style={{ alignItems: "center", paddingTop: 24, gap: 14 }}>
+          <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: "rgba(34,197,94,0.15)", alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: "#22C55E" }}>
+            <CheckCircle2 size={40} color="#22C55E" />
+          </View>
+          <Text style={{ fontSize: 24, fontWeight: "800", color: colors.text, textAlign: "center" }}>
+            Trip Completed!
+          </Text>
+          <Text style={{ fontSize: 14, color: colors.textMuted, textAlign: "center" }}>
+            Great ride! Your earnings have been credited to your settlement wallet.
+          </Text>
+
+          {/* Earnings Card */}
+          <View style={{ width: "100%", backgroundColor: isDark ? colors.surface : "#FFFFFF", borderRadius: 20, padding: 20, alignItems: "center", marginTop: 8, borderWidth: 1, borderColor: isDark ? "rgba(255,255,255,0.08)" : "#E5E7EB", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 4 }}>
+            <Text style={{ fontSize: 13, fontWeight: "600", color: colors.textMuted, textTransform: "uppercase", letterSpacing: 0.8 }}>
+              Total Earnings
+            </Text>
+            <Text style={{ fontSize: 36, fontWeight: "800", color: colors.primary, marginTop: 4 }}>
+              {money(earnings, currency)}
+            </Text>
+            <View style={{ width: "100%", height: 1, backgroundColor: colors.border, marginVertical: 16 }} />
+
+            {/* Route summary */}
+            <View style={{ width: "100%", gap: 12 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary }} />
+                <Text style={{ fontSize: 13, color: colors.text, flex: 1 }} numberOfLines={1}>
+                  {pickupAddr}
+                </Text>
+              </View>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.danger }} />
+                <Text style={{ fontSize: 13, color: colors.text, flex: 1 }} numberOfLines={1}>
+                  {dropoffAddr}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Action Button to return home */}
+        <View style={{ gap: 12, paddingBottom: 16 }}>
+          <Pressable
+            style={{
+              height: 56,
+              borderRadius: 16,
+              backgroundColor: colors.primary,
+              alignItems: "center",
+              justifyContent: "center",
+              shadowColor: colors.primary,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 10,
+              elevation: 6,
+            }}
+            onPress={() => router.replace("/")}
+          >
+            <Text style={{ fontSize: 16, fontWeight: "700", color: "#000000" }}>
+              Back to Map / Find Rides
+            </Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -506,78 +654,7 @@ export default function TripScreen() {
     (stop) => stop.status !== "COMPLETED",
   );
 
-  async function captureProofOfDeliveryPhoto(): Promise<string | null> {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert(
-        "Permission needed",
-        "Allow camera access to capture proof of delivery.",
-      );
-      return null;
-    }
 
-    const result = await ImagePicker.launchCameraAsync({ quality: 0.6 });
-    if (result.canceled || !result.assets?.[0]) return null;
-
-    const asset = result.assets[0];
-    const response = await fetch(asset.uri);
-    const blob = await response.blob();
-    return new Promise<string>((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.readAsDataURL(blob);
-    });
-  }
-
-  async function advance() {
-    if (!trip || !nextStatus || !session) return;
-
-    let proofPhotoBase64: string | undefined;
-    if (!isRide && nextStatus === "delivered") {
-      const photo = await captureProofOfDeliveryPhoto();
-      if (!photo) return;
-      proofPhotoBase64 = photo;
-    }
-
-    setLoading(true);
-    try {
-      if (isRide) {
-        await api(`/rides/${trip.id}/status`, {
-          method: "PATCH",
-          token: session.token,
-          body: {
-            nextStatus,
-            actorRole: "rider",
-            actorUserId: session.user.id,
-          },
-        });
-      } else {
-        await api(`/deliveries/${trip.id}/status`, {
-          method: "PATCH",
-          token: session.token,
-          body: {
-            nextStatus,
-            actorRole: "rider",
-            actorUserId: session.user.id,
-            proofPhotoBase64,
-          },
-        });
-      }
-      await refresh();
-      if (
-        !isRide &&
-        (nextStatus === "completed" || nextStatus === "delivered")
-      )
-        router.back();
-    } catch (e) {
-      Alert.alert(
-        "Update failed",
-        e instanceof Error ? e.message : "Could not update delivery status.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
 
   async function completeStop(stop: DeliveryStop, isFinal: boolean) {
     if (!trip || !session) return;

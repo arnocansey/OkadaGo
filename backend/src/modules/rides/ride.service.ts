@@ -989,6 +989,60 @@ export class RideService {
     return serializeRideForRealtime(activeRide);
   }
 
+  async getNearbyRiders(latitude: number, longitude: number, radiusKm = 5) {
+    const lat = Number(latitude);
+    const lon = Number(longitude);
+    if (!lat || !lon) return [];
+
+    const riders = await prisma.riderProfile.findMany({
+      where: {
+        onlineStatus: true,
+        approvalStatus: RiderApprovalStatus.APPROVED,
+        deletedAt: null,
+        currentLatitude: { not: null },
+        currentLongitude: { not: null }
+      },
+      select: {
+        id: true,
+        currentLatitude: true,
+        currentLongitude: true,
+        ratingAverage: true,
+        vehicle: {
+          select: {
+            make: true,
+            model: true,
+            vehicleType: true
+          }
+        },
+        user: {
+          select: {
+            fullName: true
+          }
+        }
+      },
+      take: 25
+    });
+
+    return riders
+      .map((r) => {
+        const rLat = Number(r.currentLatitude);
+        const rLon = Number(r.currentLongitude);
+        const distanceKm = haversineDistanceKm(lat, lon, rLat, rLon);
+        return {
+          id: r.id,
+          name: r.user.fullName,
+          latitude: rLat,
+          longitude: rLon,
+          distanceKm: Math.round(distanceKm * 10) / 10,
+          etaMinutes: Math.max(1, Math.round((distanceKm / 25) * 60)),
+          vehicleType: r.vehicle?.vehicleType ?? "motorcycle",
+          rating: Number(r.ratingAverage ?? 5.0)
+        };
+      })
+      .filter((r) => r.distanceKm <= radiusKm)
+      .sort((a, b) => a.distanceKm - b.distanceKm);
+  }
+
   async listRideLocations(rideId: RideIdParams["rideId"], limit = 30) {
     const ride = await prisma.ride.findUnique({
       where: {

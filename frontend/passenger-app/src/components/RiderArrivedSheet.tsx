@@ -26,6 +26,7 @@ type Props = {
   onSafety: () => void;
   onConfirm: () => void;
   onRiderPress?: () => void;
+  confirmed?: boolean;
 };
 
 function getVehicleComponent(
@@ -77,6 +78,7 @@ export function RiderArrivedSheet({
   onSafety,
   onConfirm,
   onRiderPress,
+  confirmed = false,
 }: Props) {
   const insets = useSafeAreaInsets();
   const { colors, isDark } = useTheme();
@@ -373,14 +375,32 @@ export function RiderArrivedSheet({
 
         {/* ─── Confirm CTA ───────────────────────────────── */}
         <Pressable
-          style={s.confirmBtn}
+          style={[
+            s.confirmBtn,
+            confirmed && {
+              backgroundColor: isDark ? "rgba(34,197,94,0.2)" : "#DCFCE7",
+              borderWidth: 1.5,
+              borderColor: "#16A34A",
+            },
+          ]}
           onPress={onConfirm}
+          disabled={confirmed}
           accessibilityRole="button"
-          accessibilityLabel="I'm at the bike"
+          accessibilityLabel={confirmed ? "You're at the bike" : "I'm at the bike"}
         >
-          <CheckCircle size={20} color="#FFFFFF" />
-          <Text style={s.confirmText}>I'm at the bike</Text>
+          <CheckCircle size={20} color={confirmed ? "#16A34A" : "#FFFFFF"} />
+          <Text style={[s.confirmText, confirmed && { color: "#16A34A" }]}>
+            {confirmed ? "You're at the bike ✓" : "I'm at the bike"}
+          </Text>
         </Pressable>
+
+        {confirmed ? (
+          <View style={{ marginTop: 8, alignItems: "center" }}>
+            <Text style={{ fontSize: 12, fontWeight: "600", color: colors.textSecondary }}>
+              Please wear your helmet. Waiting for rider to start trip.
+            </Text>
+          </View>
+        ) : null}
       </View>
     </View>
   );

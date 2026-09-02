@@ -7,6 +7,7 @@ import {
   Modal,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -24,6 +25,7 @@ import {
   Phone,
   Shield,
   ShieldAlert,
+  ShieldCheck,
   User,
   X,
   Zap,
@@ -216,11 +218,6 @@ export function TripNavigationSheet({
   }, [riderLat, riderLng, trip, isTripPhase, colors]);
 
   function handleAction() {
-    if (isArrived) {
-      // Open PIN verification sheet
-      setShowPinSheet(true);
-      return;
-    }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     onAdvance();
   }
@@ -241,13 +238,13 @@ export function TripNavigationSheet({
 
         /* ─── Map Area (70%) ──────────────────────────────────── */
         mapArea: {
-          flex: 70,
+          flex: isArrived ? 52 : isTripPhase ? 58 : 65,
           position: "relative",
         },
 
-        /* ─── Bottom Sheet (30%) ──────────────────────────────── */
+        /* ─── Bottom Sheet ────────────────────────────────────── */
         sheet: {
-          flex: 30,
+          flex: isArrived ? 48 : isTripPhase ? 42 : 35,
           backgroundColor: isDark ? colors.surface : "#FFFFFF",
           borderTopLeftRadius: 24,
           borderTopRightRadius: 24,
@@ -260,11 +257,13 @@ export function TripNavigationSheet({
           borderBottomWidth: 0,
           borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
         },
-        sheetContent: {
+        sheetScroll: {
           flex: 1,
+        },
+        sheetContent: {
           paddingHorizontal: 20,
-          paddingTop: 16,
-          paddingBottom: insets.bottom + 12,
+          paddingTop: 12,
+          paddingBottom: insets.bottom + 24,
         },
 
         /* ─── Handle Bar ──────────────────────────────────────── */
@@ -527,6 +526,21 @@ export function TripNavigationSheet({
           shadowRadius: 8,
           elevation: 4,
         },
+        verifyPinSecondaryBtn: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 6,
+          paddingVertical: 12,
+          borderRadius: 14,
+          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          marginTop: 10,
+        },
+        verifyPinSecondaryText: {
+          fontSize: 13,
+          fontWeight: "600",
+          color: colors.primary,
+        },
 
         /* ─── Safety Button ─────────────────────────────────────────── */
         sosWrap: {
@@ -626,12 +640,18 @@ export function TripNavigationSheet({
         </View>
       </View>
 
-      {/* ─── Bottom Sheet (30%) ─────────────────────────────────── */}
+      {/* ─── Bottom Sheet ──────────────────────────────────────── */}
       <KeyboardAvoidingView
         style={s.sheet}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <View style={s.sheetContent}>
+        <ScrollView
+          style={s.sheetScroll}
+          contentContainerStyle={s.sheetContent}
+          showsVerticalScrollIndicator={false}
+          bounces={true}
+          nestedScrollEnabled={true}
+        >
           {/* Handle Bar */}
           <View style={s.handleBar} />
 
@@ -830,22 +850,30 @@ export function TripNavigationSheet({
 
               <View style={s.divider} />
 
-              {/* Verify Passenger Button */}
+              {/* Start Trip Button */}
               <Pressable
                 style={[s.actionBtn, loading && s.actionBtnDisabled]}
                 onPress={handleAction}
                 disabled={loading}
                 accessibilityRole="button"
-                accessibilityLabel="Verify passenger"
+                accessibilityLabel="Start Trip"
               >
                 {loading ? (
                   <ActivityIndicator size="small" color="#000000" />
                 ) : (
                   <>
                     <Zap size={18} color="#000000" />
-                    <Text style={s.actionText}>VERIFY PASSENGER</Text>
+                    <Text style={s.actionText}>START TRIP</Text>
                   </>
                 )}
+              </Pressable>
+
+              <Pressable
+                style={s.verifyPinSecondaryBtn}
+                onPress={() => setShowPinSheet(true)}
+              >
+                <ShieldCheck size={16} color={colors.primary} />
+                <Text style={s.verifyPinSecondaryText}>Enter Passenger PIN (Optional)</Text>
               </Pressable>
             </>
           )}
@@ -938,7 +966,7 @@ export function TripNavigationSheet({
               )}
             </>
           )}
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
 
       {/* ─── In-App Motorcycle Navigation Modal ─────────────────── */}
@@ -971,7 +999,7 @@ export function TripNavigationSheet({
         tripId={trip.id}
         passengerName={trip.passengerName}
         onVerified={handlePinVerified}
-        onSkip={() => setShowPinSheet(false)}
+        onSkip={handlePinVerified}
         onVerify={onVerifyPin}
       />
 

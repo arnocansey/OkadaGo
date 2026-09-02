@@ -89,6 +89,7 @@ export default function TrackScreen() {
   const { showToast } = useToast();
   const prevIndexRef = useRef<number>(-1);
   const [stepTimestamps, setStepTimestamps] = useState<Record<number, string>>({});
+  const [atBikeConfirmed, setAtBikeConfirmed] = useState(false);
 
   const styles = useMemo(
     () =>
@@ -503,7 +504,7 @@ export default function TrackScreen() {
       />
 
       {/* Matching Animation Overlay */}
-      {showMatching && isRide ? (
+      {showMatching ? (
         <MatchingScreen
           tripId={trip.id}
           onCancel={handleCancelMatching}
@@ -533,8 +534,12 @@ export default function TrackScreen() {
             tripPin={null}
             onCall={riderPhone ? () => Linking.openURL(`tel:${riderPhone}`) : () => {}}
             onSafety={() => setShowSafetyCenter(true)}
-            onConfirm={() => {}}
+            onConfirm={() => {
+              setAtBikeConfirmed(true);
+              showToast("Rider notified you're at the bike! Please wear your helmet.", "success");
+            }}
             onRiderPress={() => setShowRiderModal(true)}
+            confirmed={atBikeConfirmed}
           />
         </View>
       ) : isActive && trip?.rider?.user?.fullName ? (

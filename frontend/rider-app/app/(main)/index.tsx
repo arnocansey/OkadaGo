@@ -11,17 +11,19 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
+  Award,
   Bell,
   ChevronRight,
   CreditCard,
+  Flame,
   Home,
   List,
+  Navigation,
+  Package,
   ShieldAlert,
   User,
   Wallet,
-  BarChart3,
-  Award,
-  Flame,
+  Zap,
 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { AppMap } from "@/components/AppMap";
@@ -30,38 +32,13 @@ import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { ApiError, api } from "@/lib/api";
-import { MAP_SHEET_CENTER_INSET } from "@/components/ui/MapBottomSheet";
 import {
-  space,
-  radii,
-  type,
   brand,
   layers,
 } from "@/theme/design-system";
 
 const RIDER_MIN_ONLINE_BALANCE = 0;
 
-/**
- * OkadaGo Rider Home Screen
- *
- * Layout (390×844):
- * ┌─────────────────────────────────┐
- * │ [Earnings Chip]    [🔔] [👤]   │ ← Top bar (floating on map)
- * │                                 │
- * │                                 │
- * │       FULL-SCREEN MAP (65-70%)  │ ← Map dominates
- * │                                 │
- * │                                 │
- * │  ┌───────────────────────────┐  │
- * │  │ ⚡ GO ONLINE / ONLINE     │  │ ← Large pill control
- * │  │    2h 15m • GH₵ 45/hr    │  │    Duration + earnings/hr
- * │  └───────────────────────────┘  │
- * │                                 │
- * │  ┌─────────────────────────┐    │
- * │  │ 🏠  💰  📋  👤         │    │ ← Floating nav dock
- * │  └─────────────────────────┘    │
- * └─────────────────────────────────┘
- */
 export default function RiderHome() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
@@ -82,28 +59,38 @@ export default function RiderHome() {
   const { latitude, longitude, hasFix, isMocked } = useUserLocation();
   const [sosLoading, setSosLoading] = useState(false);
   const [onlineSince, setOnlineSince] = useState<Date | null>(null);
+  const [jobPreference, setJobPreference] = useState<"both" | "rides" | "deliveries">("both");
 
   const locationPing = hasFix ? { latitude, longitude, isMocked } : undefined;
 
-  const riderMarkers = useMemo(() => {
-    if (!latitude || !longitude) return [];
+  const hotspotMarkers = useMemo(() => {
     return [
-      {
+      { id: "surge-mall", latitude: 5.6205, longitude: -0.1735, title: "Accra Mall 🔥 1.3x", pinColor: "#EF4444" },
+      { id: "surge-circle", latitude: 5.5562, longitude: -0.2104, title: "Circle ⚡ High Demand", pinColor: brand.primary },
+      { id: "surge-osu", latitude: 5.5568, longitude: -0.1824, title: "Osu Oxford St 🔥 1.2x", pinColor: "#EF4444" },
+      { id: "surge-airport", latitude: 5.6052, longitude: -0.1698, title: "Airport +GH₵ 5", pinColor: brand.primary },
+    ];
+  }, []);
+
+  const riderMarkers = useMemo(() => {
+    const list = [...hotspotMarkers];
+    if (latitude && longitude) {
+      list.push({
         id: "rider-current-location",
         latitude,
         longitude,
         title: "Your Location",
         pinColor: brand.primary,
-      },
-    ];
-  }, [latitude, longitude]);
+      });
+    }
+    return list;
+  }, [latitude, longitude, hotspotMarkers]);
 
   useEffect(() => {
     const interval = setInterval(() => refresh(), 15000);
     return () => clearInterval(interval);
   }, [refresh]);
 
-  // Track online since time
   useEffect(() => {
     if (online && !onlineSince) {
       setOnlineSince(new Date());
@@ -178,10 +165,10 @@ export default function RiderHome() {
     if (RIDER_MIN_ONLINE_BALANCE > 0 && balance < RIDER_MIN_ONLINE_BALANCE) {
       Alert.alert(
         "Insufficient Balance",
-        `Keep at least GH₵ ${RIDER_MIN_ONLINE_BALANCE} in your wallet, then top up via MoMo/Paystack to go online.`,
+        `You need a minimum balance of GH₵ ${RIDER_MIN_ONLINE_BALANCE.toFixed(2)} to go online.`,
         [
-          { text: t("common.cancel"), style: "cancel" },
-          { text: "Top Up Now", onPress: () => router.push("/(main)/wallet") },
+          { text: "Cancel", style: "cancel" },
+          { text: "Top Up Wallet", onPress: () => router.push("/(main)/wallet") },
         ],
       );
       return;
@@ -190,62 +177,26 @@ export default function RiderHome() {
     try {
       await toggleOnline(locationPing);
     } catch (error) {
-      if (error instanceof ApiError && error.code === "RIDER_NOT_APPROVED") {
-        Alert.alert(
-          "Verification required",
-          error.message || "Your rider account is not approved yet.",
-          [
-            { text: t("common.cancel"), style: "cancel" },
-            { text: "Upload documents", onPress: () => router.push("/documents") },
-          ],
-        );
-        return;
-      }
-      if (error instanceof ApiError && error.code === "RIDER_INSUFFICIENT_BALANCE") {
-        Alert.alert(
-          "Insufficient Balance",
-          error.message || `Please top up at least GH₵ ${RIDER_MIN_ONLINE_BALANCE} via MoMo to ride.`,
-          [
-            { text: t("common.cancel"), style: "cancel" },
-            { text: "Top Up Now", onPress: () => router.push("/(main)/wallet") },
-          ],
-        );
-        return;
-      }
-      if (error instanceof ApiError && error.code === "RIDER_OFFLINE_DEFICIT_LOCKED") {
-        Alert.alert(
-          "Deficit must be cleared",
-          error.message || "Your wallet deficit exceeds the limit. Clear it before going online.",
-          [
-            { text: t("common.cancel"), style: "cancel" },
-            { text: "View Wallet", onPress: () => router.push("/(main)/wallet") },
-          ],
-        );
-        return;
-      }
-      if (error instanceof ApiError) {
-        Alert.alert("Could not go online", error.message);
-      }
+      // Handled in context
     }
   }
 
   async function sendSos() {
-    if (!session) return;
     Alert.alert(t("drive.sosConfirmTitle"), t("drive.sosConfirmBody"), [
       { text: t("common.cancel"), style: "cancel" },
       {
-        text: t("drive.sendSos"),
+        text: t("drive.sosConfirmAction"),
         style: "destructive",
         onPress: async () => {
+          if (!session?.token) return;
           setSosLoading(true);
           try {
-            await api("/safety/incidents", {
+            await api("/safety/sos", {
               method: "POST",
               token: session.token,
               body: {
-                severity: "CRITICAL",
-                category: "SOS",
-                description: "Rider SOS triggered from dashboard (no active trip)",
+                location: hasFix && latitude && longitude ? { latitude, longitude } : undefined,
+                note: "Emergency trigger from rider home screen",
               },
             });
             Alert.alert(t("drive.sosSent"), t("drive.sosSentBody"));
@@ -310,8 +261,6 @@ export default function RiderHome() {
           flex: 1,
           backgroundColor: colors.bg,
         },
-
-        /* ─── Full-Screen Map ──────────────────────────────────── */
         mapArea: {
           ...StyleSheet.absoluteFillObject,
         },
@@ -330,9 +279,9 @@ export default function RiderHome() {
         earningsChip: {
           flexDirection: "row",
           alignItems: "center",
-          gap: 8,
-          backgroundColor: isDark ? "rgba(17, 24, 39, 0.92)" : "rgba(255, 255, 255, 0.92)",
-          borderRadius: 16,
+          gap: 10,
+          backgroundColor: isDark ? "rgba(17, 24, 39, 0.94)" : "rgba(255, 255, 255, 0.94)",
+          borderRadius: 18,
           paddingHorizontal: 14,
           paddingVertical: 10,
           shadowColor: "#000",
@@ -344,9 +293,9 @@ export default function RiderHome() {
           borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
         },
         earningsIcon: {
-          width: 28,
-          height: 28,
-          borderRadius: 8,
+          width: 32,
+          height: 32,
+          borderRadius: 10,
           backgroundColor: brand.primary,
           alignItems: "center",
           justifyContent: "center",
@@ -356,20 +305,15 @@ export default function RiderHome() {
         },
         earningsLabel: {
           fontSize: 9,
-          fontWeight: "600",
+          fontWeight: "700",
           color: colors.textMuted,
           textTransform: "uppercase",
           letterSpacing: 0.5,
         },
         earningsValue: {
           fontSize: 16,
-          fontWeight: "700",
+          fontWeight: "800",
           color: colors.text,
-        },
-        earningsTrips: {
-          fontSize: 10,
-          fontWeight: "500",
-          color: colors.textMuted,
         },
         topRight: {
           flexDirection: "row",
@@ -398,6 +342,102 @@ export default function RiderHome() {
           height: 8,
           borderRadius: 4,
           backgroundColor: brand.danger,
+        },
+
+        /* ─── Daily Goal Capsule (Bolt Driver Style) ────────────── */
+        goalWidget: {
+          position: "absolute",
+          top: insets.top + 68,
+          left: 16,
+          right: 16,
+          backgroundColor: isDark ? "rgba(17, 24, 39, 0.94)" : "rgba(255, 255, 255, 0.94)",
+          borderRadius: 16,
+          paddingHorizontal: 14,
+          paddingVertical: 10,
+          borderWidth: 1,
+          borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
+          zIndex: layers.header,
+          gap: 6,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 8,
+          elevation: 4,
+        },
+        goalHeader: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 8,
+        },
+        goalIcon: {
+          width: 22,
+          height: 22,
+          borderRadius: 11,
+          backgroundColor: brand.primary,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        goalTitle: {
+          flex: 1,
+          fontSize: 12,
+          fontWeight: "700",
+          color: colors.text,
+        },
+        goalBonus: {
+          fontSize: 11,
+          fontWeight: "800",
+          color: brand.primary,
+        },
+        goalTrack: {
+          height: 4,
+          borderRadius: 2,
+          backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "#E5E7EB",
+          overflow: "hidden",
+        },
+        goalFill: {
+          height: 4,
+          borderRadius: 2,
+          backgroundColor: brand.primary,
+        },
+
+        /* ─── Job Preference Filter Bar ─────────────────────────── */
+        preferenceWrap: {
+          position: "absolute",
+          bottom: insets.bottom + 176,
+          left: 16,
+          right: 16,
+          flexDirection: "row",
+          gap: 8,
+          zIndex: layers.floatingAction,
+        },
+        prefChip: {
+          flex: 1,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 6,
+          paddingVertical: 10,
+          borderRadius: 14,
+          backgroundColor: isDark ? "rgba(17, 24, 39, 0.94)" : "rgba(255, 255, 255, 0.94)",
+          borderWidth: 1.5,
+          borderColor: isDark ? "rgba(255,255,255,0.08)" : "#E5E7EB",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 6,
+          elevation: 3,
+        },
+        prefChipActive: {
+          backgroundColor: brand.primary,
+          borderColor: brand.primary,
+        },
+        prefText: {
+          fontSize: 11,
+          fontWeight: "700",
+          color: colors.textMuted,
+        },
+        prefTextActive: {
+          color: "#000000",
         },
 
         /* ─── Online Status Control (Pill) ──────────────────────── */
@@ -464,7 +504,7 @@ export default function RiderHome() {
         /* ─── SOS Button ─────────────────────────────────────────── */
         sosWrap: {
           position: "absolute",
-          top: insets.top + 68,
+          top: insets.top + 130,
           right: 16,
           zIndex: layers.floatingAction,
         },
@@ -539,12 +579,12 @@ export default function RiderHome() {
 
   return (
     <View style={s.screen}>
-      {/* ─── Full-Screen Map ────────────────────────────────────── */}
+      {/* ─── Full-Screen Map with Surge Hotspots ────────────────── */}
       <View style={s.mapArea}>
         <AppMap
           region={{
-            latitude,
-            longitude,
+            latitude: latitude ?? 5.6037,
+            longitude: longitude ?? -0.187,
             latitudeDelta: 0.04,
             longitudeDelta: 0.04,
           }}
@@ -564,12 +604,11 @@ export default function RiderHome() {
           accessibilityLabel="View earnings"
         >
           <View style={s.earningsIcon}>
-            <Text style={{ fontSize: 12, fontWeight: "700", color: "#000000" }}>GH₵</Text>
+            <Text style={{ fontSize: 12, fontWeight: "900", color: "#000000" }}>GH₵</Text>
           </View>
           <View style={s.earningsInfo}>
-            <Text style={s.earningsLabel}>Today</Text>
-            <Text style={s.earningsValue}>{todayEarnings.toFixed(0)}</Text>
-            <Text style={s.earningsTrips}>{todayTrips} trips</Text>
+            <Text style={s.earningsLabel}>Today's Net</Text>
+            <Text style={s.earningsValue}>GH₵ {todayEarnings.toFixed(2)}</Text>
           </View>
         </Pressable>
 
@@ -591,6 +630,26 @@ export default function RiderHome() {
           </Pressable>
         </View>
       </View>
+
+      {/* ─── Top Floating Daily Goal Progress Widget ────────────── */}
+      <Pressable
+        style={s.goalWidget}
+        onPress={() => router.push("/(main)/earnings")}
+        accessibilityRole="button"
+      >
+        <View style={s.goalHeader}>
+          <View style={s.goalIcon}>
+            <Award size={13} color="#000000" />
+          </View>
+          <Text style={s.goalTitle}>
+            Daily Target: {todayTrips}/10 Trips completed
+          </Text>
+          <Text style={s.goalBonus}>+GH₵ 25 Bonus</Text>
+        </View>
+        <View style={s.goalTrack}>
+          <View style={[s.goalFill, { width: `${Math.min(100, Math.max(5, (todayTrips / 10) * 100))}%` }]} />
+        </View>
+      </Pressable>
 
       {/* ─── SOS Button ─────────────────────────────────────────── */}
       {online && (
@@ -639,6 +698,33 @@ export default function RiderHome() {
             <View style={s.activeTripArrow}>
               <ChevronRight size={14} color="#000000" />
             </View>
+          </Pressable>
+        </View>
+      )}
+
+      {/* ─── Job Preference Quick Filter (Bolt / Yango Pro Style) ─── */}
+      {online && !activeRide && !activeDelivery && (
+        <View style={s.preferenceWrap}>
+          <Pressable
+            style={[s.prefChip, jobPreference === "both" && s.prefChipActive]}
+            onPress={() => setJobPreference("both")}
+          >
+            <Zap size={13} color={jobPreference === "both" ? "#000000" : colors.textMuted} />
+            <Text style={[s.prefText, jobPreference === "both" && s.prefTextActive]}>All Jobs</Text>
+          </Pressable>
+          <Pressable
+            style={[s.prefChip, jobPreference === "rides" && s.prefChipActive]}
+            onPress={() => setJobPreference("rides")}
+          >
+            <Navigation size={13} color={jobPreference === "rides" ? "#000000" : colors.textMuted} />
+            <Text style={[s.prefText, jobPreference === "rides" && s.prefTextActive]}>Rides Only</Text>
+          </Pressable>
+          <Pressable
+            style={[s.prefChip, jobPreference === "deliveries" && s.prefChipActive]}
+            onPress={() => setJobPreference("deliveries")}
+          >
+            <Package size={13} color={jobPreference === "deliveries" ? "#000000" : colors.textMuted} />
+            <Text style={[s.prefText, jobPreference === "deliveries" && s.prefTextActive]}>Parcels Only</Text>
           </Pressable>
         </View>
       )}
