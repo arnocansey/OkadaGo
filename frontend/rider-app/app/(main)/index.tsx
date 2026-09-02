@@ -403,7 +403,7 @@ export default function RiderHome() {
         /* ─── Job Preference Filter Bar ─────────────────────────── */
         preferenceWrap: {
           position: "absolute",
-          bottom: insets.bottom + 176,
+          bottom: insets.bottom + 152,
           left: 16,
           right: 16,
           flexDirection: "row",
@@ -416,8 +416,8 @@ export default function RiderHome() {
           alignItems: "center",
           justifyContent: "center",
           gap: 6,
-          paddingVertical: 10,
-          borderRadius: 14,
+          paddingVertical: 8,
+          borderRadius: 12,
           backgroundColor: isDark ? "rgba(17, 24, 39, 0.94)" : "rgba(255, 255, 255, 0.94)",
           borderWidth: 1.5,
           borderColor: isDark ? "rgba(255,255,255,0.08)" : "#E5E7EB",
@@ -443,7 +443,7 @@ export default function RiderHome() {
         /* ─── Online Status Control (Pill) ──────────────────────── */
         statusControlWrap: {
           position: "absolute",
-          bottom: insets.bottom + 90,
+          bottom: insets.bottom + 84,
           left: 16,
           right: 16,
           zIndex: layers.floatingAction,
@@ -452,7 +452,7 @@ export default function RiderHome() {
         /* ─── Active Trip Banner ────────────────────────────────── */
         activeTripWrap: {
           position: "absolute",
-          bottom: insets.bottom + 170,
+          bottom: insets.bottom + 152,
           left: 16,
           right: 16,
           zIndex: layers.floatingAction,
@@ -463,7 +463,7 @@ export default function RiderHome() {
           gap: 12,
           backgroundColor: brand.primary,
           borderRadius: 16,
-          padding: 16,
+          padding: 14,
           shadowColor: brand.primary,
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.3,
@@ -533,7 +533,7 @@ export default function RiderHome() {
         /* ─── Floating Nav Dock ──────────────────────────────────── */
         navDock: {
           position: "absolute",
-          bottom: insets.bottom + 16,
+          bottom: insets.bottom + 12,
           left: 16,
           right: 16,
           zIndex: layers.floatingAction,
@@ -543,8 +543,8 @@ export default function RiderHome() {
           justifyContent: "space-around",
           alignItems: "center",
           backgroundColor: isDark ? "rgba(17, 24, 39, 0.95)" : "rgba(255, 255, 255, 0.95)",
-          borderRadius: 24,
-          paddingVertical: 12,
+          borderRadius: 20,
+          paddingVertical: 8,
           paddingHorizontal: 8,
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 6 },
@@ -557,9 +557,9 @@ export default function RiderHome() {
         navItem: {
           alignItems: "center",
           justifyContent: "center",
-          width: 56,
-          height: 48,
-          borderRadius: 14,
+          width: 54,
+          height: 44,
+          borderRadius: 12,
         },
         navItemActive: {
           backgroundColor: isDark ? "rgba(250, 204, 21, 0.15)" : "rgba(250, 204, 21, 0.1)",
@@ -568,7 +568,7 @@ export default function RiderHome() {
           fontSize: 10,
           fontWeight: "600",
           color: colors.textMuted,
-          marginTop: 4,
+          marginTop: 2,
         },
         navLabelActive: {
           color: brand.primary,
@@ -591,7 +591,7 @@ export default function RiderHome() {
           markers={riderMarkers}
           autoCenterOnLocation={hasFix}
           showCenterButton
-          centerButtonInset={{ bottom: insets.bottom + 130, right: 16 }}
+          centerButtonInset={{ bottom: insets.bottom + 200, right: 16 }}
         />
       </View>
 

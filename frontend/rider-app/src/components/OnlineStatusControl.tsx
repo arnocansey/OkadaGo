@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { Power, TrendingUp, Zap } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { useTheme } from "@/context/ThemeContext";
-import { brand, layers } from "@/theme/design-system";
+import { brand } from "@/theme/design-system";
 
 type Props = {
   online: boolean;
@@ -13,22 +13,6 @@ type Props = {
   loading?: boolean;
 };
 
-/**
- * OnlineStatusControl — OkadaGo's signature GO LIVE button.
- *
- * Design principles:
- * - Large pill shape (dominant, can't miss)
- * - High contrast for outdoor visibility
- * - Animated pulse when online
- * - Clear state transitions
- * - Earnings-per-hour when online
- * - Duration timer when online
- *
- * Visual signatures:
- * - Offline: Slate pill with "GO LIVE" text + power icon
- * - Online: Green pill with pulsing glow, duration, earnings/hr
- * - Pill shape is unique to OkadaGo (not a circle or square)
- */
 export function OnlineStatusControl({
   online,
   todayEarnings,
@@ -40,19 +24,19 @@ export function OnlineStatusControl({
   const [now, setNow] = useState(Date.now());
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
-  // Pulse animation when online
+  // Subtle pulse animation when online
   useEffect(() => {
     if (online) {
       const pulse = Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, {
-            toValue: 1.05,
-            duration: 1500,
+            toValue: 1.02,
+            duration: 1200,
             useNativeDriver: true,
           }),
           Animated.timing(pulseAnim, {
             toValue: 1,
-            duration: 1500,
+            duration: 1200,
             useNativeDriver: true,
           }),
         ]),
@@ -88,43 +72,33 @@ export function OnlineStatusControl({
     return `${seconds}s`;
   }, [online, onlineSince, now]);
 
-  // Calculate earnings per hour
-  const earningsPerHour = useMemo(() => {
-    if (!online || !onlineSince || todayEarnings === 0) return null;
-    const ms = now - new Date(onlineSince).getTime();
-    const hours = ms / 3600000;
-    if (hours < 0.1) return null; // Don't show until 6 minutes in
-    return todayEarnings / hours;
-  }, [online, onlineSince, todayEarnings, now]);
-
   const s = useMemo(
     () =>
       StyleSheet.create({
-        /* ─── Pill Container ────────────────────────────────────── */
         pillWrapper: {
           shadowColor: online ? brand.online : "#000",
-          shadowOffset: { width: 0, height: 6 },
-          shadowOpacity: online ? 0.5 : 0.2,
-          shadowRadius: 24,
-          elevation: 12,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: online ? 0.4 : 0.15,
+          shadowRadius: 14,
+          elevation: 8,
         },
         pill: {
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
           width: "100%",
-          height: 88,
-          borderRadius: 44,
-          paddingHorizontal: 24,
+          height: 60,
+          borderRadius: 30,
+          paddingHorizontal: 16,
         },
         pillOffline: {
-          backgroundColor: isDark ? "rgba(30, 41, 59, 0.98)" : "rgba(255, 255, 255, 0.98)",
-          borderWidth: 3,
-          borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)",
+          backgroundColor: isDark ? "#1E293B" : "#FFFFFF",
+          borderWidth: 1.5,
+          borderColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)",
         },
         pillOnline: {
           backgroundColor: brand.online,
-          borderWidth: 3,
+          borderWidth: 1.5,
           borderColor: brand.online,
         },
 
@@ -132,30 +106,29 @@ export function OnlineStatusControl({
         leftSection: {
           flexDirection: "row",
           alignItems: "center",
-          gap: 16,
+          gap: 12,
+          flex: 1,
         },
         iconContainer: {
-          width: 52,
-          height: 52,
-          borderRadius: 26,
+          width: 38,
+          height: 38,
+          borderRadius: 19,
           alignItems: "center",
           justifyContent: "center",
         },
         iconOffline: {
-          backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)",
-          borderWidth: 2,
-          borderColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)",
+          backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "#F3F4F6",
         },
         iconOnline: {
           backgroundColor: "rgba(0, 0, 0, 0.15)",
         },
         textGroup: {
-          gap: 2,
+          gap: 1,
         },
         mainLabel: {
-          fontSize: 20,
+          fontSize: 16,
           fontWeight: "800",
-          letterSpacing: 0.5,
+          letterSpacing: 0.3,
         },
         mainLabelOffline: {
           color: colors.text,
@@ -164,64 +137,41 @@ export function OnlineStatusControl({
           color: "#000000",
         },
         subLabel: {
-          fontSize: 13,
-          fontWeight: "500",
+          fontSize: 11,
+          fontWeight: "600",
         },
         subLabelOffline: {
           color: colors.textMuted,
         },
         subLabelOnline: {
-          color: "rgba(0, 0, 0, 0.6)",
+          color: "rgba(0, 0, 0, 0.65)",
         },
 
-        /* ─── Right Section (Duration + Earnings/hr) ────────────── */
+        /* ─── Right Section (Duration & Status) ─────────────────── */
         rightSection: {
-          alignItems: "flex-end",
+          flexDirection: "row",
+          alignItems: "center",
           gap: 6,
         },
         durationBadge: {
           flexDirection: "row",
           alignItems: "center",
-          gap: 6,
+          gap: 5,
           backgroundColor: "rgba(0, 0, 0, 0.12)",
-          borderRadius: 14,
-          paddingHorizontal: 12,
-          paddingVertical: 6,
+          borderRadius: 12,
+          paddingHorizontal: 10,
+          paddingVertical: 5,
         },
         durationDot: {
-          width: 8,
-          height: 8,
-          borderRadius: 4,
+          width: 6,
+          height: 6,
+          borderRadius: 3,
           backgroundColor: "#000000",
         },
         durationText: {
-          fontSize: 14,
-          fontWeight: "700",
-          color: "#000000",
-        },
-        earningsPerHour: {
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 4,
-        },
-        earningsPerHourText: {
           fontSize: 12,
-          fontWeight: "600",
-          color: "rgba(0, 0, 0, 0.5)",
-        },
-        earningsPerHourValue: {
-          fontSize: 13,
-          fontWeight: "700",
+          fontWeight: "800",
           color: "#000000",
-        },
-
-        /* ─── Loading State ──────────────────────────────────────── */
-        loadingOverlay: {
-          ...StyleSheet.absoluteFillObject,
-          backgroundColor: "rgba(0, 0, 0, 0.1)",
-          borderRadius: 44,
-          alignItems: "center",
-          justifyContent: "center",
         },
       }),
     [colors, isDark, online],
@@ -243,49 +193,30 @@ export function OnlineStatusControl({
         {/* Left Section: Icon + Text */}
         <View style={s.leftSection}>
           <View style={[s.iconContainer, online ? s.iconOnline : s.iconOffline]}>
-            <Power size={26} color={online ? "#000000" : colors.text} />
+            <Power size={20} color={online ? "#000000" : colors.text} />
           </View>
           <View style={s.textGroup}>
-            <Text
-              style={[s.mainLabel, online ? s.mainLabelOnline : s.mainLabelOffline]}
-            >
-              {online ? "YOU'RE LIVE" : "GO LIVE"}
+            <Text style={[s.mainLabel, online ? s.mainLabelOnline : s.mainLabelOffline]}>
+              {online ? "YOU'RE ONLINE" : "GO LIVE"}
             </Text>
-            <Text
-              style={[s.subLabel, online ? s.subLabelOnline : s.subLabelOffline]}
-            >
-              {online ? "Ready for trips" : "Tap to start earning"}
+            <Text style={[s.subLabel, online ? s.subLabelOnline : s.subLabelOffline]}>
+              {online ? "Tap to go offline" : "Tap to receive trips"}
             </Text>
           </View>
         </View>
 
-        {/* Right Section: Duration + Earnings/hr (online only) */}
-        {online && (
+        {/* Right Section: Duration timer (online only) */}
+        {online && duration && (
           <View style={s.rightSection}>
-            {duration && (
-              <View style={s.durationBadge}>
-                <View style={s.durationDot} />
-                <Text style={s.durationText}>{duration}</Text>
-              </View>
-            )}
-            {earningsPerHour && (
-              <View style={s.earningsPerHour}>
-                <TrendingUp size={11} color="rgba(0, 0, 0, 0.5)" />
-                <Text style={s.earningsPerHourText}>GH₵</Text>
-                <Text style={s.earningsPerHourValue}>
-                  {earningsPerHour.toFixed(0)}/hr
-                </Text>
-              </View>
-            )}
+            <View style={s.durationBadge}>
+              <View style={s.durationDot} />
+              <Text style={s.durationText}>{duration}</Text>
+            </View>
           </View>
         )}
 
-        {/* Loading Overlay */}
-        {loading && (
-          <View style={s.loadingOverlay}>
-            <Text style={[s.mainLabel, s.mainLabelOffline]}>...</Text>
-          </View>
-        )}
+        {/* Loading Indicator */}
+        {loading && <ActivityIndicator size="small" color={online ? "#000000" : colors.text} />}
       </Pressable>
     </Animated.View>
   );

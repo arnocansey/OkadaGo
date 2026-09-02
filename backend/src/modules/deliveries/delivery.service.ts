@@ -605,10 +605,14 @@ export class DeliveryService {
         (DeliveryStatus[query.status.toUpperCase() as keyof typeof DeliveryStatus] || undefined)
       : undefined;
 
+    const isSearchingOnly = dbStatus === DeliveryStatus.SEARCHING && !query.riderId && !query.passengerId;
+    const freshWindow = new Date(Date.now() - 3 * 60 * 1000); // 3 minutes
+
     const where = {
       ...(query.riderId ? { riderId: query.riderId } : {}),
       ...(query.passengerId ? { passengerId: query.passengerId } : {}),
-      ...(dbStatus ? { status: dbStatus } : {})
+      ...(dbStatus ? { status: dbStatus } : {}),
+      ...(isSearchingOnly ? { createdAt: { gte: freshWindow } } : {})
     };
 
     const data = await prisma.deliveryRequest.findMany({

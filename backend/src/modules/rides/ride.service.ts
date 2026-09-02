@@ -939,10 +939,14 @@ export class RideService {
         (RideStatus[query.status.toUpperCase() as keyof typeof RideStatus] || undefined)
       : undefined;
 
+    const isSearchingOnly = dbStatus === RideStatus.SEARCHING && !query.riderId && !query.passengerId;
+    const freshWindow = new Date(Date.now() - 3 * 60 * 1000); // 3 minutes
+
     const where = {
       ...(query.riderId ? { riderId: query.riderId } : {}),
       ...(query.passengerId ? { passengerId: query.passengerId } : {}),
-      ...(dbStatus ? { status: dbStatus } : {})
+      ...(dbStatus ? { status: dbStatus } : {}),
+      ...(isSearchingOnly ? { createdAt: { gte: freshWindow } } : {})
     };
 
     const data = await prisma.ride.findMany({

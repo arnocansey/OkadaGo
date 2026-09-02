@@ -239,19 +239,42 @@ export function AppProvider({ children }: { children: ReactNode }) {
       d.rider?.id === session?.user.riderProfileId &&
       !["delivered", "cancelled"].includes((d.status ?? "").toLowerCase()),
   );
-  // A ride sits at "assigned" or "searching" (if unassigned) until the rider explicitly accepts or declines/dismisses.
-  const incomingRide = rides.find(
-    (r) =>
-      !dismissedRequestIds.includes(r.id) &&
-      (((r.status ?? "").toLowerCase() === "assigned" && r.rider?.id === session?.user.riderProfileId) ||
-        ((r.status ?? "").toLowerCase() === "searching" && !r.rider?.id)),
-  );
-  const incomingDelivery = deliveries.find(
-    (d) =>
-      !dismissedRequestIds.includes(d.id) &&
-      (d.status ?? "").toLowerCase() === "searching" &&
-      (!d.rider?.id || d.rider?.id === session?.user.riderProfileId),
-  );
+
+  // Incoming requests are only valid if:
+  // 1. Not dismissed by this rider
+  // 2. Status is "assigned" (newly offered to rider) or "searching" (open broadcast)
+  // 3. Created within the last 90 seconds (prevents stale/old trips from popping up when going online)
+  const MAX_REQUEST_AGE_MS = 90 * 1000; // 90 seconds
+
+  const incomingRide = rides.find((r) => {
+    if (dismissedRequestIds.includes(r.id)) return false;
+    const status = (r.status ?? "").toLowerCase();
+    if (status !== "assigned" && status !== "searching") return false;
+    if (status === "assigned" && r.rider?.id !== session?.user.riderProfileId) return false;
+    if (status === "searching" && r.rider?.id) return false;
+
+    const timestampStr = r.createdAt || r.updatedAt;
+    if (timestampStr) {
+      const age = Date.now() - new Date(timestampStr).getTime();
+      if (age > MAX_REQUEST_AGE_MS) return false;
+    }
+    return true;
+  });
+
+  const incomingDelivery = deliveries.find((d) => {
+    if (dismissedRequestIds.includes(d.id)) return false;
+    const status = (d.status ?? "").toLowerCase();
+    if (status !== "searching" && status !== "assigned") return false;
+    if (status === "assigned" && d.rider?.id !== session?.user.riderProfileId) return false;
+    if (status === "searching" && d.rider?.id && d.rider.id !== session?.user.riderProfileId) return false;
+
+    const timestampStr = d.createdAt || d.updatedAt;
+    if (timestampStr) {
+      const age = Date.now() - new Date(timestampStr).getTime();
+      if (age > MAX_REQUEST_AGE_MS) return false;
+    }
+    return true;
+  });
 
   const value = useMemo(
     () => ({
