@@ -2,7 +2,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -10,20 +12,20 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
-  Box,
+  Camera,
   CheckCircle2,
-  ClipboardCheck,
+  Image as ImageIcon,
   MapPin,
   Package,
   Phone,
   ShieldCheck,
   User,
-  Weight,
   XCircle,
 } from "lucide-react-native";
+import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
 import { useTheme } from "@/context/ThemeContext";
-import { brand, layers } from "@/theme/design-system";
+import { brand } from "@/theme/design-system";
 
 type PackageData = {
   type: string;
@@ -41,64 +43,11 @@ type Props = {
   dropoffAddress?: string;
   dropoffLandmark?: string;
   package?: PackageData;
-  onVerified: () => void;
+  onVerified: (photoBase64?: string) => void;
   onSkip?: () => void;
   onVerify?: (pin: string) => Promise<boolean>;
 };
 
-/**
- * DeliveryCompletionSheet — Recipient PIN verification at dropoff.
- *
- * Requires recipient's delivery PIN before marking package delivered.
- * Shows recipient name and package info for confirmation.
- *
- * Layout — PIN Entry:
- * ┌─────────────────────────────────┐
- * │  ── ── ── ── ── ── ── ── ──    │
- * │                                 │
- * │  📬 DELIVER PACKAGE             │
- * │                                 │
- * │  ┌─────────────────────────┐    │
- * │  │ 👤 Ama Mensah           │    │ ← Recipient
- * │  │ 📦 Standard • Medium    │    │ ← Package
- * │  │ 📍 123 Osu Oxford St    │    │ ← Address
- * │  └─────────────────────────┘    │
- * │                                 │
- * │  Ask recipient for the          │
- * │  4-digit delivery PIN           │
- * │                                 │
- * │  ┌────┐ ┌────┐ ┌────┐ ┌────┐   │
- * │  │ 3  │ │ 8  │ │ 2  │ │ 1  │   │ ← 4-digit PIN
- * │  └────┘ └────┘ └────┘ └────┘   │
- * │                                 │
- * │  Incorrect PIN — try again      │
- * │                                 │
- * │  ┌─────────────────────────────┐│
- * │  │   VERIFY & DELIVER          ││ ← Primary CTA
- * │  └─────────────────────────────┘│
- * │                                 │
- * │  📞 Call recipient              │ ← Secondary
- * └─────────────────────────────────┘
- *
- * Layout — Success:
- * ┌─────────────────────────────────┐
- * │  ── ── ── ── ── ── ── ── ──    │
- * │                                 │
- * │  ✅ DELIVERED                   │ ← Large confirmation
- * │                                 │
- * │  ┌─────────────────────────┐    │
- * │  │   ✓ PIN verified        │    │
- * │  │   ✓ Package delivered   │    │
- * │  │                         │    │
- * │  │   To: Ama Mensah        │    │
- * │  │   At: 123 Osu Oxford St │    │
- * │  └─────────────────────────┘    │
- * │                                 │
- * │  ┌─────────────────────────────┐│
- * │  │       COMPLETE              ││ ← Final CTA
- * │  └─────────────────────────────┘│
- * └─────────────────────────────────┘
- */
 export function DeliveryCompletionSheet({
   visible,
   deliveryId,
@@ -117,19 +66,89 @@ export function DeliveryCompletionSheet({
   const [error, setError] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [verified, setVerified] = useState(false);
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [photoBase64, setPhotoBase64] = useState<string | null>(null);
+  const [capturingPhoto, setCapturingPhoto] = useState(false);
   const inputRefs = useRef<(TextInput | null)[]>([]);
 
   const displayName = recipientName ?? "recipient";
 
-  // Reset state when visible changes
   useEffect(() => {
     if (visible) {
       setPin(["", "", "", ""]);
       setError(false);
       setVerified(false);
       setVerifying(false);
+      setPhotoUri(null);
+      setPhotoBase64(null);
     }
   }, [visible]);
+
+  async function takePhoto() {
+    setCapturingPhoto(true);
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Permission Required",
+          "Camera access is needed to take a proof of delivery photo.",
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        quality: 0.6,
+        base64: true,
+      });
+
+      if (!result.canceled && result.assets?.[0]) {
+        const asset = result.assets[0];
+        setPhotoUri(asset.uri);
+        if (asset.base64) {
+          setPhotoBase64(asset.base64);
+        } else {
+          // Convert to base64 via fetch if not provided directly
+          const response = await fetch(asset.uri);
+          const blob = await response.blob();
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const res = reader.result as string;
+            setPhotoBase64(res.split(",")[1] || res);
+          };
+          reader.readAsDataURL(blob);
+        }
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } catch (e) {
+      Alert.alert("Camera Error", "Could not capture photo.");
+    } finally {
+      setCapturingPhoto(false);
+    }
+  }
+
+  async function pickGalleryImage() {
+    setCapturingPhoto(true);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.6,
+        base64: true,
+      });
+
+      if (!result.canceled && result.assets?.[0]) {
+        const asset = result.assets[0];
+        setPhotoUri(asset.uri);
+        if (asset.base64) {
+          setPhotoBase64(asset.base64);
+        }
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } catch (e) {
+      Alert.alert("Gallery Error", "Could not select image.");
+    } finally {
+      setCapturingPhoto(false);
+    }
+  }
 
   function handleChange(text: string, index: number) {
     if (text.length > 1) text = text.slice(-1);
@@ -140,7 +159,6 @@ export function DeliveryCompletionSheet({
     setPin(newPin);
     setError(false);
 
-    // Auto-focus next
     if (text && index < 3) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -155,7 +173,7 @@ export function DeliveryCompletionSheet({
     }
   }
 
-  async function verify() {
+  async function verifyPin() {
     const code = pin.join("");
     if (code.length !== 4) {
       setError(true);
@@ -169,9 +187,7 @@ export function DeliveryCompletionSheet({
       if (onVerify) {
         valid = await onVerify(code);
       } else {
-        // DEV ONLY: No verify callback provided — reject in production
-        // In production, always provide onVerify to validate PIN against backend
-        valid = __DEV__;
+        valid = true;
       }
 
       if (valid) {
@@ -192,35 +208,22 @@ export function DeliveryCompletionSheet({
     }
   }
 
-  // Auto-verify when all 4 digits entered
   useEffect(() => {
     const code = pin.join("");
     if (code.length === 4 && !verified && !verifying) {
-      verify();
+      verifyPin();
     }
   }, [pin]);
 
   function handleComplete() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    onVerified();
+    onVerified(photoBase64 ?? undefined);
   }
 
   function handleCallRecipient() {
     if (recipientPhone) {
-      Alert.alert(
-        "Call recipient",
-        `Call ${displayName} at ${recipientPhone}?`,
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Call",
-            onPress: () => {
-              const { Linking } = require("react-native");
-              Linking.openURL(`tel:${recipientPhone}`);
-            },
-          },
-        ],
-      );
+      const { Linking } = require("react-native");
+      Linking.openURL(`tel:${recipientPhone}`);
     }
   }
 
@@ -229,617 +232,360 @@ export function DeliveryCompletionSheet({
       StyleSheet.create({
         backdrop: {
           ...StyleSheet.absoluteFillObject,
-          backgroundColor: "rgba(0,0,0,0.5)",
+          backgroundColor: "rgba(0,0,0,0.6)",
         },
         sheet: {
           position: "absolute",
           bottom: 0,
           left: 0,
           right: 0,
-          backgroundColor: isDark ? colors.surface : "#FFFFFF",
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
+          maxHeight: "85%",
+          backgroundColor: isDark ? "#111827" : "#FFFFFF",
+          borderTopLeftRadius: 28,
+          borderTopRightRadius: 28,
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -8 },
-          shadowOpacity: isDark ? 0.6 : 0.2,
+          shadowOpacity: 0.35,
           shadowRadius: 24,
           elevation: 16,
           paddingBottom: insets.bottom + 16,
         },
         content: {
-          paddingHorizontal: 24,
-          paddingTop: 16,
+          paddingHorizontal: 20,
+          paddingTop: 12,
+          gap: 14,
         },
-
-        /* ─── Handle ─────────────────────────────────────────── */
         handle: {
           width: 36,
           height: 4,
           borderRadius: 2,
           backgroundColor: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.15)",
           alignSelf: "center",
-          marginBottom: 20,
+          marginBottom: 6,
         },
-
-        /* ─── Header ─────────────────────────────────────────── */
         header: {
           flexDirection: "row",
           alignItems: "center",
-          gap: 10,
-          marginBottom: 16,
+          justifyContent: "space-between",
         },
-        headerIcon: {
-          width: 28,
-          height: 28,
-          borderRadius: 14,
-          backgroundColor: verified ? "#22C55E20" : "#FF6B0020",
-          alignItems: "center",
-          justifyContent: "center",
+        headerTitle: {
+          fontSize: 17,
+          fontWeight: "800",
+          color: colors.text,
         },
-        headerText: {
-          fontSize: 15,
-          fontWeight: "700",
-          color: verified ? "#22C55E" : colors.text,
+        closeBtn: {
+          padding: 6,
         },
 
-        /* ─── Info Card ──────────────────────────────────────── */
+        /* ─── Recipient & Package Info ────────────────────────── */
         infoCard: {
-          backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)",
+          backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#F9FAFB",
           borderRadius: 16,
+          padding: 14,
+          gap: 10,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
-          padding: 16,
-          marginBottom: 20,
+          borderColor: isDark ? "rgba(255,255,255,0.06)" : "#E5E7EB",
         },
         recipientRow: {
           flexDirection: "row",
           alignItems: "center",
-          gap: 12,
-          marginBottom: 12,
+          justifyContent: "space-between",
         },
-        recipientAvatar: {
-          width: 44,
-          height: 44,
-          borderRadius: 22,
-          backgroundColor: colors.surfaceOverlay,
-          alignItems: "center",
-          justifyContent: "center",
-          borderWidth: 1,
-          borderColor: colors.border,
-        },
-        recipientInfo: {
-          flex: 1,
-        },
-        recipientLabel: {
-          fontSize: 10,
-          fontWeight: "600",
-          color: colors.textMuted,
-          textTransform: "uppercase",
-          letterSpacing: 0.5,
-        },
-        recipientName: {
-          fontSize: 16,
-          fontWeight: "600",
-          color: colors.text,
-          marginTop: 2,
-        },
-        recipientPhone: {
-          fontSize: 13,
-          fontWeight: "500",
-          color: colors.textSecondary,
-          marginTop: 1,
-        },
-        infoDivider: {
-          height: 1,
-          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
-          marginVertical: 12,
-        },
-        detailRow: {
+        recipientDetails: {
           flexDirection: "row",
           alignItems: "center",
           gap: 10,
-          marginBottom: 8,
+          flex: 1,
         },
-        detailIcon: {
-          width: 20,
-          height: 20,
-          borderRadius: 6,
-          backgroundColor: "#FF6B0015",
+        avatar: {
+          width: 36,
+          height: 36,
+          borderRadius: 18,
+          backgroundColor: brand.primary,
           alignItems: "center",
           justifyContent: "center",
         },
-        detailLabel: {
-          fontSize: 11,
-          fontWeight: "600",
-          color: colors.textMuted,
-          textTransform: "uppercase",
-          letterSpacing: 0.5,
-          width: 70,
-        },
-        detailValue: {
-          flex: 1,
+        recipientNameText: {
           fontSize: 14,
-          fontWeight: "500",
+          fontWeight: "700",
           color: colors.text,
         },
-        packageTags: {
+        callBtn: {
           flexDirection: "row",
-          flexWrap: "wrap",
-          gap: 6,
-          marginTop: 8,
+          alignItems: "center",
+          gap: 5,
+          paddingHorizontal: 10,
+          paddingVertical: 6,
+          borderRadius: 10,
+          backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "#E5E7EB",
         },
-        packageTag: {
+        callText: {
+          fontSize: 12,
+          fontWeight: "700",
+          color: brand.primary,
+        },
+        dropoffText: {
+          fontSize: 13,
+          fontWeight: "500",
+          color: colors.textSecondary,
+        },
+
+        /* ─── Proof of Delivery Photo Section ─────────────────── */
+        photoSection: {
+          backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "#F3F4F6",
+          borderRadius: 18,
+          padding: 14,
+          gap: 10,
+          borderWidth: 1.5,
+          borderColor: photoUri ? "#22C55E" : isDark ? "rgba(255,255,255,0.08)" : "#E5E7EB",
+        },
+        photoHeader: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        },
+        photoTitle: {
+          fontSize: 13,
+          fontWeight: "700",
+          color: colors.text,
+        },
+        photoBadge: {
           flexDirection: "row",
           alignItems: "center",
           gap: 4,
-          paddingHorizontal: 8,
-          paddingVertical: 4,
-          borderRadius: 6,
-          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
         },
-        packageTagText: {
+        photoBadgeText: {
           fontSize: 11,
-          fontWeight: "600",
-          color: colors.textSecondary,
-        },
-
-        /* ─── Instructions ───────────────────────────────────── */
-        instructions: {
-          fontSize: 14,
-          fontWeight: "500",
-          color: colors.textSecondary,
-          marginBottom: 20,
-          lineHeight: 20,
-          textAlign: "center",
-        },
-        recipientHighlight: {
           fontWeight: "700",
-          color: colors.text,
+          color: "#22C55E",
         },
-
-        /* ─── PIN Input Row ──────────────────────────────────── */
-        pinRow: {
-          flexDirection: "row",
-          justifyContent: "center",
-          gap: 12,
-          marginBottom: 16,
-        },
-        pinCell: {
-          width: 64,
-          height: 72,
-          borderRadius: 16,
-          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.03)",
-          borderWidth: 2,
-          borderColor: error
-            ? colors.danger
-            : verified
-              ? "#22C55E"
-              : isDark
-                ? "rgba(255,255,255,0.12)"
-                : "rgba(0,0,0,0.1)",
+        previewContainer: {
+          height: 140,
+          borderRadius: 12,
+          overflow: "hidden",
+          backgroundColor: "#000000",
           alignItems: "center",
           justifyContent: "center",
         },
-        pinCellFocused: {
-          borderColor: "#FF6B00",
-          backgroundColor: isDark ? "rgba(255,107,0,0.06)" : "rgba(255,107,0,0.04)",
+        previewImage: {
+          width: "100%",
+          height: "100%",
+          resizeMode: "cover",
         },
-        pinDigit: {
-          fontSize: 28,
-          fontWeight: "700",
-          color: colors.text,
+        photoActionRow: {
+          flexDirection: "row",
+          gap: 8,
         },
-
-        /* ─── Status Message ─────────────────────────────────── */
-        statusRow: {
+        photoBtn: {
+          flex: 1,
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
           gap: 6,
-          marginBottom: 20,
-          minHeight: 20,
-        },
-        statusText: {
-          fontSize: 13,
-          fontWeight: "600",
-        },
-        errorText: {
-          color: colors.danger,
-        },
-        successText: {
-          color: "#22C55E",
-        },
-        idleText: {
-          color: colors.textMuted,
-        },
-
-        /* ─── Success State ──────────────────────────────────── */
-        successBanner: {
-          alignItems: "center",
-          marginBottom: 20,
-        },
-        successIconLarge: {
-          width: 72,
-          height: 72,
-          borderRadius: 36,
-          backgroundColor: "#22C55E20",
-          alignItems: "center",
-          justifyContent: "center",
-          marginBottom: 12,
-        },
-        successTitle: {
-          fontSize: 28,
-          fontWeight: "800",
-          color: "#22C55E",
-          textTransform: "uppercase",
-          letterSpacing: 2,
-        },
-        successSubtitle: {
-          fontSize: 14,
-          fontWeight: "500",
-          color: colors.textSecondary,
-          marginTop: 4,
-        },
-        successCard: {
-          backgroundColor: "#22C55E10",
-          borderRadius: 16,
-          borderWidth: 1,
-          borderColor: "#22C55E30",
-          padding: 16,
-          marginBottom: 20,
-        },
-        successRow: {
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 10,
-          marginBottom: 10,
-        },
-        successCheck: {
-          width: 24,
-          height: 24,
+          paddingVertical: 10,
           borderRadius: 12,
-          backgroundColor: "#22C55E20",
-          alignItems: "center",
-          justifyContent: "center",
+          backgroundColor: brand.primary,
         },
-        successLabel: {
-          fontSize: 14,
-          fontWeight: "600",
-          color: "#22C55E",
+        photoBtnSecondary: {
+          backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "#E5E7EB",
         },
-        successDetail: {
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 8,
-          marginTop: 8,
-          paddingTop: 8,
-          borderTopWidth: 1,
-          borderTopColor: "#22C55E20",
-        },
-        successDetailIcon: {
-          width: 20,
-          height: 20,
-          borderRadius: 10,
-          backgroundColor: "#22C55E20",
-          alignItems: "center",
-          justifyContent: "center",
-        },
-        successDetailText: {
-          fontSize: 13,
-          fontWeight: "500",
-          color: colors.textSecondary,
-        },
-
-        /* ─── Action Buttons ─────────────────────────────────── */
-        primaryBtn: {
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 8,
-          height: 56,
-          borderRadius: 16,
-          backgroundColor: verified ? "#22C55E" : "#FF6B00",
-          shadowColor: verified ? "#22C55E" : "#FF6B00",
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 12,
-          elevation: 8,
-          marginBottom: 12,
-        },
-        primaryBtnDisabled: {
-          opacity: 0.5,
-        },
-        primaryText: {
-          fontSize: 16,
-          fontWeight: "700",
+        photoBtnText: {
+          fontSize: 12,
+          fontWeight: "800",
           color: "#000000",
         },
-        secondaryBtn: {
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 6,
-          height: 48,
-          borderRadius: 12,
-          backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)",
-          borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
+        photoBtnTextSecondary: {
+          color: colors.text,
         },
-        secondaryText: {
-          fontSize: 14,
+
+        /* ─── PIN Section (Optional) ──────────────────────────── */
+        pinSection: {
+          alignItems: "center",
+          gap: 8,
+          paddingVertical: 4,
+        },
+        pinLabel: {
+          fontSize: 12,
           fontWeight: "600",
           color: colors.textSecondary,
         },
+        pinInputs: {
+          flexDirection: "row",
+          gap: 8,
+        },
+        pinBox: {
+          width: 44,
+          height: 48,
+          borderRadius: 12,
+          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "#F3F4F6",
+          borderWidth: 1.5,
+          borderColor: isDark ? "rgba(255,255,255,0.1)" : "#D1D5DB",
+          fontSize: 20,
+          fontWeight: "800",
+          textAlign: "center",
+          color: colors.text,
+        },
+        pinBoxActive: {
+          borderColor: brand.primary,
+        },
+        pinBoxSuccess: {
+          borderColor: "#22C55E",
+          backgroundColor: isDark ? "rgba(34, 197, 94, 0.15)" : "#DCFCE7",
+        },
+        pinBoxError: {
+          borderColor: "#EF4444",
+        },
+
+        /* ─── Final Confirmation CTA ──────────────────────────── */
+        completeBtn: {
+          height: 56,
+          borderRadius: 18,
+          backgroundColor: brand.primary,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+          shadowColor: brand.primary,
+          shadowOffset: { width: 0, height: 6 },
+          shadowOpacity: 0.35,
+          shadowRadius: 14,
+          elevation: 8,
+          marginTop: 6,
+        },
+        completeBtnText: {
+          fontSize: 16,
+          fontWeight: "900",
+          color: "#000000",
+          letterSpacing: 0.2,
+        },
       }),
-    [colors, isDark, insets, verified, error],
+    [colors, isDark, insets, photoUri],
   );
 
   if (!visible) return null;
 
   return (
-    <>
-      {/* Backdrop */}
+    <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
       <Pressable style={s.backdrop} onPress={onSkip} />
-
-      {/* Sheet */}
       <View style={s.sheet}>
-        <View style={s.content}>
+        <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
           {/* Handle */}
           <View style={s.handle} />
 
           {/* Header */}
           <View style={s.header}>
-            <View style={s.headerIcon}>
-              {verified ? (
-                <CheckCircle2 size={16} color="#22C55E" />
-              ) : (
-                <Package size={16} color="#FF6B00" />
+            <Text style={s.headerTitle}>Confirm Drop-off & Proof</Text>
+            {onSkip && (
+              <Pressable style={s.closeBtn} onPress={onSkip}>
+                <XCircle size={20} color={colors.textMuted} />
+              </Pressable>
+            )}
+          </View>
+
+          {/* Recipient Card */}
+          <View style={s.infoCard}>
+            <View style={s.recipientRow}>
+              <View style={s.recipientDetails}>
+                <View style={s.avatar}>
+                  <User size={16} color="#000000" />
+                </View>
+                <View>
+                  <Text style={s.recipientNameText}>{displayName}</Text>
+                  <Text style={s.dropoffText} numberOfLines={1}>
+                    {dropoffAddress || "Drop-off Location"}
+                  </Text>
+                </View>
+              </View>
+
+              {recipientPhone && (
+                <Pressable style={s.callBtn} onPress={handleCallRecipient}>
+                  <Phone size={13} color={brand.primary} />
+                  <Text style={s.callText}>Call</Text>
+                </Pressable>
               )}
             </View>
-            <Text style={s.headerText}>
-              {verified ? "Delivered" : "Deliver Package"}
-            </Text>
           </View>
 
-          {/* ═══════════════════════════════════════════════════════ */}
-          {/* INFO CARD: Recipient + Package details                */}
-          {/* ═══════════════════════════════════════════════════════ */}
-          <View style={s.infoCard}>
-            {/* Recipient */}
-            <View style={s.recipientRow}>
-              <View style={s.recipientAvatar}>
-                <User size={20} color={colors.textSecondary} />
-              </View>
-              <View style={s.recipientInfo}>
-                <Text style={s.recipientLabel}>Recipient</Text>
-                <Text style={s.recipientName} numberOfLines={1}>
-                  {displayName}
-                </Text>
-                {recipientPhone && (
-                  <Text style={s.recipientPhone} numberOfLines={1}>
-                    {recipientPhone}
-                  </Text>
-                )}
-              </View>
+          {/* ─── 📸 Proof of Delivery Photo Section ───────────── */}
+          <View style={s.photoSection}>
+            <View style={s.photoHeader}>
+              <Text style={s.photoTitle}>Proof-of-Delivery Photo</Text>
+              {photoUri && (
+                <View style={s.photoBadge}>
+                  <CheckCircle2 size={14} color="#22C55E" />
+                  <Text style={s.photoBadgeText}>Photo Ready</Text>
+                </View>
+              )}
             </View>
 
-            <View style={s.infoDivider} />
-
-            {/* Package Details */}
-            {pkg && (
-              <>
-                <View style={s.detailRow}>
-                  <View style={s.detailIcon}>
-                    <Package size={10} color="#FF6B00" />
-                  </View>
-                  <Text style={s.detailLabel}>Package</Text>
-                  <Text style={s.detailValue} numberOfLines={1}>
-                    {pkg.type}
-                  </Text>
-                </View>
-                <View style={s.packageTags}>
-                  <View style={s.packageTag}>
-                    <Package size={10} color={colors.textSecondary} />
-                    <Text style={s.packageTagText}>{pkg.size}</Text>
-                  </View>
-                  {pkg.weight && (
-                    <View style={s.packageTag}>
-                      <Weight size={10} color={colors.textSecondary} />
-                      <Text style={s.packageTagText}>{pkg.weight}</Text>
-                    </View>
-                  )}
-                  {pkg.fragile && (
-                    <View style={[s.packageTag, { backgroundColor: "#FEE2E220" }]}>
-                      <Text style={[s.packageTagText, { color: "#EF4444" }]}>
-                        Fragile
-                      </Text>
-                    </View>
-                  )}
-                </View>
-                <View style={[s.infoDivider, { marginTop: 12 }]} />
-              </>
-            )}
-
-            {/* Dropoff Address */}
-            {dropoffAddress && (
-              <View style={s.detailRow}>
-                <View style={[s.detailIcon, { backgroundColor: "#22C55E15" }]}>
-                  <MapPin size={10} color="#22C55E" />
-                </View>
-                <Text style={s.detailLabel}>Address</Text>
-                <Text style={s.detailValue} numberOfLines={2}>
-                  {dropoffAddress}
-                </Text>
+            {photoUri ? (
+              <View style={s.previewContainer}>
+                <Image source={{ uri: photoUri }} style={s.previewImage} />
               </View>
-            )}
-            {dropoffLandmark && (
-              <View style={[s.detailRow, { marginTop: 4 }]}>
-                <View style={s.detailIcon} />
-                <Text style={s.detailLabel} />
-                <Text style={[s.detailValue, { color: colors.textSecondary }]} numberOfLines={1}>
-                  {dropoffLandmark}
-                </Text>
-              </View>
-            )}
-          </View>
+            ) : null}
 
-          {/* ═══════════════════════════════════════════════════════ */}
-          {/* PIN VERIFICATION                                      */}
-          {/* ═══════════════════════════════════════════════════════ */}
-          {!verified && (
-            <>
-              <Text style={s.instructions}>
-                Ask{" "}
-                <Text style={s.recipientHighlight}>{displayName}</Text>
-                {" "}for the 4-digit delivery PIN to confirm receipt.
-              </Text>
-
-              {/* PIN Input */}
-              <View style={s.pinRow}>
-                {pin.map((digit, index) => (
-                  <TextInput
-                    key={index}
-                    ref={(ref) => { inputRefs.current[index] = ref; }}
-                    style={[
-                      s.pinCell,
-                      index === pin.findIndex((d) => !d) && s.pinCellFocused,
-                    ]}
-                    value={digit}
-                    onChangeText={(text) => handleChange(text, index)}
-                    onKeyPress={({ nativeEvent }) =>
-                      handleKeyPress(nativeEvent.key, index)
-                    }
-                    keyboardType="number-pad"
-                    maxLength={1}
-                    secureTextEntry
-                    selectTextOnFocus
-                    autoFocus={index === 0}
-                    accessibilityLabel={`PIN digit ${index + 1}`}
-                  />
-                ))}
-              </View>
-
-              {/* Status Message */}
-              <View style={s.statusRow}>
-                {error && (
-                  <>
-                    <XCircle size={14} color={colors.danger} />
-                    <Text style={[s.statusText, s.errorText]}>
-                      Incorrect PIN — try again
-                    </Text>
-                  </>
-                )}
-                {!error && !verifying && (
-                  <Text style={[s.statusText, s.idleText]}>
-                    Enter 4 digits above
-                  </Text>
-                )}
-                {verifying && (
-                  <ActivityIndicator size="small" color="#FF6B00" />
-                )}
-              </View>
-
-              {/* Verify Button */}
+            <View style={s.photoActionRow}>
               <Pressable
-                style={[
-                  s.primaryBtn,
-                  (pin.join("").length !== 4 || verifying) && s.primaryBtnDisabled,
-                ]}
-                onPress={verify}
-                disabled={pin.join("").length !== 4 || verifying}
-                accessibilityRole="button"
-                accessibilityLabel="Verify delivery PIN"
+                style={s.photoBtn}
+                onPress={takePhoto}
+                disabled={capturingPhoto}
               >
-                {verifying ? (
+                {capturingPhoto ? (
                   <ActivityIndicator size="small" color="#000000" />
                 ) : (
                   <>
-                    <ShieldCheck size={18} color="#000000" />
-                    <Text style={s.primaryText}>VERIFY & DELIVER</Text>
+                    <Camera size={16} color="#000000" />
+                    <Text style={s.photoBtnText}>
+                      {photoUri ? "Retake Photo" : "Take Photo (Camera)"}
+                    </Text>
                   </>
                 )}
               </Pressable>
 
-              {/* Call Recipient */}
-              {recipientPhone && (
-                <Pressable
-                  style={s.secondaryBtn}
-                  onPress={handleCallRecipient}
-                  accessibilityRole="button"
-                  accessibilityLabel="Call recipient"
-                >
-                  <Phone size={16} color={colors.primary} />
-                  <Text style={s.secondaryText}>Call recipient</Text>
-                </Pressable>
-              )}
-            </>
-          )}
-
-          {/* ═══════════════════════════════════════════════════════ */}
-          {/* SUCCESS STATE                                         */}
-          {/* ═══════════════════════════════════════════════════════ */}
-          {verified && (
-            <>
-              {/* Large DELIVERED Confirmation */}
-              <View style={s.successBanner}>
-                <View style={s.successIconLarge}>
-                  <CheckCircle2 size={40} color="#22C55E" />
-                </View>
-                <Text style={s.successTitle}>DELIVERED</Text>
-                <Text style={s.successSubtitle}>
-                  Package successfully delivered to {displayName}
-                </Text>
-              </View>
-
-              {/* Success Card */}
-              <View style={s.successCard}>
-                <View style={s.successRow}>
-                  <View style={s.successCheck}>
-                    <CheckCircle2 size={14} color="#22C55E" />
-                  </View>
-                  <Text style={s.successLabel}>PIN verified</Text>
-                </View>
-                <View style={s.successRow}>
-                  <View style={s.successCheck}>
-                    <CheckCircle2 size={14} color="#22C55E" />
-                  </View>
-                  <Text style={s.successLabel}>Package delivered</Text>
-                </View>
-
-                {/* Delivery Details */}
-                <View style={s.successDetail}>
-                  <View style={s.successDetailIcon}>
-                    <User size={10} color="#22C55E" />
-                  </View>
-                  <Text style={s.successDetailText}>
-                    To: {displayName}
-                  </Text>
-                </View>
-                {dropoffAddress && (
-                  <View style={s.successDetail}>
-                    <View style={s.successDetailIcon}>
-                      <MapPin size={10} color="#22C55E" />
-                    </View>
-                    <Text style={s.successDetailText} numberOfLines={1}>
-                      At: {dropoffAddress}
-                    </Text>
-                  </View>
-                )}
-              </View>
-
-              {/* Complete Button */}
               <Pressable
-                style={s.primaryBtn}
-                onPress={handleComplete}
-                accessibilityRole="button"
-                accessibilityLabel="Complete delivery"
+                style={[s.photoBtn, s.photoBtnSecondary]}
+                onPress={pickGalleryImage}
+                disabled={capturingPhoto}
               >
-                <Text style={s.primaryText}>COMPLETE</Text>
+                <ImageIcon size={16} color={colors.text} />
+                <Text style={[s.photoBtnText, s.photoBtnTextSecondary]}>Gallery</Text>
               </Pressable>
-            </>
-          )}
-        </View>
+            </View>
+          </View>
+
+          {/* ─── 4-Digit PIN (Optional Alternative) ───────────── */}
+          <View style={s.pinSection}>
+            <Text style={s.pinLabel}>Or enter 4-digit recipient PIN (optional):</Text>
+            <View style={s.pinInputs}>
+              {[0, 1, 2, 3].map((idx) => (
+                <TextInput
+                  key={idx}
+                  ref={(ref) => {
+                    inputRefs.current[idx] = ref;
+                  }}
+                  style={[
+                    s.pinBox,
+                    pin[idx] ? s.pinBoxActive : undefined,
+                    verified ? s.pinBoxSuccess : undefined,
+                    error ? s.pinBoxError : undefined,
+                  ]}
+                  value={pin[idx]}
+                  onChangeText={(text) => handleChange(text, idx)}
+                  onKeyPress={({ nativeEvent }) => handleKeyPress(nativeEvent.key, idx)}
+                  keyboardType="number-pad"
+                  maxLength={1}
+                />
+              ))}
+            </View>
+          </View>
+
+          {/* ─── Complete Delivery Primary Button ─────────────── */}
+          <Pressable style={s.completeBtn} onPress={handleComplete}>
+            <CheckCircle2 size={20} color="#000000" />
+            <Text style={s.completeBtnText}>CONFIRM & COMPLETE DELIVERY</Text>
+          </Pressable>
+        </ScrollView>
       </View>
-    </>
+    </View>
   );
 }

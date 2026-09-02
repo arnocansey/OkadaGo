@@ -247,7 +247,7 @@ export default function TripScreen() {
     });
   }
 
-  async function advance() {
+  async function advance(customPhotoBase64?: string) {
     if (!trip || !session) return;
     const curStatus = (trip.status ?? "assigned").toLowerCase();
     const targetStatus = isRide
@@ -255,11 +255,12 @@ export default function TripScreen() {
       : nextDeliveryStatus(curStatus);
     if (!targetStatus) return;
 
-    let proofPhotoBase64: string | undefined;
-    if (!isRide && targetStatus === "delivered") {
+    let proofPhotoBase64: string | undefined = customPhotoBase64;
+    if (!isRide && targetStatus === "delivered" && !proofPhotoBase64) {
       const photo = await captureProofOfDeliveryPhoto();
-      if (!photo) return;
-      proofPhotoBase64 = photo;
+      if (photo) {
+        proofPhotoBase64 = photo;
+      }
     }
 
     setLoading(true);
@@ -287,16 +288,10 @@ export default function TripScreen() {
         });
       }
       await refresh();
-      if (
-        !isRide &&
-        (targetStatus === "completed" || targetStatus === "delivered")
-      ) {
-        router.back();
-      }
     } catch (e) {
       Alert.alert(
         "Update failed",
-        e instanceof Error ? e.message : "Could not update trip status.",
+        e instanceof Error ? e.message : "Could not update status.",
       );
     } finally {
       setLoading(false);
@@ -1181,7 +1176,7 @@ export default function TripScreen() {
                     <Camera size={16} color={colors.textOnPrimary} />
                   ) : undefined
                 }
-                onPress={advance}
+                onPress={() => void advance()}
                 fullWidth
               />
             ) : null}

@@ -94,7 +94,7 @@ type DeliveryData = {
 
 type Props = {
   delivery: DeliveryData;
-  onAdvance: () => void;
+  onAdvance: (proofPhotoBase64?: string) => void;
   onCompleteStop?: (stopId: string) => void;
   onVerifyPackage?: (stopId: string, verificationCode: string) => Promise<boolean>;
   loading?: boolean;
@@ -273,17 +273,14 @@ export function DeliveryNavigationSheet({
     }
   }
 
-  async function handleConfirmDelivery(pin?: string) {
+  async function handleConfirmDelivery(photoBase64?: string) {
     setConfirmingDelivery(true);
     try {
       if (onCompleteStop && currentStop && currentStop.type === "DROPOFF") {
         await onCompleteStop(currentStop.id);
       }
-      if (onVerifyPackage && currentStop && pin) {
-        await onVerifyPackage(currentStop.id, pin);
-      }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      onAdvance();
+      onAdvance(photoBase64);
     } catch (e) {
       Alert.alert(
         "Delivery failed",
@@ -301,7 +298,7 @@ export function DeliveryNavigationSheet({
     if (isPickupPhase || isAtPickup) {
       handleConfirmPickup();
     } else if (isDeliveryPhase || isAtDropoff) {
-      handleConfirmDelivery();
+      setShowDeliveryCompletion(true);
     } else {
       onAdvance();
     }
@@ -1233,7 +1230,7 @@ export function DeliveryNavigationSheet({
         dropoffAddress={delivery.dropoffAddress}
         dropoffLandmark={delivery.dropoffLandmark}
         package={delivery.package}
-        onVerified={() => handleConfirmDelivery()}
+        onVerified={(photoBase64) => handleConfirmDelivery(photoBase64)}
         onSkip={() => setShowDeliveryCompletion(false)}
         onVerify={onVerifyPackage && currentStop ? (pin) => onVerifyPackage(currentStop.id, pin) : undefined}
       />

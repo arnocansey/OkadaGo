@@ -653,14 +653,6 @@ export class DeliveryService {
 
     this.validateLifecycle(toApiDeliveryStatus(delivery.status), input.nextStatus);
 
-    if (input.nextStatus === "delivered" && input.actorRole === "rider" && !input.proofPhotoBase64) {
-      throw new AppError(
-        "A proof-of-delivery photo is required before marking this delivery as delivered.",
-        400,
-        "PROOF_PHOTO_REQUIRED"
-      );
-    }
-
     const assignedRider =
       input.nextStatus === "assigned"
         ? await this.findRiderForAssignment(delivery, input.riderProfileId)
