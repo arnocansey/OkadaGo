@@ -238,21 +238,13 @@ export function LeafletMap({
     setTileError("Map tiles could not be loaded right now.");
   }, []);
 
-  const tileUrl =
-    resolvedBasemap === "dark"
-      ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-      : resolvedBasemap === "light"
-        ? "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-        : useGoogleTiles
-          ? `https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${googleMapsKey}`
-          : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+  const tileUrl = useGoogleTiles
+    ? `https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${googleMapsKey}`
+    : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 
-  const tileAttribution =
-    resolvedBasemap === "dark" || resolvedBasemap === "light"
-      ? '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> &copy; <a href="https://carto.com/" target="_blank" rel="noreferrer">CARTO</a>'
-      : useGoogleTiles
-        ? '&copy; <a href="https://developers.google.com/maps/documentation/javascript/" target="_blank" rel="noreferrer">Google Maps</a>'
-        : '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors';
+  const tileAttribution = useGoogleTiles
+    ? '&copy; <a href="https://developers.google.com/maps/documentation/javascript/" target="_blank" rel="noreferrer">Google Maps</a>'
+    : '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors';
 
   const mapKey = `map:${resolvedBasemap}`;
 
@@ -298,11 +290,10 @@ export function LeafletMap({
         {viewportSync && <ViewportSync center={center} zoom={zoom} />}
         {showFitAll && <FitAllButton positions={driverPositions} />}
         <TileLayer
+          className={resolvedBasemap === "dark" ? "leaflet-dark-tiles" : undefined}
           attribution={tileAttribution}
           url={tileUrl}
-          subdomains={
-            resolvedBasemap === "streets" && useGoogleTiles ? ["0", "1", "2", "3"] : ["a", "b", "c"]
-          }
+          subdomains={useGoogleTiles ? ["0", "1", "2", "3"] : ["a", "b", "c"]}
           eventHandlers={{
             tileerror: onTileError,
             tileload: onTileLoad
