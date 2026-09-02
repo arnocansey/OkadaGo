@@ -276,9 +276,6 @@ export function DeliveryNavigationSheet({
   async function handleConfirmDelivery(photoBase64?: string) {
     setConfirmingDelivery(true);
     try {
-      if (onCompleteStop && currentStop && currentStop.type === "DROPOFF") {
-        await onCompleteStop(currentStop.id);
-      }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       onAdvance(photoBase64);
     } catch (e) {

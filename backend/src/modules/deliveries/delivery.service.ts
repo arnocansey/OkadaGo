@@ -914,14 +914,6 @@ export class DeliveryService {
     const isFinalDropoff = dropoffStops[dropoffStops.length - 1]?.id === stop.id;
 
     if (isFinalDropoff && delivery.status !== DeliveryStatus.DELIVERED) {
-      if (input.actorRole === "rider" && !input.proofPhotoBase64) {
-        throw new AppError(
-          "A proof-of-delivery photo is required before completing the final stop.",
-          400,
-          "PROOF_PHOTO_REQUIRED"
-        );
-      }
-
       // Delegate to updateDeliveryStatus so proof upload, wallet settlement, and
       // notifications stay in one place; it also marks this (and any other remaining)
       // dropoff stop COMPLETED with the uploaded photo URL.
