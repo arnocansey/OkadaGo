@@ -73,6 +73,8 @@ const riderMinOnlineBalance = 0;
 export const SCHEDULED_RIDE_LOOKAHEAD_MS = 15 * 60 * 1000;
 
 const apiToDbRideStatus = {
+  scheduled: RideStatus.SCHEDULED,
+  searching: RideStatus.SEARCHING,
   assigned: RideStatus.ASSIGNED,
   arriving: RideStatus.ARRIVING,
   arrived: RideStatus.ARRIVED,
@@ -932,10 +934,15 @@ export class RideService {
     const limit = Math.min(Math.max(query.limit ?? 25, 1), 300);
     const page = query.page;
 
+    const dbStatus = query.status
+      ? apiToDbRideStatus[query.status.toLowerCase() as keyof typeof apiToDbRideStatus] ??
+        (RideStatus[query.status.toUpperCase() as keyof typeof RideStatus] || undefined)
+      : undefined;
+
     const where = {
       ...(query.riderId ? { riderId: query.riderId } : {}),
       ...(query.passengerId ? { passengerId: query.passengerId } : {}),
-      ...(query.status ? { status: apiToDbRideStatus[query.status as keyof typeof apiToDbRideStatus] ?? (query.status as RideStatus) } : {})
+      ...(dbStatus ? { status: dbStatus } : {})
     };
 
     const data = await prisma.ride.findMany({

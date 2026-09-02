@@ -45,6 +45,7 @@ const deliveryTransitions: Record<string, string[]> = {
 };
 
 const apiToDbDeliveryStatus = {
+  searching: DeliveryStatus.SEARCHING,
   assigned: DeliveryStatus.ASSIGNED,
   picked_up: DeliveryStatus.PICKED_UP,
   in_transit: DeliveryStatus.IN_TRANSIT,
@@ -599,10 +600,15 @@ export class DeliveryService {
     const limit = Math.min(Math.max(query.limit ?? 50, 1), 300);
     const page = query.page;
 
+    const dbStatus = query.status
+      ? apiToDbDeliveryStatus[query.status.toLowerCase() as keyof typeof apiToDbDeliveryStatus] ??
+        (DeliveryStatus[query.status.toUpperCase() as keyof typeof DeliveryStatus] || undefined)
+      : undefined;
+
     const where = {
       ...(query.riderId ? { riderId: query.riderId } : {}),
       ...(query.passengerId ? { passengerId: query.passengerId } : {}),
-      ...(query.status ? { status: apiToDbDeliveryStatus[query.status as keyof typeof apiToDbDeliveryStatus] ?? (query.status as DeliveryStatus) } : {})
+      ...(dbStatus ? { status: dbStatus } : {})
     };
 
     const data = await prisma.deliveryRequest.findMany({
