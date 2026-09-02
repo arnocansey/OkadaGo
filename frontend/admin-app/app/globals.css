@@ -740,41 +740,43 @@ main {
   background: #ef4444;
 }
 
+.leaflet-marker.driver,
+.leaflet-marker.driver-online,
+.leaflet-marker.driver-trip,
+.leaflet-marker.driver-idle {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 2px solid #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+}
+
 .leaflet-marker.driver {
-  width: 14px;
-  height: 14px;
   background: #3b82f6;
-  border: 2px solid #fff;
   box-shadow:
     0 0 0 4px color-mix(in srgb, #3b82f6 28%, transparent),
     0 6px 14px rgba(0, 0, 0, 0.35);
 }
 
 .leaflet-marker.driver-online {
-  width: 14px;
-  height: 14px;
-  background: #22c55e;
-  border: 2px solid #fff;
+  background: #16a34a;
   box-shadow:
-    0 0 0 4px color-mix(in srgb, #22c55e 28%, transparent),
+    0 0 0 4px color-mix(in srgb, #16a34a 28%, transparent),
     0 6px 14px rgba(0, 0, 0, 0.35);
 }
 
 .leaflet-marker.driver-trip {
-  width: 14px;
-  height: 14px;
   background: var(--accent-yellow, #f5c518);
-  border: 2px solid #fff;
   box-shadow:
     0 0 0 4px color-mix(in srgb, var(--accent-yellow, #f5c518) 28%, transparent),
     0 6px 14px rgba(0, 0, 0, 0.35);
 }
 
 .leaflet-marker.driver-idle {
-  width: 14px;
-  height: 14px;
   background: #6b7280;
-  border: 2px solid #fff;
   box-shadow:
     0 0 0 4px color-mix(in srgb, #6b7280 28%, transparent),
     0 6px 14px rgba(0, 0, 0, 0.35);

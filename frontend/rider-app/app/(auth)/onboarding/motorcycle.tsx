@@ -14,7 +14,8 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { Bike, ArrowRight, ArrowLeft, CheckCircle2, ChevronDown } from "lucide-react-native";
+import { ArrowRight, ArrowLeft, CheckCircle2, ChevronDown } from "lucide-react-native";
+import { MotorcycleIcon } from "@/components/icons/MotorcycleIcon";
 import { api, phoneParts, type AuthResponse } from "@/lib/api";
 import { registerPushToken } from "@/lib/push";
 import { useApp } from "@/context/AppContext";
@@ -364,7 +365,7 @@ export default function OnboardingMotorcycleScreen() {
                 },
               ]}
             >
-              <Bike size={32} color={brand.primary} />
+              <MotorcycleIcon size={36} color={brand.primary} strokeWidth={2.2} />
             </Animated.View>
 
             <Animated.Text

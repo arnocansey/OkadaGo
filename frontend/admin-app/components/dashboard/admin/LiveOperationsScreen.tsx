@@ -7,8 +7,8 @@ import { AdminPageSkeleton } from "./AdminSkeleton";
 import { formatMoney } from "@/lib/currency";
 import { parseNumber, formatDateTime, statusTone, ACCRA_MAP_CENTER, ACCRA_MAP_ZOOM_CITY, ACCRA_MAP_ZOOM_METRO } from "./utils";
 import type { RideRecord, DeliveryRecord, RiderRecord, AdminIncidentRecord } from "./types";
+import { MotorcycleIcon } from "@/components/icons/MotorcycleIcon";
 import {
-  Bike,
   Package,
   Users,
   MapPin,
@@ -329,7 +329,7 @@ export function LiveOperationsScreen({
               )}
               {selectedRiderDetail.vehicleType && (
                 <div className="liveops-detail-field">
-                  <Bike size={14} />
+                  <MotorcycleIcon size={14} />
                   <span>{selectedRiderDetail.vehicleType}</span>
                 </div>
               )}
@@ -356,7 +356,7 @@ export function LiveOperationsScreen({
           <div className="liveops-detail-panel">
             <div className="liveops-detail-header">
               <div className={`liveops-detail-icon ${selectedTripDetail.kind === "delivery" ? "delivery" : "ride"}`}>
-                {selectedTripDetail.kind === "delivery" ? <Package size={18} /> : <Bike size={18} />}
+                {selectedTripDetail.kind === "delivery" ? <Package size={18} /> : <MotorcycleIcon size={18} />}
               </div>
               <div className="liveops-detail-header-text">
                 <h3>{selectedTripDetail.kind === "delivery" ? "Delivery" : "Trip"}</h3>
@@ -393,7 +393,7 @@ export function LiveOperationsScreen({
               </div>
               {selectedTripDetail.riderName && (
                 <div className="liveops-detail-field">
-                  <Bike size={14} />
+                  <MotorcycleIcon size={14} />
                   <span>{selectedTripDetail.riderName}</span>
                 </div>
               )}
@@ -411,7 +411,7 @@ export function LiveOperationsScreen({
         {/* Active Trips */}
         <section className="liveops-section">
           <div className="liveops-section-header">
-            <Bike size={14} />
+            <MotorcycleIcon size={14} />
             <h4>Active Trips</h4>
             <span className="liveops-count">{activeRides.length}</span>
           </div>

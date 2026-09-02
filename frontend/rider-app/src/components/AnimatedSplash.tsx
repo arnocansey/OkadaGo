@@ -171,32 +171,76 @@ export function AnimatedSplash({ onFinish }: Props) {
           </Animated.View>
 
           <Svg width={BIKE_WIDTH} height={BIKE_HEIGHT} viewBox="0 0 160 90">
-            <Circle cx="34" cy="66" r="16" stroke={wheelColor} strokeWidth={4} fill="none" />
-            <Circle cx="34" cy="66" r="3.5" fill={wheelColor} />
-            <Circle cx="122" cy="66" r="16" stroke={wheelColor} strokeWidth={4} fill="none" />
-            <Circle cx="122" cy="66" r="3.5" fill={wheelColor} />
+            {/* Rear Heavy Tire */}
+            <Circle cx="32" cy="64" r="16" stroke={wheelColor} strokeWidth={5} fill="none" />
+            <Circle cx="32" cy="64" r="4" fill={wheelColor} />
+            <Path d="M32 52 L32 76 M20 64 L44 64" stroke={wheelColor} strokeWidth={1.5} />
+
+            {/* Front Heavy Tire */}
+            <Circle cx="126" cy="64" r="16" stroke={wheelColor} strokeWidth={5} fill="none" />
+            <Circle cx="126" cy="64" r="4" fill={wheelColor} />
+            <Path d="M126 52 L126 76 M114 64 L138 64" stroke={wheelColor} strokeWidth={1.5} />
+
+            {/* Engine Block & Lower Chassis */}
             <Path
-              d="M34 66 L70 66 L86 46 L106 46 L122 66"
-              stroke={bodyColor}
-              strokeWidth={5}
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              d="M58 58 L82 58 L86 68 L56 68 Z"
+              fill={wheelColor}
             />
-            <Path d="M52 50 L78 50 L72 58 L56 58 Z" fill={bodyColor} />
-            <Path d="M106 46 L118 35" stroke={bodyColor} strokeWidth={4} strokeLinecap="round" />
-            <Circle cx="120" cy="34" r="3" fill={bodyColor} />
+            {/* Engine Cooling Fins */}
+            <Path d="M62 61 L78 61 M60 65 L80 65" stroke={bodyColor} strokeWidth={1.5} />
+
+            {/* Sweeping Exhaust Pipe */}
             <Path
-              d="M60 52 C64 38 80 36 88 40 L100 47"
+              d="M80 65 L52 70 L30 67"
+              stroke={wheelColor}
+              strokeWidth={3.5}
+              strokeLinecap="round"
+              fill="none"
+            />
+
+            {/* Teardrop Fuel Tank */}
+            <Path
+              d="M68 44 C74 36 94 36 102 44 L98 52 L66 52 Z"
+              fill={bodyColor}
+              stroke={wheelColor}
+              strokeWidth={1.5}
+            />
+
+            {/* Padded Seat */}
+            <Path
+              d="M44 48 C48 42 66 42 74 46 L70 52 L42 52 Z"
+              fill={wheelColor}
+            />
+
+            {/* Front Hydraulic Fork & Headlight */}
+            <Path
+              d="M102 42 L126 64"
+              stroke={wheelColor}
+              strokeWidth={4.5}
+              strokeLinecap="round"
+            />
+            {/* Handlebars */}
+            <Path d="M98 34 L106 32 L112 36" stroke={wheelColor} strokeWidth={3} strokeLinecap="round" />
+            {/* Headlight */}
+            <Path d="M112 40 L118 42 L116 48 L110 46 Z" fill={bodyColor} />
+            <Circle cx="118" cy="43" r="2.5" fill="#fef08a" />
+
+            {/* Rider with Helmet */}
+            {/* Torso & Arms */}
+            <Path
+              d="M56 46 C60 34 76 32 84 36 L104 35"
               stroke={riderColor}
               strokeWidth={6}
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            <Circle cx="94" cy="28" r="8" fill={riderColor} />
-            <Path d="M66 54 L62 66" stroke={riderColor} strokeWidth={6} strokeLinecap="round" />
-            <Path d="M88 40 L108 44" stroke={riderColor} strokeWidth={5} strokeLinecap="round" />
+            {/* Helmet */}
+            <Circle cx="88" cy="24" r="8.5" fill={riderColor} />
+            {/* Helmet Visor */}
+            <Path d="M92 23 L96 25 L94 28 L90 27 Z" fill="#38bdf8" />
+            {/* Legs */}
+            <Path d="M60 48 L68 56 L64 66" stroke={riderColor} strokeWidth={5.5} strokeLinecap="round" strokeLinejoin="round" fill="none" />
           </Svg>
         </Animated.View>
       </View>

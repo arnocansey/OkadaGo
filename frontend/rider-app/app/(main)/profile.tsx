@@ -25,11 +25,11 @@ import {
   Clock,
   Copy,
   Hash,
-  Bike,
   CreditCard,
   Award,
   TrendingUp,
 } from "lucide-react-native";
+import { MotorcycleIcon } from "@/components/icons/MotorcycleIcon";
 import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
 import { useTranslation } from "react-i18next";
@@ -723,7 +723,7 @@ export default function ProfileScreen() {
           <View style={s.sectionCard}>
             <View style={s.sectionHeader}>
               <View style={s.sectionIcon}>
-                <Bike size={16} color={brand.primary} />
+                <MotorcycleIcon size={18} color={brand.primary} strokeWidth={2.2} />
               </View>
               <Text style={s.sectionTitle}>Motorcycle</Text>
             </View>

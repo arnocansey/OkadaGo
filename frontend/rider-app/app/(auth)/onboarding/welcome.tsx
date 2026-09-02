@@ -10,13 +10,13 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import {
-  Bike,
   Shield,
   Wallet,
   ChevronRight,
   Star,
   MapPin,
 } from "lucide-react-native";
+import { MotorcycleIcon } from "@/components/icons/MotorcycleIcon";
 import { useTheme } from "@/context/ThemeContext";
 import { brand } from "@/theme/design-system";
 
@@ -33,7 +33,7 @@ type OnboardingStep = {
 const steps: OnboardingStep[] = [
   {
     id: "welcome",
-    icon: <Bike size={48} color="#000000" />,
+    icon: <MotorcycleIcon size={48} color="#000000" strokeWidth={2.2} />,
     title: "Welcome to OkadaGo",
     subtitle: "The premium motorcycle ride-hailing platform built for Ghanaian riders.",
     color: brand.primary,

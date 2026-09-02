@@ -60,6 +60,8 @@ export interface LeafletMapProps {
   basemap?: LeafletBasemap;
 }
 
+const MOTORCYCLE_PIN_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="16" r="3.5"/><circle cx="19" cy="16" r="3.5"/><path d="M19 16L15.5 8.5H13M16.5 7H14.5"/><path d="M15.5 8.5C14.5 7.5 12 7.5 10.5 8.5L8 9.5"/><path d="M6 10.5C7.5 9.5 9.5 9.5 10.5 10.5"/><path d="M5 16L9 11L12.5 11L11.5 16H8.5"/><path d="M10 15H3.5"/></svg>`;
+
 const ICONS: Record<string, L.DivIcon> = {
   pickup: L.divIcon({
     className: "leaflet-custom-icon",
@@ -75,27 +77,27 @@ const ICONS: Record<string, L.DivIcon> = {
   }),
   driver: L.divIcon({
     className: "leaflet-custom-icon",
-    html: '<div class="leaflet-marker driver"></div>',
-    iconSize: [18, 18],
-    iconAnchor: [9, 9]
+    html: `<div class="leaflet-marker driver">${MOTORCYCLE_PIN_SVG}</div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
   }),
   driverOnline: L.divIcon({
     className: "leaflet-custom-icon",
-    html: '<div class="leaflet-marker driver-online"></div>',
-    iconSize: [18, 18],
-    iconAnchor: [9, 9]
+    html: `<div class="leaflet-marker driver-online">${MOTORCYCLE_PIN_SVG}</div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
   }),
   driverTrip: L.divIcon({
     className: "leaflet-custom-icon",
-    html: '<div class="leaflet-marker driver-trip"></div>',
-    iconSize: [18, 18],
-    iconAnchor: [9, 9]
+    html: `<div class="leaflet-marker driver-trip">${MOTORCYCLE_PIN_SVG}</div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
   }),
   driverIdle: L.divIcon({
     className: "leaflet-custom-icon",
-    html: '<div class="leaflet-marker driver-idle"></div>',
-    iconSize: [18, 18],
-    iconAnchor: [9, 9]
+    html: `<div class="leaflet-marker driver-idle">${MOTORCYCLE_PIN_SVG}</div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
   }),
   passenger: L.divIcon({
     className: "leaflet-custom-icon",
