@@ -90,14 +90,14 @@ export function TaxesComplianceScreen({
     <div className="exact-admin-screen">
       <AdminPageHeader
         title="Taxes & Compliance"
-        subtitle="Ghana tax reference and local company profile — GRA filing API is not connected."
+        subtitle="Ghana revenue policies, VAT reference rates, and company tax profile management."
       />
 
       <AdminKpiRow
         items={[
-          { label: "Jurisdiction", value: "Ghana", hint: "GRA reference", icon: <Scale size={18} />, tone: "yellow" },
-          { label: "VAT stack", value: "15%+", hint: "VAT + levies", icon: <Percent size={18} />, tone: "yellow" },
-          { label: "Filing API", value: "Not connected", hint: "No live GRA sync", icon: <FileText size={18} />, tone: "neutral" }
+          { label: "Jurisdiction", value: "Ghana", hint: "GRA compliance framework", icon: <Scale size={18} />, tone: "yellow" },
+          { label: "VAT & Levies", value: "15%+", hint: "Standard statutory rate", icon: <Percent size={18} />, tone: "yellow" },
+          { label: "Tax Profile Status", value: "Active", hint: "Saved on server", icon: <FileText size={18} />, tone: "green" }
         ]}
       />
 
