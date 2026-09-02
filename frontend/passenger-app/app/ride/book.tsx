@@ -104,30 +104,23 @@ export default function BookRideScreen() {
   useEffect(() => {
     if (!destination.trim() || !destResolved || !session?.token) return;
 
-    api<RoutePreview>("/pricing/estimate", {
-      method: "POST",
+    const params = new URLSearchParams({
+      startLat: `${pickupCoords.latitude}`,
+      startLon: `${pickupCoords.longitude}`,
+      endLat: `${destCoords.latitude}`,
+      endLon: `${destCoords.longitude}`,
+    });
+
+    api<RoutePreview>(`/bootstrap/route-preview?${params.toString()}`, {
       token: session.token,
-      body: {
-        pickup: {
-          latitude: pickupCoords.latitude,
-          longitude: pickupCoords.longitude,
-          address: pickupDisplay,
-        },
-        destination: {
-          latitude: destCoords.latitude,
-          longitude: destCoords.longitude,
-          address: destination,
-        },
-        pricing: {
-          countryCode: zones[0]?.countryCode ?? "GH",
-          city: zones[0]?.city ?? "Accra",
-          rideType: isDelivery ? "cargo_tricycle" : "standard_bike",
-        },
-      },
     })
-      .then(setEstimate)
+      .then((data) => {
+        if (data && data.distanceKm) {
+          setEstimate(data);
+        }
+      })
       .catch(() => {
-        // Fallback Haversine estimate if Google Route API is rate-limited
+        // Fallback Haversine estimate if network completely offline
         const lat1 = pickupCoords.latitude;
         const lon1 = pickupCoords.longitude;
         const lat2 = destCoords.latitude;
@@ -152,7 +145,7 @@ export default function BookRideScreen() {
           ],
         } as RoutePreview);
       });
-  }, [destination, destResolved, pickupCoords, destCoords, pickupDisplay, isDelivery, session?.token, zones]);
+  }, [destination, destResolved, pickupCoords.latitude, pickupCoords.longitude, destCoords.latitude, destCoords.longitude, session?.token]);
 
   /* ─── Calculate Vehicle Tiers ─────────────────────────────── */
   const currency = zones[0]?.currency ?? session?.user?.preferredCurrency ?? "GH₵";
