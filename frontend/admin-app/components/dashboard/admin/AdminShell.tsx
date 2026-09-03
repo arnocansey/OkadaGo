@@ -51,6 +51,8 @@ import { BrandMark } from "@/components/brand/BrandMark";
 import type { AdminConsoleScreen, AdminNavItem, AdminScreenMeta, AdminHighlight } from "./types";
 import { hasScreenAccess } from "@/lib/permissions";
 import type { SessionUser } from "@/lib/auth";
+import { AdminBottomNav } from "./AdminBottomNav";
+import { AdminMobileDrawer } from "./AdminMobileDrawer";
 
 export type AdminShellBadgeData = {
   activeTripsCount: number;
@@ -170,6 +172,7 @@ export function AdminShell({
   const [expandedNavSections, setExpandedNavSections] = useState<Record<string, boolean>>({});
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [desktopOpen, setDesktopOpen] = useState(true);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [topSearch, setTopSearch] = useState("");
   const [theme, setTheme] = useState<"light" | "dark">(() => {
     if (typeof window === "undefined") return "dark";
@@ -186,10 +189,10 @@ export function AdminShell({
   }, [theme]);
 
   const toggleSidebar = useCallback(() => {
-    if (typeof window !== "undefined" && window.innerWidth > 1024) {
-      setDesktopOpen((prev) => !prev);
+    if (typeof window !== "undefined" && window.innerWidth <= 1024) {
+      setMobileDrawerOpen((prev) => !prev);
     } else {
-      setSidebarOpen((prev) => !prev);
+      setDesktopOpen((prev) => !prev);
     }
   }, []);
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
@@ -499,6 +502,19 @@ export function AdminShell({
         />
       )}
 
+      {/* ─── Mobile Slide-up Drawer Menu ─────────────────────── */}
+      <AdminMobileDrawer
+        isOpen={mobileDrawerOpen}
+        onClose={() => setMobileDrawerOpen(false)}
+        currentScreen={screen}
+        currentUser={currentUser}
+        userName={userName}
+        onSignOut={onSignOut}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        badgeData={badgeData}
+      />
+
       <div className={`exact-admin-shell ${desktopOpen ? "" : "desktop-collapsed"}`}>
         <aside className={`exact-admin-sidebar ${sidebarOpen ? "open" : ""}`}>
           <div className="exact-admin-brand">
@@ -645,6 +661,20 @@ export function AdminShell({
           </header>
 
           <main className="exact-admin-scroll">{children}</main>
+
+          {/* ─── Mobile Bottom Navigation Bar ────────────────── */}
+          <AdminBottomNav
+            currentScreen={screen}
+            currentUser={currentUser}
+            badgeData={{
+              activeTripsCount: badgeData.activeTripsCount,
+              pendingPayoutRequestsCount: badgeData.pendingPayoutRequestsCount,
+              openSupportTicketsCount: badgeData.openSupportTicketsCount,
+              openSosCount: badgeData.openSosCount
+            }}
+            onOpenMoreMenu={() => setMobileDrawerOpen(true)}
+            isMoreMenuOpen={mobileDrawerOpen}
+          />
         </div>
       </div>
     </ImmersivePage>
