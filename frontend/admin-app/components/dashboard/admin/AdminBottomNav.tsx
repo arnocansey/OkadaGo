@@ -156,6 +156,7 @@ export function AdminBottomNav({
                   <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
                 </div>
                 <span className="exact-admin-bottom-tab-label">{tab.label}</span>
+                {isActive && <span className="exact-admin-bottom-tab-dot" />}
               </button>
             );
           }
@@ -178,6 +179,7 @@ export function AdminBottomNav({
                 )}
               </div>
               <span className="exact-admin-bottom-tab-label">{tab.label}</span>
+              {isActive && <span className="exact-admin-bottom-tab-dot" />}
             </a>
           );
         })}

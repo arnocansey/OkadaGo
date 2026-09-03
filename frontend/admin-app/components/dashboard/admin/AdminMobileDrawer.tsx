@@ -31,11 +31,13 @@ import {
   ShieldCheck,
   ClipboardList,
   Settings,
-  Star
+  Star,
+  Zap,
+  Sparkles
 } from "lucide-react";
 import { MotorcycleIcon } from "@/components/icons/MotorcycleIcon";
 import { BrandMark } from "@/components/brand/BrandMark";
-import type { AdminConsoleScreen, AdminNavItem } from "./types";
+import type { AdminConsoleScreen } from "./types";
 import { hasScreenAccess } from "@/lib/permissions";
 import type { SessionUser } from "@/lib/auth";
 
@@ -93,6 +95,7 @@ type MobileDrawerItem = {
   screen: AdminConsoleScreen;
   group: string;
   badge?: string;
+  badgeTone?: "default" | "danger" | "warning";
 };
 
 export function AdminMobileDrawer({
@@ -107,6 +110,7 @@ export function AdminMobileDrawer({
   badgeData
 }: AdminMobileDrawerProps) {
   const [search, setSearch] = useState("");
+  const [selectedGroup, setSelectedGroup] = useState<string>("all");
 
   const initials = userName
     .split(" ")
@@ -126,7 +130,7 @@ export function AdminMobileDrawer({
       { label: "Rides", href: "/requests", icon: Bike, screen: "rides", group: "operations", badge: `${badgeData.completedTripsCount}` },
       { label: "Deliveries", href: "/deliveries", icon: Package, screen: "deliveries", group: "operations", badge: `${badgeData.deliveriesCount}` },
       { label: "Riders Fleet", href: "/riders", icon: User, screen: "riders", group: "operations", badge: `${badgeData.activeRidersCount}` },
-      { label: "Verify Riders", href: "/riders/verification", icon: ShieldCheck, screen: "riderVerification", group: "operations", badge: `${badgeData.riderVerificationPending}` },
+      { label: "Verify Riders", href: "/riders/verification", icon: ShieldCheck, screen: "riderVerification", group: "operations", badge: `${badgeData.riderVerificationPending}`, badgeTone: "warning" },
       { label: "Rider Documents", href: "/riders/documents", icon: ClipboardList, screen: "riderDocuments", group: "operations", badge: `${badgeData.riderDocumentMissing}` },
       { label: "Rider Performance", href: "/riders/performance", icon: Star, screen: "riderPerformance", group: "operations" },
       { label: "Rider Earnings", href: "/riders/earnings", icon: Banknote, screen: "riderEarnings", group: "operations" },
@@ -138,10 +142,10 @@ export function AdminMobileDrawer({
       // ── Finance ──
       { label: "Revenue Overview", href: "/finance", icon: Banknote, screen: "revenue", group: "finance" },
       { label: "Transactions", href: "/transactions", icon: ArrowUpDown, screen: "transactions", group: "finance" },
-      { label: "Payout Requests", href: "/payouts", icon: Receipt, screen: "payouts", group: "finance", badge: `${badgeData.riderPayoutRequestedCount}` },
+      { label: "Payout Requests", href: "/payouts", icon: Receipt, screen: "payouts", group: "finance", badge: `${badgeData.riderPayoutRequestedCount}`, badgeTone: "warning" },
       { label: "Refunds", href: "/refunds", icon: RotateCcw, screen: "refunds", group: "finance" },
       { label: "Base Pricing", href: "/pricing", icon: Banknote, screen: "pricing", group: "finance" },
-      { label: "Dynamic Surge Pricing", href: "/dynamic-pricing", icon: Activity, screen: "dynamicPricing", group: "finance" },
+      { label: "Dynamic Surge Pricing", href: "/dynamic-pricing", icon: Zap, screen: "dynamicPricing", group: "finance" },
       { label: "Taxes & Compliance", href: "/taxes-compliance", icon: ShieldCheck, screen: "taxesCompliance", group: "finance" },
       { label: "Platform Wallet", href: "/wallet", icon: Wallet, screen: "wallet", group: "finance" },
 
@@ -156,7 +160,7 @@ export function AdminMobileDrawer({
       { label: "Message Templates", href: "/message-templates", icon: Mail, screen: "messageTemplates", group: "customer" },
 
       // ── Safety ──
-      { label: "SOS Incidents", href: "/incidents", icon: AlertTriangle, screen: "sosIncidents", group: "safety", badge: `${badgeData.openSosCount}` },
+      { label: "SOS Incidents", href: "/incidents", icon: AlertTriangle, screen: "sosIncidents", group: "safety", badge: `${badgeData.openSosCount}`, badgeTone: "danger" },
       { label: "Safety Center", href: "/safety-center", icon: Shield, screen: "safetyCenter", group: "safety" },
 
       // ── Analytics ──
@@ -179,14 +183,26 @@ export function AdminMobileDrawer({
     return allNavItems.filter((item) => hasScreenAccess(currentUser, item.screen));
   }, [allNavItems, currentUser]);
 
-  // Filter based on search query
+  // Filter based on category pill & search query
   const filteredItems = useMemo(() => {
-    if (!search.trim()) return permittedItems;
-    const q = search.toLowerCase();
-    return permittedItems.filter(
-      (item) => item.label.toLowerCase().includes(q) || item.group.toLowerCase().includes(q)
-    );
-  }, [permittedItems, search]);
+    let list = permittedItems;
+    if (selectedGroup !== "all") {
+      list = list.filter((item) => item.group === selectedGroup);
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (item) => item.label.toLowerCase().includes(q) || item.group.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [permittedItems, selectedGroup, search]);
+
+  // Permitted group tabs
+  const availableGroups = useMemo(() => {
+    const presentGroupKeys = new Set(permittedItems.map((item) => item.group));
+    return navGroups.filter((g) => presentGroupKeys.has(g.key));
+  }, [permittedItems]);
 
   if (!isOpen) return null;
 
@@ -243,10 +259,31 @@ export function AdminMobileDrawer({
             autoFocus={false}
           />
           {search ? (
-            <button type="button" onClick={() => setSearch("")} className="search-clear-btn">
+            <button type="button" onClick={() => setSearch("")} className="search-clear-btn" aria-label="Clear Search">
               <X size={14} />
             </button>
           ) : null}
+        </div>
+
+        {/* Category Horizontal Filter Chips */}
+        <div className="exact-admin-mobile-category-chips">
+          <button
+            type="button"
+            className={`exact-admin-mobile-chip ${selectedGroup === "all" ? "active" : ""}`}
+            onClick={() => setSelectedGroup("all")}
+          >
+            All
+          </button>
+          {availableGroups.map((g) => (
+            <button
+              key={g.key}
+              type="button"
+              className={`exact-admin-mobile-chip ${selectedGroup === g.key ? "active" : ""}`}
+              onClick={() => setSelectedGroup(g.key)}
+            >
+              {g.label}
+            </button>
+          ))}
         </div>
 
         {/* Navigation Groups List */}
@@ -278,7 +315,11 @@ export function AdminMobileDrawer({
                         </div>
                         <div className="exact-admin-mobile-link-right">
                           {item.badge && item.badge !== "0" && item.badge !== "" ? (
-                            <span className="exact-admin-mobile-badge">{item.badge}</span>
+                            <span
+                              className={`exact-admin-mobile-badge ${item.badgeTone ? `tone-${item.badgeTone}` : ""}`}
+                            >
+                              {item.badge}
+                            </span>
                           ) : null}
                           <ChevronRight size={15} className="chevron" />
                         </div>

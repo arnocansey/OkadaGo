@@ -622,10 +622,14 @@ export function AdminShell({
               type="button"
               className="exact-admin-menu-button"
               onClick={toggleSidebar}
-              aria-label="Toggle sidebar"
+              aria-label="Toggle navigation menu"
             >
               <Menu size={20} />
             </button>
+
+            <div className="exact-admin-mobile-header-meta">
+              <span className="exact-admin-mobile-screen-title">{currentMeta.title}</span>
+            </div>
 
             <label className="admin-top-search">
               <Search size={16} />
@@ -649,14 +653,26 @@ export function AdminShell({
               </button>
               <a href="/notifications" className="exact-admin-notification-btn" title="Alerts" aria-label="Alerts">
                 <Bell size={16} />
+                {(badgeData.openSosCount > 0 || badgeData.openSupportTicketsCount > 0) && (
+                  <span className="exact-admin-top-notification-dot" />
+                )}
               </a>
-              <div className="exact-admin-top-profile">
+              <button
+                type="button"
+                className="exact-admin-top-profile"
+                onClick={() => {
+                  if (typeof window !== "undefined" && window.innerWidth <= 1024) {
+                    setMobileDrawerOpen(true);
+                  }
+                }}
+                title={userName}
+              >
                 <div className="exact-avatar">{initials || "OG"}</div>
                 <div className="exact-admin-topmeta">
                   <strong className="exact-admin-top-user">{userName}</strong>
                   <span>{currentMeta.title}</span>
                 </div>
-              </div>
+              </button>
             </div>
           </header>
 
