@@ -10,9 +10,10 @@ import { AdminErrorBoundary } from "./admin/ErrorBoundary";
 import { useAdminData } from "./admin/useAdminData";
 import { RiderProfileModal } from "./admin/RiderProfileModal";
 import { AdminPageSkeleton } from "./admin/AdminSkeleton";
-
 import { parseNumber } from "./admin/utils";
 import type { AdminConsoleScreen, RiderRecord } from "./admin/types";
+import { hasScreenAccess } from "@/lib/permissions";
+import { AccessDeniedScreen } from "./admin/AccessDeniedScreen";
 
 function screenFallback() {
   return <AdminPageSkeleton variant="table" kpis={4} rows={6} cols={5} />;
@@ -283,6 +284,15 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
   }).format(new Date());
 
   const renderScreen = () => {
+    if (!hasScreenAccess(session?.user, screen)) {
+      return (
+        <AccessDeniedScreen
+          user={session?.user}
+          screenTitle={screen}
+        />
+      );
+    }
+
     switch (screen) {
       case "dashboard":
         return (
@@ -1058,6 +1068,7 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
       screenHighlights={data.screenHighlights}
       dashboardToday={dashboardToday}
       userName={session?.user?.fullName ?? "Admin"}
+      currentUser={session?.user}
       adminRoleEntries={data.adminRoleEntries}
     >
       <AdminErrorBoundary>

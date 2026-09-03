@@ -27,6 +27,7 @@ export type SessionUser = {
   isEmailVerified?: boolean;
   createdAt?: string | null;
   adminTitle?: string | null;
+  adminPermissions?: string[] | string | Record<string, unknown> | null;
   passengerProfileId: string | null;
   riderProfileId: string | null;
   riderApprovalStatus: string | null;

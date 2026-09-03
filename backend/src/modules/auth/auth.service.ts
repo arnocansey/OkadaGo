@@ -1466,6 +1466,7 @@ export class AuthService {
       isEmailVerified: (user as { isEmailVerified?: boolean }).isEmailVerified ?? false,
       createdAt: (user as { createdAt?: Date }).createdAt?.toISOString?.() ?? null,
       adminTitle: user.adminProfile?.title ?? null,
+      adminPermissions: user.adminProfile?.permissions ?? null,
       passengerProfileId: user.passengerProfile?.id ?? null,
       riderProfileId: user.riderProfile?.id ?? null,
       riderApprovalStatus: user.riderProfile?.approvalStatus.toLowerCase() ?? null,

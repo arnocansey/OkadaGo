@@ -49,6 +49,8 @@ import {
 import { ImmersivePage } from "@/components/layout/immersive-page";
 import { BrandMark } from "@/components/brand/BrandMark";
 import type { AdminConsoleScreen, AdminNavItem, AdminScreenMeta, AdminHighlight } from "./types";
+import { hasScreenAccess } from "@/lib/permissions";
+import type { SessionUser } from "@/lib/auth";
 
 export type AdminShellBadgeData = {
   activeTripsCount: number;
@@ -83,6 +85,7 @@ export type AdminShellProps = {
   screenHighlights: Record<AdminConsoleScreen, AdminHighlight[]>;
   dashboardToday: string;
   userName: string;
+  currentUser?: SessionUser | null;
   adminRoleEntries?: [string, string[]][];
   children: React.ReactNode;
 };
@@ -97,56 +100,6 @@ const navGroups = [
   { label: "Analytics", key: "analytics" as const },
   { label: "Administration", key: "administration" as const }
 ];
-
-const screenPermissions: Partial<Record<AdminConsoleScreen, string>> = {
-  dashboard: "dashboard.view",
-  liveOperations: "dashboard.view",
-  rides: "rides.view",
-  deliveries: "deliveries.view",
-  riders: "riders.view",
-  riderVerification: "riders.verify",
-  riderDocuments: "riders.documents",
-  riderPerformance: "riders.performance",
-  riderEarnings: "riders.earnings",
-  riderWallet: "riders.wallet",
-  riderPayouts: "riders.payouts",
-  riderComplaints: "riders.complaints",
-  riderActivity: "riders.activity",
-  riderSuspensions: "riders.suspensions",
-  passengers: "passengers.view",
-  payments: "finance.view",
-  revenue: "finance.view",
-  transactions: "finance.view",
-  payouts: "finance.view",
-  refunds: "finance.view",
-  pricing: "zones.view",
-  dynamicPricing: "zones.view",
-  promotions: "promotions.view",
-  promoManagement: "promotions.view",
-  referrals: "promotions.view",
-  goPoints: "promotions.view",
-  wallet: "finance.view",
-  zones: "zones.view",
-  supportTickets: "support.view",
-  messageTemplates: "support.view",
-  sosIncidents: "support.view",
-  safetyCenter: "support.view",
-  escalationRules: "support.view",
-  analytics: "reports.view",
-  notifications: "notifications.view",
-  reports: "reports.view",
-  auditLogs: "audit.view",
-  settings: "settings.view",
-  companyProfile: "settings.view",
-  accountSecurity: "settings.view",
-  notificationSettings: "settings.view",
-  paymentMethods: "settings.view",
-  integrations: "settings.view",
-  taxesCompliance: "settings.view",
-  settingsNotifications: "settings.view",
-  admins: "admins.view",
-  rolesPermissions: "admins.view"
-};
 
 const screenMeta: Record<AdminConsoleScreen, AdminScreenMeta> = {
   dashboard: { eyebrow: "Overview", title: "Dashboard", description: "Platform overview and KPIs", searchLabel: "", quickActionLabel: "", quickActionHref: "/requests", quickActionNote: "" },
@@ -207,11 +160,13 @@ export function AdminShell({
   screenHighlights,
   dashboardToday,
   userName,
+  currentUser,
   adminRoleEntries = [],
   children
 }: AdminShellProps) {
   void screenHighlights;
   void dashboardToday;
+  void adminRoleEntries;
   const [expandedNavSections, setExpandedNavSections] = useState<Record<string, boolean>>({});
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [desktopOpen, setDesktopOpen] = useState(true);
@@ -241,19 +196,6 @@ export function AdminShell({
   const toggleTheme = useCallback(() => {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
   }, []);
-
-  const permittedScreens = useMemo(() => {
-    if (adminRoleEntries.length === 0) return null;
-    const allPerms = new Set(adminRoleEntries.flatMap(([, perms]) => perms));
-    if (allPerms.has("admin.full_access") || allPerms.has("*")) return null;
-    const allowed = new Set<AdminConsoleScreen>();
-    for (const [screenKey, perm] of Object.entries(screenPermissions)) {
-      if (allPerms.has(perm) || allPerms.has(perm.split(".")[0] + ".*")) {
-        allowed.add(screenKey as AdminConsoleScreen);
-      }
-    }
-    return allowed;
-  }, [adminRoleEntries]);
 
   const initials = userName
     .split(" ")
@@ -519,22 +461,24 @@ export function AdminShell({
       }
     ];
 
-    if (!permittedScreens) return allItems;
-
-    const filtered = allItems
+    return allItems
       .map((item) => {
-        const screenAllowed = permittedScreens.has(item.screen);
+        const screenAllowed = hasScreenAccess(currentUser, item.screen);
         const filteredChildren = item.children?.filter((child) =>
-          permittedScreens.has(child.screen)
+          hasScreenAccess(currentUser, child.screen)
         );
-        if (!screenAllowed && (!filteredChildren || filteredChildren.length === 0)) return null;
-        if (filteredChildren && filteredChildren.length === 0) return null;
-        return { ...item, children: filteredChildren ?? item.children };
+
+        if (!screenAllowed && (!filteredChildren || filteredChildren.length === 0)) {
+          return null;
+        }
+
+        return {
+          ...item,
+          children: filteredChildren && filteredChildren.length > 0 ? filteredChildren : undefined
+        };
       })
       .filter(Boolean) as AdminNavItem[];
-
-    return filtered.length > 0 ? filtered : allItems;
-  }, [badgeData, permittedScreens]);
+  }, [badgeData, currentUser]);
 
   const currentMeta = screenMeta[screen];
 
@@ -644,13 +588,15 @@ export function AdminShell({
 
           <button type="button" className="exact-admin-profile" onClick={onSignOut} title="Sign out">
             <div className="exact-avatar">{initials || "OG"}</div>
-            <div>
-              <strong>{userName.split(" ")[0] || userName}</strong>
-              <span>
-                <LogOut size={12} style={{ display: "inline", marginRight: 4 }} />
-                Sign out
+            <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
+              <strong style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {userName.split(" ")[0] || userName}
+              </strong>
+              <span style={{ display: "block", fontSize: 11, color: "var(--primary, #f59e0b)", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {currentUser?.adminTitle || (currentUser?.role === "admin" ? "Administrator" : currentUser?.role || "Staff")}
               </span>
             </div>
+            <LogOut size={14} style={{ opacity: 0.6, flexShrink: 0, marginLeft: 4 }} />
           </button>
         </aside>
 

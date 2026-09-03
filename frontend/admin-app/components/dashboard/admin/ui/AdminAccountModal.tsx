@@ -3,71 +3,8 @@
 import { useState, useEffect } from "react";
 import { X, ShieldAlert, UserPlus, Check, ChevronDown } from "lucide-react";
 import type { PassengerRecord } from "../types";
-
-export const OKADAGO_PERMISSIONS = [
-  { key: "rides:read", label: "View Rides", group: "Rides & Trips" },
-  { key: "rides:write", label: "Manage Rides", group: "Rides & Trips" },
-  { key: "deliveries:read", label: "View Deliveries", group: "Package Deliveries" },
-  { key: "deliveries:write", label: "Manage Deliveries", group: "Package Deliveries" },
-  { key: "users:read", label: "View Users", group: "Passengers & Riders" },
-  { key: "users:write", label: "Manage Users", group: "Passengers & Riders" },
-  { key: "finance:read", label: "View Financials", group: "Finance & Payouts" },
-  { key: "finance:write", label: "Manage Payouts", group: "Finance & Payouts" },
-  { key: "safety:read", label: "View Incidents", group: "Safety & SOS" },
-  { key: "safety:write", label: "Manage Incidents", group: "Safety & SOS" },
-  { key: "promotions:read", label: "View Promos", group: "Promotions & Rates" },
-  { key: "promotions:write", label: "Manage Promos", group: "Promotions & Rates" },
-  { key: "admin:read", label: "View System", group: "System & Staff" },
-  { key: "admin:write", label: "Manage Staff", group: "System & Staff" }
-];
-
-export const OKADAGO_ROLES = [
-  {
-    id: "super_admin",
-    name: "Super Administrator",
-    description: "Full access to all platform operations, staff, and settings",
-    permissions: OKADAGO_PERMISSIONS.map((p) => p.key)
-  },
-  {
-    id: "ops_manager",
-    name: "Operations Manager",
-    description: "Manages trips, deliveries, riders, and safety incidents",
-    permissions: [
-      "rides:read",
-      "rides:write",
-      "deliveries:read",
-      "deliveries:write",
-      "users:read",
-      "users:write",
-      "safety:read",
-      "safety:write"
-    ]
-  },
-  {
-    id: "dispatch_supervisor",
-    name: "Dispatch Supervisor",
-    description: "Oversees live dispatching for rides and package deliveries",
-    permissions: ["rides:read", "rides:write", "deliveries:read", "deliveries:write"]
-  },
-  {
-    id: "finance_officer",
-    name: "Finance Officer",
-    description: "Manages rider wallets, earnings, and payout approvals",
-    permissions: ["finance:read", "finance:write", "rides:read", "deliveries:read"]
-  },
-  {
-    id: "support_lead",
-    name: "Customer Support Lead",
-    description: "Handles customer issues, tickets, and safety reports",
-    permissions: ["users:read", "safety:read", "safety:write", "rides:read", "deliveries:read"]
-  },
-  {
-    id: "custom",
-    name: "Custom Role",
-    description: "Specify a custom role title and select permissions manually",
-    permissions: []
-  }
-];
+import { OKADAGO_PERMISSIONS, OKADAGO_ROLES } from "@/lib/permissions";
+export { OKADAGO_PERMISSIONS, OKADAGO_ROLES };
 
 export type CreateAdminModalProps = {
   isOpen: boolean;
