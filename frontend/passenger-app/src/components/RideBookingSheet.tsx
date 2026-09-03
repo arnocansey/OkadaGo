@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -422,12 +424,17 @@ export function RideBookingSheet({
 
   return (
     <>
-      <View style={s.sheetContainer}>
+      <KeyboardAvoidingView
+        style={s.sheetContainer}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? insets.top + 10 : 0}
+      >
         <ScrollView
           contentContainerStyle={s.scrollContent}
           showsVerticalScrollIndicator={false}
           bounces={true}
           keyboardShouldPersistTaps="handled"
+          automaticallyAdjustKeyboardInsets={true}
         >
           {/* Handle */}
           <View style={s.handleBar} />
@@ -622,7 +629,7 @@ export function RideBookingSheet({
             )}
           </Pressable>
         </ScrollView>
-      </View>
+      </KeyboardAvoidingView>
 
       {/* ─── Payment & Promo Modal ────────────────────────── */}
       <Modal

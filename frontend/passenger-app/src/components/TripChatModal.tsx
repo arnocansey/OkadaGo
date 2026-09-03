@@ -215,7 +215,7 @@ export function TripChatModal({ visible, tripId, onClose }: Props) {
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.overlay}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.container}
         >
           <SafeAreaView style={{ flex: 1 }}>

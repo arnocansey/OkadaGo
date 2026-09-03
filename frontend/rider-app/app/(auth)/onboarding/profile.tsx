@@ -4,6 +4,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -200,9 +201,15 @@ export default function OnboardingProfileScreen() {
     <SafeAreaView style={s.screen}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <View style={s.content}>
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          automaticallyAdjustKeyboardInsets={true}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={s.content}>
           {/* Back Button */}
           <Pressable
             style={s.backBtn}
@@ -316,6 +323,7 @@ export default function OnboardingProfileScreen() {
             <ArrowRight size={20} color={isValid ? "#000000" : colors.textMuted} />
           </Pressable>
         </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

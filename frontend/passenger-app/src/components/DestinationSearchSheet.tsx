@@ -428,7 +428,7 @@ export function DestinationSearchSheet({
       {/* ─── Full-screen sheet ───────────────────────────────── */}
       <KeyboardAvoidingView
         style={s.sheet}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
       >
         <View style={s.container}>

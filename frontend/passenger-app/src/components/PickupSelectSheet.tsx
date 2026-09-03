@@ -500,8 +500,8 @@ export function PickupSelectSheet({
       {/* ═══════════════════════════════════════════════════════════ */}
       <KeyboardAvoidingView
         style={s.cardArea}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? insets.top + 10 : 0}
       >
         <View style={s.cardHandle} />
 
