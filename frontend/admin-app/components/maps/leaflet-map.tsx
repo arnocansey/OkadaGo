@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import L from "leaflet";
 import {
+  Circle,
   CircleMarker,
   MapContainer,
   Marker,
@@ -13,6 +14,16 @@ import {
   useMap
 } from "react-leaflet";
 import { useIsMobile } from "@/hooks/use-mobile";
+
+export interface DemandHotspot {
+  id: string;
+  center: [number, number];
+  radiusMeters: number;
+  intensity: "high" | "surge" | "moderate";
+  label: string;
+  multiplier?: string;
+  unfulfilledRequests?: number;
+}
 
 const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim();
 const useGoogleTiles = Boolean(googleMapsKey);
@@ -58,6 +69,8 @@ export interface LeafletMapProps {
   style?: React.CSSProperties;
   /** Prefer dark/light Carto basemap for admin ops. `streets` keeps OSM/Google. */
   basemap?: LeafletBasemap;
+  demandHotspots?: DemandHotspot[];
+  showSurgeBadges?: boolean;
 }
 
 const MOTORCYCLE_PIN_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="16" r="3.5"/><circle cx="19" cy="16" r="3.5"/><path d="M19 16L15.5 8.5H13M16.5 7H14.5"/><path d="M15.5 8.5C14.5 7.5 12 7.5 10.5 8.5L8 9.5"/><path d="M6 10.5C7.5 9.5 9.5 9.5 10.5 10.5"/><path d="M5 16L9 11L12.5 11L11.5 16H8.5"/><path d="M10 15H3.5"/></svg>`;
@@ -225,7 +238,9 @@ export function LeafletMap({
   showFitAll = false,
   className = "leaflet-map-surface",
   style = { width: "100%", height: "100%", minHeight: 440 },
-  basemap = "dark"
+  basemap = "dark",
+  demandHotspots = [],
+  showSurgeBadges = false
 }: LeafletMapProps) {
   const isMobile = useIsMobile();
   const [tilesReady, setTilesReady] = useState(false);
@@ -307,6 +322,45 @@ export function LeafletMap({
             pathOptions={{ color: "#111315", weight: 5, opacity: 0.75 }}
           />
         )}
+        {/* ─── Demand Heatmap & Surge Circles Layer ──────── */}
+        {demandHotspots.map((h) => {
+          const isSurge = h.intensity === "surge" || h.intensity === "high";
+          const strokeColor = isSurge ? "#EF4444" : "#F59E0B";
+          const fillColor = isSurge ? "#EF4444" : "#F59E0B";
+          const fillOpacity = isSurge ? 0.28 : 0.18;
+
+          return (
+            <Circle
+              key={h.id}
+              center={h.center}
+              radius={h.radiusMeters}
+              pathOptions={{
+                color: strokeColor,
+                fillColor,
+                fillOpacity,
+                weight: isSurge ? 2 : 1.5,
+                dashArray: isSurge ? undefined : "4, 4",
+              }}
+            >
+              <Tooltip direction="center" permanent={showSurgeBadges}>
+                <div style={{ textAlign: "center", fontWeight: 700, fontSize: 11 }}>
+                  <div>{h.label}</div>
+                  {h.multiplier && (
+                    <div style={{ color: "#EF4444", fontSize: 12, fontWeight: 800 }}>
+                      ⚡ {h.multiplier}
+                    </div>
+                  )}
+                  {typeof h.unfulfilledRequests === "number" && h.unfulfilledRequests > 0 && (
+                    <div style={{ fontSize: 10, color: "#6B7280" }}>
+                      {h.unfulfilledRequests} pending
+                    </div>
+                  )}
+                </div>
+              </Tooltip>
+            </Circle>
+          );
+        })}
+
         {currentPosition && (
           <>
             <CircleMarker

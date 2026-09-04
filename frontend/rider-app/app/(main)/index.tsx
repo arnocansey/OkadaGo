@@ -26,7 +26,9 @@ import {
   Zap,
 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppMap } from "@/components/AppMap";
+import { DailyGoalModal, DAILY_GOAL_STORAGE_KEY, DEFAULT_DAILY_GOAL } from "@/components/DailyGoalModal";
 import { OnlineStatusControl } from "@/components/OnlineStatusControl";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -60,6 +62,19 @@ export default function RiderHome() {
   const [sosLoading, setSosLoading] = useState(false);
   const [onlineSince, setOnlineSince] = useState<Date | null>(null);
   const [jobPreference, setJobPreference] = useState<"both" | "rides" | "deliveries">("both");
+  const [dailyGoal, setDailyGoal] = useState<number>(DEFAULT_DAILY_GOAL);
+  const [goalModalVisible, setGoalModalVisible] = useState<boolean>(false);
+
+  useEffect(() => {
+    AsyncStorage.getItem(DAILY_GOAL_STORAGE_KEY)
+      .then((val) => {
+        if (val) {
+          const parsed = parseFloat(val);
+          if (!isNaN(parsed) && parsed > 0) setDailyGoal(parsed);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const locationPing = hasFix ? { latitude, longitude, isMocked } : undefined;
 
@@ -634,22 +649,40 @@ export default function RiderHome() {
       {/* ─── Top Floating Daily Goal Progress Widget ────────────── */}
       <Pressable
         style={s.goalWidget}
-        onPress={() => router.push("/(main)/earnings")}
+        onPress={() => setGoalModalVisible(true)}
         accessibilityRole="button"
+        accessibilityLabel="Daily goal details"
       >
         <View style={s.goalHeader}>
           <View style={s.goalIcon}>
             <Award size={13} color="#000000" />
           </View>
-          <Text style={s.goalTitle}>
-            Daily Target: {todayTrips}/10 Trips completed
+          <Text style={s.goalTitle} numberOfLines={1}>
+            Goal: GH₵ {todayEarnings.toFixed(0)} / GH₵ {dailyGoal} ({Math.min(100, Math.round((todayEarnings / dailyGoal) * 100))}%)
           </Text>
-          <Text style={s.goalBonus}>+GH₵ 25 Bonus</Text>
+          <Text style={[s.goalBonus, todayEarnings >= dailyGoal && { color: "#10B981" }]}>
+            {todayEarnings >= dailyGoal ? "Achieved 🎉" : `GH₵ ${Math.max(0, dailyGoal - todayEarnings).toFixed(0)} left`}
+          </Text>
         </View>
         <View style={s.goalTrack}>
-          <View style={[s.goalFill, { width: `${Math.min(100, Math.max(5, (todayTrips / 10) * 100))}%` }]} />
+          <View
+            style={[
+              s.goalFill,
+              todayEarnings >= dailyGoal && { backgroundColor: "#10B981" },
+              { width: `${Math.min(100, Math.max(5, (todayEarnings / dailyGoal) * 100))}%` },
+            ]}
+          />
         </View>
       </Pressable>
+
+      <DailyGoalModal
+        visible={goalModalVisible}
+        onClose={() => setGoalModalVisible(false)}
+        currentGoal={dailyGoal}
+        onSaveGoal={(newGoal) => setDailyGoal(newGoal)}
+        todayEarnings={todayEarnings}
+        completedTrips={todayTrips}
+      />
 
       {/* ─── SOS Button ─────────────────────────────────────────── */}
       {online && (

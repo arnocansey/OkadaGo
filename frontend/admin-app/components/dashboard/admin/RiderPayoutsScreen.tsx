@@ -27,6 +27,7 @@ import {
   Wallet,
   Calendar,
   FileText,
+  Zap,
 } from "lucide-react";
 
 export type RiderPayoutsScreenProps = {
@@ -83,6 +84,27 @@ function statusBadgeColor(status: string) {
   if (tone === "warning") return { bg: "color-mix(in srgb, var(--brand-orange) 15%, transparent)", color: "var(--brand-orange)" };
   if (tone === "danger") return { bg: "color-mix(in srgb, var(--danger) 15%, transparent)", color: "var(--danger)" };
   return { bg: "color-mix(in srgb, var(--text-muted) 15%, transparent)", color: "var(--text-muted)" };
+}
+
+function getGhanaTelco(destination?: string): { name: string; color: string; badgeBg: string } {
+  if (!destination) return { name: "MoMo", color: "var(--brand-orange)", badgeBg: "color-mix(in srgb, var(--brand-orange) 15%, transparent)" };
+  const digits = destination.replace(/\D/g, "");
+  const national = digits.startsWith("233") ? `0${digits.slice(3)}` : digits;
+  const prefix = national.slice(0, 3);
+
+  // MTN: 024, 054, 055, 059, 025
+  if (["024", "054", "055", "059", "025"].includes(prefix)) {
+    return { name: "MTN MoMo", color: "#CA8A04", badgeBg: "color-mix(in srgb, #EAB308 18%, transparent)" };
+  }
+  // Telecel (Vodafone): 020, 050
+  if (["020", "050"].includes(prefix)) {
+    return { name: "Telecel Cash", color: "#EF4444", badgeBg: "color-mix(in srgb, #EF4444 18%, transparent)" };
+  }
+  // AT (AirtelTigo): 027, 057, 026, 056
+  if (["027", "057", "026", "056"].includes(prefix)) {
+    return { name: "AT Money", color: "#3B82F6", badgeBg: "color-mix(in srgb, #3B82F6 18%, transparent)" };
+  }
+  return { name: "MoMo", color: "var(--brand-orange)", badgeBg: "color-mix(in srgb, var(--brand-orange) 15%, transparent)" };
 }
 
 function downloadCsv(rows: Record<string, string>[], filename: string) {
@@ -417,7 +439,7 @@ export function RiderPayoutsScreen({
                       style={{ cursor: "pointer", accentColor: "var(--brand-orange)" }}
                     />
                   </th>
-                  {["Rider", "Amount", "Method", "Status", "Requested"].map((h) => (
+                  {["Rider", "Amount", "Method", "Status", "Requested", "Action"].map((h) => (
                     <th
                       key={h}
                       style={{
@@ -506,6 +528,34 @@ export function RiderPayoutsScreen({
                       </td>
                       <td style={{ padding: "10px 12px", color: "var(--text-muted)", fontSize: 12 }}>
                         {formatDateTime(p.requestedAt)}
+                      </td>
+                      <td style={{ padding: "10px 12px", textAlign: "right" }}>
+                        {p.method.toUpperCase() === "MOBILE_MONEY" && ["requested", "approved"].includes(p.status.toLowerCase()) ? (
+                          <button
+                            type="button"
+                            disabled={isMutating}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (p.status.toLowerCase() === "requested") {
+                                onPayoutAction(p.id, "approve");
+                              } else {
+                                onPayoutAction(p.id, "mark_processing");
+                              }
+                            }}
+                            style={{
+                              ...btnBase,
+                              fontSize: 11,
+                              padding: "4px 8px",
+                              background: "color-mix(in srgb, var(--brand-orange) 15%, transparent)",
+                              borderColor: "var(--brand-orange)",
+                              color: "var(--brand-orange)",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                          >
+                            <Zap size={12} /> {p.status.toLowerCase() === "requested" ? "Approve" : "⚡ Disburse"}
+                          </button>
+                        ) : null}
                       </td>
                     </tr>
                   );
@@ -775,13 +825,16 @@ export function RiderPayoutsScreen({
                       ...btnBase,
                       width: "100%",
                       justifyContent: "center",
+                      background: selectedDetail.method.toUpperCase() === "MOBILE_MONEY" ? "var(--brand-orange)" : "transparent",
+                      color: selectedDetail.method.toUpperCase() === "MOBILE_MONEY" ? "#000000" : "var(--text-primary)",
+                      fontWeight: 700,
                       opacity: isMutating ? 0.5 : 1,
                       cursor: isMutating ? "not-allowed" : "pointer",
                     }}
                   >
-                    <Cog size={13} />{" "}
+                    <Zap size={13} />{" "}
                     {selectedDetail.method.toUpperCase() === "MOBILE_MONEY"
-                      ? "Start disbursement"
+                      ? "⚡ Instant Paystack MoMo Disburse"
                       : "Mark Processing"}
                   </button>
               )}

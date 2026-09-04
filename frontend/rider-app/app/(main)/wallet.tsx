@@ -3,12 +3,14 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { Zap } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api, compactDate, money } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
@@ -54,6 +56,22 @@ export default function WalletScreen() {
   const availableBalance = Number(wallet?.availableBalance ?? 0);
   const deficit = availableBalance < 0 ? Math.abs(availableBalance) : 0;
   const needsFloat = RIDER_MIN_ONLINE_BALANCE > 0 && availableBalance < RIDER_MIN_ONLINE_BALANCE;
+
+  const destinationTelco = useMemo(() => {
+    const digits = destination.replace(/\D/g, "");
+    const national = digits.startsWith("233") ? `0${digits.slice(3)}` : digits;
+    const prefix = national.slice(0, 3);
+    if (["024", "054", "055", "059", "025"].includes(prefix)) {
+      return { name: "MTN MoMo", color: "#CA8A04", bg: "rgba(234, 179, 8, 0.15)" };
+    }
+    if (["020", "050"].includes(prefix)) {
+      return { name: "Telecel Cash", color: "#EF4444", bg: "rgba(239, 68, 68, 0.15)" };
+    }
+    if (["027", "057", "026", "056"].includes(prefix)) {
+      return { name: "AT Money", color: "#3B82F6", bg: "rgba(59, 130, 246, 0.15)" };
+    }
+    return null;
+  }, [destination]);
 
   useEffect(() => {
     if (!session?.token) return;
@@ -278,7 +296,60 @@ export default function WalletScreen() {
           </Card>
 
           <Card style={styles.form}>
-            <Text style={styles.section}>Request payout</Text>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+              <Text style={styles.section}>Request Instant Payout</Text>
+              <View style={{ backgroundColor: "rgba(34, 197, 94, 0.15)", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                <Text style={{ fontSize: 10, fontWeight: "800", color: "#16A34A" }}>⚡ 0-5 MINS</Text>
+              </View>
+            </View>
+
+            {/* Quick Withdrawal Amount Chips */}
+            <View style={{ flexDirection: "row", gap: 6, marginBottom: 8 }}>
+              {[25, 50, 100, 200].map((amt) => (
+                <Pressable
+                  key={amt}
+                  onPress={() => setPayoutAmount(String(amt))}
+                  style={{
+                    flex: 1,
+                    paddingVertical: 7,
+                    alignItems: "center",
+                    borderRadius: 8,
+                    backgroundColor: payoutAmount === String(amt) ? colors.primary : colors.surfaceElevated,
+                    borderWidth: 1,
+                    borderColor: payoutAmount === String(amt) ? colors.primary : colors.border,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      fontWeight: "700",
+                      color: payoutAmount === String(amt) ? "#000000" : colors.text,
+                    }}
+                  >
+                    GH₵ {amt}
+                  </Text>
+                </Pressable>
+              ))}
+              {availableBalance > 0 ? (
+                <Pressable
+                  onPress={() => setPayoutAmount(String(Math.floor(availableBalance)))}
+                  style={{
+                    flex: 1,
+                    paddingVertical: 7,
+                    alignItems: "center",
+                    borderRadius: 8,
+                    backgroundColor: colors.surfaceElevated,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                  }}
+                >
+                  <Text style={{ fontSize: 11, fontWeight: "800", color: colors.primary }}>
+                    Max
+                  </Text>
+                </Pressable>
+              ) : null}
+            </View>
+
             <Input
               label="Amount (GHS)"
               value={payoutAmount}
@@ -291,6 +362,24 @@ export default function WalletScreen() {
               onChangeText={setDestination}
               keyboardType="phone-pad"
             />
+            {destinationTelco ? (
+              <View style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 6,
+                backgroundColor: destinationTelco.bg,
+                paddingHorizontal: 10,
+                paddingVertical: 5,
+                borderRadius: 8,
+                alignSelf: "flex-start",
+                marginTop: -4,
+              }}>
+                <Zap size={13} color={destinationTelco.color} />
+                <Text style={{ fontSize: 11, fontWeight: "700", color: destinationTelco.color }}>
+                  ⚡ Instant to {destinationTelco.name}
+                </Text>
+              </View>
+            ) : null}
             {payoutAccounts.length > 0 ? (
               <Text style={styles.savedHint}>
                 Saved: {payoutAccounts.find((a) => a.isDefault)?.destinationLabel ?? payoutAccounts[0].destinationLabel}
@@ -304,7 +393,7 @@ export default function WalletScreen() {
               fullWidth
             />
             <Button
-              label="Request payout"
+              label="⚡ Instant Cashout to MoMo"
               variant="accent"
               loading={payoutLoading}
               onPress={() => void requestPayout()}

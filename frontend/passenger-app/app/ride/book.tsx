@@ -10,6 +10,7 @@ import { useResolvedLocationAddress } from "@/hooks/useResolvedLocationAddress";
 import { useTheme } from "@/context/ThemeContext";
 import { AppMap } from "@/components/AppMap";
 import { DestinationSearchSheet } from "@/components/DestinationSearchSheet";
+import { ParcelDeliveryDetailsModal, type ParcelDetails } from "@/components/ParcelDeliveryDetailsModal";
 import { RideBookingSheet, type RideTier, type RideTierId } from "@/components/RideBookingSheet";
 import type { PaymentMethod, RoutePreview, SavedPlace, ServiceZone } from "@/types";
 
@@ -61,6 +62,9 @@ export default function BookRideScreen() {
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
   const [packageType, setPackageType] = useState("parcel");
+  const [deliveryInstructions, setDeliveryInstructions] = useState("");
+  const [handoverPin, setHandoverPin] = useState("");
+  const [parcelModalOpen, setParcelModalOpen] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [promoDiscount, setPromoDiscount] = useState(0);
   const [promoMessage, setPromoMessage] = useState("");
@@ -283,7 +287,7 @@ export default function BookRideScreen() {
     }
 
     if (isDelivery && (!recipientName.trim() || !recipientPhone.trim())) {
-      Alert.alert("Recipient Information", "Please provide a recipient name and phone number for delivery.");
+      setParcelModalOpen(true);
       return;
     }
 
@@ -317,13 +321,16 @@ export default function BookRideScreen() {
             recipientName: recipientName.trim(),
             recipientPhoneE164: recipientPhone.startsWith("+")
               ? recipientPhone
-              : `+233${recipientPhone.replace(/\D/g, "")}`,
+              : `+233${recipientPhone.replace(/\D/g, "").replace(/^0/, "")}`,
             packageType,
-            packageDescription: "Express Package Delivery",
+            packageDescription: deliveryInstructions
+              ? `Express Package (${packageType}) - ${deliveryInstructions}`
+              : `Express Package (${packageType})`,
             estimatedDistanceKm,
             estimatedDurationMinutes,
             promoDiscount,
             promoCode: promoCode.trim() || undefined,
+            metadata: handoverPin ? { handoverPin } : undefined,
           },
         });
         await refresh();
@@ -452,6 +459,27 @@ export default function BookRideScreen() {
         sessionToken={session?.token}
         userLocation={hasFix ? pickupCoords : undefined}
         recentDestinations={recentDestinations}
+      />
+
+      {/* ─── Dedicated Okada Parcel Customization Modal ─────── */}
+      <ParcelDeliveryDetailsModal
+        visible={parcelModalOpen}
+        onClose={() => setParcelModalOpen(false)}
+        initialDetails={{
+          category: (packageType as any) || "parcel",
+          recipientName,
+          recipientPhone,
+          deliveryInstructions,
+          handoverPin,
+          requirePin: Boolean(handoverPin),
+        }}
+        onConfirm={(details: ParcelDetails) => {
+          setRecipientName(details.recipientName);
+          setRecipientPhone(details.recipientPhone);
+          setPackageType(details.category);
+          setDeliveryInstructions(details.deliveryInstructions);
+          setHandoverPin(details.handoverPin);
+        }}
       />
     </View>
   );

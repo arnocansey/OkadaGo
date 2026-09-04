@@ -21,8 +21,11 @@ import {
   CircleDot,
   Truck,
   UserX,
-  Eye
+  Eye,
+  Flame,
+  Zap
 } from "lucide-react";
+import type { DemandHotspot } from "@/components/maps/leaflet-map";
 
 /* ── Types ────────────────────────────────────────────────────────────────── */
 
@@ -104,6 +107,8 @@ export function LiveOperationsScreen({
 }: LiveOperationsScreenProps) {
   const [selectedMarker, setSelectedMarker] = useState<string | null>(null);
   const [detailPanel, setDetailPanel] = useState<"rider" | "trip" | null>(null);
+  const [showHeatmap, setShowHeatmap] = useState<boolean>(true);
+  const [showSurge, setShowSurge] = useState<boolean>(true);
 
   /* ── Derived data ── */
 
@@ -182,6 +187,86 @@ export function LiveOperationsScreen({
       })
       .filter(Boolean) as LiveMapMarker[];
   }, [liveMarkers, ridersWithCoords, activeRideRiderIds, activeDeliveryRiderIds]);
+
+  /* ── Dynamic Demand Heatmap & Surge Zones ── */
+
+  const demandHotspots = useMemo((): DemandHotspot[] => {
+    if (!showHeatmap) return [];
+
+    const hubs = [
+      {
+        id: "hub-circle",
+        center: [5.5562, -0.2104] as [number, number],
+        radiusMeters: 1300,
+        intensity: "surge" as const,
+        label: "Circle Interchange",
+        multiplier: "1.4x",
+        matchTerms: ["circle", "odaw", "kaneshie", "adabraka"],
+      },
+      {
+        id: "hub-madina",
+        center: [5.6698, -0.1652] as [number, number],
+        radiusMeters: 1400,
+        intensity: "surge" as const,
+        label: "Madina Zongo Junc.",
+        multiplier: "1.3x",
+        matchTerms: ["madina", "adenta", "zongo", "unb"],
+      },
+      {
+        id: "hub-accra-mall",
+        center: [5.6205, -0.1735] as [number, number],
+        radiusMeters: 1100,
+        intensity: "surge" as const,
+        label: "Accra Mall / Tetteh Q.",
+        multiplier: "1.25x",
+        matchTerms: ["mall", "tetteh", "airport", "shiashie"],
+      },
+      {
+        id: "hub-osu",
+        center: [5.5568, -0.1824] as [number, number],
+        radiusMeters: 950,
+        intensity: "high" as const,
+        label: "Osu Oxford St",
+        multiplier: "1.2x",
+        matchTerms: ["osu", "oxford", "labone", "cantonments"],
+      },
+      {
+        id: "hub-east-legon",
+        center: [5.6382, -0.1554] as [number, number],
+        radiusMeters: 1200,
+        intensity: "surge" as const,
+        label: "East Legon",
+        multiplier: "1.3x",
+        matchTerms: ["legon", "american house", "bawalashie"],
+      },
+      {
+        id: "hub-tema-station",
+        center: [5.5451, -0.2012] as [number, number],
+        radiusMeters: 1000,
+        intensity: "moderate" as const,
+        label: "Accra Central CBD",
+        multiplier: "1.15x",
+        matchTerms: ["cbd", "tema station", "makola", "ministries"],
+      },
+    ];
+
+    return hubs.map((hub) => {
+      const matchedRequests = pendingRequests.filter((r) => {
+        const addr = (r.pickupAddress || "").toLowerCase();
+        return hub.matchTerms.some((term) => addr.includes(term));
+      }).length;
+
+      return {
+        id: hub.id,
+        center: hub.center,
+        radiusMeters: hub.radiusMeters,
+        intensity: hub.intensity,
+        label: hub.label,
+        multiplier: hub.multiplier,
+        unfulfilledRequests: matchedRequests,
+      };
+    });
+  }, [showHeatmap, pendingRequests]);
 
   /* ── Selected detail ── */
 
@@ -272,10 +357,67 @@ export function LiveOperationsScreen({
           center={ACCRA_MAP_CENTER}
           zoom={mapMarkers.length > 0 ? ACCRA_MAP_ZOOM_METRO : ACCRA_MAP_ZOOM_CITY}
           markers={mapMarkers}
+          demandHotspots={demandHotspots}
+          showSurgeBadges={showSurge}
           showFitAll
           emptyTitle="Waiting for fleet GPS pings"
           emptyDescription="Riders will appear on the map when they go online."
         />
+
+        {/* Map Overlays & Surge Controls Toolbar */}
+        <div style={{
+          position: "absolute",
+          top: 14,
+          right: 14,
+          zIndex: 400,
+          display: "flex",
+          gap: 8,
+          background: "color-mix(in srgb, var(--bg-card) 92%, transparent)",
+          backdropFilter: "blur(12px)",
+          padding: "6px 10px",
+          borderRadius: 12,
+          border: "1px solid var(--border)",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
+        }}>
+          <button
+            type="button"
+            onClick={() => setShowHeatmap((prev) => !prev)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              background: showHeatmap ? "color-mix(in srgb, var(--danger) 18%, transparent)" : "transparent",
+              color: showHeatmap ? "var(--danger)" : "var(--text-muted)",
+              border: `1px solid ${showHeatmap ? "var(--danger)" : "transparent"}`,
+              padding: "5px 10px",
+              borderRadius: 8,
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            <Flame size={14} /> Heatmap {showHeatmap ? "ON" : "OFF"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowSurge((prev) => !prev)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              background: showSurge ? "color-mix(in srgb, var(--brand-orange) 18%, transparent)" : "transparent",
+              color: showSurge ? "var(--brand-orange)" : "var(--text-muted)",
+              border: `1px solid ${showSurge ? "var(--brand-orange)" : "transparent"}`,
+              padding: "5px 10px",
+              borderRadius: 8,
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            <Zap size={14} /> Surge Badges {showSurge ? "ON" : "OFF"}
+          </button>
+        </div>
 
         {/* Map legend */}
         <div className="liveops-legend">

@@ -2,7 +2,7 @@ import { Stack, useLocalSearchParams, router } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Linking, Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import * as Haptics from "expo-haptics";
-import { Phone, ShieldAlert, Share2, Star } from "lucide-react-native";
+import { Phone, ShieldAlert, Share2, Star, Package } from "lucide-react-native";
 import { AppMap } from "@/components/AppMap";
 import { MatchingScreen } from "@/components/MatchingScreen";
 import {
@@ -662,6 +662,71 @@ export default function TrackScreen() {
             <Text style={[styles.label, { marginTop: spacing.lg }]}>To</Text>
             <Text style={styles.address}>{dropoffAddress}</Text>
           </Card>
+
+          {/* ─── Okada Parcel: Recipient & Handover PIN Card ──────── */}
+          {!isRide && deliveryTrip ? (
+            <Card>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: "rgba(250, 204, 21, 0.2)", alignItems: "center", justifyContent: "center" }}>
+                    <Package size={18} color="#CA8A04" />
+                  </View>
+                  <View>
+                    <Text style={styles.section}>Okada Parcel Courier</Text>
+                    <Text style={styles.label}>
+                      Package: {(deliveryTrip.packageType ?? "Parcel").toUpperCase()}
+                    </Text>
+                  </View>
+                </View>
+                {(deliveryTrip as any).metadata?.handoverPin ? (
+                  <View style={{ backgroundColor: colors.primary, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 }}>
+                    <Text style={{ fontSize: 11, fontWeight: "800", color: "#000000", letterSpacing: 1 }}>
+                      PIN: {(deliveryTrip as any).metadata.handoverPin}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+
+              {deliveryTrip.recipientName ? (
+                <View style={{ backgroundColor: colors.surface, padding: 12, borderRadius: 12, gap: 8, borderWidth: 1, borderColor: colors.border }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                    <View>
+                      <Text style={styles.label}>Recipient</Text>
+                      <Text style={styles.riderName}>{deliveryTrip.recipientName}</Text>
+                      {deliveryTrip.recipientPhoneE164 ? (
+                        <Text style={styles.plate}>{deliveryTrip.recipientPhoneE164}</Text>
+                      ) : null}
+                    </View>
+                    <View style={{ flexDirection: "row", gap: 8 }}>
+                      {deliveryTrip.recipientPhoneE164 ? (
+                        <Pressable
+                          style={styles.callBtn}
+                          onPress={() => Linking.openURL(`tel:${deliveryTrip.recipientPhoneE164}`)}
+                          accessibilityLabel="Call Recipient"
+                        >
+                          <Phone size={18} color={colors.primary} />
+                        </Pressable>
+                      ) : null}
+                      <Pressable
+                        style={[styles.callBtn, { backgroundColor: "rgba(34, 197, 94, 0.15)", borderColor: "#22C55E" }]}
+                        onPress={() => {
+                          const cleanPhone = (deliveryTrip.recipientPhoneE164 ?? "").replace(/\D/g, "");
+                          const shareMsg = encodeURIComponent(
+                            `Hi ${deliveryTrip.recipientName || "there"}, an OkadaGo courier is delivering a package to you! Drop-off address: ${dropoffAddress}. Track here: https://okadago.com/track/${id}`,
+                          );
+                          const waUrl = cleanPhone ? `whatsapp://send?phone=${cleanPhone}&text=${shareMsg}` : `whatsapp://send?text=${shareMsg}`;
+                          Linking.openURL(waUrl).catch(() => shareTrip());
+                        }}
+                        accessibilityLabel="Share to WhatsApp"
+                      >
+                        <Share2 size={16} color="#22C55E" />
+                      </Pressable>
+                    </View>
+                  </View>
+                </View>
+              ) : null}
+            </Card>
+          ) : null}
 
           <Card>
             <Text style={styles.section}>Timeline</Text>

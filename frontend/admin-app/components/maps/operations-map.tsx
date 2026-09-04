@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { LeafletBasemap, LeafletMapMarker, LeafletMapCurrentPosition } from "./leaflet-map";
+import type { LeafletBasemap, LeafletMapMarker, LeafletMapCurrentPosition, DemandHotspot } from "./leaflet-map";
 import { MapErrorBoundary } from "./map-error-boundary";
 
 const DynamicLeafletMap = dynamic(
@@ -30,6 +30,8 @@ interface OperationsMapProps {
   currentPosition?: LeafletMapCurrentPosition | null;
   showFitAll?: boolean;
   basemap?: LeafletBasemap;
+  demandHotspots?: DemandHotspot[];
+  showSurgeBadges?: boolean;
   /** Compact chip at bottom — better for admin overview cards */
   emptyPlacement?: "top-left" | "bottom";
   className?: string;
@@ -50,10 +52,12 @@ export function OperationsMap({
   currentPosition = null,
   showFitAll = false,
   basemap = "auto",
+  demandHotspots = [],
+  showSurgeBadges = false,
   emptyPlacement = "top-left",
   className
 }: OperationsMapProps) {
-  const hasOverlayContent = markers.length > 0 || route.length > 1 || Boolean(currentPosition);
+  const hasOverlayContent = markers.length > 0 || route.length > 1 || Boolean(currentPosition) || demandHotspots.length > 0;
   const safeCenter = toTuple(center);
   const emptyClass =
     emptyPlacement === "bottom" ? "map-empty-note map-empty-note--bottom" : "map-empty-note";
@@ -79,6 +83,8 @@ export function OperationsMap({
             currentPosition={currentPosition}
             showFitAll={showFitAll}
             basemap={basemap}
+            demandHotspots={demandHotspots}
+            showSurgeBadges={showSurgeBadges}
           />
         </MapErrorBoundary>
         {emptyNode}
@@ -97,6 +103,8 @@ export function OperationsMap({
           currentPosition={currentPosition}
           showFitAll={showFitAll}
           basemap={basemap}
+          demandHotspots={demandHotspots}
+          showSurgeBadges={showSurgeBadges}
           style={{ width: "100%", height: "100%", minHeight: "100%" }}
         />
       </MapErrorBoundary>
