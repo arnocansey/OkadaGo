@@ -678,13 +678,19 @@ export default function TrackScreen() {
                     </Text>
                   </View>
                 </View>
-                {(deliveryTrip as any).metadata?.handoverPin ? (
-                  <View style={{ backgroundColor: colors.primary, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 }}>
-                    <Text style={{ fontSize: 11, fontWeight: "800", color: "#000000", letterSpacing: 1 }}>
-                      PIN: {(deliveryTrip as any).metadata.handoverPin}
-                    </Text>
-                  </View>
-                ) : null}
+                {(() => {
+                  const pinFromMeta = (deliveryTrip as any)?.metadata?.handoverPin;
+                  const pinFromNotes = (deliveryTrip as any)?.notes?.match(/PIN:\s*(\d{4})/i)?.[1];
+                  const pin = pinFromMeta || pinFromNotes;
+                  if (!pin) return null;
+                  return (
+                    <View style={{ backgroundColor: colors.primary, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 }}>
+                      <Text style={{ fontSize: 11, fontWeight: "800", color: "#000000", letterSpacing: 1 }}>
+                        PIN: {pin}
+                      </Text>
+                    </View>
+                  );
+                })()}
               </View>
 
               {deliveryTrip.recipientName ? (

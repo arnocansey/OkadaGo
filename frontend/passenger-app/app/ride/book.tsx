@@ -330,6 +330,9 @@ export default function BookRideScreen() {
             estimatedDurationMinutes,
             promoDiscount,
             promoCode: promoCode.trim() || undefined,
+            notes: deliveryInstructions
+              ? `${deliveryInstructions}${handoverPin ? ` (PIN: ${handoverPin})` : ""}`
+              : (handoverPin ? `PIN: ${handoverPin}` : undefined),
             metadata: handoverPin ? { handoverPin } : undefined,
           },
         });
