@@ -31,6 +31,8 @@ type RiderData = {
   avatarUrl?: string | null;
   rating?: number | null;
   completedTrips?: number | null;
+  currentLatitude?: number | string | null;
+  currentLongitude?: number | string | null;
   vehicle?: {
     make?: string | null;
     model?: string | null;
@@ -205,15 +207,27 @@ export function MatchingScreen({ tripId, isDelivery, onCancel, onMatched, fare, 
   const rider = trip?.rider;
 
   const markers = useMemo(() => {
-    const pts: Array<{ id: string; latitude: number; longitude: number; title?: string; pinColor?: string }> = [];
+    const pts: Array<{ id: string; latitude: number; longitude: number; title?: string; pinColor?: string; type?: "rider" | "pickup" | "destination" | "dropoff" | "default" }> = [];
     if (pickupLat && pickupLon) {
-      pts.push({ id: "pickup", latitude: pickupLat, longitude: pickupLon, title: "Pickup", pinColor: colors.mapMarkerPickup });
+      pts.push({ id: "pickup", latitude: pickupLat, longitude: pickupLon, title: "Pickup", pinColor: colors.mapMarkerPickup, type: "pickup" });
     }
     if (destLat && destLon) {
-      pts.push({ id: "dest", latitude: destLat, longitude: destLon, title: "Destination", pinColor: colors.mapMarkerDestination });
+      pts.push({ id: "dest", latitude: destLat, longitude: destLon, title: "Destination", pinColor: colors.mapMarkerDestination, type: "destination" });
+    }
+    const riderLat = Number(rider?.currentLatitude);
+    const riderLon = Number(rider?.currentLongitude);
+    if (Number.isFinite(riderLat) && Number.isFinite(riderLon)) {
+      pts.push({
+        id: "rider",
+        latitude: riderLat,
+        longitude: riderLon,
+        title: "Okada Rider",
+        pinColor: colors.primary,
+        type: "rider",
+      });
     }
     return pts;
-  }, [pickupLat, pickupLon, destLat, destLon, colors]);
+  }, [pickupLat, pickupLon, destLat, destLon, rider?.currentLatitude, rider?.currentLongitude, colors]);
 
   const [roadRoute, setRoadRoute] = useState<Array<{ latitude: number; longitude: number }> | undefined>();
 

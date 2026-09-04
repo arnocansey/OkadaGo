@@ -8,6 +8,7 @@ export type TripMarker = {
   longitude: number;
   title?: string;
   pinColor?: string;
+  type?: "rider" | "pickup" | "destination" | "dropoff" | "default";
 };
 
 function coord(value: unknown): number | null {
@@ -28,10 +29,10 @@ export function markersForRide(ride: Ride, palette: ThemeColors = defaultColors)
     markers.push({ id: "pickup", latitude: pickupLat, longitude: pickupLon, title: "Pickup", pinColor: palette.mapMarkerPickup });
   }
   if (destLat != null && destLon != null) {
-    markers.push({ id: "destination", latitude: destLat, longitude: destLon, title: "Destination", pinColor: palette.mapMarkerDestination });
+    markers.push({ id: "destination", latitude: destLat, longitude: destLon, title: "Destination", pinColor: palette.mapMarkerDestination, type: "destination" });
   }
   if (riderLat != null && riderLon != null) {
-    markers.push({ id: "rider", latitude: riderLat, longitude: riderLon, title: "Rider", pinColor: palette.mapMarkerRider });
+    markers.push({ id: "rider", latitude: riderLat, longitude: riderLon, title: "Rider", pinColor: palette.mapMarkerRider, type: "rider" });
   }
 
   return markers;
@@ -50,10 +51,10 @@ export function markersForDelivery(delivery: Delivery, palette: ThemeColors = de
     markers.push({ id: "pickup", latitude: pickupLat, longitude: pickupLon, title: "Pickup", pinColor: palette.mapMarkerPickup });
   }
   if (dropLat != null && dropLon != null) {
-    markers.push({ id: "dropoff", latitude: dropLat, longitude: dropLon, title: "Drop-off", pinColor: palette.mapMarkerDestination });
+    markers.push({ id: "dropoff", latitude: dropLat, longitude: dropLon, title: "Drop-off", pinColor: palette.mapMarkerDestination, type: "dropoff" });
   }
   if (riderLat != null && riderLon != null) {
-    markers.push({ id: "rider", latitude: riderLat, longitude: riderLon, title: "Rider", pinColor: palette.mapMarkerRider });
+    markers.push({ id: "rider", latitude: riderLat, longitude: riderLon, title: "Rider", pinColor: palette.mapMarkerRider, type: "rider" });
   }
 
   return markers;

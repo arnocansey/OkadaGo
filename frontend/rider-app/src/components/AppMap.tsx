@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import MapViewBase, { Marker, Polyline, PROVIDER_GOOGLE, type Region } from "react-native-maps";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Crosshair, MapPin } from "lucide-react-native";
+import { MotorcycleIcon } from "./icons/MotorcycleIcon";
 import { useTheme } from "@/context/ThemeContext";
 import {
   getGoogleMapsApiKey,
@@ -13,12 +14,14 @@ import { ACCRA_REGION, radius, shadows, spacing } from "@/theme/tokens";
 
 const MAP_LOAD_TIMEOUT_MS = 8000;
 
-type MapMarker = {
+export type MapMarker = {
   id: string;
   latitude: number;
   longitude: number;
   title?: string;
   pinColor?: string;
+  type?: "rider" | "pickup" | "destination" | "dropoff" | "default";
+  heading?: number;
 };
 
 type Props = {
@@ -149,14 +152,43 @@ export function AppMap({
         {routeCoordinates?.length ? (
           <Polyline coordinates={routeCoordinates} strokeColor={colors.mapRoute} strokeWidth={4} />
         ) : null}
-        {markers.map((m) => (
-          <Marker
-            key={m.id}
-            coordinate={{ latitude: m.latitude, longitude: m.longitude }}
-            title={m.title}
-            pinColor={m.pinColor ?? colors.mapTint}
-          />
-        ))}
+        {markers.map((m) => {
+          const isRider =
+            m.type === "rider" ||
+            m.title === "Okada" ||
+            m.title === "Rider" ||
+            m.id === "rider" ||
+            m.id.startsWith("rider");
+
+          if (isRider) {
+            const badgeBg = m.pinColor ?? colors.primary;
+            return (
+              <Marker
+                key={m.id}
+                coordinate={{ latitude: m.latitude, longitude: m.longitude }}
+                title={m.title ?? "Okada Rider"}
+                anchor={{ x: 0.5, y: 0.5 }}
+                flat={true}
+                rotation={m.heading ?? 0}
+              >
+                <View style={styles.riderMarkerOuter}>
+                  <View style={[styles.riderMarkerBadge, { backgroundColor: badgeBg }]}>
+                    <MotorcycleIcon size={18} color="#000000" strokeWidth={2.4} />
+                  </View>
+                </View>
+              </Marker>
+            );
+          }
+
+          return (
+            <Marker
+              key={m.id}
+              coordinate={{ latitude: m.latitude, longitude: m.longitude }}
+              title={m.title}
+              pinColor={m.pinColor ?? colors.mapTint}
+            />
+          );
+        })}
         {children}
       </MapViewBase>
 
@@ -212,5 +244,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  riderMarkerOuter: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 3,
+  },
+  riderMarkerBadge: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: "#FACC15",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#000000",
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 4,
+    elevation: 6,
   },
 });

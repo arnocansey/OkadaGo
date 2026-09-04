@@ -156,6 +156,8 @@ export default function HomeScreen() {
       longitude: r.longitude,
       title: "Okada",
       pinColor: colors.primary,
+      type: "rider" as const,
+      heading: (r as any).heading,
     }));
   }, [nearbyRiders, colors.primary]);
 
