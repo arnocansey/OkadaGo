@@ -50,7 +50,8 @@ const configSchema = z.object({
   TWILIO_FROM_NUMBER: emptyStringToUndefined(z.string().min(1)),
   CLOUDINARY_CLOUD_NAME: emptyStringToUndefined(z.string().min(1)),
   CLOUDINARY_API_KEY: emptyStringToUndefined(z.string().min(1)),
-  CLOUDINARY_API_SECRET: emptyStringToUndefined(z.string().min(1))
+  CLOUDINARY_API_SECRET: emptyStringToUndefined(z.string().min(1)),
+  REQUIRE_PHONE_VERIFICATION: z.enum(["true", "false"]).default("false")
 });
 
 const parsed = configSchema.parse(process.env);
@@ -109,5 +110,6 @@ export const appConfig = {
   twilioFromNumber: parsed.TWILIO_FROM_NUMBER,
   cloudinaryCloudName: parsed.CLOUDINARY_CLOUD_NAME,
   cloudinaryApiKey: parsed.CLOUDINARY_API_KEY,
-  cloudinaryApiSecret: parsed.CLOUDINARY_API_SECRET
+  cloudinaryApiSecret: parsed.CLOUDINARY_API_SECRET,
+  requirePhoneVerification: parsed.REQUIRE_PHONE_VERIFICATION === "true"
 } as const;

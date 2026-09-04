@@ -189,7 +189,7 @@ export class AuthService {
         phoneE164: input.phoneE164,
         passwordHash,
         preferredCurrency: input.preferredCurrency,
-        isPhoneVerified: false,
+        isPhoneVerified: !appConfig.requirePhoneVerification,
         passengerProfile: {
           create: {
             referralCode: makeReferralCode(),
@@ -235,7 +235,7 @@ export class AuthService {
         phoneE164: input.phoneE164,
         passwordHash,
         preferredCurrency: input.preferredCurrency,
-        isPhoneVerified: false,
+        isPhoneVerified: !appConfig.requirePhoneVerification,
         riderProfile: {
           create: {
             displayCode: makeRiderCode(),

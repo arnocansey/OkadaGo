@@ -17,6 +17,7 @@ import {
 import { FareService } from "../pricing/fare.service.js";
 import { MatchingService } from "../matching/matching.service.js";
 import { pushService } from "../notifications/push.service.js";
+import { hasSmsConfig } from "../notifications/sms.service.js";
 import { promotionService } from "../promotions/promotion.service.js";
 import { referralService } from "../referrals/referral.service.js";
 import {
@@ -522,7 +523,12 @@ export class RideService {
     }
 
     if (!passenger.user.isPhoneVerified) {
-      if (process.env.NODE_ENV !== "production" || appConfig.nodeEnv === "development") {
+      if (
+        !appConfig.requirePhoneVerification ||
+        !hasSmsConfig() ||
+        process.env.NODE_ENV !== "production" ||
+        appConfig.nodeEnv === "development"
+      ) {
         await prisma.user.update({
           where: { id: passenger.user.id },
           data: { isPhoneVerified: true }
