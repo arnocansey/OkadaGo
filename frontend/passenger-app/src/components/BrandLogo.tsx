@@ -5,6 +5,7 @@ type Props = {
   variant?: "icon" | "wordmark" | "splash";
   size?: number;
   style?: StyleProp<ImageStyle>;
+  theme?: "light" | "dark";
 };
 
 const lockupLight = require("../../assets/branding/okadago-lockup-light.png");
@@ -13,8 +14,9 @@ const iconLight = require("../../assets/branding/okadago-icon-dark.png");
 const iconDark = require("../../assets/branding/okadago-lockup-dark-passenger.png");
 const splashLogo = require("../../assets/branding/okadago-logo-splash.png");
 
-export function BrandLogo({ variant = "icon", size = 40, style }: Props) {
-  const { isDark } = useTheme();
+export function BrandLogo({ variant = "icon", size = 40, style, theme }: Props) {
+  const { isDark: themeIsDark } = useTheme();
+  const isDark = theme ? theme === "dark" : themeIsDark;
 
   if (variant === "splash") {
     const height = size;

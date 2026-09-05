@@ -55,17 +55,21 @@ function RootNavigator() {
 export default function RootLayout() {
   useEffect(() => {
     async function prepare() {
+      // Hold the clean white first splash screen gracefully before transitioning
+      const minDisplay = new Promise((resolve) => setTimeout(resolve, 1400));
       try {
         if (!__DEV__ && Updates.isEnabled) {
           const update = await Updates.checkForUpdateAsync();
           if (update.isAvailable) {
             await Updates.fetchUpdateAsync();
             await Updates.reloadAsync();
+            return;
           }
         }
       } catch {
         // OTA check failures should not block launch
       } finally {
+        await minDisplay;
         await SplashScreen.hideAsync();
       }
     }
