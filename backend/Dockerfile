@@ -27,4 +27,5 @@ COPY package.json ./
 COPY prisma ./prisma
 COPY prisma.config.ts ./
 EXPOSE 4000
-CMD ["node", "dist/main.js"]
+CMD ["sh", "-c", "npx prisma db push && node dist/main.js"]
+
