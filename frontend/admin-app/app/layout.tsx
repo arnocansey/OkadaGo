@@ -1,19 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Inter } from "next/font/google";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 import "@/components/dashboard/admin.css";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { ToastAndLoaderProvider } from "@/components/providers/toast-and-loader-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 
-const bodyFont = Inter({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-body"
-});
-
-const displayFont = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-display"
+  variable: "--font-sans",
+  display: "swap"
 });
 
 export const viewport: Viewport = {
@@ -21,8 +18,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#090d16" },
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" }
+    { media: "(prefers-color-scheme: dark)", color: "#0b0f17" },
+    { media: "(prefers-color-scheme: light)", color: "#f8fafc" }
   ]
 };
 
@@ -49,9 +46,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-scroll-behavior="smooth">
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <meta name="mobile-web-app-capable" content="yes" />
+        {/* Anti-flash theme initialization script */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var stored = localStorage.getItem('okadago.admin-theme');
+                  var theme = stored === 'light' || stored === 'dark' ? stored : 'dark';
+                  document.documentElement.dataset.theme = theme;
+                  if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                  document.documentElement.style.colorScheme = theme;
+                } catch (e) {}
+              })();
+            `
+          }}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -64,12 +81,13 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${bodyFont.variable} ${displayFont.variable}`} suppressHydrationWarning>
-        <ToastAndLoaderProvider>
-          <QueryProvider>{children}</QueryProvider>
-        </ToastAndLoaderProvider>
+      <body className={inter.variable} suppressHydrationWarning>
+        <ThemeProvider>
+          <ToastAndLoaderProvider>
+            <QueryProvider>{children}</QueryProvider>
+          </ToastAndLoaderProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
 }
-

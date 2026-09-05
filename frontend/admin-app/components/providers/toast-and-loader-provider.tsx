@@ -112,7 +112,7 @@ export function ToastAndLoaderProvider({ children }: { children: React.ReactNode
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-[#15181d] text-white px-10 py-9 rounded-2xl border border-white/10 flex flex-col items-center shadow-2xl min-w-[220px] max-w-xs text-center"
+              className="bg-[var(--surface-elevated)] text-[var(--text-primary)] px-10 py-9 rounded-2xl border border-[var(--border)] flex flex-col items-center shadow-2xl min-w-[220px] max-w-xs text-center"
             >
               <OkadaLoader size="lg" label={loadingLabel ?? undefined} />
             </motion.div>

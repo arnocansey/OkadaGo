@@ -240,16 +240,16 @@ export function RiderFinanceProfileDrawer({
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-3xl bg-[#0c1015] border-l border-white/10 text-white flex flex-col h-full shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-3xl bg-[var(--surface-elevated)] border-l border-[var(--border)] text-[var(--text-primary)] flex flex-col h-full shadow-2xl overflow-hidden">
         {/* Top Header */}
-        <div className="p-6 border-b border-white/10 flex items-center justify-between bg-[#151a23]">
+        <div className="p-6 border-b border-[var(--border)] flex items-center justify-between bg-[var(--surface)]">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 font-bold text-lg">
+            <div className="w-12 h-12 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-500 font-bold text-lg">
               {profile?.rider.fullName?.charAt(0) || "R"}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-white tracking-wide">
+                <h2 className="text-xl font-bold text-[var(--text-primary)] tracking-wide">
                   {profile?.rider.fullName || "Loading..."}
                 </h2>
                 {profile?.rider.isCashRestricted ? (
@@ -262,7 +262,7 @@ export function RiderFinanceProfileDrawer({
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-4 text-xs text-white/60 mt-1">
+              <div className="flex items-center gap-4 text-xs text-[var(--text-secondary)] mt-1">
                 <span className="flex items-center gap-1">
                   <Phone size={12} /> {profile?.rider.phoneE164 || "—"}
                 </span>
@@ -277,7 +277,7 @@ export function RiderFinanceProfileDrawer({
             <button
               type="button"
               onClick={loadProfile}
-              className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition"
+              className="p-2 rounded-lg bg-[var(--surface-muted)] hover:bg-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition"
               title="Refresh profile"
             >
               <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
@@ -285,7 +285,7 @@ export function RiderFinanceProfileDrawer({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition"
+              className="p-2 rounded-lg bg-[var(--surface-muted)] hover:bg-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition"
             >
               <X size={18} />
             </button>
@@ -348,21 +348,21 @@ export function RiderFinanceProfileDrawer({
             <button
               type="button"
               onClick={() => setShowPaymentModal(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-black shadow-lg shadow-amber-500/20 transition"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-sm transition"
             >
               <PlusCircle size={14} /> Record Manual Payment
             </button>
             <button
               type="button"
               onClick={() => setShowAdjustModal(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/10 transition"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[var(--surface)] hover:bg-[var(--surface-muted)] text-[var(--text-primary)] border border-[var(--border)] transition"
             >
               <Sliders size={14} /> Adjust Balance
             </button>
             <button
               type="button"
               onClick={handleSendReminder}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/10 transition"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[var(--surface)] hover:bg-[var(--surface-muted)] text-[var(--text-primary)] border border-[var(--border)] transition"
             >
               <Send size={14} /> Send Reminder
             </button>
@@ -390,120 +390,120 @@ export function RiderFinanceProfileDrawer({
           {/* 8 Required Financial Wallet Metrics */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-bold text-white/50 uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">
                 Financial Wallet Metrics (Official Ledger)
               </h3>
-              <span className="text-xs text-amber-400 font-medium">Auto-reconciled</span>
+              <span className="text-xs text-amber-500 font-medium">Auto-reconciled</span>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {/* 1. AVAILABLE EARNINGS */}
-              <div className="p-4 rounded-xl bg-[#151a23] border border-white/5 relative overflow-hidden">
-                <div className="text-[11px] font-semibold text-white/50 uppercase tracking-wide">
+              <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] relative overflow-hidden shadow-sm">
+                <div className="text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
                   Available Earnings
                 </div>
-                <div className="text-lg font-bold text-emerald-400 mt-1">
+                <div className="text-lg font-bold text-emerald-500 mt-1">
                   {formatMoney(adminCurrency, profile?.metrics.availableEarnings ?? 0)}
                 </div>
-                <div className="text-[10px] text-white/40 mt-1">In rider digital wallet</div>
+                <div className="text-[10px] text-[var(--text-muted)] mt-1">In rider digital wallet</div>
               </div>
 
               {/* 2. CASH COLLECTED */}
-              <div className="p-4 rounded-xl bg-[#151a23] border border-white/5 relative overflow-hidden">
-                <div className="text-[11px] font-semibold text-white/50 uppercase tracking-wide">
+              <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] relative overflow-hidden shadow-sm">
+                <div className="text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
                   Cash Collected
                 </div>
-                <div className="text-lg font-bold text-amber-400 mt-1">
+                <div className="text-lg font-bold text-amber-500 mt-1">
                   {formatMoney(adminCurrency, profile?.metrics.cashCollected ?? 0)}
                 </div>
-                <div className="text-[10px] text-white/40 mt-1">Directly held by rider</div>
+                <div className="text-[10px] text-[var(--text-muted)] mt-1">Directly held by rider</div>
               </div>
 
               {/* 3. DIGITAL EARNINGS */}
-              <div className="p-4 rounded-xl bg-[#151a23] border border-white/5 relative overflow-hidden">
-                <div className="text-[11px] font-semibold text-white/50 uppercase tracking-wide">
+              <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] relative overflow-hidden shadow-sm">
+                <div className="text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
                   Digital Earnings
                 </div>
-                <div className="text-lg font-bold text-blue-400 mt-1">
+                <div className="text-lg font-bold text-blue-500 mt-1">
                   {formatMoney(adminCurrency, profile?.metrics.digitalEarnings ?? 0)}
                 </div>
-                <div className="text-[10px] text-white/40 mt-1">MoMo, Card & Wallet trips</div>
+                <div className="text-[10px] text-[var(--text-muted)] mt-1">MoMo, Card & Wallet trips</div>
               </div>
 
               {/* 4. OKADAGO COMMISSION */}
-              <div className="p-4 rounded-xl bg-[#151a23] border border-white/5 relative overflow-hidden">
-                <div className="text-[11px] font-semibold text-white/50 uppercase tracking-wide">
+              <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] relative overflow-hidden shadow-sm">
+                <div className="text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
                   OkadaGo Commission
                 </div>
-                <div className="text-lg font-bold text-purple-400 mt-1">
+                <div className="text-lg font-bold text-purple-500 mt-1">
                   {formatMoney(adminCurrency, profile?.metrics.okadagoCommission ?? 0)}
                 </div>
-                <div className="text-[10px] text-white/40 mt-1">Total platform liability accrued</div>
+                <div className="text-[10px] text-[var(--text-muted)] mt-1">Total platform liability accrued</div>
               </div>
 
               {/* 5. COMMISSION PAID */}
-              <div className="p-4 rounded-xl bg-[#151a23] border border-white/5 relative overflow-hidden">
-                <div className="text-[11px] font-semibold text-white/50 uppercase tracking-wide">
+              <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] relative overflow-hidden shadow-sm">
+                <div className="text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
                   Commission Paid
                 </div>
-                <div className="text-lg font-bold text-teal-400 mt-1">
+                <div className="text-lg font-bold text-teal-500 mt-1">
                   {formatMoney(adminCurrency, profile?.metrics.commissionPaid ?? 0)}
                 </div>
-                <div className="text-[10px] text-white/40 mt-1">Settled by rider</div>
+                <div className="text-[10px] text-[var(--text-muted)] mt-1">Settled by rider</div>
               </div>
 
               {/* 6. OUTSTANDING COMMISSION */}
-              <div className={`p-4 rounded-xl border relative overflow-hidden ${
+              <div className={`p-4 rounded-xl border relative overflow-hidden shadow-sm ${
                 (profile?.metrics.outstandingCommission ?? 0) > 0
-                  ? "bg-red-950/20 border-red-500/30"
-                  : "bg-[#151a23] border-white/5"
+                  ? "bg-red-500/10 border-red-500/30"
+                  : "bg-[var(--surface)] border-[var(--border)]"
               }`}>
-                <div className="text-[11px] font-semibold text-red-400 uppercase tracking-wide flex items-center justify-between">
+                <div className="text-[11px] font-semibold text-red-500 uppercase tracking-wide flex items-center justify-between">
                   <span>Outstanding Commission</span>
                   {(profile?.metrics.outstandingCommission ?? 0) >= 50 && (
-                    <AlertTriangle size={12} className="text-red-400" />
+                    <AlertTriangle size={12} className="text-red-500" />
                   )}
                 </div>
-                <div className="text-lg font-bold text-red-400 mt-1">
+                <div className="text-lg font-bold text-red-500 mt-1">
                   {formatMoney(adminCurrency, profile?.metrics.outstandingCommission ?? 0)}
                 </div>
-                <div className="text-[10px] text-white/40 mt-1">Owed to OkadaGo</div>
+                <div className="text-[10px] text-[var(--text-muted)] mt-1">Owed to OkadaGo</div>
               </div>
 
               {/* 7. TOTAL EARNINGS */}
-              <div className="p-4 rounded-xl bg-[#151a23] border border-white/5 relative overflow-hidden">
-                <div className="text-[11px] font-semibold text-white/50 uppercase tracking-wide">
+              <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] relative overflow-hidden shadow-sm">
+                <div className="text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
                   Total Earnings
                 </div>
-                <div className="text-lg font-bold text-white mt-1">
+                <div className="text-lg font-bold text-[var(--text-primary)] mt-1">
                   {formatMoney(adminCurrency, profile?.metrics.totalEarnings ?? 0)}
                 </div>
-                <div className="text-[10px] text-white/40 mt-1">Net rider revenue (85%)</div>
+                <div className="text-[10px] text-[var(--text-muted)] mt-1">Net rider revenue (85%)</div>
               </div>
 
               {/* 8. WITHDRAWABLE BALANCE */}
-              <div className="p-4 rounded-xl bg-[#151a23] border border-emerald-500/20 relative overflow-hidden">
-                <div className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wide">
+              <div className="p-4 rounded-xl bg-[var(--surface)] border border-emerald-500/20 relative overflow-hidden shadow-sm">
+                <div className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wide">
                   Withdrawable Balance
                 </div>
-                <div className="text-lg font-bold text-emerald-400 mt-1">
+                <div className="text-lg font-bold text-emerald-500 mt-1">
                   {formatMoney(adminCurrency, profile?.metrics.withdrawableBalance ?? 0)}
                 </div>
-                <div className="text-[10px] text-white/40 mt-1">Eligible for payout</div>
+                <div className="text-[10px] text-[var(--text-muted)] mt-1">Eligible for payout</div>
               </div>
             </div>
           </div>
 
           {/* Subtabs for Ledger and Settlements */}
-          <div className="border-t border-white/10 pt-4">
-            <div className="flex items-center gap-2 border-b border-white/10 pb-2">
+          <div className="border-t border-[var(--border)] pt-4">
+            <div className="flex items-center gap-2 border-b border-[var(--border)] pb-2">
               <button
                 type="button"
                 onClick={() => setActiveTab("ledger")}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
                   activeTab === "ledger"
-                    ? "bg-white/15 text-white"
-                    : "text-white/60 hover:text-white hover:bg-white/5"
+                    ? "bg-[var(--surface-muted)] text-[var(--brand-primary)] shadow-sm"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-muted)]"
                 }`}
               >
                 <FileText size={14} /> Immutable Ledger ({profile?.recentLedgerEntries.length ?? 0})
@@ -513,8 +513,8 @@ export function RiderFinanceProfileDrawer({
                 onClick={() => setActiveTab("settlements")}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
                   activeTab === "settlements"
-                    ? "bg-white/15 text-white"
-                    : "text-white/60 hover:text-white hover:bg-white/5"
+                    ? "bg-[var(--surface-muted)] text-[var(--brand-primary)] shadow-sm"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-muted)]"
                 }`}
               >
                 <Receipt size={14} /> Commission Settlements ({profile?.commissionPayments.length ?? 0})
@@ -525,14 +525,14 @@ export function RiderFinanceProfileDrawer({
             {activeTab === "ledger" && (
               <div className="mt-4 space-y-2">
                 {profile?.recentLedgerEntries.length === 0 ? (
-                  <div className="text-center py-8 text-white/40 text-xs">
+                  <div className="text-center py-8 text-[var(--text-muted)] text-xs">
                     No ledger entries recorded yet.
                   </div>
                 ) : (
                   profile?.recentLedgerEntries.map((entry) => (
                     <div
                       key={entry.id}
-                      className="p-3 rounded-lg bg-[#151a23] border border-white/5 flex items-center justify-between text-xs"
+                      className="p-3 rounded-lg bg-[var(--surface)] border border-[var(--border)] flex items-center justify-between text-xs"
                     >
                       <div className="flex items-center gap-3">
                         <div
@@ -545,13 +545,13 @@ export function RiderFinanceProfileDrawer({
                           {entry.direction === "CREDIT" ? "+" : "−"}
                         </div>
                         <div>
-                          <div className="font-semibold text-white flex items-center gap-2">
+                          <div className="font-semibold text-[var(--text-primary)] flex items-center gap-2">
                             <span>{entry.type.replace(/_/g, " ")}</span>
-                            <span className="text-[10px] text-white/40 font-mono">
+                            <span className="text-[10px] text-[var(--text-muted)] font-mono">
                               {entry.transactionId}
                             </span>
                           </div>
-                          <div className="text-white/50 text-[11px] mt-0.5">
+                          <div className="text-[var(--text-secondary)] text-[11px] mt-0.5">
                             {entry.description || "—"}
                           </div>
                         </div>
@@ -560,13 +560,13 @@ export function RiderFinanceProfileDrawer({
                       <div className="text-right">
                         <div
                           className={`font-bold ${
-                            entry.direction === "CREDIT" ? "text-emerald-400" : "text-white"
+                            entry.direction === "CREDIT" ? "text-emerald-500" : "text-[var(--text-primary)]"
                           }`}
                         >
                           {entry.direction === "CREDIT" ? "+" : "−"}
                           {formatMoney(adminCurrency, entry.amount)}
                         </div>
-                        <div className="text-[10px] text-white/40 mt-0.5">
+                        <div className="text-[10px] text-[var(--text-muted)] mt-0.5">
                           {new Date(entry.createdAt).toLocaleDateString("en-GB", {
                             day: "numeric",
                             month: "short",
@@ -585,32 +585,32 @@ export function RiderFinanceProfileDrawer({
             {activeTab === "settlements" && (
               <div className="mt-4 space-y-2">
                 {profile?.commissionPayments.length === 0 ? (
-                  <div className="text-center py-8 text-white/40 text-xs">
+                  <div className="text-center py-8 text-[var(--text-muted)] text-xs">
                     No commission payments recorded.
                   </div>
                 ) : (
                   profile?.commissionPayments.map((pmt) => (
                     <div
                       key={pmt.id}
-                      className="p-3 rounded-lg bg-[#151a23] border border-white/5 flex items-center justify-between text-xs"
+                      className="p-3 rounded-lg bg-[var(--surface)] border border-[var(--border)] flex items-center justify-between text-xs"
                     >
                       <div>
-                        <div className="font-semibold text-white flex items-center gap-2">
+                        <div className="font-semibold text-[var(--text-primary)] flex items-center gap-2">
                           <span className="capitalize">{pmt.method.replace(/_/g, " ")}</span>
                           <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 font-semibold">
                             {pmt.status}
                           </span>
                         </div>
-                        <div className="text-white/40 text-[11px] mt-0.5">
+                        <div className="text-[var(--text-muted)] text-[11px] mt-0.5">
                           Ref: {pmt.reference || "N/A"}
                         </div>
                       </div>
 
                       <div className="text-right">
-                        <div className="font-bold text-emerald-400">
+                        <div className="font-bold text-emerald-500">
                           {formatMoney(adminCurrency, pmt.amount)}
                         </div>
-                        <div className="text-[10px] text-white/40 mt-0.5">
+                        <div className="text-[10px] text-[var(--text-muted)] mt-0.5">
                           {new Date(pmt.createdAt).toLocaleDateString("en-GB", {
                             day: "numeric",
                             month: "short",
@@ -630,26 +630,26 @@ export function RiderFinanceProfileDrawer({
         {/* Modal: Record Manual Payment */}
         {showPaymentModal && (
           <div className="absolute inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-            <div className="bg-[#151a23] border border-white/15 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+            <div className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-bold text-white text-base flex items-center gap-2">
-                  <Receipt size={18} className="text-amber-400" /> Record Manual Payment
+                <h3 className="font-bold text-[var(--text-primary)] text-base flex items-center gap-2">
+                  <Receipt size={18} className="text-amber-500" /> Record Manual Payment
                 </h3>
                 <button
                   type="button"
                   onClick={() => setShowPaymentModal(false)}
-                  className="text-white/50 hover:text-white"
+                  className="text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                 >
                   <X size={18} />
                 </button>
               </div>
 
-              <p className="text-xs text-white/60">
+              <p className="text-xs text-[var(--text-secondary)]">
                 Record commission received directly from the rider via cash, bank transfer, or offline collection.
               </p>
 
               <div>
-                <label className="text-xs font-semibold text-white/70 block mb-1">
+                <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1">
                   Payment Amount ({adminCurrency}) *
                 </label>
                 <input
@@ -658,19 +658,19 @@ export function RiderFinanceProfileDrawer({
                   placeholder="e.g. 50.00"
                   value={paymentAmount}
                   onChange={(e) => setPaymentAmount(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-amber-400"
                   autoFocus
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-white/70 block mb-1">
+                <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1">
                   Payment Method
                 </label>
                 <select
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-amber-400"
                 >
                   <option value="CASH">Cash (Office / Field)</option>
                   <option value="BANK_TRANSFER">Bank Direct Transfer</option>
@@ -680,7 +680,7 @@ export function RiderFinanceProfileDrawer({
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-white/70 block mb-1">
+                <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1">
                   Transaction / Receipt Reference
                 </label>
                 <input
@@ -688,12 +688,12 @@ export function RiderFinanceProfileDrawer({
                   placeholder="Receipt # or bank ref (optional)"
                   value={paymentRef}
                   onChange={(e) => setPaymentRef(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-amber-400"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-white/70 block mb-1">
+                <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1">
                   Internal Notes
                 </label>
                 <textarea
@@ -701,15 +701,15 @@ export function RiderFinanceProfileDrawer({
                   placeholder="Admin notes..."
                   value={paymentNotes}
                   onChange={(e) => setPaymentNotes(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-amber-400"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--border)]">
                 <button
                   type="button"
                   onClick={() => setShowPaymentModal(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-medium text-white/70 hover:bg-white/5"
+                  className="px-4 py-2 rounded-xl text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-muted)]"
                 >
                   Cancel
                 </button>
@@ -717,7 +717,7 @@ export function RiderFinanceProfileDrawer({
                   type="button"
                   disabled={submittingPayment || !paymentAmount}
                   onClick={handleRecordPayment}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-black transition disabled:opacity-50"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-amber-400 hover:bg-amber-300 text-slate-950 transition disabled:opacity-50"
                 >
                   {submittingPayment ? "Recording..." : "Confirm Payment"}
                 </button>
@@ -729,26 +729,26 @@ export function RiderFinanceProfileDrawer({
         {/* Modal: Adjust Balance */}
         {showAdjustModal && (
           <div className="absolute inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-            <div className="bg-[#151a23] border border-white/15 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+            <div className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-bold text-white text-base flex items-center gap-2">
-                  <Sliders size={18} className="text-amber-400" /> Adjust Rider Balance
+                <h3 className="font-bold text-[var(--text-primary)] text-base flex items-center gap-2">
+                  <Sliders size={18} className="text-amber-500" /> Adjust Rider Balance
                 </h3>
                 <button
                   type="button"
                   onClick={() => setShowAdjustModal(false)}
-                  className="text-white/50 hover:text-white"
+                  className="text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                 >
                   <X size={18} />
                 </button>
               </div>
 
-              <p className="text-xs text-white/60">
+              <p className="text-xs text-[var(--text-secondary)]">
                 Directly debit or credit the rider's balance. All adjustments create an immutable audit record in the financial ledger.
               </p>
 
               <div>
-                <label className="text-xs font-semibold text-white/70 block mb-1">
+                <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1">
                   Adjustment Type
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -758,7 +758,7 @@ export function RiderFinanceProfileDrawer({
                     className={`px-3 py-2 rounded-xl text-xs font-semibold border transition ${
                       adjustType === "CREDIT"
                         ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
-                        : "bg-white/5 border-white/10 text-white/60"
+                        : "bg-[var(--surface-muted)] border-[var(--border)] text-[var(--text-secondary)]"
                     }`}
                   >
                     Credit (Add to Wallet)
@@ -769,7 +769,7 @@ export function RiderFinanceProfileDrawer({
                     className={`px-3 py-2 rounded-xl text-xs font-semibold border transition ${
                       adjustType === "DEBIT"
                         ? "bg-red-500/20 border-red-500/40 text-red-400"
-                        : "bg-white/5 border-white/10 text-white/60"
+                        : "bg-[var(--surface-muted)] border-[var(--border)] text-[var(--text-secondary)]"
                     }`}
                   >
                     Debit (Deduct from Wallet)
@@ -778,7 +778,7 @@ export function RiderFinanceProfileDrawer({
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-white/70 block mb-1">
+                <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1">
                   Adjustment Amount ({adminCurrency}) *
                 </label>
                 <input
@@ -787,13 +787,13 @@ export function RiderFinanceProfileDrawer({
                   placeholder="e.g. 25.00"
                   value={adjustAmount}
                   onChange={(e) => setAdjustAmount(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-amber-400"
                   autoFocus
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-white/70 block mb-1">
+                <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1">
                   Mandatory Audit Reason *
                 </label>
                 <textarea
@@ -801,15 +801,15 @@ export function RiderFinanceProfileDrawer({
                   placeholder="Explain why this adjustment is being made (required for compliance)..."
                   value={adjustReason}
                   onChange={(e) => setAdjustReason(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-amber-400"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--border)]">
                 <button
                   type="button"
                   onClick={() => setShowAdjustModal(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-medium text-white/70 hover:bg-white/5"
+                  className="px-4 py-2 rounded-xl text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-muted)]"
                 >
                   Cancel
                 </button>
@@ -817,7 +817,7 @@ export function RiderFinanceProfileDrawer({
                   type="button"
                   disabled={submittingAdjust || !adjustAmount || !adjustReason.trim()}
                   onClick={handleAdjustBalance}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-black transition disabled:opacity-50"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-amber-400 hover:bg-amber-300 text-slate-950 transition disabled:opacity-50"
                 >
                   {submittingAdjust ? "Applying..." : "Apply Adjustment"}
                 </button>

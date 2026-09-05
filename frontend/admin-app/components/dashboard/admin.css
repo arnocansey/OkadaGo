@@ -5,52 +5,54 @@
    ═══════════════════════════════════════════════════════════════════════════════ */
 
 /* ── Design Tokens ────────────────────────────────────────────────────────── */
-:root {
+/* ── Design Tokens ────────────────────────────────────────────────────────── */
+:root,
+[data-theme="light"] {
   /* Brand */
-  --og-orange: #ff6b00;
-  --og-orange-hover: #e55f00;
-  --og-orange-soft: rgba(255, 107, 0, 0.10);
-  --og-orange-medium: rgba(255, 107, 0, 0.18);
+  --og-orange: var(--brand-primary, #f7c600);
+  --og-orange-hover: var(--brand-primary-hover, #e5b700);
+  --og-orange-soft: var(--brand-primary-soft, rgba(247, 198, 0, 0.14));
+  --og-orange-medium: rgba(247, 198, 0, 0.22);
   --og-yellow: #facc15;
   --og-yellow-light: rgba(250, 204, 21, 0.18);
 
   /* Surfaces */
-  --og-bg: #f7f4ef;
-  --og-card: #ffffff;
-  --og-sidebar: #ffffff;
-  --og-surface-1: #f9fafb;
-  --og-surface-2: #f3f4f6;
-  --og-surface-3: #e5e7eb;
+  --og-bg: var(--bg, #f8fafc);
+  --og-card: var(--surface, #ffffff);
+  --og-sidebar: var(--sidebar-bg, #ffffff);
+  --og-surface-1: var(--surface-elevated, #ffffff);
+  --og-surface-2: var(--surface-muted, #f1f5f9);
+  --og-surface-3: var(--surface-subtle, #e2e8f0);
 
   /* Borders */
-  --og-border: #e5e7eb;
-  --og-border-light: #f0f0f0;
-  --og-border-focus: var(--og-orange);
+  --og-border: var(--border, #e2e8f0);
+  --og-border-light: var(--border-subtle, #f1f5f9);
+  --og-border-focus: var(--border-focus, #f7c600);
 
   /* Text */
-  --og-text: #0b0f19;
-  --og-text-secondary: #6b7280;
-  --og-text-muted: #9ca3af;
-  --og-text-inverse: #ffffff;
+  --og-text: var(--text-primary, #0f172a);
+  --og-text-secondary: var(--text-secondary, #475569);
+  --og-text-muted: var(--text-muted, #94a3b8);
+  --og-text-inverse: var(--text-inverse, #0a0b0d);
 
   /* Semantic */
-  --og-green: #16a34a;
-  --og-green-soft: rgba(22, 163, 74, 0.10);
-  --og-yellow-s: #f59e0b;
-  --og-yellow-s-soft: rgba(245, 158, 11, 0.10);
-  --og-red: #ef4444;
-  --og-red-soft: rgba(239, 68, 68, 0.10);
-  --og-blue: #3b82f6;
-  --og-blue-soft: rgba(59, 130, 246, 0.10);
-  --og-gray: #6b7280;
-  --og-gray-soft: rgba(107, 114, 128, 0.10);
+  --og-green: var(--success, #10b981);
+  --og-green-soft: var(--success-soft, rgba(16, 185, 129, 0.12));
+  --og-yellow-s: var(--warning, #f59e0b);
+  --og-yellow-s-soft: var(--warning-soft, rgba(245, 158, 11, 0.12));
+  --og-red: var(--danger, #ef4444);
+  --og-red-soft: var(--danger-soft, rgba(239, 68, 68, 0.12));
+  --og-blue: var(--info, #3b82f6);
+  --og-blue-soft: var(--info-soft, rgba(59, 130, 246, 0.12));
+  --og-gray: #64748b;
+  --og-gray-soft: rgba(100, 116, 139, 0.12);
 
   /* Elevation */
-  --og-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --og-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --og-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
-  --og-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
-  --og-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.12);
+  --og-shadow-xs: var(--shadow-xs, 0 1px 2px rgba(0, 0, 0, 0.04));
+  --og-shadow-sm: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.06));
+  --og-shadow-md: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.07));
+  --og-shadow-lg: var(--shadow-lg, 0 12px 32px rgba(0, 0, 0, 0.10));
+  --og-shadow-xl: var(--shadow-xl, 0 20px 48px rgba(0, 0, 0, 0.14));
 
   /* Spacing (8px grid) */
   --og-space-1: 4px;
@@ -71,20 +73,19 @@
   --og-radius-full: 9999px;
 
   /* Typography */
-  --og-font: var(--font-body), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --og-font: var(--font-sans), Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --og-sidebar-width: 260px;
-
-  /* Transition */
   --og-transition: 0.15s ease;
 
-  /* Legacy aliases for screens that still reference these */
+  /* Legacy aliases */
   --bg-primary: var(--og-bg);
   --bg-card: var(--og-card);
   --bg-sidebar: var(--og-sidebar);
   --bg-base: var(--og-bg);
-  --bg-surface: var(--og-card);
+  --bg-surface: var(--og-surface-2);
   --bg-surface-2: var(--og-surface-2);
   --bg-surface-3: var(--og-surface-3);
+  --bg-surface-hover: var(--og-surface-2);
   --border-color: var(--og-border);
   --border: var(--og-border);
   --border-light: var(--og-border-light);
@@ -99,8 +100,8 @@
   --accent-hover: var(--og-orange-hover);
   --brand-orange: var(--og-orange);
   --brand-yellow: var(--og-yellow);
-  --shadow-main: var(--og-shadow-md);
-  --shadow-hover: var(--og-shadow-lg);
+  --shadow-main: var(--og-shadow-sm);
+  --shadow-hover: var(--og-shadow-md);
   --font-family: var(--og-font);
   --sidebar-width: var(--og-sidebar-width);
   --radius-card: var(--og-radius-lg);
@@ -115,42 +116,61 @@
 }
 
 [data-theme="dark"] {
-  --og-bg: #0b0f19;
-  --og-card: #151c2c;
-  --og-sidebar: #111827;
-  --og-surface-1: #1a2234;
-  --og-surface-2: #1a2234;
-  --og-surface-3: #243044;
-  --og-border: rgba(255, 255, 255, 0.10);
-  --og-border-light: rgba(255, 255, 255, 0.06);
-  --og-text: #f8fafc;
-  --og-text-secondary: #cbd5e1;
-  --og-text-muted: #64748b;
-  --og-orange-soft: rgba(255, 107, 0, 0.14);
-  --og-orange-medium: rgba(255, 107, 0, 0.22);
-  --og-green-soft: rgba(34, 197, 94, 0.14);
-  --og-yellow-s-soft: rgba(250, 204, 21, 0.14);
-  --og-red-soft: rgba(239, 68, 68, 0.14);
-  --og-blue-soft: rgba(59, 130, 246, 0.14);
-  --og-gray-soft: rgba(148, 163, 184, 0.12);
-  --og-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.20);
-  --og-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.24);
-  --og-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.30);
-  --og-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.40);
-  --og-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.50);
-  --og-orange-hover: #ff8533;
-  --og-green: #22c55e;
-  --og-yellow-s: #facc15;
-  color-scheme: dark;
+  /* Brand */
+  --og-orange: var(--brand-primary, #f7c600);
+  --og-orange-hover: var(--brand-primary-hover, #e5b700);
+  --og-orange-soft: var(--brand-primary-soft, rgba(247, 198, 0, 0.18));
+  --og-orange-medium: rgba(247, 198, 0, 0.25);
+  --og-yellow: #facc15;
+  --og-yellow-light: rgba(250, 204, 21, 0.18);
 
-  /* Legacy dark aliases */
+  /* Surfaces */
+  --og-bg: var(--bg, #0b0f17);
+  --og-card: var(--surface, #141b26);
+  --og-sidebar: var(--sidebar-bg, #0e141e);
+  --og-surface-1: var(--surface-elevated, #1a2332);
+  --og-surface-2: var(--surface-muted, #1e2838);
+  --og-surface-3: var(--surface-subtle, #253246);
+
+  /* Borders */
+  --og-border: var(--border, rgba(255, 255, 255, 0.08));
+  --og-border-light: var(--border-subtle, rgba(255, 255, 255, 0.05));
+  --og-border-focus: var(--border-focus, #f7c600);
+
+  /* Text */
+  --og-text: var(--text-primary, #f8fafc);
+  --og-text-secondary: var(--text-secondary, #94a3b8);
+  --og-text-muted: var(--text-muted, #64748b);
+  --og-text-inverse: var(--text-inverse, #0a0b0d);
+
+  /* Semantic */
+  --og-green: var(--success, #10b981);
+  --og-green-soft: var(--success-soft, rgba(16, 185, 129, 0.18));
+  --og-yellow-s: var(--warning, #f59e0b);
+  --og-yellow-s-soft: var(--warning-soft, rgba(245, 158, 11, 0.18));
+  --og-red: var(--danger, #ef4444);
+  --og-red-soft: var(--danger-soft, rgba(239, 68, 68, 0.18));
+  --og-blue: var(--info, #3b82f6);
+  --og-blue-soft: var(--info-soft, rgba(59, 130, 246, 0.18));
+  --og-gray: #94a3b8;
+  --og-gray-soft: rgba(148, 163, 184, 0.14);
+
+  /* Elevation */
+  --og-shadow-xs: var(--shadow-xs, 0 1px 2px rgba(0, 0, 0, 0.25));
+  --og-shadow-sm: var(--shadow-sm, 0 2px 4px rgba(0, 0, 0, 0.35));
+  --og-shadow-md: var(--shadow-md, 0 6px 16px rgba(0, 0, 0, 0.45));
+  --og-shadow-lg: var(--shadow-lg, 0 16px 48px rgba(0, 0, 0, 0.60));
+  --og-shadow-xl: var(--shadow-xl, 0 24px 64px rgba(0, 0, 0, 0.75));
+
+  /* Legacy aliases */
   --bg-primary: var(--og-bg);
   --bg-card: var(--og-card);
   --bg-sidebar: var(--og-sidebar);
   --bg-base: var(--og-bg);
-  --bg-surface: var(--og-card);
+  --bg-surface: var(--og-surface-2);
   --bg-surface-2: var(--og-surface-2);
   --bg-surface-3: var(--og-surface-3);
+  --bg-surface-hover: var(--og-surface-2);
   --border-color: var(--og-border);
   --border: var(--og-border);
   --border-light: var(--og-border-light);
@@ -163,8 +183,10 @@
   --accent-soft: var(--og-orange-soft);
   --accent: var(--og-orange);
   --accent-hover: var(--og-orange-hover);
-  --shadow-main: var(--og-shadow-md);
-  --shadow-hover: var(--og-shadow-lg);
+  --brand-orange: var(--og-orange);
+  --brand-yellow: var(--og-yellow);
+  --shadow-main: var(--og-shadow-sm);
+  --shadow-hover: var(--og-shadow-md);
   --color-success: var(--og-green);
   --color-warning: var(--og-yellow-s);
   --color-danger: var(--og-red);

@@ -518,7 +518,7 @@ export function FinanceDashboardScreen({
             <button
               type="button"
               onClick={() => handleDownloadCsv("cash_collections")}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/10 transition"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[var(--surface-elevated)] hover:bg-[var(--surface-muted)] text-[var(--text-primary)] border border-[var(--border)] transition"
             >
               <Download size={13} /> Export Ledger CSV
             </button>
@@ -531,7 +531,7 @@ export function FinanceDashboardScreen({
                 else if (activeTab === "disputes") loadDisputes();
                 else if (activeTab === "reconciliation") loadReconciliation();
               }}
-              className="p-2 rounded-xl bg-white/10 hover:bg-white/15 text-white transition"
+              className="p-2 rounded-xl bg-[var(--surface-elevated)] hover:bg-[var(--surface-muted)] text-[var(--text-primary)] border border-[var(--border)] transition"
               title="Refresh Current Data"
             >
               <RefreshCw size={14} className={liveLoading ? "animate-spin" : ""} />
@@ -556,7 +556,7 @@ export function FinanceDashboardScreen({
           <button
             type="button"
             onClick={() => setToastNotice(null)}
-            className="text-xs text-white/50 hover:text-white"
+            className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)]"
           >
             Dismiss
           </button>
@@ -593,14 +593,14 @@ export function FinanceDashboardScreen({
       )}
 
       {/* ── Main Navigation Tabs ── */}
-      <div className="flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl bg-[#11161f] border border-white/10 text-xs">
+      <div className="flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl bg-[var(--surface-muted)] border border-[var(--border)] text-xs">
         <button
           type="button"
           onClick={() => setActiveTab("overview")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition ${
             activeTab === "overview"
-              ? "bg-amber-500 text-black shadow-md shadow-amber-500/20"
-              : "text-white/70 hover:text-white hover:bg-white/5"
+              ? "bg-amber-400 text-slate-950 shadow-sm"
+              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]"
           }`}
         >
           <BarChart3 size={14} /> Overview KPIs
@@ -610,8 +610,8 @@ export function FinanceDashboardScreen({
           onClick={() => setActiveTab("cashCollections")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition ${
             activeTab === "cashCollections"
-              ? "bg-amber-500 text-black shadow-md shadow-amber-500/20"
-              : "text-white/70 hover:text-white hover:bg-white/5"
+              ? "bg-amber-400 text-slate-950 shadow-sm"
+              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]"
           }`}
         >
           <Banknote size={14} /> Cash Collections
@@ -621,8 +621,8 @@ export function FinanceDashboardScreen({
           onClick={() => setActiveTab("outstandingCommissions")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition ${
             activeTab === "outstandingCommissions"
-              ? "bg-amber-500 text-black shadow-md shadow-amber-500/20"
-              : "text-white/70 hover:text-white hover:bg-white/5"
+              ? "bg-amber-400 text-slate-950 shadow-sm"
+              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]"
           }`}
         >
           <Users size={14} /> Outstanding Debt
@@ -637,8 +637,8 @@ export function FinanceDashboardScreen({
           onClick={() => setActiveTab("disputes")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition ${
             activeTab === "disputes"
-              ? "bg-amber-500 text-black shadow-md shadow-amber-500/20"
-              : "text-white/70 hover:text-white hover:bg-white/5"
+              ? "bg-amber-400 text-slate-950 shadow-sm"
+              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]"
           }`}
         >
           <Scale size={14} /> Disputes
@@ -648,8 +648,8 @@ export function FinanceDashboardScreen({
           onClick={() => setActiveTab("reconciliation")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition ${
             activeTab === "reconciliation"
-              ? "bg-amber-500 text-black shadow-md shadow-amber-500/20"
-              : "text-white/70 hover:text-white hover:bg-white/5"
+              ? "bg-amber-400 text-slate-950 shadow-sm"
+              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]"
           }`}
         >
           <Receipt size={14} /> Reconciliation Audit
@@ -659,8 +659,8 @@ export function FinanceDashboardScreen({
           onClick={() => setActiveTab("settings")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition ${
             activeTab === "settings"
-              ? "bg-amber-500 text-black shadow-md shadow-amber-500/20"
-              : "text-white/70 hover:text-white hover:bg-white/5"
+              ? "bg-amber-400 text-slate-950 shadow-sm"
+              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]"
           }`}
         >
           <Settings size={14} /> Settings
@@ -670,8 +670,8 @@ export function FinanceDashboardScreen({
           onClick={() => setActiveTab("reports")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition ${
             activeTab === "reports"
-              ? "bg-amber-500 text-black shadow-md shadow-amber-500/20"
-              : "text-white/70 hover:text-white hover:bg-white/5"
+              ? "bg-amber-400 text-slate-950 shadow-sm"
+              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]"
           }`}
         >
           <FileSpreadsheet size={14} /> Reports & Export
@@ -679,10 +679,10 @@ export function FinanceDashboardScreen({
       </div>
 
       {/* ── Date Filters Row ── */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-[#151a23] border border-white/5 text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm text-xs">
         <div className="flex items-center gap-2">
-          <Calendar size={14} className="text-amber-400" />
-          <span className="font-semibold text-white/50">Date Period:</span>
+          <Calendar size={14} className="text-amber-500" />
+          <span className="font-semibold text-[var(--text-secondary)]">Date Period:</span>
           {(["all", "today", "yesterday", "this_week", "this_month", "custom"] as DateRangePreset[]).map((preset) => (
             <button
               key={preset}
@@ -690,8 +690,8 @@ export function FinanceDashboardScreen({
               onClick={() => setDatePreset(preset)}
               className={`px-3 py-1.5 rounded-lg capitalize transition ${
                 datePreset === preset
-                  ? "bg-white/20 text-white font-bold"
-                  : "text-white/60 hover:text-white hover:bg-white/5"
+                  ? "bg-amber-400/20 text-amber-500 font-bold"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-muted)]"
               }`}
             >
               {preset.replace(/_/g, " ")}
@@ -705,14 +705,14 @@ export function FinanceDashboardScreen({
               type="date"
               value={customFrom}
               onChange={(e) => setCustomFrom(e.target.value)}
-              className="px-2.5 py-1 rounded-lg bg-black/40 border border-white/10 text-white text-xs"
+              className="px-2.5 py-1 rounded-lg bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-primary)] text-xs"
             />
-            <span className="text-white/40">to</span>
+            <span className="text-[var(--text-muted)]">to</span>
             <input
               type="date"
               value={customTo}
               onChange={(e) => setCustomTo(e.target.value)}
-              className="px-2.5 py-1 rounded-lg bg-black/40 border border-white/10 text-white text-xs"
+              className="px-2.5 py-1 rounded-lg bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-primary)] text-xs"
             />
           </div>
         )}
@@ -726,120 +726,120 @@ export function FinanceDashboardScreen({
           {/* 10 Required KPIs Cards Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {/* 1. Total Cash Collected */}
-            <div className="p-5 rounded-2xl bg-[#151a23] border border-white/5 relative overflow-hidden">
-              <div className="flex items-center justify-between text-white/50 text-xs">
+            <div className="p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm relative overflow-hidden">
+              <div className="flex items-center justify-between text-[var(--text-secondary)] text-xs">
                 <span>Total Cash Collected</span>
-                <Banknote size={16} className="text-amber-400" />
+                <Banknote size={16} className="text-amber-500" />
               </div>
-              <div className="text-2xl font-bold text-amber-400 mt-2">
+              <div className="text-2xl font-bold text-amber-500 mt-2">
                 {formatMoney(adminCurrency, kpis.totalCashCollected)}
               </div>
-              <div className="text-[11px] text-white/40 mt-1">Platform-wide rider cash</div>
+              <div className="text-[11px] text-[var(--text-muted)] mt-1">Platform-wide rider cash</div>
             </div>
 
             {/* 2. Total Commission Due */}
-            <div className="p-5 rounded-2xl bg-[#151a23] border border-white/5 relative overflow-hidden">
-              <div className="flex items-center justify-between text-white/50 text-xs">
+            <div className="p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm relative overflow-hidden">
+              <div className="flex items-center justify-between text-[var(--text-secondary)] text-xs">
                 <span>Commission Due</span>
-                <TrendingUp size={16} className="text-purple-400" />
+                <TrendingUp size={16} className="text-purple-500" />
               </div>
-              <div className="text-2xl font-bold text-purple-400 mt-2">
+              <div className="text-2xl font-bold text-purple-500 mt-2">
                 {formatMoney(adminCurrency, kpis.totalCommissionDue)}
               </div>
-              <div className="text-[11px] text-white/40 mt-1">15% platform share</div>
+              <div className="text-[11px] text-[var(--text-muted)] mt-1">15% platform share</div>
             </div>
 
             {/* 3. Commission Collected */}
-            <div className="p-5 rounded-2xl bg-[#151a23] border border-white/5 relative overflow-hidden">
-              <div className="flex items-center justify-between text-white/50 text-xs">
+            <div className="p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm relative overflow-hidden">
+              <div className="flex items-center justify-between text-[var(--text-secondary)] text-xs">
                 <span>Commission Collected</span>
-                <CheckCircle2 size={16} className="text-emerald-400" />
+                <CheckCircle2 size={16} className="text-emerald-500" />
               </div>
-              <div className="text-2xl font-bold text-emerald-400 mt-2">
+              <div className="text-2xl font-bold text-emerald-500 mt-2">
                 {formatMoney(adminCurrency, kpis.totalCommissionCollected)}
               </div>
-              <div className="text-[11px] text-white/40 mt-1">Settled & deposited</div>
+              <div className="text-[11px] text-[var(--text-muted)] mt-1">Settled & deposited</div>
             </div>
 
             {/* 4. Outstanding Commission Balance */}
-            <div className={`p-5 rounded-2xl border relative overflow-hidden ${
-              kpis.outstandingCommissionBalance > 0 ? "bg-red-950/20 border-red-500/30" : "bg-[#151a23] border-white/5"
+            <div className={`p-5 rounded-2xl border relative overflow-hidden shadow-sm ${
+              kpis.outstandingCommissionBalance > 0 ? "bg-red-500/10 border-red-500/30" : "bg-[var(--surface)] border-[var(--border)]"
             }`}>
-              <div className="flex items-center justify-between text-white/50 text-xs">
-                <span className="text-red-300 font-semibold">Outstanding Debt</span>
-                <AlertTriangle size={16} className="text-red-400" />
+              <div className="flex items-center justify-between text-[var(--text-secondary)] text-xs">
+                <span className="text-red-500 font-semibold">Outstanding Debt</span>
+                <AlertTriangle size={16} className="text-red-500" />
               </div>
-              <div className="text-2xl font-bold text-red-400 mt-2">
+              <div className="text-2xl font-bold text-red-500 mt-2">
                 {formatMoney(adminCurrency, kpis.outstandingCommissionBalance)}
               </div>
-              <div className="text-[11px] text-white/40 mt-1">Rider commission liabilities</div>
+              <div className="text-[11px] text-[var(--text-muted)] mt-1">Rider commission liabilities</div>
             </div>
 
             {/* 5. Cash vs Digital Trips Ratio */}
-            <div className="p-5 rounded-2xl bg-[#151a23] border border-white/5 relative overflow-hidden">
-              <div className="flex items-center justify-between text-white/50 text-xs">
+            <div className="p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm relative overflow-hidden">
+              <div className="flex items-center justify-between text-[var(--text-secondary)] text-xs">
                 <span>Cash vs Digital Trips</span>
-                <PieChart size={16} className="text-blue-400" />
+                <PieChart size={16} className="text-blue-500" />
               </div>
-              <div className="text-2xl font-bold text-white mt-2">
-                {kpis.cashRatio.toFixed(1)}% <span className="text-xs font-normal text-white/40">Cash</span>
+              <div className="text-2xl font-bold text-[var(--text-primary)] mt-2">
+                {kpis.cashRatio.toFixed(1)}% <span className="text-xs font-normal text-[var(--text-muted)]">Cash</span>
               </div>
-              <div className="text-[11px] text-white/40 mt-1">
+              <div className="text-[11px] text-[var(--text-muted)] mt-1">
                 {kpis.cashTripsCount} cash / {kpis.digitalTripsCount} digital
               </div>
             </div>
 
             {/* 6. Active Restricted Riders */}
-            <div className="p-5 rounded-2xl bg-[#151a23] border border-white/5 relative overflow-hidden">
-              <div className="flex items-center justify-between text-white/50 text-xs">
+            <div className="p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm relative overflow-hidden">
+              <div className="flex items-center justify-between text-[var(--text-secondary)] text-xs">
                 <span>Restricted Riders</span>
-                <ShieldAlert size={16} className="text-red-400" />
+                <ShieldAlert size={16} className="text-red-500" />
               </div>
-              <div className="text-2xl font-bold text-red-400 mt-2">
+              <div className="text-2xl font-bold text-red-500 mt-2">
                 {kpis.activeRestrictedRidersCount}
               </div>
-              <div className="text-[11px] text-white/40 mt-1">Exceeded debt threshold</div>
+              <div className="text-[11px] text-[var(--text-muted)] mt-1">Exceeded debt threshold</div>
             </div>
 
             {/* 7. Commission Recovery Rate */}
-            <div className="p-5 rounded-2xl bg-[#151a23] border border-white/5 relative overflow-hidden">
-              <div className="flex items-center justify-between text-white/50 text-xs">
+            <div className="p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm relative overflow-hidden">
+              <div className="flex items-center justify-between text-[var(--text-secondary)] text-xs">
                 <span>Recovery Rate</span>
-                <Activity size={16} className="text-teal-400" />
+                <Activity size={16} className="text-teal-500" />
               </div>
-              <div className="text-2xl font-bold text-teal-400 mt-2">
+              <div className="text-2xl font-bold text-teal-500 mt-2">
                 {kpis.recoveryRate.toFixed(1)}%
               </div>
-              <div className="text-[11px] text-white/40 mt-1">Settled vs liability</div>
+              <div className="text-[11px] text-[var(--text-muted)] mt-1">Settled vs liability</div>
             </div>
 
             {/* 8. Rider Payouts Pending */}
-            <div className="p-5 rounded-2xl bg-[#151a23] border border-white/5 relative overflow-hidden">
-              <div className="flex items-center justify-between text-white/50 text-xs">
+            <div className="p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm relative overflow-hidden">
+              <div className="flex items-center justify-between text-[var(--text-secondary)] text-xs">
                 <span>Pending Payouts</span>
-                <Wallet size={16} className="text-amber-400" />
+                <Wallet size={16} className="text-amber-500" />
               </div>
-              <div className="text-2xl font-bold text-white mt-2">
+              <div className="text-2xl font-bold text-[var(--text-primary)] mt-2">
                 {formatMoney(adminCurrency, kpis.payoutsRequested)}
               </div>
-              <div className="text-[11px] text-white/40 mt-1">Requires admin authorization</div>
+              <div className="text-[11px] text-[var(--text-muted)] mt-1">Requires admin authorization</div>
             </div>
           </div>
 
           {/* Detailed Financial Breakdown & Trends */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Trip Payment Composition Bar */}
-            <div className="p-6 rounded-2xl bg-[#151a23] border border-white/5 space-y-4">
-              <h3 className="font-bold text-white text-sm flex items-center gap-2">
-                <PieChart size={16} className="text-amber-400" /> Payment Method Volume Share
+            <div className="p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm space-y-4">
+              <h3 className="font-bold text-[var(--text-primary)] text-sm flex items-center gap-2">
+                <PieChart size={16} className="text-amber-500" /> Payment Method Volume Share
               </h3>
               <div className="space-y-3">
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-amber-400 font-semibold">CASH (Physical Handover)</span>
-                    <span className="text-white font-bold">{kpis.cashRatio.toFixed(1)}%</span>
+                    <span className="text-amber-500 font-semibold">CASH (Physical Handover)</span>
+                    <span className="text-[var(--text-primary)] font-bold">{kpis.cashRatio.toFixed(1)}%</span>
                   </div>
-                  <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-3 w-full bg-[var(--surface-muted)] rounded-full overflow-hidden">
                     <div
                       className="h-full bg-amber-400 rounded-full transition-all duration-500"
                       style={{ width: `${Math.min(100, Math.max(0, kpis.cashRatio))}%` }}
@@ -849,24 +849,24 @@ export function FinanceDashboardScreen({
 
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-blue-400 font-semibold">DIGITAL (MoMo / Card / Wallet)</span>
-                    <span className="text-white font-bold">{(100 - kpis.cashRatio).toFixed(1)}%</span>
+                    <span className="text-blue-500 font-semibold">DIGITAL (MoMo / Card / Wallet)</span>
+                    <span className="text-[var(--text-primary)] font-bold">{(100 - kpis.cashRatio).toFixed(1)}%</span>
                   </div>
-                  <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-3 w-full bg-[var(--surface-muted)] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-blue-400 rounded-full transition-all duration-500"
+                      className="h-full bg-blue-500 rounded-full transition-all duration-500"
                       style={{ width: `${Math.min(100, Math.max(0, 100 - kpis.cashRatio))}%` }}
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-white/5 flex items-center justify-between text-xs text-white/50">
+              <div className="pt-4 border-t border-[var(--border)] flex items-center justify-between text-xs text-[var(--text-secondary)]">
                 <span>Total Recorded Trips: {kpis.cashTripsCount + kpis.digitalTripsCount}</span>
                 <button
                   type="button"
                   onClick={() => setActiveTab("cashCollections")}
-                  className="text-amber-400 font-semibold hover:underline"
+                  className="text-amber-500 font-semibold hover:underline"
                 >
                   View Cash Trips →
                 </button>
@@ -874,26 +874,26 @@ export function FinanceDashboardScreen({
             </div>
 
             {/* Commission Recovery Health */}
-            <div className="p-6 rounded-2xl bg-[#151a23] border border-white/5 space-y-4">
-              <h3 className="font-bold text-white text-sm flex items-center gap-2">
-                <Scale size={16} className="text-emerald-400" /> Commission Settlement Health
+            <div className="p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm space-y-4">
+              <h3 className="font-bold text-[var(--text-primary)] text-sm flex items-center gap-2">
+                <Scale size={16} className="text-emerald-500" /> Commission Settlement Health
               </h3>
               <div className="space-y-2 text-xs">
-                <div className="flex justify-between py-1 border-b border-white/5">
-                  <span className="text-white/60">Gross Cash Trip Fares</span>
-                  <strong className="text-white">{formatMoney(adminCurrency, kpis.totalCashCollected)}</strong>
+                <div className="flex justify-between py-1 border-b border-[var(--border)]">
+                  <span className="text-[var(--text-secondary)]">Gross Cash Trip Fares</span>
+                  <strong className="text-[var(--text-primary)]">{formatMoney(adminCurrency, kpis.totalCashCollected)}</strong>
                 </div>
-                <div className="flex justify-between py-1 border-b border-white/5">
-                  <span className="text-white/60">Platform Commission (15%)</span>
-                  <strong className="text-purple-400">{formatMoney(adminCurrency, kpis.totalCommissionDue)}</strong>
+                <div className="flex justify-between py-1 border-b border-[var(--border)]">
+                  <span className="text-[var(--text-secondary)]">Platform Commission (15%)</span>
+                  <strong className="text-purple-500">{formatMoney(adminCurrency, kpis.totalCommissionDue)}</strong>
                 </div>
-                <div className="flex justify-between py-1 border-b border-white/5">
-                  <span className="text-white/60">Commission Recovered</span>
-                  <strong className="text-emerald-400">+{formatMoney(adminCurrency, kpis.totalCommissionCollected)}</strong>
+                <div className="flex justify-between py-1 border-b border-[var(--border)]">
+                  <span className="text-[var(--text-secondary)]">Commission Recovered</span>
+                  <strong className="text-emerald-500">+{formatMoney(adminCurrency, kpis.totalCommissionCollected)}</strong>
                 </div>
                 <div className="flex justify-between py-1 pt-2 font-bold text-sm">
-                  <span className="text-red-400">Uncollected Commission Liability</span>
-                  <span className="text-red-400">{formatMoney(adminCurrency, kpis.outstandingCommissionBalance)}</span>
+                  <span className="text-red-500">Uncollected Commission Liability</span>
+                  <span className="text-red-500">{formatMoney(adminCurrency, kpis.outstandingCommissionBalance)}</span>
                 </div>
               </div>
 
@@ -901,14 +901,14 @@ export function FinanceDashboardScreen({
                 <button
                   type="button"
                   onClick={() => setActiveTab("outstandingCommissions")}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-black transition"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-sm transition"
                 >
                   Manage Rider Debt ({debtTotal || 0} Riders)
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab("reconciliation")}
-                  className="text-xs text-white/60 hover:text-white underline"
+                  className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] underline"
                 >
                   Run Audit Verification
                 </button>
@@ -925,7 +925,7 @@ export function FinanceDashboardScreen({
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="relative w-full max-w-sm">
-              <Search size={14} className="absolute left-3 top-3 text-white/40" />
+              <Search size={14} className="absolute left-3 top-3 text-[var(--text-muted)]" />
               <input
                 type="text"
                 placeholder="Search Trip ID, rider, or passenger..."
@@ -934,22 +934,22 @@ export function FinanceDashboardScreen({
                   setCollectionsSearch(e.target.value);
                   setCollectionsPage(1);
                 }}
-                className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#151a23] border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                className="w-full pl-9 pr-4 py-2 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-primary)] text-xs focus:outline-none focus:border-amber-400"
               />
             </div>
 
             <button
               type="button"
               onClick={() => handleDownloadCsv("cash_collections")}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/10 transition"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[var(--surface-elevated)] hover:bg-[var(--surface-muted)] text-[var(--text-primary)] border border-[var(--border)] transition"
             >
               <Download size={13} /> Export Collections CSV
             </button>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl bg-[#151a23] border border-white/10">
-            <table className="w-full text-left text-xs text-white/80">
-              <thead className="bg-[#1c222e] text-white/50 text-[11px] uppercase tracking-wider border-b border-white/10">
+          <div className="overflow-x-auto rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm">
+            <table className="w-full text-left text-xs text-[var(--text-primary)]">
+              <thead className="bg-[var(--surface-muted)] text-[var(--text-secondary)] text-[11px] font-semibold uppercase tracking-wider border-b border-[var(--border)]">
                 <tr>
                   <th className="p-4">Trip ID</th>
                   <th className="p-4">Rider</th>
@@ -961,40 +961,40 @@ export function FinanceDashboardScreen({
                   <th className="p-4">Date & Time</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-[var(--border-subtle)]">
                 {cashCollections.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="p-8 text-center text-white/40">
+                    <td colSpan={8} className="p-8 text-center text-[var(--text-muted)]">
                       No cash collections found for the selected period.
                     </td>
                   </tr>
                 ) : (
                   cashCollections.map((trip) => (
-                    <tr key={trip.id} className="hover:bg-white/5 transition">
-                      <td className="p-4 font-mono text-[11px] text-amber-400 font-semibold">
+                    <tr key={trip.id} className="hover:bg-[var(--surface-muted)] transition-colors">
+                      <td className="p-4 font-mono text-[11px] text-amber-500 font-semibold">
                         {trip.id.slice(0, 10)}...
                       </td>
                       <td className="p-4">
                         <button
                           type="button"
                           onClick={() => setSelectedRiderId(trip.rider?.id)}
-                          className="font-semibold text-white hover:text-amber-400 text-left transition"
+                          className="font-semibold text-[var(--text-primary)] hover:text-amber-500 text-left transition"
                         >
                           {trip.rider?.user?.fullName || "—"}
                         </button>
-                        <div className="text-[10px] text-white/40">{trip.rider?.user?.phoneE164 || "—"}</div>
+                        <div className="text-[10px] text-[var(--text-muted)]">{trip.rider?.user?.phoneE164 || "—"}</div>
                       </td>
                       <td className="p-4">
-                        <div className="text-white">{trip.passenger?.user?.fullName || "—"}</div>
-                        <div className="text-[10px] text-white/40">{trip.passenger?.user?.phoneE164 || "—"}</div>
+                        <div className="text-[var(--text-primary)]">{trip.passenger?.user?.fullName || "—"}</div>
+                        <div className="text-[10px] text-[var(--text-muted)]">{trip.passenger?.user?.phoneE164 || "—"}</div>
                       </td>
-                      <td className="p-4 text-right font-semibold text-white">
+                      <td className="p-4 text-right font-semibold text-[var(--text-primary)]">
                         {formatMoney(adminCurrency, trip.finalFare || trip.estimatedFare || 0)}
                       </td>
-                      <td className="p-4 text-right font-bold text-amber-400">
+                      <td className="p-4 text-right font-bold text-amber-500">
                         {formatMoney(adminCurrency, trip.cashDeclaredAmount || trip.finalFare || 0)}
                       </td>
-                      <td className="p-4 text-right font-bold text-purple-400">
+                      <td className="p-4 text-right font-bold text-purple-500">
                         {formatMoney(adminCurrency, trip.commissionLiability || 0)}
                       </td>
                       <td className="p-4 text-center">
@@ -1003,12 +1003,12 @@ export function FinanceDashboardScreen({
                             <CheckCircle2 size={10} /> CONFIRMED
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-500 border border-amber-500/30">
                             <Clock size={10} /> PENDING
                           </span>
                         )}
                       </td>
-                      <td className="p-4 text-[11px] text-white/50">
+                      <td className="p-4 text-[11px] text-[var(--text-secondary)]">
                         {new Date(trip.createdAt).toLocaleString("en-GB", {
                           day: "numeric",
                           month: "short",
@@ -1024,14 +1024,14 @@ export function FinanceDashboardScreen({
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between text-xs text-white/50 px-2">
+          <div className="flex items-center justify-between text-xs text-[var(--text-secondary)] px-2">
             <span>Showing {cashCollections.length} records</span>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 disabled={collectionsPage <= 1}
                 onClick={() => setCollectionsPage((p) => Math.max(1, p - 1))}
-                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white disabled:opacity-30"
+                className="p-1.5 rounded-lg bg-[var(--surface-muted)] hover:bg-[var(--border)] text-[var(--text-primary)] disabled:opacity-30"
               >
                 <ChevronLeft size={16} />
               </button>
@@ -1040,7 +1040,7 @@ export function FinanceDashboardScreen({
                 type="button"
                 disabled={cashCollections.length < 15}
                 onClick={() => setCollectionsPage((p) => p + 1)}
-                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white disabled:opacity-30"
+                className="p-1.5 rounded-lg bg-[var(--surface-muted)] hover:bg-[var(--border)] text-[var(--text-primary)] disabled:opacity-30"
               >
                 <ChevronRight size={16} />
               </button>
@@ -1057,7 +1057,7 @@ export function FinanceDashboardScreen({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="relative w-72">
-                <Search size={14} className="absolute left-3 top-3 text-white/40" />
+                <Search size={14} className="absolute left-3 top-3 text-[var(--text-muted)]" />
                 <input
                   type="text"
                   placeholder="Search rider by name or phone..."
@@ -1066,7 +1066,7 @@ export function FinanceDashboardScreen({
                     setDebtSearch(e.target.value);
                     setDebtPage(1);
                   }}
-                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#151a23] border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-primary)] text-xs focus:outline-none focus:border-amber-400"
                 />
               </div>
 
@@ -1076,7 +1076,7 @@ export function FinanceDashboardScreen({
                   setDebtStatusFilter(e.target.value);
                   setDebtPage(1);
                 }}
-                className="px-3 py-2 rounded-xl bg-[#151a23] border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                className="px-3 py-2 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-primary)] text-xs focus:outline-none focus:border-amber-400"
               >
                 <option value="">All Debt Statuses</option>
                 <option value="WARNING">Warning (≥ GH₵50)</option>
@@ -1088,15 +1088,15 @@ export function FinanceDashboardScreen({
             <button
               type="button"
               onClick={() => handleDownloadCsv("debt_aging")}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/10 transition"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[var(--surface-elevated)] hover:bg-[var(--surface-muted)] text-[var(--text-primary)] border border-[var(--border)] transition"
             >
               <Download size={13} /> Export Debt Report CSV
             </button>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl bg-[#151a23] border border-white/10">
-            <table className="w-full text-left text-xs text-white/80">
-              <thead className="bg-[#1c222e] text-white/50 text-[11px] uppercase tracking-wider border-b border-white/10">
+          <div className="overflow-x-auto rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm">
+            <table className="w-full text-left text-xs text-[var(--text-primary)]">
+              <thead className="bg-[var(--surface-muted)] text-[var(--text-secondary)] text-[11px] font-semibold uppercase tracking-wider border-b border-[var(--border)]">
                 <tr>
                   <th className="p-4">Rider</th>
                   <th className="p-4 text-right">Total Cash Collected</th>
@@ -1106,10 +1106,10 @@ export function FinanceDashboardScreen({
                   <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-[var(--border-subtle)]">
                 {debtRiders.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-white/40">
+                    <td colSpan={6} className="p-8 text-center text-[var(--text-muted)]">
                       No outstanding commission debts recorded.
                     </td>
                   </tr>
@@ -1120,22 +1120,22 @@ export function FinanceDashboardScreen({
                     const isWarning = debt >= (financeSettings.warningThresholdGhs || 50) && !isRestricted;
 
                     return (
-                      <tr key={rider.id} className="hover:bg-white/5 transition">
+                      <tr key={rider.id} className="hover:bg-[var(--surface-muted)] transition-colors">
                         <td className="p-4">
                           <button
                             type="button"
                             onClick={() => setSelectedRiderId(rider.id)}
-                            className="font-bold text-white hover:text-amber-400 text-left transition flex items-center gap-2"
+                            className="font-bold text-[var(--text-primary)] hover:text-amber-500 text-left transition flex items-center gap-2"
                           >
                             <span>{rider.user?.fullName || "Rider"}</span>
-                            <Eye size={12} className="text-white/40" />
+                            <Eye size={12} className="text-[var(--text-muted)]" />
                           </button>
-                          <div className="text-[10px] text-white/40">{rider.user?.phoneE164 || "—"}</div>
+                          <div className="text-[10px] text-[var(--text-muted)]">{rider.user?.phoneE164 || "—"}</div>
                         </td>
-                        <td className="p-4 text-right font-semibold text-amber-400">
+                        <td className="p-4 text-right font-semibold text-amber-500">
                           {formatMoney(adminCurrency, rider.totalCashCollected ?? 0)}
                         </td>
-                        <td className="p-4 text-right font-bold text-red-400 text-sm">
+                        <td className="p-4 text-right font-bold text-red-500 text-sm">
                           {formatMoney(adminCurrency, debt)}
                         </td>
                         <td className="p-4 text-center">
@@ -1144,7 +1144,7 @@ export function FinanceDashboardScreen({
                               <ShieldAlert size={10} /> RESTRICTED
                             </span>
                           ) : isWarning ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-500 border border-amber-500/40">
                               <AlertTriangle size={10} /> WARNING
                             </span>
                           ) : (
@@ -1153,7 +1153,7 @@ export function FinanceDashboardScreen({
                             </span>
                           )}
                         </td>
-                        <td className="p-4 text-[11px] text-white/50">
+                        <td className="p-4 text-[11px] text-[var(--text-secondary)]">
                           {rider.lastCommissionPaymentAt
                             ? new Date(rider.lastCommissionPaymentAt).toLocaleDateString("en-GB", {
                                 day: "numeric",
@@ -1166,7 +1166,7 @@ export function FinanceDashboardScreen({
                             <button
                               type="button"
                               onClick={() => handleSendReminder(rider.id)}
-                              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white"
+                              className="p-1.5 rounded-lg bg-[var(--surface-muted)] hover:bg-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                               title="Send Reminder"
                             >
                               <Send size={13} />
@@ -1174,14 +1174,14 @@ export function FinanceDashboardScreen({
                             <button
                               type="button"
                               onClick={() => setPaymentModalRider(rider)}
-                              className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 text-xs font-semibold"
+                              className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-500 text-xs font-semibold"
                             >
                               Pay
                             </button>
                             <button
                               type="button"
                               onClick={() => setAdjustModalRider(rider)}
-                              className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs font-semibold"
+                              className="px-2.5 py-1 rounded-lg bg-[var(--surface-muted)] hover:bg-[var(--border)] text-[var(--text-primary)] text-xs font-semibold"
                             >
                               Adjust
                             </button>
@@ -1208,14 +1208,14 @@ export function FinanceDashboardScreen({
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between text-xs text-white/50 px-2">
+          <div className="flex items-center justify-between text-xs text-[var(--text-secondary)] px-2">
             <span>Total Debtors: {debtTotal}</span>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 disabled={debtPage <= 1}
                 onClick={() => setDebtPage((p) => Math.max(1, p - 1))}
-                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white disabled:opacity-30"
+                className="p-1.5 rounded-lg bg-[var(--surface-muted)] hover:bg-[var(--border)] text-[var(--text-primary)] disabled:opacity-30"
               >
                 <ChevronLeft size={16} />
               </button>
@@ -1224,7 +1224,7 @@ export function FinanceDashboardScreen({
                 type="button"
                 disabled={debtRiders.length < 15}
                 onClick={() => setDebtPage((p) => p + 1)}
-                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white disabled:opacity-30"
+                className="p-1.5 rounded-lg bg-[var(--surface-muted)] hover:bg-[var(--border)] text-[var(--text-primary)] disabled:opacity-30"
               >
                 <ChevronRight size={16} />
               </button>
@@ -1243,7 +1243,7 @@ export function FinanceDashboardScreen({
               <select
                 value={disputesStatusFilter}
                 onChange={(e) => setDisputesStatusFilter(e.target.value)}
-                className="px-3 py-2 rounded-xl bg-[#151a23] border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                className="px-3 py-2 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-primary)] text-xs focus:outline-none focus:border-amber-400"
               >
                 <option value="">All Dispute Statuses</option>
                 <option value="PENDING">Pending</option>
@@ -1254,9 +1254,9 @@ export function FinanceDashboardScreen({
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl bg-[#151a23] border border-white/10">
-            <table className="w-full text-left text-xs text-white/80">
-              <thead className="bg-[#1c222e] text-white/50 text-[11px] uppercase tracking-wider border-b border-white/10">
+          <div className="overflow-x-auto rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm">
+            <table className="w-full text-left text-xs text-[var(--text-primary)]">
+              <thead className="bg-[var(--surface-muted)] text-[var(--text-secondary)] text-[11px] font-semibold uppercase tracking-wider border-b border-[var(--border)]">
                 <tr>
                   <th className="p-4">Dispute ID</th>
                   <th className="p-4">Trip ID</th>
@@ -1269,37 +1269,37 @@ export function FinanceDashboardScreen({
                   <th className="p-4 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-[var(--border-subtle)]">
                 {disputes.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="p-8 text-center text-white/40">
+                    <td colSpan={9} className="p-8 text-center text-[var(--text-muted)]">
                       No payment disputes filed.
                     </td>
                   </tr>
                 ) : (
                   disputes.map((disp) => (
-                    <tr key={disp.id} className="hover:bg-white/5 transition">
-                      <td className="p-4 font-mono text-[11px] text-white/50">
+                    <tr key={disp.id} className="hover:bg-[var(--surface-muted)] transition-colors">
+                      <td className="p-4 font-mono text-[11px] text-[var(--text-muted)]">
                         {disp.id.slice(0, 8)}...
                       </td>
-                      <td className="p-4 font-mono text-[11px] text-amber-400">
+                      <td className="p-4 font-mono text-[11px] text-amber-500">
                         {disp.rideId ? disp.rideId.slice(0, 8) + "..." : "—"}
                       </td>
-                      <td className="p-4 capitalize font-semibold text-white">
+                      <td className="p-4 capitalize font-semibold text-[var(--text-primary)]">
                         {disp.reportedByRole}
                       </td>
                       <td className="p-4">
-                        <span className="font-semibold text-red-300">
+                        <span className="font-semibold text-red-500">
                           {disp.disputeType?.replace(/_/g, " ")}
                         </span>
                         {disp.description && (
-                          <div className="text-[10px] text-white/40 truncate max-w-xs">{disp.description}</div>
+                          <div className="text-[10px] text-[var(--text-muted)] truncate max-w-xs">{disp.description}</div>
                         )}
                       </td>
-                      <td className="p-4 text-right font-bold text-white">
+                      <td className="p-4 text-right font-bold text-[var(--text-primary)]">
                         {disp.claimedAmount ? formatMoney(adminCurrency, disp.claimedAmount) : "—"}
                       </td>
-                      <td className="p-4 text-right font-bold text-amber-400">
+                      <td className="p-4 text-right font-bold text-amber-500">
                         {disp.actualRecordedAmount ? formatMoney(adminCurrency, disp.actualRecordedAmount) : "—"}
                       </td>
                       <td className="p-4 text-center">
@@ -1308,12 +1308,12 @@ export function FinanceDashboardScreen({
                             ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                             : disp.status === "REJECTED"
                             ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                            : "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                            : "bg-amber-500/20 text-amber-500 border border-amber-500/30"
                         }`}>
                           {disp.status}
                         </span>
                       </td>
-                      <td className="p-4 text-[11px] text-white/50">
+                      <td className="p-4 text-[11px] text-[var(--text-secondary)]">
                         {new Date(disp.createdAt).toLocaleDateString("en-GB", {
                           day: "numeric",
                           month: "short"
@@ -1338,7 +1338,7 @@ export function FinanceDashboardScreen({
                             </button>
                           </div>
                         ) : (
-                          <span className="text-white/30 text-xs">—</span>
+                          <span className="text-[var(--text-muted)] text-xs">—</span>
                         )}
                       </td>
                     </tr>
@@ -1355,13 +1355,13 @@ export function FinanceDashboardScreen({
           ══════════════════════════════════════════════════════════════════════ */}
       {activeTab === "reconciliation" && (
         <div className="space-y-6">
-          <div className="p-6 rounded-2xl bg-[#151a23] border border-white/5 space-y-4">
+          <div className="p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-white text-base flex items-center gap-2">
-                  <Receipt size={18} className="text-amber-400" /> Automated Reconciliation Audit
+                <h3 className="font-bold text-[var(--text-primary)] text-base flex items-center gap-2">
+                  <Receipt size={18} className="text-amber-500" /> Automated Reconciliation Audit
                 </h3>
-                <p className="text-xs text-white/60 mt-1">
+                <p className="text-xs text-[var(--text-secondary)] mt-1">
                   Validates integrity across cash trip fares, expected commission (15%), and actual recorded ledger entries.
                 </p>
               </div>
@@ -1372,31 +1372,31 @@ export function FinanceDashboardScreen({
                     <CheckCircle2 size={13} /> AUDIT BALANCED & HEALTHY
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-500 border border-amber-500/40">
                     <AlertTriangle size={13} /> {reconciliation?.discrepanciesCount || 0} DISCREPANCIES DETECTED
                   </span>
                 )}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-white/5">
-              <div className="p-4 rounded-xl bg-black/30 border border-white/5">
-                <div className="text-xs text-white/50">Sum of Cash Trip Fares</div>
-                <div className="text-xl font-bold text-white mt-1">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-[var(--border)]">
+              <div className="p-4 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)]">
+                <div className="text-xs text-[var(--text-secondary)]">Sum of Cash Trip Fares</div>
+                <div className="text-xl font-bold text-[var(--text-primary)] mt-1">
                   {formatMoney(adminCurrency, reconciliation?.sumFares ?? kpis.totalCashCollected)}
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-black/30 border border-white/5">
-                <div className="text-xs text-white/50">Expected Commission (15%)</div>
-                <div className="text-xl font-bold text-purple-400 mt-1">
+              <div className="p-4 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)]">
+                <div className="text-xs text-[var(--text-secondary)]">Expected Commission (15%)</div>
+                <div className="text-xl font-bold text-purple-500 mt-1">
                   {formatMoney(adminCurrency, reconciliation?.expectedCommission ?? kpis.totalCommissionDue)}
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-black/30 border border-white/5">
-                <div className="text-xs text-white/50">Actual Recorded Ledger Entries</div>
-                <div className="text-xl font-bold text-emerald-400 mt-1">
+              <div className="p-4 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)]">
+                <div className="text-xs text-[var(--text-secondary)]">Actual Recorded Ledger Entries</div>
+                <div className="text-xl font-bold text-emerald-500 mt-1">
                   {formatMoney(adminCurrency, reconciliation?.recordedCommission ?? kpis.totalCommissionDue)}
                 </div>
               </div>
@@ -1405,12 +1405,12 @@ export function FinanceDashboardScreen({
 
           {/* Discrepancy Table if any */}
           {reconciliation?.discrepancies && reconciliation.discrepancies.length > 0 && (
-            <div className="overflow-x-auto rounded-2xl bg-[#151a23] border border-red-500/30">
-              <div className="p-4 bg-red-950/40 border-b border-red-500/20 font-bold text-red-200 text-xs">
+            <div className="overflow-x-auto rounded-2xl bg-[var(--surface)] border border-red-500/30 shadow-sm">
+              <div className="p-4 bg-red-500/10 border-b border-red-500/20 font-bold text-red-500 text-xs">
                 Discrepancy Audit Details
               </div>
-              <table className="w-full text-left text-xs text-white/80">
-                <thead className="bg-[#1c222e] text-white/50 text-[11px] uppercase tracking-wider">
+              <table className="w-full text-left text-xs text-[var(--text-primary)]">
+                <thead className="bg-[var(--surface-muted)] text-[var(--text-secondary)] text-[11px] font-semibold uppercase tracking-wider">
                   <tr>
                     <th className="p-4">Ride ID</th>
                     <th className="p-4">Fare</th>
@@ -1419,14 +1419,14 @@ export function FinanceDashboardScreen({
                     <th className="p-4">Variance</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-[var(--border-subtle)]">
                   {reconciliation.discrepancies.map((d: any) => (
                     <tr key={d.rideId}>
-                      <td className="p-4 font-mono text-amber-400">{d.rideId}</td>
+                      <td className="p-4 font-mono text-amber-500">{d.rideId}</td>
                       <td className="p-4">{formatMoney(adminCurrency, d.fare)}</td>
                       <td className="p-4">{formatMoney(adminCurrency, d.expected)}</td>
                       <td className="p-4">{formatMoney(adminCurrency, d.recorded)}</td>
-                      <td className="p-4 font-bold text-red-400">
+                      <td className="p-4 font-bold text-red-500">
                         {formatMoney(adminCurrency, d.variance)}
                       </td>
                     </tr>
@@ -1443,14 +1443,14 @@ export function FinanceDashboardScreen({
           ══════════════════════════════════════════════════════════════════════ */}
       {activeTab === "settings" && (
         <div className="max-w-2xl space-y-6">
-          <div className="p-6 rounded-2xl bg-[#151a23] border border-white/5 space-y-6">
-            <h3 className="font-bold text-white text-base flex items-center gap-2">
-              <Settings size={18} className="text-amber-400" /> Platform Commission & Debt Rules
+          <div className="p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm space-y-6">
+            <h3 className="font-bold text-[var(--text-primary)] text-base flex items-center gap-2">
+              <Settings size={18} className="text-amber-500" /> Platform Commission & Debt Rules
             </h3>
 
             {/* Default Commission % */}
             <div>
-              <label className="text-xs font-semibold text-white/80 block mb-1">
+              <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1">
                 Default Commission Percentage (%)
               </label>
               <input
@@ -1465,14 +1465,14 @@ export function FinanceDashboardScreen({
                     defaultCommissionPercentage: parseFloat(e.target.value) || 0
                   })
                 }
-                className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-amber-400"
               />
-              <p className="text-[11px] text-white/40 mt-1">Standard rate charged on completed rides (e.g. 15%).</p>
+              <p className="text-[11px] text-[var(--text-muted)] mt-1">Standard rate charged on completed rides (e.g. 15%).</p>
             </div>
 
             {/* Warning Threshold */}
             <div>
-              <label className="text-xs font-semibold text-white/80 block mb-1">
+              <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1">
                 Rider Commission Warning Threshold ({adminCurrency})
               </label>
               <input
@@ -1485,16 +1485,16 @@ export function FinanceDashboardScreen({
                     warningThresholdGhs: parseFloat(e.target.value) || 0
                   })
                 }
-                className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-amber-400"
               />
-              <p className="text-[11px] text-white/40 mt-1">
+              <p className="text-[11px] text-[var(--text-muted)] mt-1">
                 Riders with debt exceeding this threshold receive warning banners and SMS reminders (Default: GH₵50).
               </p>
             </div>
 
             {/* Restriction Threshold */}
             <div>
-              <label className="text-xs font-semibold text-white/80 block mb-1">
+              <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1">
                 Cash Trip Restriction Threshold ({adminCurrency})
               </label>
               <input
@@ -1507,19 +1507,19 @@ export function FinanceDashboardScreen({
                     cashRestrictionThresholdGhs: parseFloat(e.target.value) || 0
                   })
                 }
-                className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-amber-400"
               />
-              <p className="text-[11px] text-white/40 mt-1">
+              <p className="text-[11px] text-[var(--text-muted)] mt-1">
                 Riders reaching this threshold are automatically locked from dispatch for cash trips (Default: GH₵150).
               </p>
             </div>
 
             {/* Toggles */}
-            <div className="pt-4 border-t border-white/10 space-y-4">
+            <div className="pt-4 border-t border-[var(--border)] space-y-4">
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <div className="text-xs font-semibold text-white">Enable Cash Payments System</div>
-                  <div className="text-[11px] text-white/40">Global switch for cash trip dispatch</div>
+                  <div className="text-xs font-semibold text-[var(--text-primary)]">Enable Cash Payments System</div>
+                  <div className="text-[11px] text-[var(--text-muted)]">Global switch for cash trip dispatch</div>
                 </div>
                 <input
                   type="checkbox"
@@ -1530,14 +1530,14 @@ export function FinanceDashboardScreen({
                       cashPaymentsEnabled: e.target.checked
                     })
                   }
-                  className="w-5 h-5 rounded bg-black/40 border-white/20 text-amber-500 focus:ring-0"
+                  className="w-5 h-5 rounded bg-[var(--surface-muted)] border-[var(--border)] text-amber-500 focus:ring-0"
                 />
               </label>
 
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <div className="text-xs font-semibold text-white">Automatic Cash Trip Restriction</div>
-                  <div className="text-[11px] text-white/40">Automatically restrict riders when debt exceeds threshold</div>
+                  <div className="text-xs font-semibold text-[var(--text-primary)]">Automatic Cash Trip Restriction</div>
+                  <div className="text-[11px] text-[var(--text-muted)]">Automatically restrict riders when debt exceeds threshold</div>
                 </div>
                 <input
                   type="checkbox"
@@ -1548,17 +1548,17 @@ export function FinanceDashboardScreen({
                       autoRestrictionEnabled: e.target.checked
                     })
                   }
-                  className="w-5 h-5 rounded bg-black/40 border-white/20 text-amber-500 focus:ring-0"
+                  className="w-5 h-5 rounded bg-[var(--surface-muted)] border-[var(--border)] text-amber-500 focus:ring-0"
                 />
               </label>
             </div>
 
-            <div className="pt-4 border-t border-white/10 flex justify-end">
+            <div className="pt-4 border-t border-[var(--border)] flex justify-end">
               <button
                 type="button"
                 disabled={settingsSaving}
                 onClick={handleSaveSettings}
-                className="px-6 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-black shadow-lg shadow-amber-500/20 transition disabled:opacity-50"
+                className="px-6 py-2.5 rounded-xl text-xs font-bold bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-sm transition disabled:opacity-50"
               >
                 {settingsSaving ? "Saving..." : "Save Finance Settings"}
               </button>
@@ -1572,22 +1572,22 @@ export function FinanceDashboardScreen({
           ══════════════════════════════════════════════════════════════════════ */}
       {activeTab === "reports" && (
         <div className="max-w-xl space-y-6">
-          <div className="p-6 rounded-2xl bg-[#151a23] border border-white/5 space-y-6">
-            <h3 className="font-bold text-white text-base flex items-center gap-2">
-              <FileSpreadsheet size={18} className="text-amber-400" /> Export Financial Reports
+          <div className="p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm space-y-6">
+            <h3 className="font-bold text-[var(--text-primary)] text-base flex items-center gap-2">
+              <FileSpreadsheet size={18} className="text-amber-500" /> Export Financial Reports
             </h3>
-            <p className="text-xs text-white/60">
+            <p className="text-xs text-[var(--text-secondary)]">
               Download complete, audit-grade CSV reports for accounting, compliance, and tax settlement.
             </p>
 
             <div>
-              <label className="text-xs font-semibold text-white/80 block mb-1">
+              <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1">
                 Select Report Type
               </label>
               <select
                 value={exportReportType}
                 onChange={(e) => setExportReportType(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-amber-400"
               >
                 <option value="cash_collections">Cash Collections Report</option>
                 <option value="commission_settlements">Commission Settlement Report</option>
@@ -1596,11 +1596,11 @@ export function FinanceDashboardScreen({
               </select>
             </div>
 
-            <div className="pt-4 border-t border-white/10 flex justify-end">
+            <div className="pt-4 border-t border-[var(--border)] flex justify-end">
               <button
                 type="button"
                 onClick={() => handleDownloadCsv(exportReportType)}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-black shadow-lg shadow-amber-500/20 transition"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-sm transition"
               >
                 <Download size={14} /> Download CSV Report
               </button>
@@ -1625,26 +1625,26 @@ export function FinanceDashboardScreen({
       {/* ── Modal: Record Payment ── */}
       {paymentModalRider && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-[#151a23] border border-white/15 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+          <div className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-white text-base flex items-center gap-2">
-                <Receipt size={18} className="text-amber-400" /> Record Manual Payment
+              <h3 className="font-bold text-[var(--text-primary)] text-base flex items-center gap-2">
+                <Receipt size={18} className="text-amber-500" /> Record Manual Payment
               </h3>
               <button
                 type="button"
                 onClick={() => setPaymentModalRider(null)}
-                className="text-white/50 hover:text-white"
+                className="text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               >
                 <X size={18} />
               </button>
             </div>
 
-            <p className="text-xs text-white/60">
-              Rider: <strong className="text-white">{paymentModalRider.user?.fullName}</strong> (Debt: {formatMoney(adminCurrency, paymentModalRider.outstandingCommission ?? 0)})
+            <p className="text-xs text-[var(--text-secondary)]">
+              Rider: <strong className="text-[var(--text-primary)]">{paymentModalRider.user?.fullName}</strong> (Debt: {formatMoney(adminCurrency, paymentModalRider.outstandingCommission ?? 0)})
             </p>
 
             <div>
-              <label className="text-xs font-semibold text-white/70 block mb-1">
+              <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1">
                 Payment Amount ({adminCurrency}) *
               </label>
               <input
@@ -1653,19 +1653,19 @@ export function FinanceDashboardScreen({
                 placeholder="e.g. 50.00"
                 value={paymentAmount}
                 onChange={(e) => setPaymentAmount(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                className="w-full px-3 py-2 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-amber-400"
                 autoFocus
               />
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-white/70 block mb-1">
+              <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1">
                 Payment Method
               </label>
               <select
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                className="w-full px-3 py-2 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-amber-400"
               >
                 <option value="CASH">Cash (Office / Field)</option>
                 <option value="BANK_TRANSFER">Bank Direct Transfer</option>
@@ -1675,7 +1675,7 @@ export function FinanceDashboardScreen({
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-white/70 block mb-1">
+              <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1">
                 Receipt Reference
               </label>
               <input
@@ -1683,15 +1683,15 @@ export function FinanceDashboardScreen({
                 placeholder="Receipt # or bank ref (optional)"
                 value={paymentRef}
                 onChange={(e) => setPaymentRef(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                className="w-full px-3 py-2 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-amber-400"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--border)]">
               <button
                 type="button"
                 onClick={() => setPaymentModalRider(null)}
-                className="px-4 py-2 rounded-xl text-xs font-medium text-white/70 hover:bg-white/5"
+                className="px-4 py-2 rounded-xl text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-muted)]"
               >
                 Cancel
               </button>
@@ -1699,7 +1699,7 @@ export function FinanceDashboardScreen({
                 type="button"
                 disabled={submittingPayment || !paymentAmount}
                 onClick={handleRecordPayment}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-black transition disabled:opacity-50"
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-amber-400 hover:bg-amber-300 text-slate-950 transition disabled:opacity-50"
               >
                 {submittingPayment ? "Recording..." : "Confirm Payment"}
               </button>
@@ -1711,26 +1711,26 @@ export function FinanceDashboardScreen({
       {/* ── Modal: Adjust Balance ── */}
       {adjustModalRider && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-[#151a23] border border-white/15 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+          <div className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-white text-base flex items-center gap-2">
-                <Sliders size={18} className="text-amber-400" /> Adjust Rider Balance
+              <h3 className="font-bold text-[var(--text-primary)] text-base flex items-center gap-2">
+                <Sliders size={18} className="text-amber-500" /> Adjust Rider Balance
               </h3>
               <button
                 type="button"
                 onClick={() => setAdjustModalRider(null)}
-                className="text-white/50 hover:text-white"
+                className="text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               >
                 <X size={18} />
               </button>
             </div>
 
-            <p className="text-xs text-white/60">
-              Rider: <strong className="text-white">{adjustModalRider.user?.fullName}</strong>
+            <p className="text-xs text-[var(--text-secondary)]">
+              Rider: <strong className="text-[var(--text-primary)]">{adjustModalRider.user?.fullName}</strong>
             </p>
 
             <div>
-              <label className="text-xs font-semibold text-white/70 block mb-1">
+              <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1">
                 Adjustment Type
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -1740,7 +1740,7 @@ export function FinanceDashboardScreen({
                   className={`px-3 py-2 rounded-xl text-xs font-semibold border transition ${
                     adjustType === "CREDIT"
                       ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
-                      : "bg-white/5 border-white/10 text-white/60"
+                      : "bg-[var(--surface-muted)] border-[var(--border)] text-[var(--text-secondary)]"
                   }`}
                 >
                   Credit (Add Funds)
@@ -1751,7 +1751,7 @@ export function FinanceDashboardScreen({
                   className={`px-3 py-2 rounded-xl text-xs font-semibold border transition ${
                     adjustType === "DEBIT"
                       ? "bg-red-500/20 border-red-500/40 text-red-400"
-                      : "bg-white/5 border-white/10 text-white/60"
+                      : "bg-[var(--surface-muted)] border-[var(--border)] text-[var(--text-secondary)]"
                   }`}
                 >
                   Debit (Deduct Funds)
@@ -1760,7 +1760,7 @@ export function FinanceDashboardScreen({
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-white/70 block mb-1">
+              <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1">
                 Amount ({adminCurrency}) *
               </label>
               <input
@@ -1769,13 +1769,13 @@ export function FinanceDashboardScreen({
                 placeholder="e.g. 25.00"
                 value={adjustAmount}
                 onChange={(e) => setAdjustAmount(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                className="w-full px-3 py-2 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-amber-400"
                 autoFocus
               />
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-white/70 block mb-1">
+              <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1">
                 Mandatory Audit Reason *
               </label>
               <textarea
@@ -1783,15 +1783,15 @@ export function FinanceDashboardScreen({
                 placeholder="Explain reason for adjustment (required for audit)..."
                 value={adjustReason}
                 onChange={(e) => setAdjustReason(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                className="w-full px-3 py-2 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-amber-400"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--border)]">
               <button
                 type="button"
                 onClick={() => setAdjustModalRider(null)}
-                className="px-4 py-2 rounded-xl text-xs font-medium text-white/70 hover:bg-white/5"
+                className="px-4 py-2 rounded-xl text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-muted)]"
               >
                 Cancel
               </button>
@@ -1799,7 +1799,7 @@ export function FinanceDashboardScreen({
                 type="button"
                 disabled={submittingAdjust || !adjustAmount || !adjustReason.trim()}
                 onClick={handleAdjustBalance}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-black transition disabled:opacity-50"
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-amber-400 hover:bg-amber-300 text-slate-950 transition disabled:opacity-50"
               >
                 {submittingAdjust ? "Applying..." : "Apply Adjustment"}
               </button>
