@@ -36,6 +36,9 @@ type LiveMapMarker = {
   variant: "driverOnline" | "driverTrip" | "driver" | "driverIdle" | "passenger" | "pickup" | "destination";
   lastUpdated?: string;
   profileUrl?: string;
+  heading?: number;
+  speed?: number;
+  status?: string;
 };
 
 type RiderDetail = {
@@ -182,7 +185,10 @@ export function LiveOperationsScreen({
           position: [lat, lng] as [number, number],
           label: rider.user.fullName,
           variant,
-          lastUpdated: rider.createdAt
+          lastUpdated: rider.createdAt,
+          heading: 0,
+          speed: 0,
+          status: category === "offline" ? "OFFLINE" : "ONLINE"
         };
       })
       .filter(Boolean) as LiveMapMarker[];

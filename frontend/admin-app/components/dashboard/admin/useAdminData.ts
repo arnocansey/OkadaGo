@@ -889,14 +889,24 @@ export function useAdminData(
           id: rider.id,
           position: [rider.latitude, rider.longitude] as [number, number],
           label: rider.name || rider.displayCode,
-          variant: "driver" as const
+          variant: (rider.status === "ON_TRIP"
+            ? "driverTrip"
+            : rider.status === "OFFLINE"
+            ? "driverIdle"
+            : "driverOnline") as "driverTrip" | "driverOnline" | "driverIdle" | "driver",
+          heading: rider.heading ?? 0,
+          speed: rider.speed ?? 0,
+          status: rider.status ?? "ONLINE"
         }));
     }
     return ridersWithCoords.map((rider) => ({
       id: rider.id,
       position: [parseNumber(rider.currentLatitude), parseNumber(rider.currentLongitude)] as [number, number],
       label: rider.user.fullName,
-      variant: "driver" as const
+      variant: (rider.onlineStatus ? "driverOnline" : "driverIdle") as "driverOnline" | "driverIdle",
+      heading: 0,
+      speed: 0,
+      status: rider.onlineStatus ? "ONLINE" : "OFFLINE"
     }));
   }, [liveSnapshot, ridersWithCoords]);
 

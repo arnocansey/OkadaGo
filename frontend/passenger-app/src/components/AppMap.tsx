@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import MapViewBase, { Marker, Polyline, PROVIDER_GOOGLE, type Region } from "react-native-maps";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { Crosshair, MapPin } from "lucide-react-native";
-import { MotorcycleIcon } from "./icons/MotorcycleIcon";
+import { Crosshair, MapPin, Navigation } from "lucide-react-native";
+import { MotorcycleMarker } from "./MotorcycleMarker";
 import { useTheme } from "@/context/ThemeContext";
 import {
   getGoogleMapsApiKey,
@@ -22,7 +22,10 @@ export type MapMarker = {
   pinColor?: string;
   type?: "rider" | "pickup" | "destination" | "dropoff" | "default";
   heading?: number;
+  speed?: number;
   etaLabel?: string;
+  etaMinutes?: number;
+  isSelected?: boolean;
 };
 
 type MapPressCoordinate = { latitude: number; longitude: number };
@@ -40,6 +43,7 @@ type Props = {
   /** When set, the map becomes tappable and reports the tapped coordinate (e.g. manual pin-drop). */
   onMapPress?: (coordinate: MapPressCoordinate) => void;
   pinDropHint?: string;
+  selectedRiderId?: string;
 };
 
 function MapUnavailable({ title, detail }: { title: string; detail: string }) {
@@ -66,6 +70,7 @@ export function AppMap({
   children,
   onMapPress,
   pinDropHint,
+  selectedRiderId,
 }: Props) {
   const mapRef = useRef<MapViewBase>(null);
   const didAutoCenter = useRef(false);
@@ -75,6 +80,16 @@ export function AppMap({
   const hasConfiguredKey = isGoogleMapsApiKeyConfigured(mapsApiKey);
   const [mapStatus, setMapStatus] = useState<"loading" | "ready" | "failed">(
     hasConfiguredKey ? "loading" : "failed",
+  );
+  const [isFollowingRider, setIsFollowingRider] = useState(false);
+
+  // Identify target rider to follow
+  const targetRiderMarker = markers.find(
+    (m) =>
+      m.isSelected ||
+      m.id === selectedRiderId ||
+      (selectedRiderId && m.id === `rider-${selectedRiderId}`) ||
+      m.id === "rider"
   );
 
   const clearLoadTimeout = useCallback(() => {
@@ -104,7 +119,7 @@ export function AppMap({
   }, [clearLoadTimeout, hasConfiguredKey]);
 
   useEffect(() => {
-    if (!fitToMarkers) return;
+    if (!fitToMarkers || isFollowingRider) return;
     const points = [
       ...markers.map((m) => ({ latitude: m.latitude, longitude: m.longitude })),
       ...(routeCoordinates ?? []),
@@ -114,10 +129,29 @@ export function AppMap({
       edgePadding: { top: 48, right: 48, bottom: 48, left: 48 },
       animated: true,
     });
-  }, [fitToMarkers, markers, routeCoordinates]);
+  }, [fitToMarkers, markers, routeCoordinates, isFollowingRider]);
+
+  // Camera Follow Rider Animation
+  useEffect(() => {
+    if (!isFollowingRider || !targetRiderMarker || mapStatus !== "ready") return;
+    mapRef.current?.animateCamera(
+      {
+        center: { latitude: targetRiderMarker.latitude, longitude: targetRiderMarker.longitude },
+        heading: targetRiderMarker.heading ?? 0,
+        zoom: 16,
+      },
+      { duration: 350 }
+    );
+  }, [
+    isFollowingRider,
+    targetRiderMarker?.latitude,
+    targetRiderMarker?.longitude,
+    targetRiderMarker?.heading,
+    mapStatus,
+  ]);
 
   useEffect(() => {
-    if (!autoCenterOnLocation || didAutoCenter.current || mapStatus !== "ready") return;
+    if (!autoCenterOnLocation || didAutoCenter.current || mapStatus !== "ready" || isFollowingRider) return;
 
     const isDefault =
       Math.abs(region.latitude - ACCRA_REGION.latitude) < 0.001 &&
@@ -133,6 +167,7 @@ export function AppMap({
     region.longitude,
     region.latitudeDelta,
     region.longitudeDelta,
+    isFollowingRider,
   ]);
 
   if (!hasConfiguredKey) {
@@ -169,6 +204,7 @@ export function AppMap({
         showsMyLocationButton={false}
         onMapReady={handleMapReady}
         onPress={onMapPress ? (event) => onMapPress(event.nativeEvent.coordinate) : undefined}
+        onPanDrag={() => setIsFollowingRider(false)}
       >
         {routeCoordinates?.length ? (
           <Polyline coordinates={routeCoordinates} strokeColor={colors.mapRoute} strokeWidth={4} />
@@ -183,6 +219,13 @@ export function AppMap({
 
           if (isRider) {
             const badgeBg = m.pinColor ?? colors.primary;
+            const isSelected = Boolean(
+              m.isSelected ||
+                m.id === selectedRiderId ||
+                (selectedRiderId && m.id === `rider-${selectedRiderId}`) ||
+                m.id === "rider"
+            );
+
             return (
               <Marker
                 key={m.id}
@@ -192,9 +235,15 @@ export function AppMap({
                 flat={true}
                 rotation={m.heading ?? 0}
               >
-                <View style={[styles.riderMarkerBadge, { backgroundColor: badgeBg }]}>
-                  <MotorcycleIcon size={18} color="#000000" strokeWidth={2.4} />
-                </View>
+                <MotorcycleMarker
+                  heading={m.heading}
+                  isSelected={isSelected}
+                  isMoving={(m.speed ?? 0) > 1}
+                  pinColor={badgeBg}
+                  title={m.title}
+                  speed={m.speed}
+                  etaLabel={m.etaLabel}
+                />
               </Marker>
             );
           }
@@ -240,6 +289,35 @@ export function AppMap({
         })}
         {children}
       </MapViewBase>
+
+      {/* Follow Rider Floating Action Button */}
+      {targetRiderMarker && (
+        <Pressable
+          style={[
+            styles.followButton,
+            isFollowingRider
+              ? { backgroundColor: colors.primary, borderColor: "#000000" }
+              : { backgroundColor: colors.surface, borderColor: colors.border },
+            shadows.md,
+          ]}
+          onPress={() => setIsFollowingRider((prev) => !prev)}
+          accessibilityLabel="Follow rider camera"
+        >
+          <Navigation
+            size={16}
+            color={isFollowingRider ? "#000000" : colors.primary}
+            style={{ transform: [{ rotate: "-45deg" }] }}
+          />
+          <Text
+            style={[
+              styles.followButtonText,
+              { color: isFollowingRider ? "#000000" : colors.text },
+            ]}
+          >
+            {isFollowingRider ? "Following Rider" : "Follow Rider"}
+          </Text>
+        </Pressable>
+      )}
 
       {onMapPress && pinDropHint ? (
         <View style={[styles.pinDropBanner, { backgroundColor: colors.primary }]} pointerEvents="none">
@@ -372,5 +450,21 @@ const styles = StyleSheet.create({
     borderTopWidth: 6,
     borderLeftColor: "transparent",
     borderRightColor: "transparent",
+  },
+  followButton: {
+    position: "absolute",
+    top: spacing.lg,
+    left: spacing.lg,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    gap: 6,
+  },
+  followButtonText: {
+    fontSize: 12,
+    fontWeight: "700",
   },
 });

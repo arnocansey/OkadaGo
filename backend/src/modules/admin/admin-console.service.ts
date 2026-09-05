@@ -2,6 +2,7 @@ import { v2 as cloudinary } from "cloudinary";
 import { appConfig } from "../../common/config.js";
 import { prisma } from "../../common/prisma.js";
 import { AppError } from "../../common/errors.js";
+import { liveLocationService } from "../realtime/location.service.js";
 import type {
   CreateAdminNoteInput,
   RiderRequestInfoInput,
@@ -1080,7 +1081,9 @@ export class AdminConsoleService {
 
   /** No auth here — callers must verify the session first (SSE loop reuses one check). */
   async buildLiveSnapshot() {
-    const [riders, sosIncidents] = await Promise.all([
+    const liveFleet = liveLocationService.getAllAdminFleet();
+
+    const [dbRiders, sosIncidents] = await Promise.all([
       prisma.riderProfile.findMany({
         where: {
           deletedAt: null,
@@ -1117,15 +1120,53 @@ export class AdminConsoleService {
       })
     ]);
 
+    const combinedRiders: Array<{
+      id: string;
+      displayCode: string;
+      name: string;
+      latitude: number;
+      longitude: number;
+      speed?: number;
+      heading?: number;
+      status?: string;
+      plateNumber?: string | null;
+    }> = [];
+
+    const seenIds = new Set<string>();
+
+    for (const lf of liveFleet) {
+      seenIds.add(lf.riderId);
+      combinedRiders.push({
+        id: lf.riderId,
+        displayCode: lf.riderId.slice(-6).toUpperCase(),
+        name: lf.displayName,
+        latitude: lf.latitude,
+        longitude: lf.longitude,
+        speed: lf.speed,
+        heading: lf.heading,
+        status: lf.status,
+        plateNumber: lf.vehiclePlate
+      });
+    }
+
+    for (const dbr of dbRiders) {
+      if (!seenIds.has(dbr.id)) {
+        combinedRiders.push({
+          id: dbr.id,
+          displayCode: dbr.displayCode,
+          name: dbr.user.fullName,
+          latitude: Number(dbr.currentLatitude),
+          longitude: Number(dbr.currentLongitude),
+          speed: 0,
+          heading: 0,
+          status: "ONLINE"
+        });
+      }
+    }
+
     return {
       timestamp: new Date().toISOString(),
-      riders: riders.map((r) => ({
-        id: r.id,
-        displayCode: r.displayCode,
-        name: r.user.fullName,
-        latitude: Number(r.currentLatitude),
-        longitude: Number(r.currentLongitude)
-      })),
+      riders: combinedRiders,
       sos: sosIncidents
     };
   }

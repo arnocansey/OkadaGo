@@ -180,12 +180,45 @@ export default function TrackScreen() {
       .catch(() => setStops([]));
   }, [isRide, trip?.id, trip?.status, session?.token]);
 
-  const markers = useMemo(() => {
-    if (!trip) return [];
-    return isRide
-      ? markersForRide(trip as (typeof rides)[0], colors)
-      : markersForDelivery(trip as (typeof deliveries)[0], colors);
-  }, [trip, isRide, colors, rides, deliveries]);
+  // ─── Real-Time Rider Location Streaming ────────────────────
+  const [liveRiderCoords, setLiveRiderCoords] = useState<{
+    latitude: number;
+    longitude: number;
+    heading: number;
+    speed: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!trip?.id) return;
+
+    passengerWs.send("trip:join-room", { tripId: trip.id });
+
+    const handleLocationUpdate = (data: unknown) => {
+      const payload = data as {
+        latitude?: number;
+        longitude?: number;
+        heading?: number;
+        speed?: number;
+      };
+
+      if (payload?.latitude && payload?.longitude) {
+        setLiveRiderCoords({
+          latitude: Number(payload.latitude),
+          longitude: Number(payload.longitude),
+          heading: Number(payload.heading ?? 0),
+          speed: Number(payload.speed ?? 0),
+        });
+      }
+    };
+
+    passengerWs.on("rider.location_updated", handleLocationUpdate);
+    passengerWs.on("rider:location-update", handleLocationUpdate);
+
+    return () => {
+      passengerWs.off("rider.location_updated", handleLocationUpdate);
+      passengerWs.off("rider:location-update", handleLocationUpdate);
+    };
+  }, [trip?.id]);
 
   const status = trip?.status ?? "searching";
   const statusLower = status.toLowerCase();
@@ -211,6 +244,32 @@ export default function TrackScreen() {
     destLat && destLon ? { latitude: destLat, longitude: destLon } : null,
     Boolean(trip) && isActiveTrip && Boolean(trip?.rider),
   );
+
+  const markers = useMemo(() => {
+    if (!trip) return [];
+    const baseMarkers = isRide
+      ? markersForRide(trip as (typeof rides)[0], colors)
+      : markersForDelivery(trip as (typeof deliveries)[0], colors);
+
+    return baseMarkers.map((m) => {
+      if (m.type === "rider" || m.id === "rider") {
+        const lat = liveRiderCoords?.latitude ?? m.latitude;
+        const lon = liveRiderCoords?.longitude ?? m.longitude;
+        const heading = liveRiderCoords?.heading ?? (m as any).heading ?? 0;
+        const speed = liveRiderCoords?.speed ?? (m as any).speed ?? 0;
+        return {
+          ...m,
+          latitude: lat,
+          longitude: lon,
+          heading,
+          speed,
+          etaMinutes: livePreview?.durationMinutes ? Math.round(livePreview.durationMinutes) : undefined,
+          isSelected: true,
+        };
+      }
+      return m;
+    });
+  }, [trip, isRide, colors, rides, deliveries, liveRiderCoords, livePreview]);
 
   const deliveryTrip = !isRide && trip ? (trip as (typeof deliveries)[0]) : null;
   const isFoodPickup = Boolean(
@@ -523,6 +582,7 @@ export default function TrackScreen() {
           <AppMap
             style={[styles.map, styles.mapAssigned]}
             markers={markers}
+            selectedRiderId="rider"
             fitToMarkers
           />
           <RiderArrivedSheet
@@ -548,6 +608,7 @@ export default function TrackScreen() {
           <AppMap
             style={[styles.map, styles.mapActive]}
             markers={markers}
+            selectedRiderId="rider"
             routeCoordinates={livePreview?.route?.map(([lat, lng]) => ({ latitude: lat, longitude: lng }))}
             fitToMarkers
           />
@@ -591,6 +652,7 @@ export default function TrackScreen() {
           <AppMap
             style={[styles.map, styles.mapAssigned]}
             markers={markers}
+            selectedRiderId="rider"
             routeCoordinates={livePreview?.route?.map(([lat, lng]) => ({ latitude: lat, longitude: lng }))}
             fitToMarkers
           />

@@ -13,6 +13,10 @@ function isAccraDefault(latitude: number, longitude: number) {
 export function useUserLocation() {
   const [latitude, setLatitude] = useState(ACCRA_REGION.latitude);
   const [longitude, setLongitude] = useState(ACCRA_REGION.longitude);
+  const [heading, setHeading] = useState(0);
+  const [speed, setSpeed] = useState(0); // km/h
+  const [accuracy, setAccuracy] = useState(10); // meters
+  const [timestamp, setTimestamp] = useState(Date.now());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [permissionGranted, setPermissionGranted] = useState(false);
@@ -20,11 +24,33 @@ export function useUserLocation() {
   const watchIdRef = useRef<number | null>(null);
   const watchSubRef = useRef<Location.LocationSubscription | null>(null);
 
-  const applyPosition = useCallback((coords: { latitude: number; longitude: number }, mocked?: boolean) => {
-    setLatitude(coords.latitude);
-    setLongitude(coords.longitude);
-    if (mocked !== undefined) setIsMocked(mocked);
-  }, []);
+  const applyPosition = useCallback(
+    (
+      coords: {
+        latitude: number;
+        longitude: number;
+        heading?: number | null;
+        speed?: number | null;
+        accuracy?: number | null;
+      },
+      mocked?: boolean
+    ) => {
+      setLatitude(coords.latitude);
+      setLongitude(coords.longitude);
+      if (coords.heading != null && !isNaN(coords.heading) && coords.heading >= 0) {
+        setHeading(coords.heading);
+      }
+      if (coords.speed != null && !isNaN(coords.speed) && coords.speed >= 0) {
+        setSpeed(Math.round(coords.speed * 3.6)); // m/s to km/h
+      }
+      if (coords.accuracy != null && !isNaN(coords.accuracy)) {
+        setAccuracy(coords.accuracy);
+      }
+      setTimestamp(Date.now());
+      if (mocked !== undefined) setIsMocked(mocked);
+    },
+    []
+  );
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -35,10 +61,7 @@ export function useUserLocation() {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           setPermissionGranted(true);
-          applyPosition({
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-          });
+          applyPosition(pos.coords);
           setLoading(false);
         },
         (err) => {
@@ -56,13 +79,10 @@ export function useUserLocation() {
       watchIdRef.current = navigator.geolocation.watchPosition(
         (pos) => {
           setPermissionGranted(true);
-          applyPosition({
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-          });
+          applyPosition(pos.coords);
         },
         () => {},
-        { enableHighAccuracy: true, maximumAge: 10000 },
+        { enableHighAccuracy: true, maximumAge: 5000 },
       );
       return;
     }
@@ -94,9 +114,9 @@ export function useUserLocation() {
       } catch {}
       watchSubRef.current = await Location.watchPositionAsync(
         {
-          accuracy: Location.Accuracy.Balanced,
-          distanceInterval: 15,
-          timeInterval: 5000,
+          accuracy: Location.Accuracy.High,
+          distanceInterval: 5,
+          timeInterval: 2500,
         },
         (update) => applyPosition(update.coords, update.mocked),
       );
@@ -127,6 +147,10 @@ export function useUserLocation() {
   return {
     latitude,
     longitude,
+    heading,
+    speed,
+    accuracy,
+    timestamp,
     loading,
     error,
     permissionGranted,

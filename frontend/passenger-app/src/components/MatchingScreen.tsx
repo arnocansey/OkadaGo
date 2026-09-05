@@ -17,6 +17,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { Avatar } from "@/components/ui/Avatar";
 import { api, money } from "@/lib/api";
 import { passengerWs } from "@/lib/websocket";
+import { useLiveNearbyRiders } from "@/hooks/useLiveNearbyRiders";
 import { ACCRA_REGION, radius, shadows } from "@/theme/tokens";
 import {
   getGoogleMapsApiKey,
@@ -242,11 +243,27 @@ export function MatchingScreen({ tripId, isDelivery, onCancel, onMatched, fare, 
   const destLat = Number(trip?.destinationLatitude ?? 0);
   const destLon = Number(trip?.destinationLongitude ?? 0);
 
-  // Simulated nearby riders (replace with real-time feed for production)
+  // Live nearby riders from real-time spatial feed (falling back to realistic local markers)
+  const { nearbyRiders: liveNearby } = useLiveNearbyRiders({
+    latitude: pickupLat || ACCRA_REGION.latitude,
+    longitude: pickupLon || ACCRA_REGION.longitude,
+    radiusKm: searchRadiusKm,
+    enabled: !matched,
+  });
+
   const nearbyRiders = useMemo(() => {
+    if (liveNearby.length > 0) {
+      return liveNearby.map((r) => ({
+        id: r.id,
+        latitude: r.latitude,
+        longitude: r.longitude,
+        heading: r.heading,
+        speed: r.speed,
+      }));
+    }
     if (!pickupLat || !pickupLon) return [];
     return generateNearbyRiders(pickupLat, pickupLon);
-  }, [pickupLat, pickupLon]);
+  }, [liveNearby, pickupLat, pickupLon]);
 
   const triggerMatch = useCallback(
     (data: TripData) => {

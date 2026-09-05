@@ -9,6 +9,11 @@ export type TripMarker = {
   title?: string;
   pinColor?: string;
   type?: "rider" | "pickup" | "destination" | "dropoff" | "default";
+  heading?: number;
+  speed?: number;
+  etaLabel?: string;
+  etaMinutes?: number;
+  isSelected?: boolean;
 };
 
 function coord(value: unknown): number | null {

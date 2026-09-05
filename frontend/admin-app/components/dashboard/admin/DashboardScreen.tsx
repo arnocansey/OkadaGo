@@ -11,7 +11,10 @@ type MapMarker = {
   id: string;
   position: [number, number];
   label: string;
-  variant: "driver";
+  variant: "driver" | "driverOnline" | "driverTrip" | "driverIdle" | "passenger" | "pickup" | "destination";
+  heading?: number;
+  speed?: number;
+  status?: string;
 };
 
 type ActivityItem = {

@@ -47,6 +47,9 @@ export interface LeafletMapMarker {
   permanentLabel?: boolean;
   lastUpdated?: string;
   profileUrl?: string;
+  heading?: number;
+  speed?: number;
+  status?: string;
 }
 
 export interface LeafletMapCurrentPosition {
@@ -126,11 +129,26 @@ const ICONS: Record<string, L.DivIcon> = {
   })
 };
 
-function pickIcon(variant: MapMarkerVariant | undefined): L.DivIcon | undefined {
-  if (variant && variant !== "default" && ICONS[variant]) {
-    return ICONS[variant];
+function pickIcon(variant: MapMarkerVariant | undefined, heading?: number): L.DivIcon | undefined {
+  if (!variant || variant === "default") return undefined;
+  if (isDriverVariant(variant)) {
+    const rotation = heading ? `transform: rotate(${heading}deg);` : "";
+    const className =
+      variant === "driverOnline"
+        ? "driver-online"
+        : variant === "driverTrip"
+        ? "driver-trip"
+        : variant === "driverIdle"
+        ? "driver-idle"
+        : "driver";
+    return L.divIcon({
+      className: "leaflet-custom-icon",
+      html: `<div class="leaflet-marker ${className}" style="${rotation} will-change: transform; transition: transform 0.25s linear; display: flex; align-items: center; justify-content: center;">${MOTORCYCLE_PIN_SVG}</div>`,
+      iconSize: [26, 26],
+      iconAnchor: [13, 13]
+    });
   }
-  return undefined;
+  return ICONS[variant];
 }
 
 function isDriverVariant(variant: MapMarkerVariant | undefined): boolean {
@@ -381,7 +399,7 @@ export function LeafletMap({
           <Marker
             key={m.id}
             position={m.position}
-            {...(pickIcon(m.variant) ? { icon: pickIcon(m.variant) } : {})}
+            {...(pickIcon(m.variant, m.heading) ? { icon: pickIcon(m.variant, m.heading) } : {})}
           >
             {m.label && (
               <Tooltip direction="top" offset={[0, -10]} permanent={!!m.permanentLabel}>
@@ -392,6 +410,16 @@ export function LeafletMap({
               <Popup>
                 <div className="rider-popup">
                   <strong className="rider-popup-name">{m.label}</strong>
+                  {m.speed !== undefined && (
+                    <span style={{ display: "block", fontSize: 11, color: "#10B981", fontWeight: 600, marginTop: 2 }}>
+                      ⚡ Speed: {Math.round(m.speed)} km/h {m.heading !== undefined ? `(${Math.round(m.heading)}°)` : ""}
+                    </span>
+                  )}
+                  {m.status && (
+                    <span style={{ display: "block", fontSize: 10, color: "#6B7280", textTransform: "uppercase", fontWeight: 700, marginTop: 2 }}>
+                      Status: {m.status}
+                    </span>
+                  )}
                   {m.lastUpdated && (
                     <span className="rider-popup-updated">
                       Last updated: {m.lastUpdated}

@@ -14,6 +14,10 @@ export type LiveOpsSnapshot = {
     name: string;
     latitude: number;
     longitude: number;
+    speed?: number;
+    heading?: number;
+    status?: string;
+    plateNumber?: string | null;
   }>;
   sos: Array<{
     id: string;

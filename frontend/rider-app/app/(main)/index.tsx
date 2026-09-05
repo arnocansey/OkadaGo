@@ -33,6 +33,7 @@ import { OnlineStatusControl } from "@/components/OnlineStatusControl";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUserLocation } from "@/hooks/useUserLocation";
+import { riderWs } from "@/lib/websocket";
 import { ApiError, api } from "@/lib/api";
 import {
   brand,
@@ -58,12 +59,38 @@ export default function RiderHome() {
     refresh,
   } = useApp();
   const { colors, isDark } = useTheme();
-  const { latitude, longitude, hasFix, isMocked } = useUserLocation();
+  const { latitude, longitude, heading, speed, accuracy, hasFix, isMocked } = useUserLocation();
   const [sosLoading, setSosLoading] = useState(false);
   const [onlineSince, setOnlineSince] = useState<Date | null>(null);
   const [jobPreference, setJobPreference] = useState<"both" | "rides" | "deliveries">("both");
   const [dailyGoal, setDailyGoal] = useState<number>(DEFAULT_DAILY_GOAL);
   const [goalModalVisible, setGoalModalVisible] = useState<boolean>(false);
+
+  // ─── Real-Time Continuous GPS Streaming to Backend ────────
+  useEffect(() => {
+    if (!online || !hasFix || !latitude || !longitude) return;
+
+    const payload = {
+      latitude,
+      longitude,
+      heading: heading ?? 0,
+      speed: speed ?? 0,
+      accuracy: accuracy ?? 10,
+      status: "ONLINE" as const,
+    };
+
+    // Send update immediately on movement
+    riderWs.send("rider:location:update", payload);
+
+    // Heartbeat every 2.5s for continuous telemetry
+    const timer = setInterval(() => {
+      if (riderWs.isConnected()) {
+        riderWs.send("rider:location:update", payload);
+      }
+    }, 2500);
+
+    return () => clearInterval(timer);
+  }, [online, hasFix, latitude, longitude, heading, speed, accuracy]);
 
   useEffect(() => {
     AsyncStorage.getItem(DAILY_GOAL_STORAGE_KEY)

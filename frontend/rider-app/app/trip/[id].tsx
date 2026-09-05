@@ -103,7 +103,7 @@ export default function TripScreen() {
   const { session, rides, deliveries, refresh } = useApp();
   const { colors, typography, stackHeaderOptions, isDark } = useTheme();
   const { showToast } = useToast();
-  const { latitude, longitude, isMocked, hasFix } = useUserLocation();
+  const { latitude, longitude, heading, speed, accuracy, isMocked, hasFix } = useUserLocation();
   const [loading, setLoading] = useState(false);
   const [rating, setRating] = useState(5);
   const [review, setReview] = useState("");
@@ -147,23 +147,38 @@ export default function TripScreen() {
     if (!trip || !session?.token || !session.user.riderProfileId) return;
     if (!ACTIVE_STATUSES.includes((trip.status ?? "").toLowerCase())) return;
 
-    const postLocation = () => {
-      if (!isRide || !hasFix) return;
-      api(`/rides/${trip.id}/location`, {
-        method: "POST",
-        token: session.token,
-        body: {
-          riderProfileId: session.user.riderProfileId,
-          latitude,
-          longitude,
-          source: "rider_app",
-          isMocked,
-        },
-      }).catch(() => undefined);
+    const streamLocation = () => {
+      if (!hasFix || !latitude || !longitude) return;
+
+      // Real-time WebSocket broadcast for passenger live map
+      riderWs.send("rider:location:update", {
+        latitude,
+        longitude,
+        heading: heading ?? 0,
+        speed: speed ?? 0,
+        accuracy: accuracy ?? 10,
+        tripId: trip.id,
+        status: "ON_TRIP",
+      });
+
+      // Periodic HTTP database sync
+      if (isRide) {
+        api(`/rides/${trip.id}/location`, {
+          method: "POST",
+          token: session.token,
+          body: {
+            riderProfileId: session.user.riderProfileId,
+            latitude,
+            longitude,
+            source: "rider_app",
+            isMocked,
+          },
+        }).catch(() => undefined);
+      }
     };
 
-    postLocation();
-    const timer = setInterval(postLocation, 5000);
+    streamLocation();
+    const timer = setInterval(streamLocation, 2500);
     return () => clearInterval(timer);
   }, [
     trip?.id,
@@ -172,6 +187,9 @@ export default function TripScreen() {
     session?.user.riderProfileId,
     latitude,
     longitude,
+    heading,
+    speed,
+    accuracy,
     isMocked,
     isRide,
     hasFix,

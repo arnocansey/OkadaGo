@@ -29,6 +29,7 @@ import {
   emitRiderLocationUpdate,
   serializeRideForRealtime
 } from "../realtime/realtime.service.js";
+import { liveLocationService } from "../realtime/location.service.js";
 import type {
   createRideRequestSchema,
   matchingPreviewSchema,
@@ -998,6 +999,30 @@ export class RideService {
     const lon = Number(longitude);
     if (!lat || !lon) return [];
 
+    // 1. Check live in-memory location service first
+    const liveNearby = liveLocationService.getNearbyRiders(lat, lon, radiusKm);
+    if (liveNearby && liveNearby.length > 0) {
+      return liveNearby.map((r) => {
+        const distanceKm = haversineDistanceKm(lat, lon, r.latitude, r.longitude);
+        return {
+          id: r.riderId,
+          name: r.displayName,
+          latitude: r.latitude,
+          longitude: r.longitude,
+          speed: r.speed,
+          heading: r.heading,
+          accuracy: r.accuracy,
+          timestamp: r.timestamp,
+          status: r.status,
+          distanceKm: Math.round(distanceKm * 10) / 10,
+          etaMinutes: Math.max(1, Math.round((distanceKm / 25) * 60)),
+          vehicleType: r.vehicleType ?? "motorcycle",
+          rating: Number(r.rating ?? 5.0),
+        };
+      });
+    }
+
+    // 2. Fallback to Prisma database if memory index has not populated yet
     const riders = await prisma.riderProfile.findMany({
       where: {
         onlineStatus: true,
@@ -1037,6 +1062,11 @@ export class RideService {
           name: r.user.fullName,
           latitude: rLat,
           longitude: rLon,
+          speed: 0,
+          heading: 0,
+          accuracy: 10,
+          timestamp: Date.now(),
+          status: "ONLINE",
           distanceKm: Math.round(distanceKm * 10) / 10,
           etaMinutes: Math.max(1, Math.round((distanceKm / 25) * 60)),
           vehicleType: r.vehicle?.vehicleType ?? "motorcycle",

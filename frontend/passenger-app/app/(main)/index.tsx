@@ -25,6 +25,7 @@ import { DestinationSearchSheet } from "@/components/DestinationSearchSheet";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUserLocation } from "@/hooks/useUserLocation";
+import { useLiveNearbyRiders } from "@/hooks/useLiveNearbyRiders";
 import { api } from "@/lib/api";
 import { MAP_SHEET_CENTER_INSET } from "@/components/ui/MapBottomSheet";
 import type { HomeService, SavedPlace } from "@/types";
@@ -35,6 +36,12 @@ export default function HomeScreen() {
   const { session, activeRide, activeDelivery } = useApp();
   const { colors, isDark } = useTheme();
   const { latitude, longitude, loading: locationLoading, hasFix } = useUserLocation();
+  const { nearbyRiders: liveRiders } = useLiveNearbyRiders({
+    latitude,
+    longitude,
+    radiusKm: 3.5,
+    enabled: !activeRide && !activeDelivery,
+  });
   const [savedPlaces, setSavedPlaces] = useState<SavedPlace[]>([]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [recentDestinations, setRecentDestinations] = useState<
@@ -184,16 +191,19 @@ export default function HomeScreen() {
 
   /* ─── Map Biker Markers ───────────────────────────────────── */
   const bikerMarkers = useMemo(() => {
-    return nearbyRiders.map((r) => ({
+    const list = liveRiders.length > 0 ? liveRiders : nearbyRiders;
+    return list.map((r) => ({
       id: r.id,
       latitude: r.latitude,
       longitude: r.longitude,
-      title: "Okada",
+      title: (r as any).name || "Okada",
       pinColor: colors.primary,
       type: "rider" as const,
-      heading: (r as any).heading,
+      heading: (r as any).heading ?? 0,
+      speed: (r as any).speed ?? 0,
+      etaMinutes: (r as any).etaMinutes,
     }));
-  }, [nearbyRiders, colors.primary]);
+  }, [liveRiders, nearbyRiders, colors.primary]);
 
   /* ─── Saved Place Shortcuts ───────────────────────────────── */
   const homePlace = savedPlaces.find((p) => p.label?.toLowerCase().includes("home"));
@@ -699,10 +709,10 @@ export default function HomeScreen() {
       {!activeRide && !activeDelivery && (
         <View style={s.searchCard}>
           {/* Live Density Badge */}
-          {nearbyRiders.length > 0 && (
+          {(liveRiders.length > 0 || nearbyRiders.length > 0) && (
             <View style={s.densityBadge}>
               <Text style={s.densityText}>
-                🏍️ {nearbyRiders.length} Okadas nearby • ~{nearbyRiders[0]?.etaMinutes ?? 2} min pickup
+                🏍️ {liveRiders.length > 0 ? liveRiders.length : nearbyRiders.length} Okadas nearby • ~{liveRiders[0]?.etaMinutes ?? nearbyRiders[0]?.etaMinutes ?? 2} min pickup
               </Text>
             </View>
           )}
