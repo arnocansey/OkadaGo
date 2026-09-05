@@ -1,6 +1,6 @@
 import { prisma } from "../../common/prisma.js";
 import { AppError } from "../../common/errors.js";
-import { UserRole } from "../../generated/prisma/enums.js";
+import { UserRole, RideStatus } from "../../generated/prisma/enums.js";
 import { pushService } from "../notifications/push.service.js";
 import { emitRideAssigned, emitRideStatusUpdate } from "../realtime/realtime.service.js";
 import type { assignRiderSchema, reassignRiderSchema, autoAssignSchema } from "./assignment.schemas.js";
@@ -206,13 +206,33 @@ export class AssignmentService {
     };
   }
 
-  async getActiveRides(token: string) {
+  async getActiveRides(token: string, statusFilter?: string) {
     const { session } = await this.requireAdmin(token);
 
+    const filter = (statusFilter ?? "").toLowerCase();
+    let whereStatus: { in: RideStatus[] } | RideStatus | undefined;
+    if (filter === "all") {
+      whereStatus = undefined;
+    } else if (filter === "searching" || filter === "unassigned") {
+      whereStatus = { in: [RideStatus.SEARCHING, RideStatus.SCHEDULED] };
+    } else if (filter === "assigned") {
+      whereStatus = RideStatus.ASSIGNED;
+    } else if (filter === "arriving" || filter === "en_route") {
+      whereStatus = RideStatus.ARRIVING;
+    } else if (filter === "arrived") {
+      whereStatus = RideStatus.ARRIVED;
+    } else if (filter === "started" || filter === "active") {
+      whereStatus = { in: [RideStatus.STARTED, RideStatus.ARRIVED, RideStatus.ARRIVING, RideStatus.ASSIGNED] };
+    } else if (filter === "completed") {
+      whereStatus = RideStatus.COMPLETED;
+    } else if (filter === "cancelled") {
+      whereStatus = RideStatus.CANCELLED;
+    } else {
+      whereStatus = { in: [RideStatus.SEARCHING, RideStatus.SCHEDULED, RideStatus.ASSIGNED, RideStatus.ARRIVING, RideStatus.ARRIVED, RideStatus.STARTED] };
+    }
+
     const rides = await prisma.ride.findMany({
-      where: {
-        status: { in: ["SEARCHING", "SCHEDULED", "ASSIGNED", "ARRIVING", "ARRIVED"] }
-      },
+      where: whereStatus ? { status: whereStatus } : undefined,
       orderBy: [{ requestedAt: "desc" }],
       take: 200,
       include: {
@@ -257,7 +277,7 @@ export class AssignmentService {
               : null
           }
         : null,
-      assignmentStatus: ride.riderId ? "assigned" : "unassigned"
+      assignmentStatus: ride.riderId ? "assigned" : (ride.status === "CANCELLED" ? "cancelled" : (ride.status === "SEARCHING" ? "searching" : "unassigned"))
     }));
   }
 
@@ -842,6 +862,153 @@ export class AssignmentService {
       createdAt: event.createdAt,
       currentRider: event.ride.rider?.user.fullName ?? "Unassigned"
     }));
+  }
+
+  async getAllAssignmentHistory(token: string, limit = 50) {
+    await this.requireAdmin(token);
+
+    const events = await prisma.rideEvent.findMany({
+      where: {
+        eventType: { in: ["ADMIN_ASSIGNED", "ADMIN_REASSIGNED", "ADMIN_UNASSIGNED", "AUTO_ASSIGNED"] }
+      },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      include: {
+        ride: {
+          include: {
+            passenger: { include: { user: { select: { fullName: true, phoneE164: true } } } },
+            rider: {
+              include: {
+                user: { select: { fullName: true, phoneE164: true } },
+                vehicle: { select: { make: true, model: true, plateNumber: true } }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    return events.map((event) => {
+      const payload = (event.payload && typeof event.payload === "object" ? event.payload : {}) as Record<string, unknown>;
+      const method = event.eventType === "AUTO_ASSIGNED" || payload.method === "AUTOMATIC" ? "AUTO" : "MANUAL";
+      const requestedTime = event.ride?.requestedAt ? new Date(event.ride.requestedAt).getTime() : 0;
+      const eventTime = new Date(event.createdAt).getTime();
+      const responseTimeSec = requestedTime > 0 ? Math.max(0, Math.round((eventTime - requestedTime) / 1000)) : 0;
+
+      return {
+        id: event.id,
+        rideId: event.rideId,
+        passengerName: event.ride?.passenger?.user?.fullName ?? "Unknown Passenger",
+        passengerPhone: event.ride?.passenger?.user?.phoneE164 ?? "",
+        riderName: event.ride?.rider?.user?.fullName ?? (payload.riderName as string) ?? "Unassigned",
+        riderPlate: event.ride?.rider?.vehicle?.plateNumber ?? null,
+        pickupAddress: event.ride?.pickupAddress ?? "—",
+        destinationAddress: event.ride?.destinationAddress ?? "—",
+        assignmentMethod: method as "AUTO" | "MANUAL",
+        assignmentTime: event.createdAt,
+        responseTimeSec,
+        status: event.ride?.status ?? "ASSIGNED",
+        adminName: (payload.actorName as string) ?? (method === "AUTO" ? "System Auto-Dispatcher" : "Operations Admin"),
+        reason: (payload.reason as string) ?? null,
+        score: typeof payload.score === "number" ? payload.score : null
+      };
+    });
+  }
+
+  async getRideTimeline(token: string, rideId: string) {
+    await this.requireAdmin(token);
+
+    const ride = await prisma.ride.findUnique({
+      where: { id: rideId },
+      include: {
+        passenger: { include: { user: { select: { fullName: true, phoneE164: true } } } },
+        rider: {
+          include: {
+            user: { select: { fullName: true, phoneE164: true } },
+            vehicle: true
+          }
+        },
+        events: {
+          orderBy: { createdAt: "asc" }
+        }
+      }
+    });
+
+    if (!ride) throw new AppError("Ride not found", 404, "RIDE_NOT_FOUND");
+
+    const stages = [
+      { key: "CREATED", label: "Request Created", timestamp: ride.requestedAt, completed: true },
+      {
+        key: "SEARCHING",
+        label: "Searching for Rider",
+        timestamp: ride.requestedAt,
+        completed: Boolean(ride.requestedAt)
+      },
+      {
+        key: "ASSIGNED",
+        label: "Rider Assigned",
+        timestamp: ride.assignedAt ?? null,
+        completed: Boolean(ride.riderId || ride.assignedAt)
+      },
+      {
+        key: "ACCEPTED",
+        label: "Rider Accepted",
+        timestamp: ride.assignedAt ?? null,
+        completed: Boolean(ride.assignedAt && ["ASSIGNED", "ARRIVING", "ARRIVED", "STARTED", "COMPLETED"].includes(ride.status))
+      },
+      {
+        key: "EN_ROUTE",
+        label: "Rider En Route to Pickup",
+        timestamp: ride.assignedAt ?? null,
+        completed: ["ARRIVING", "ARRIVED", "STARTED", "COMPLETED"].includes(ride.status)
+      },
+      {
+        key: "ARRIVED",
+        label: "Rider Arrived at Pickup",
+        timestamp: null,
+        completed: ["ARRIVED", "STARTED", "COMPLETED"].includes(ride.status)
+      },
+      {
+        key: "STARTED",
+        label: "Trip Started",
+        timestamp: ride.startedAt ?? null,
+        completed: Boolean(ride.startedAt || ride.status === "STARTED" || ride.status === "COMPLETED")
+      },
+      {
+        key: "COMPLETED",
+        label: "Trip Completed",
+        timestamp: ride.completedAt ?? null,
+        completed: ride.status === "COMPLETED"
+      }
+    ];
+
+    return {
+      rideId: ride.id,
+      status: ride.status,
+      currency: ride.currency,
+      estimatedFare: ride.estimatedFare,
+      finalFare: ride.finalFare,
+      pickupAddress: ride.pickupAddress,
+      destinationAddress: ride.destinationAddress,
+      pickupLatitude: Number(ride.pickupLatitude),
+      pickupLongitude: Number(ride.pickupLongitude),
+      destinationLatitude: ride.destinationLatitude ? Number(ride.destinationLatitude) : null,
+      destinationLongitude: ride.destinationLongitude ? Number(ride.destinationLongitude) : null,
+      passenger: ride.passenger?.user ? { name: ride.passenger.user.fullName, phone: ride.passenger.user.phoneE164 } : null,
+      rider: ride.rider ? {
+        name: ride.rider.user.fullName,
+        phone: ride.rider.user.phoneE164,
+        plate: ride.rider.vehicle?.plateNumber,
+        model: `${ride.rider.vehicle?.make ?? ""} ${ride.rider.vehicle?.model ?? ""}`.trim()
+      } : null,
+      stages,
+      events: ride.events.map((e) => ({
+        id: e.id,
+        eventType: e.eventType,
+        payload: e.payload,
+        createdAt: e.createdAt
+      }))
+    };
   }
 
   // ── Assignment Rules CRUD ──

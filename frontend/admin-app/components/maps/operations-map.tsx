@@ -32,6 +32,11 @@ interface OperationsMapProps {
   basemap?: LeafletBasemap;
   demandHotspots?: DemandHotspot[];
   showSurgeBadges?: boolean;
+  pickupRadius?: {
+    center: [number, number];
+    radiusMeters: number;
+    label?: string;
+  } | null;
   /** Compact chip at bottom — better for admin overview cards */
   emptyPlacement?: "top-left" | "bottom";
   className?: string;
@@ -54,6 +59,7 @@ export function OperationsMap({
   basemap = "auto",
   demandHotspots = [],
   showSurgeBadges = false,
+  pickupRadius = null,
   emptyPlacement = "top-left",
   className
 }: OperationsMapProps) {
@@ -85,6 +91,7 @@ export function OperationsMap({
             basemap={basemap}
             demandHotspots={demandHotspots}
             showSurgeBadges={showSurgeBadges}
+            pickupRadius={pickupRadius}
           />
         </MapErrorBoundary>
         {emptyNode}
@@ -105,6 +112,7 @@ export function OperationsMap({
           basemap={basemap}
           demandHotspots={demandHotspots}
           showSurgeBadges={showSurgeBadges}
+          pickupRadius={pickupRadius}
           style={{ width: "100%", height: "100%", minHeight: "100%" }}
         />
       </MapErrorBoundary>

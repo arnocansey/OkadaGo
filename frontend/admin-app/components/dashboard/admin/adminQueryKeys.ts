@@ -34,5 +34,7 @@ export const QK = {
   assignmentHistory: (rideId: string) => ["admin-assignment-history", rideId] as const,
   assignmentStats: ["admin-assignment-stats"] as const,
   assignmentRules: ["admin-assignment-rules"] as const,
-  assignmentAuditLogs: ["admin-assignment-audit-logs"] as const
+  assignmentAuditLogs: ["admin-assignment-audit-logs"] as const,
+  allAssignmentHistory: ["admin-all-assignment-history"] as const,
+  rideTimeline: (rideId: string) => ["admin-ride-timeline", rideId] as const
 } as const;

@@ -1033,6 +1033,14 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             autoAssignMutation={data.autoAssignMutation}
             assignmentStats={data.assignmentStats}
             assignmentStatsPending={data.assignmentStatsPending}
+            allAssignmentHistory={data.allAssignmentHistory}
+            allAssignmentHistoryPending={data.allAssignmentHistoryPending}
+            refetchAllAssignmentHistory={data.refetchAllAssignmentHistory}
+            autoAssignEnabled={data.autoAssignEnabled}
+            setAutoAssignEnabled={data.setAutoAssignEnabled}
+            mapMarkers={data.mapMarkers}
+            adminCurrency={data.adminCurrency}
+            token={data.token ?? ""}
           />
         );
 

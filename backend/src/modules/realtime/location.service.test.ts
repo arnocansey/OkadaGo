@@ -61,6 +61,7 @@ describe("Real-time Live Location & Moving Motorcycle Telemetry Service", () => 
         status: "ONLINE",
       });
 
+      assert.ok(result != null);
       assert.equal(result.live.riderId, riderId);
       assert.equal(result.live.speed, 28.5);
       assert.equal(result.live.heading, 85);

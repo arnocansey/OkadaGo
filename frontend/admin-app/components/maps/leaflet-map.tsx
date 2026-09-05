@@ -50,6 +50,17 @@ export interface LeafletMapMarker {
   heading?: number;
   speed?: number;
   status?: string;
+  extraDetails?: {
+    distanceKm?: number;
+    etaMinutes?: number;
+    score?: number;
+    rating?: number;
+    vehiclePlate?: string | null;
+  };
+  actionButton?: {
+    label: string;
+    onClick: () => void;
+  };
 }
 
 export interface LeafletMapCurrentPosition {
@@ -74,6 +85,11 @@ export interface LeafletMapProps {
   basemap?: LeafletBasemap;
   demandHotspots?: DemandHotspot[];
   showSurgeBadges?: boolean;
+  pickupRadius?: {
+    center: [number, number];
+    radiusMeters: number;
+    label?: string;
+  } | null;
 }
 
 const MOTORCYCLE_PIN_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="16" r="3.5"/><circle cx="19" cy="16" r="3.5"/><path d="M19 16L15.5 8.5H13M16.5 7H14.5"/><path d="M15.5 8.5C14.5 7.5 12 7.5 10.5 8.5L8 9.5"/><path d="M6 10.5C7.5 9.5 9.5 9.5 10.5 10.5"/><path d="M5 16L9 11L12.5 11L11.5 16H8.5"/><path d="M10 15H3.5"/></svg>`;
@@ -256,9 +272,10 @@ export function LeafletMap({
   showFitAll = false,
   className = "leaflet-map-surface",
   style = { width: "100%", height: "100%", minHeight: 440 },
-  basemap = "dark",
+  basemap = "auto",
   demandHotspots = [],
-  showSurgeBadges = false
+  showSurgeBadges = false,
+  pickupRadius = null
 }: LeafletMapProps) {
   const isMobile = useIsMobile();
   const [tilesReady, setTilesReady] = useState(false);
@@ -379,6 +396,20 @@ export function LeafletMap({
           );
         })}
 
+        {pickupRadius && (
+          <Circle
+            center={pickupRadius.center}
+            radius={pickupRadius.radiusMeters}
+            pathOptions={{
+              color: "#10B981",
+              fillColor: "#10B981",
+              fillOpacity: 0.1,
+              weight: 2,
+              dashArray: "4, 6"
+            }}
+          />
+        )}
+
         {currentPosition && (
           <>
             <CircleMarker
@@ -434,6 +465,57 @@ export function LeafletMap({
                     >
                       View Profile
                     </a>
+                  )}
+                  {m.extraDetails && (
+                    <div style={{ marginTop: 6, paddingTop: 6, borderTop: "1px solid rgba(255,255,255,0.12)", fontSize: 11, display: "flex", flexDirection: "column", gap: 2 }}>
+                      {m.extraDetails.distanceKm !== undefined && (
+                        <div style={{ color: "#9CA3AF" }}>
+                          Distance: <strong style={{ color: "#F3F4F6" }}>{m.extraDetails.distanceKm.toFixed(1)} km</strong>
+                        </div>
+                      )}
+                      {m.extraDetails.etaMinutes !== undefined && (
+                        <div style={{ color: "#9CA3AF" }}>
+                          ETA: <strong style={{ color: "#F3F4F6" }}>{m.extraDetails.etaMinutes} min</strong>
+                        </div>
+                      )}
+                      {m.extraDetails.rating !== undefined && (
+                        <div style={{ color: "#F59E0B" }}>
+                          Rating: ⭐ {m.extraDetails.rating.toFixed(1)}
+                        </div>
+                      )}
+                      {m.extraDetails.score !== undefined && (
+                        <div style={{ color: "#10B981", fontWeight: 700 }}>
+                          Match Score: {m.extraDetails.score.toFixed(0)} / 100
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {m.actionButton && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        m.actionButton?.onClick();
+                      }}
+                      style={{
+                        marginTop: 8,
+                        width: "100%",
+                        padding: "6px 10px",
+                        borderRadius: 6,
+                        border: "none",
+                        background: "#10B981",
+                        color: "#FFFFFF",
+                        fontWeight: 700,
+                        fontSize: 11,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 4
+                      }}
+                    >
+                      ⚡ {m.actionButton.label}
+                    </button>
                   )}
                 </div>
               </Popup>

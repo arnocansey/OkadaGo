@@ -82,7 +82,7 @@ const SCREEN_EXTRA: Record<AdminConsoleScreen, AdminQueryNeed[]> = {
   rolesPermissions: ["adminAccounts", "adminPermissions"],
   escalationRules: ["escalationRules"],
   refunds: ["walletTx", "rides", "deliveries"],
-  riderAssignment: ["liveOperations"]
+  riderAssignment: ["liveOperations", "liveStream", "rides", "riders", "zones"]
 };
 
 export function needsForScreen(screen: AdminConsoleScreen): Set<AdminQueryNeed> {

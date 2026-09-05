@@ -35,6 +35,7 @@ import type {
   RiderDocumentRecord,
   PromoCodeRecord
 } from "./types";
+import type { RideItem } from "./assignment/types";
 
 export { QK } from "./adminQueryKeys";
 export type { LiveOpsSnapshot } from "./useAdminLiveOps";
@@ -481,7 +482,7 @@ export function useAdminData(
 
   // ── Rider Assignment ──
   const { data: assignmentActiveRidesData, isPending: assignmentActiveRidesPending } = useQuery<
-    Array<{ id: string; status: string; pickupAddress: string; destinationAddress: string; requestedAt: string; assignmentStatus: string; passenger: { name: string; phone: string } | null; assignedRider: { id: string; name: string; phone: string; vehicle: { make: string; model: string; plateNumber: string } | null } | null; [key: string]: unknown }>
+    Array<RideItem>
   >({
     queryKey: QK.activeRides,
     queryFn: () => requestJson("/admin/rides/active", { token }),
@@ -569,6 +570,35 @@ export function useAdminData(
     queryFn: () => requestJson("/admin/assignments/stats", { token }),
     enabled: want("liveOperations"),
     refetchInterval: poll(15000, "liveOperations"),
+    staleTime: 10000
+  });
+
+  const [autoAssignEnabled, setAutoAssignEnabled] = useState(true);
+
+  // ── All Assignment History (Global) ──
+  const { data: allAssignmentHistoryData, isPending: allAssignmentHistoryPending, refetch: refetchAllAssignmentHistory } = useQuery<
+    Array<{
+      id: string;
+      rideId: string;
+      passengerName: string;
+      passengerPhone: string;
+      riderName: string;
+      riderPlate: string | null;
+      pickupAddress: string;
+      destinationAddress: string;
+      assignmentMethod: "AUTO" | "MANUAL";
+      assignmentTime: string;
+      responseTimeSec: number;
+      status: string;
+      adminName: string;
+      reason: string | null;
+      score: number | null;
+    }>
+  >({
+    queryKey: QK.allAssignmentHistory,
+    queryFn: () => requestJson("/admin/assignments/history", { token }),
+    enabled: want("liveOperations"),
+    refetchInterval: poll(20000, "liveOperations"),
     staleTime: 10000
   });
 
@@ -2788,6 +2818,12 @@ export function useAdminData(
     createAssignmentRuleMutation,
     updateAssignmentRuleMutation,
     deleteAssignmentRuleMutation,
+    allAssignmentHistory: allAssignmentHistoryData ?? [],
+    allAssignmentHistoryPending,
+    refetchAllAssignmentHistory,
+    autoAssignEnabled,
+    setAutoAssignEnabled,
+    token,
 
     liveSos, liveOpsConnected, liveOpsTimestamp,
     opsSummary,

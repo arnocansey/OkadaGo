@@ -515,7 +515,8 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
 
   server.get("/admin/rides/active", async (request) => {
     const token = extractBearerToken(request.headers.authorization);
-    return assignmentService.getActiveRides(token);
+    const query = (request.query ?? {}) as { status?: string };
+    return assignmentService.getActiveRides(token, query.status);
   });
 
   server.get("/admin/rides/:rideId/available-riders", async (request) => {
@@ -558,6 +559,19 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
     const token = extractBearerToken(request.headers.authorization);
     const params = parseParams(request, rideParamsSchema);
     return assignmentService.getAssignmentHistory(token, params.rideId);
+  });
+
+  server.get("/admin/assignments/history", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const query = (request.query ?? {}) as { limit?: string };
+    const limit = query.limit ? Math.min(100, Math.max(1, parseInt(query.limit, 10))) : 50;
+    return assignmentService.getAllAssignmentHistory(token, limit);
+  });
+
+  server.get("/admin/rides/:rideId/timeline", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, rideParamsSchema);
+    return assignmentService.getRideTimeline(token, params.rideId);
   });
 
   // ── Assignment Stats ──

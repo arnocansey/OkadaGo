@@ -1,0 +1,169 @@
+"use client";
+
+import React from "react";
+import { Inbox, AlertCircle } from "lucide-react";
+import { RequestCard } from "./RequestCard";
+import type { RideItem } from "./types";
+
+export type RequestQueueProps = {
+  rides: RideItem[];
+  isLoading?: boolean;
+  selectedRideId: string | null;
+  onSelectRide: (rideId: string) => void;
+  onAssignClick: (rideId: string) => void;
+  onViewDetailsClick: (rideId: string) => void;
+  adminCurrency?: string;
+};
+
+export function RequestQueue({
+  rides,
+  isLoading,
+  selectedRideId,
+  onSelectRide,
+  onAssignClick,
+  onViewDetailsClick,
+  adminCurrency = "GHS"
+}: RequestQueueProps) {
+  return (
+    <div
+      style={{
+        background: "var(--card-bg, #0d1220)",
+        border: "1px solid var(--border-color, #1a2235)",
+        borderRadius: "16px",
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        minHeight: "560px",
+        maxHeight: "780px",
+        overflow: "hidden"
+      }}
+    >
+      {/* Queue Header */}
+      <div
+        style={{
+          padding: "16px 20px",
+          borderBottom: "1px solid var(--border-color, #1a2235)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <h2
+            style={{
+              fontSize: "1.05rem",
+              fontWeight: 800,
+              color: "var(--text-primary, #FFFFFF)",
+              margin: 0
+            }}
+          >
+            Ride Requests
+          </h2>
+          <span
+            style={{
+              fontSize: "0.72rem",
+              fontWeight: 700,
+              padding: "2px 8px",
+              borderRadius: "9999px",
+              background: "rgba(255, 255, 255, 0.08)",
+              color: "#94A3B8"
+            }}
+          >
+            {rides.length}
+          </span>
+        </div>
+
+        <div style={{ fontSize: "0.72rem", color: "#64748B" }}>
+          Click card to focus on map
+        </div>
+      </div>
+
+      {/* Scrollable Queue Body */}
+      <div
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          padding: "14px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px"
+        }}
+      >
+        {isLoading ? (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px",
+              padding: "10px"
+            }}
+          >
+            {[1, 2, 3].map((n) => (
+              <div
+                key={n}
+                style={{
+                  height: "140px",
+                  borderRadius: "14px",
+                  background: "rgba(255, 255, 255, 0.03)",
+                  animation: "pulse 1.5s infinite"
+                }}
+              />
+            ))}
+          </div>
+        ) : rides.length === 0 ? (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "48px 24px",
+              textAlign: "center",
+              color: "#64748B",
+              height: "100%"
+            }}
+          >
+            <div
+              style={{
+                width: "48px",
+                height: "48px",
+                borderRadius: "50%",
+                background: "rgba(255, 255, 255, 0.04)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: "12px"
+              }}
+            >
+              <Inbox size={24} color="#64748B" />
+            </div>
+            <strong
+              style={{
+                fontSize: "0.95rem",
+                color: "#94A3B8",
+                marginBottom: "4px"
+              }}
+            >
+              No requests found
+            </strong>
+            <p style={{ fontSize: "0.78rem", margin: 0, maxWidth: "240px" }}>
+              No active ride requests matching your current filters.
+            </p>
+          </div>
+        ) : (
+          rides.map((ride) => (
+            <RequestCard
+              key={ride.id}
+              ride={ride}
+              isSelected={selectedRideId === ride.id}
+              onSelect={onSelectRide}
+              onAssignClick={onAssignClick}
+              onViewDetailsClick={onViewDetailsClick}
+              adminCurrency={adminCurrency}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
