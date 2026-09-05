@@ -7,6 +7,9 @@ import { RequestQueue } from "./assignment/RequestQueue";
 import { RiderMap } from "./assignment/RiderMap";
 import { AssignmentDrawer } from "./assignment/AssignmentDrawer";
 import { AssignmentConfirmation } from "./assignment/AssignmentConfirmation";
+import { AssignmentUnassignModal } from "./assignment/AssignmentUnassignModal";
+import { AssignmentReassignModal } from "./assignment/AssignmentReassignModal";
+import { AssignmentRulesDrawer } from "./assignment/AssignmentRulesDrawer";
 import { RequestTimelineModal } from "./assignment/RequestTimelineModal";
 import { AssignmentHistoryTable } from "./assignment/AssignmentHistoryTable";
 import type { LeafletMapMarker } from "@/components/maps/leaflet-map";
@@ -16,6 +19,7 @@ import type {
   AvailableRidersResponse,
   AssignmentStatsData,
   AssignmentHistoryRecord,
+  AssignmentRuleItem,
   UseMutationResult
 } from "./assignment/types";
 
@@ -32,6 +36,12 @@ export type RiderAssignmentScreenProps = {
   autoAssignMutation: UseMutationResult;
   assignmentStats: AssignmentStatsData | undefined;
   assignmentStatsPending: boolean;
+  assignmentRules?: AssignmentRuleItem[];
+  assignmentRulesPending?: boolean;
+  createAssignmentRuleMutation?: UseMutationResult;
+  updateAssignmentRuleMutation?: UseMutationResult;
+  deleteAssignmentRuleMutation?: UseMutationResult;
+  zones?: Array<{ id: string; name: string; city: string }>;
   allAssignmentHistory?: AssignmentHistoryRecord[];
   allAssignmentHistoryPending?: boolean;
   refetchAllAssignmentHistory?: () => void;
@@ -55,6 +65,12 @@ export function RiderAssignmentScreen({
   autoAssignMutation,
   assignmentStats,
   assignmentStatsPending = false,
+  assignmentRules = [],
+  assignmentRulesPending = false,
+  createAssignmentRuleMutation,
+  updateAssignmentRuleMutation,
+  deleteAssignmentRuleMutation,
+  zones = [],
   allAssignmentHistory = [],
   allAssignmentHistoryPending = false,
   refetchAllAssignmentHistory,
@@ -75,6 +91,9 @@ export function RiderAssignmentScreen({
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [timelineRideId, setTimelineRideId] = useState<string | null>(null);
   const [confirmCandidate, setConfirmCandidate] = useState<RiderCandidate | null>(null);
+  const [unassignRideId, setUnassignRideId] = useState<string | null>(null);
+  const [reassignCandidate, setReassignCandidate] = useState<RiderCandidate | null>(null);
+  const [isRulesDrawerOpen, setIsRulesDrawerOpen] = useState(false);
 
   // ── Refresh Handler ──
   const handleRefresh = useCallback(() => {
@@ -88,6 +107,12 @@ export function RiderAssignmentScreen({
     if (!selectedAssignmentRideId) return null;
     return activeRides.find((r) => r.id === selectedAssignmentRideId) || null;
   }, [activeRides, selectedAssignmentRideId]);
+
+  // ── Unassign Ride Object ──
+  const unassignRide = useMemo(() => {
+    if (!unassignRideId) return null;
+    return activeRides.find((r) => r.id === unassignRideId) || null;
+  }, [activeRides, unassignRideId]);
 
   // ── Filtered Ride Requests ──
   const filteredRides = useMemo(() => {
@@ -177,6 +202,23 @@ export function RiderAssignmentScreen({
     setTimelineRideId(rideId);
   }, []);
 
+  const handleOpenUnassign = useCallback((rideId: string) => {
+    setUnassignRideId(rideId);
+  }, []);
+
+  const handleConfirmUnassign = useCallback(() => {
+    if (!unassignRideId) return;
+    unassignRiderMutation.mutate(
+      { rideId: unassignRideId },
+      {
+        onSuccess: () => {
+          setUnassignRideId(null);
+          setIsDrawerOpen(false);
+        }
+      }
+    );
+  }, [unassignRideId, unassignRiderMutation]);
+
   const handleAutoAssign = useCallback(
     (rideId: string) => {
       autoAssignMutation.mutate(
@@ -191,9 +233,16 @@ export function RiderAssignmentScreen({
     [autoAssignMutation]
   );
 
-  const handleSelectCandidateToAssign = useCallback((candidate: RiderCandidate) => {
-    setConfirmCandidate(candidate);
-  }, []);
+  const handleSelectCandidateToAssign = useCallback(
+    (candidate: RiderCandidate) => {
+      if (selectedRide?.assignedRider) {
+        setReassignCandidate(candidate);
+      } else {
+        setConfirmCandidate(candidate);
+      }
+    },
+    [selectedRide]
+  );
 
   const handleConfirmAssignment = useCallback(() => {
     if (!selectedRide || !confirmCandidate) return;
@@ -210,6 +259,27 @@ export function RiderAssignmentScreen({
       }
     );
   }, [selectedRide, confirmCandidate, assignRiderMutation]);
+
+  const handleConfirmReassign = useCallback(
+    ({ reason, reasonNote }: { reason: string; reasonNote?: string }) => {
+      if (!selectedRide || !reassignCandidate) return;
+      reassignRiderMutation.mutate(
+        {
+          rideId: selectedRide.id,
+          riderProfileId: reassignCandidate.riderId,
+          reason,
+          reasonNote
+        },
+        {
+          onSuccess: () => {
+            setReassignCandidate(null);
+            setIsDrawerOpen(false);
+          }
+        }
+      );
+    },
+    [selectedRide, reassignCandidate, reassignRiderMutation]
+  );
 
   return (
     <div
@@ -237,6 +307,8 @@ export function RiderAssignmentScreen({
         onRefresh={handleRefresh}
         isRefreshing={isRefreshing}
         totalRequestsCount={activeRides.length}
+        onOpenRulesDrawer={() => setIsRulesDrawerOpen(true)}
+        rulesCount={assignmentRules.length || assignmentStats?.rulesCount}
       />
 
       {/* 2. REAL-TIME SUMMARY KPI CARDS */}
@@ -275,6 +347,10 @@ export function RiderAssignmentScreen({
           onSelectRide={handleSelectRide}
           onAssignClick={handleOpenAssignDrawer}
           onViewDetailsClick={handleOpenTimeline}
+          onUnassignClick={handleOpenUnassign}
+          onReassignClick={handleOpenAssignDrawer}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
           adminCurrency={adminCurrency}
         />
 
@@ -288,9 +364,21 @@ export function RiderAssignmentScreen({
             if (!selectedRide) return;
             const matched = availableRidersData?.availableRiders?.find((c) => c.riderId === riderId);
             if (matched) {
-              setConfirmCandidate(matched);
+              if (selectedRide.assignedRider) {
+                setReassignCandidate(matched);
+              } else {
+                setConfirmCandidate(matched);
+              }
             } else {
-              assignRiderMutation.mutate({ rideId: selectedRide.id, riderProfileId: riderId });
+              if (selectedRide.assignedRider) {
+                reassignRiderMutation.mutate({
+                  rideId: selectedRide.id,
+                  riderProfileId: riderId,
+                  reason: "admin_override"
+                });
+              } else {
+                assignRiderMutation.mutate({ rideId: selectedRide.id, riderProfileId: riderId });
+              }
             }
           }}
           height="100%"
@@ -313,13 +401,14 @@ export function RiderAssignmentScreen({
         isLoading={availableRidersPending}
         onAutoAssign={handleAutoAssign}
         onManualAssignSelect={handleSelectCandidateToAssign}
-        isAssigning={assignRiderMutation.isPending || autoAssignMutation.isPending}
+        onUnassignClick={handleOpenUnassign}
+        isAssigning={assignRiderMutation.isPending || autoAssignMutation.isPending || reassignRiderMutation.isPending}
         adminCurrency={adminCurrency}
       />
 
-      {/* 6. CONFIRMATION MODAL BEFORE MANUAL ASSIGNMENT */}
+      {/* 6. CONFIRMATION MODAL BEFORE MANUAL ASSIGNMENT (NEW ASSIGNMENT) */}
       <AssignmentConfirmation
-        isOpen={Boolean(confirmCandidate && selectedRide)}
+        isOpen={Boolean(confirmCandidate && selectedRide && !selectedRide.assignedRider)}
         onClose={() => setConfirmCandidate(null)}
         onConfirm={handleConfirmAssignment}
         ride={selectedRide}
@@ -328,7 +417,38 @@ export function RiderAssignmentScreen({
         adminCurrency={adminCurrency}
       />
 
-      {/* 7. REQUEST LIFECYCLE TIMELINE MODAL */}
+      {/* 7. UNASSIGN CONFIRMATION MODAL */}
+      <AssignmentUnassignModal
+        isOpen={Boolean(unassignRideId && unassignRide)}
+        onClose={() => setUnassignRideId(null)}
+        onConfirm={handleConfirmUnassign}
+        ride={unassignRide}
+        isUnassigning={unassignRiderMutation.isPending}
+      />
+
+      {/* 8. REASSIGN CONFIRMATION MODAL */}
+      <AssignmentReassignModal
+        isOpen={Boolean(reassignCandidate && selectedRide)}
+        onClose={() => setReassignCandidate(null)}
+        onConfirm={handleConfirmReassign}
+        ride={selectedRide}
+        newRider={reassignCandidate}
+        isReassigning={reassignRiderMutation.isPending}
+      />
+
+      {/* 9. DISPATCH RULES & ALGORITHM CONTROLS DRAWER (SECTION 5) */}
+      <AssignmentRulesDrawer
+        isOpen={isRulesDrawerOpen}
+        onClose={() => setIsRulesDrawerOpen(false)}
+        rules={assignmentRules}
+        isLoading={assignmentRulesPending}
+        createRuleMutation={createAssignmentRuleMutation}
+        updateRuleMutation={updateAssignmentRuleMutation}
+        deleteRuleMutation={deleteAssignmentRuleMutation}
+        zones={zones}
+      />
+
+      {/* 10. REQUEST LIFECYCLE TIMELINE MODAL */}
       <RequestTimelineModal
         isOpen={Boolean(timelineRideId)}
         onClose={() => setTimelineRideId(null)}
@@ -339,3 +459,4 @@ export function RiderAssignmentScreen({
     </div>
   );
 }
+

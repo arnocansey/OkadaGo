@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Search, RefreshCw, Calendar, Filter, Zap, User } from "lucide-react";
+import { Search, RefreshCw, Calendar, Filter, Zap, User, Sliders } from "lucide-react";
 
 export type FilterBarProps = {
   searchTerm: string;
@@ -17,6 +17,8 @@ export type FilterBarProps = {
   onRefresh: () => void;
   isRefreshing?: boolean;
   totalRequestsCount: number;
+  onOpenRulesDrawer?: () => void;
+  rulesCount?: number;
 };
 
 export function FilterBar({
@@ -32,7 +34,9 @@ export function FilterBar({
   onToggleAutoAssign,
   onRefresh,
   isRefreshing,
-  totalRequestsCount
+  totalRequestsCount,
+  onOpenRulesDrawer,
+  rulesCount
 }: FilterBarProps) {
   return (
     <div
@@ -155,6 +159,49 @@ export function FilterBar({
               />
             </button>
           </div>
+
+          {/* Dispatch Rules Trigger Button */}
+          {onOpenRulesDrawer && (
+            <button
+              type="button"
+              onClick={onOpenRulesDrawer}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "8px 14px",
+                borderRadius: "10px",
+                background: "rgba(16, 185, 129, 0.08)",
+                border: "1px solid rgba(16, 185, 129, 0.25)",
+                color: "#10B981",
+                fontSize: "0.78rem",
+                fontWeight: 700,
+                cursor: "pointer",
+                transition: "all 0.15s ease"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(16, 185, 129, 0.18)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(16, 185, 129, 0.08)";
+              }}
+            >
+              <Sliders size={14} />
+              <span>Dispatch Rules</span>
+              {rulesCount !== undefined && (
+                <span
+                  style={{
+                    background: "rgba(16, 185, 129, 0.2)",
+                    padding: "1px 6px",
+                    borderRadius: "999px",
+                    fontSize: "0.68rem"
+                  }}
+                >
+                  {rulesCount}
+                </span>
+              )}
+            </button>
+          )}
 
           {/* Refresh Button */}
           <button

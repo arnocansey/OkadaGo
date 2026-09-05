@@ -11,7 +11,9 @@ import {
   ExternalLink,
   Zap,
   Eye,
-  CheckCircle2
+  CheckCircle2,
+  UserX,
+  ArrowRightLeft
 } from "lucide-react";
 import { StatusBadge } from "./StatusBadge";
 import type { RideItem } from "./types";
@@ -22,6 +24,8 @@ export type RequestCardProps = {
   onSelect: (rideId: string) => void;
   onAssignClick: (rideId: string) => void;
   onViewDetailsClick: (rideId: string) => void;
+  onUnassignClick?: (rideId: string) => void;
+  onReassignClick?: (rideId: string) => void;
   adminCurrency?: string;
 };
 
@@ -45,6 +49,8 @@ export function RequestCard({
   onSelect,
   onAssignClick,
   onViewDetailsClick,
+  onUnassignClick,
+  onReassignClick,
   adminCurrency = "GHS"
 }: RequestCardProps) {
   const shortId = `#OG-${ride.id.slice(-6).toUpperCase()}`;
@@ -310,44 +316,116 @@ export function RequestCard({
         )}
       </div>
 
-      {/* Bottom Actions: "Assign Rider" and "View Details" */}
-      <div style={{ display: "flex", gap: "8px" }}>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onAssignClick(ride.id);
-          }}
-          style={{
-            flex: 1,
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "6px",
-            padding: "8px 12px",
-            borderRadius: "8px",
-            background: isAssigned ? "rgba(16, 185, 129, 0.15)" : "#10B981",
-            color: isAssigned ? "#10B981" : "#FFFFFF",
-            border: isAssigned ? "1px solid rgba(16, 185, 129, 0.3)" : "none",
-            fontSize: "0.78rem",
-            fontWeight: 700,
-            cursor: "pointer",
-            transition: "all 0.15s ease"
-          }}
-          onMouseEnter={(e) => {
-            if (!isAssigned) {
+      {/* Bottom Actions */}
+      <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+        {isAssigned ? (
+          <>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onReassignClick) {
+                  onReassignClick(ride.id);
+                } else {
+                  onAssignClick(ride.id);
+                }
+              }}
+              style={{
+                flex: 1,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "5px",
+                padding: "8px 10px",
+                borderRadius: "8px",
+                background: "rgba(16, 185, 129, 0.12)",
+                color: "#10B981",
+                border: "1px solid rgba(16, 185, 129, 0.3)",
+                fontSize: "0.78rem",
+                fontWeight: 700,
+                cursor: "pointer",
+                transition: "all 0.15s ease"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(16, 185, 129, 0.22)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(16, 185, 129, 0.12)";
+              }}
+            >
+              <ArrowRightLeft size={13} />
+              Reassign
+            </button>
+
+            {onUnassignClick && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onUnassignClick(ride.id);
+                }}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "4px",
+                  padding: "8px 10px",
+                  borderRadius: "8px",
+                  background: "rgba(239, 68, 68, 0.08)",
+                  color: "#EF4444",
+                  border: "1px solid rgba(239, 68, 68, 0.25)",
+                  fontSize: "0.78rem",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  transition: "all 0.15s ease"
+                }}
+                title="Unassign rider & return to Searching pool"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(239, 68, 68, 0.18)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(239, 68, 68, 0.08)";
+                }}
+              >
+                <UserX size={13} />
+                Unassign
+              </button>
+            )}
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAssignClick(ride.id);
+            }}
+            style={{
+              flex: 1,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "6px",
+              padding: "8px 12px",
+              borderRadius: "8px",
+              background: "#10B981",
+              color: "#FFFFFF",
+              border: "none",
+              fontSize: "0.78rem",
+              fontWeight: 700,
+              cursor: "pointer",
+              transition: "all 0.15s ease"
+            }}
+            onMouseEnter={(e) => {
               e.currentTarget.style.background = "#059669";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isAssigned) {
+            }}
+            onMouseLeave={(e) => {
               e.currentTarget.style.background = "#10B981";
-            }
-          }}
-        >
-          <Zap size={13} fill={isAssigned ? "none" : "#FFFFFF"} />
-          {isAssigned ? "Reassign Rider" : "Assign Rider"}
-        </button>
+            }}
+          >
+            <Zap size={13} fill="#FFFFFF" />
+            Assign Rider
+          </button>
+        )}
 
         <button
           type="button"

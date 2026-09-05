@@ -14,7 +14,9 @@ import {
   User,
   ShieldCheck,
   Percent,
-  Clock
+  Clock,
+  UserX,
+  ArrowRightLeft
 } from "lucide-react";
 import type { RideItem, RiderCandidate, AvailableRidersResponse } from "./types";
 
@@ -26,6 +28,7 @@ export type AssignmentDrawerProps = {
   isLoading?: boolean;
   onAutoAssign: (rideId: string) => void;
   onManualAssignSelect: (rider: RiderCandidate) => void;
+  onUnassignClick?: (rideId: string) => void;
   isAssigning?: boolean;
   adminCurrency?: string;
 };
@@ -38,6 +41,7 @@ export function AssignmentDrawer({
   isLoading,
   onAutoAssign,
   onManualAssignSelect,
+  onUnassignClick,
   isAssigning,
   adminCurrency = "GHS"
 }: AssignmentDrawerProps) {
@@ -120,7 +124,7 @@ export function AssignmentDrawer({
                 margin: "6px 0 0 0"
               }}
             >
-              Assign Motorcycle Rider
+              {ride.assignedRider ? "Reassign / Manage Rider" : "Assign Motorcycle Rider"}
             </h2>
           </div>
 
@@ -175,6 +179,58 @@ export function AssignmentDrawer({
             </div>
           </div>
 
+          {/* Currently Assigned Rider Strip (if assigned) */}
+          {ride.assignedRider && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "10px 12px",
+                borderRadius: "10px",
+                background: "rgba(16, 185, 129, 0.08)",
+                border: "1px solid rgba(16, 185, 129, 0.25)",
+                marginTop: "2px"
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <Bike size={18} color="#10B981" />
+                <div>
+                  <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#F8FAFC" }}>
+                    {ride.assignedRider.name}
+                  </div>
+                  <div style={{ fontSize: "0.7rem", color: "#94A3B8" }}>
+                    {ride.assignedRider.phone} {ride.assignedRider.vehicle?.plateNumber ? `· ${ride.assignedRider.vehicle.plateNumber}` : ""}
+                  </div>
+                </div>
+              </div>
+
+              {onUnassignClick && (
+                <button
+                  type="button"
+                  onClick={() => onUnassignClick(ride.id)}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    padding: "5px 9px",
+                    borderRadius: "6px",
+                    background: "rgba(239, 68, 68, 0.12)",
+                    border: "1px solid rgba(239, 68, 68, 0.25)",
+                    color: "#EF4444",
+                    fontSize: "0.72rem",
+                    fontWeight: 700,
+                    cursor: "pointer"
+                  }}
+                  title="Unassign rider from this ride"
+                >
+                  <UserX size={12} />
+                  Unassign
+                </button>
+              )}
+            </div>
+          )}
+
           {/* AUTO ASSIGN BEST RIDER ACTION BUTTON */}
           <button
             type="button"
@@ -203,8 +259,8 @@ export function AssignmentDrawer({
             {isAssigning
               ? "Dispatching Best Rider..."
               : bestCandidate
-              ? `Auto-Assign Best (${bestCandidate.displayName} - ${bestCandidate.score.toFixed(0)} pts)`
-              : "Auto-Assign Best Rider"}
+              ? `${ride.assignedRider ? "Auto-Reassign" : "Auto-Assign"} Best (${bestCandidate.displayName} - ${bestCandidate.score.toFixed(0)} pts)`
+              : `${ride.assignedRider ? "Auto-Reassign" : "Auto-Assign"} Best Rider`}
           </button>
         </div>
 
@@ -487,8 +543,17 @@ export function AssignmentDrawer({
                       }
                     }}
                   >
-                    <CheckCircle2 size={14} />
-                    Assign {rider.displayName}
+                    {ride.assignedRider ? (
+                      <>
+                        <ArrowRightLeft size={14} />
+                        Reassign to {rider.displayName}
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 size={14} />
+                        Assign {rider.displayName}
+                      </>
+                    )}
                   </button>
                 </div>
               );

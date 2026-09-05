@@ -156,3 +156,31 @@ export type UseMutationResult = {
   mutate: (vars: any, opts?: { onSuccess?: () => void }) => void;
   isPending: boolean;
 };
+
+export type AssignmentRuleItem = {
+  id: string;
+  name: string;
+  description: string | null;
+  enabled: boolean;
+  priority: number;
+  weightProximity: number;
+  weightEta: number;
+  weightRating: number;
+  weightAcceptance: number;
+  cancellationPenalty: number;
+  maxPickupRadiusKm: number;
+  maxEtaMinutes: number;
+  minRating: number;
+  minAcceptanceRate: number;
+  maxCancellationRate: number;
+  requireOnline: boolean;
+  requireApproved: boolean;
+  excludeSuspended: boolean;
+  requireVehicle: boolean;
+  autoAssignEnabled: boolean;
+  autoAssignDelayMs: number;
+  zoneId: string | null;
+  zone?: { id: string; name: string; city: string } | null;
+  createdAt: string;
+};
+

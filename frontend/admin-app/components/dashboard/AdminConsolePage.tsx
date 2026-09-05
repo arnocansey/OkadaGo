@@ -1033,6 +1033,12 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
             autoAssignMutation={data.autoAssignMutation}
             assignmentStats={data.assignmentStats}
             assignmentStatsPending={data.assignmentStatsPending}
+            assignmentRules={data.assignmentRules}
+            assignmentRulesPending={data.assignmentRulesPending}
+            createAssignmentRuleMutation={data.createAssignmentRuleMutation}
+            updateAssignmentRuleMutation={data.updateAssignmentRuleMutation}
+            deleteAssignmentRuleMutation={data.deleteAssignmentRuleMutation}
+            zones={data.zones}
             allAssignmentHistory={data.allAssignmentHistory}
             allAssignmentHistoryPending={data.allAssignmentHistoryPending}
             refetchAllAssignmentHistory={data.refetchAllAssignmentHistory}

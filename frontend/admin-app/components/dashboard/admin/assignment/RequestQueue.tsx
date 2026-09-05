@@ -12,6 +12,10 @@ export type RequestQueueProps = {
   onSelectRide: (rideId: string) => void;
   onAssignClick: (rideId: string) => void;
   onViewDetailsClick: (rideId: string) => void;
+  onUnassignClick?: (rideId: string) => void;
+  onReassignClick?: (rideId: string) => void;
+  statusFilter?: string;
+  onStatusFilterChange?: (status: string) => void;
   adminCurrency?: string;
 };
 
@@ -22,8 +26,20 @@ export function RequestQueue({
   onSelectRide,
   onAssignClick,
   onViewDetailsClick,
+  onUnassignClick,
+  onReassignClick,
+  statusFilter = "all",
+  onStatusFilterChange,
   adminCurrency = "GHS"
 }: RequestQueueProps) {
+  const tabs = [
+    { key: "all", label: "All" },
+    { key: "unassigned", label: "Unassigned" },
+    { key: "searching", label: "Searching" },
+    { key: "assigned", label: "Assigned" },
+    { key: "active", label: "Active Trips" }
+  ];
+
   return (
     <div
       style={{
@@ -41,41 +57,77 @@ export function RequestQueue({
       {/* Queue Header */}
       <div
         style={{
-          padding: "16px 20px",
+          padding: "16px 20px 12px 20px",
           borderBottom: "1px solid var(--border-color, #1a2235)",
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center"
+          flexDirection: "column",
+          gap: "10px"
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <h2
-            style={{
-              fontSize: "1.05rem",
-              fontWeight: 800,
-              color: "var(--text-primary, #FFFFFF)",
-              margin: 0
-            }}
-          >
-            Ride Requests
-          </h2>
-          <span
-            style={{
-              fontSize: "0.72rem",
-              fontWeight: 700,
-              padding: "2px 8px",
-              borderRadius: "9999px",
-              background: "rgba(255, 255, 255, 0.08)",
-              color: "#94A3B8"
-            }}
-          >
-            {rides.length}
-          </span>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <h2
+              style={{
+                fontSize: "1.05rem",
+                fontWeight: 800,
+                color: "var(--text-primary, #FFFFFF)",
+                margin: 0
+              }}
+            >
+              Ride Requests
+            </h2>
+            <span
+              style={{
+                fontSize: "0.72rem",
+                fontWeight: 700,
+                padding: "2px 8px",
+                borderRadius: "9999px",
+                background: "rgba(255, 255, 255, 0.08)",
+                color: "#94A3B8"
+              }}
+            >
+              {rides.length}
+            </span>
+          </div>
+
+          <div style={{ fontSize: "0.72rem", color: "#64748B" }}>
+            Click card to focus on map
+          </div>
         </div>
 
-        <div style={{ fontSize: "0.72rem", color: "#64748B" }}>
-          Click card to focus on map
-        </div>
+        {/* Quick Filter Tabs */}
+        {onStatusFilterChange && (
+          <div style={{ display: "flex", gap: "6px", overflowX: "auto", paddingBottom: "2px" }}>
+            {tabs.map((tab) => {
+              const isActive = statusFilter === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => onStatusFilterChange(tab.key)}
+                  style={{
+                    padding: "4px 10px",
+                    borderRadius: "6px",
+                    fontSize: "0.72rem",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    border: isActive ? "none" : "1px solid rgba(255, 255, 255, 0.07)",
+                    background: isActive
+                      ? tab.key === "unassigned"
+                        ? "#EF4444"
+                        : "#10B981"
+                      : "rgba(255, 255, 255, 0.03)",
+                    color: isActive ? "#FFFFFF" : "#94A3B8",
+                    whiteSpace: "nowrap",
+                    transition: "all 0.12s ease"
+                  }}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Scrollable Queue Body */}
@@ -159,6 +211,8 @@ export function RequestQueue({
               onSelect={onSelectRide}
               onAssignClick={onAssignClick}
               onViewDetailsClick={onViewDetailsClick}
+              onUnassignClick={onUnassignClick}
+              onReassignClick={onReassignClick}
               adminCurrency={adminCurrency}
             />
           ))
