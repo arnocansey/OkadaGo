@@ -38,7 +38,14 @@ export function attachRealtimeServer(httpServer: HttpServer) {
 
       const session = await prisma.userSession.findUnique({
         where: { refreshTokenId: token },
-        include: { user: true },
+        include: {
+          user: {
+            include: {
+              passengerProfile: true,
+              riderProfile: true
+            }
+          }
+        },
       });
 
       if (!session || session.revokedAt || session.expiresAt < new Date()) {
@@ -48,6 +55,8 @@ export function attachRealtimeServer(httpServer: HttpServer) {
 
       socket.data.userId = session.user.id;
       socket.data.role = session.user.role;
+      socket.data.passengerProfileId = session.user.passengerProfile?.id;
+      socket.data.riderProfileId = session.user.riderProfile?.id;
       next();
     } catch (error) {
       next(error instanceof Error ? error : new Error("Authentication failed"));
@@ -62,24 +71,67 @@ export function attachRealtimeServer(httpServer: HttpServer) {
     // Track active spatial rooms for this socket
     const activeGeoRooms = new Set<string>();
 
-    // Join specific trip room for live chat & tracking
-    socket.on("trip:join-room", (data: { tripId: string }) => {
-      if (data?.tripId) {
+    // Join specific trip room for live chat & tracking (Protected against IDOR)
+    socket.on("trip:join-room", async (data: { tripId: string }) => {
+      if (!data?.tripId) return;
+
+      // Admins and dispatchers can join any trip for support/monitoring
+      if (role === "ADMIN" || role === "DISPATCHER") {
         void socket.join(`trip:${data.tripId}`);
+        return;
+      }
+
+      try {
+        const ride = await prisma.ride.findUnique({
+          where: { id: data.tripId },
+          select: { passengerId: true, riderId: true }
+        });
+
+        if (!ride) {
+          socket.emit("trip:error", { message: "Trip not found" });
+          return;
+        }
+
+        const isPassenger = Boolean(
+          socket.data.passengerProfileId && ride.passengerId === socket.data.passengerProfileId
+        );
+        const isRider = Boolean(
+          socket.data.riderProfileId && ride.riderId === socket.data.riderProfileId
+        );
+
+        if (!isPassenger && !isRider) {
+          socket.emit("trip:error", { message: "Unauthorized to join this trip room" });
+          return;
+        }
+
+        void socket.join(`trip:${data.tripId}`);
+      } catch {
+        socket.emit("trip:error", { message: "Failed to join trip room" });
       }
     });
 
-    // In-app live chat event handler
-    socket.on("trip:chat-message", (data: { tripId: string; text: string; senderRole: string; timestamp?: string }) => {
-      if (data?.tripId && data?.text) {
+    // In-app live chat event handler (Verifies socket membership)
+    socket.on(
+      "trip:chat-message",
+      (data: { tripId: string; text: string; senderRole: string; timestamp?: string }) => {
+        if (!data?.tripId || !data?.text) return;
+
+        const roomName = `trip:${data.tripId}`;
+        if (!socket.rooms.has(roomName)) {
+          socket.emit("trip:error", {
+            message: "You must join the trip room before sending messages"
+          });
+          return;
+        }
+
         const payload = {
           ...data,
           senderUserId: userId,
           timestamp: data.timestamp || new Date().toISOString(),
         };
-        io.to(`trip:${data.tripId}`).emit("trip:chat-message", payload);
+        io.to(roomName).emit("trip:chat-message", payload);
       }
-    });
+    );
 
     // ─── Passenger Spatial Geofence Subscription ─────────────────
     // Passenger subscribes to moving motorcycles within radiusKm (default 3km)

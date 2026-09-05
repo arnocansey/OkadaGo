@@ -777,7 +777,14 @@ export class WalletService {
       .update(rawBody)
       .digest("hex");
 
-    if (!signatureHeader || hash !== signatureHeader) {
+    if (!signatureHeader) {
+      throw new AppError("Missing Paystack signature", 401, "PAYSTACK_SIGNATURE_MISSING");
+    }
+
+    const hashBuf = Buffer.from(hash, "utf8");
+    const sigBuf = Buffer.from(signatureHeader, "utf8");
+
+    if (hashBuf.length !== sigBuf.length || !crypto.timingSafeEqual(hashBuf, sigBuf)) {
       throw new AppError("Invalid Paystack signature", 401, "PAYSTACK_SIGNATURE_INVALID");
     }
 

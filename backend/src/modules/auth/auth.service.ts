@@ -38,6 +38,10 @@ import { hasSmsConfig, smsService } from "../notifications/sms.service.js";
 import { makeOtpCode, storeOtp, verifyStoredOtp } from "./otp-store.js";
 import { v2 as cloudinary } from "cloudinary";
 
+const adminLoginAttempts = new Map<string, { count: number; lockedUntil?: number }>();
+const MAX_ADMIN_FAILED_ATTEMPTS = 5;
+const ADMIN_LOCKOUT_MS = 15 * 60 * 1000; // 15 minutes
+
 type PassengerSignupInput = z.infer<typeof passengerSignupSchema>;
 type RiderSignupInput = z.infer<typeof riderSignupSchema>;
 type AdminRegisterInput = z.infer<typeof adminRegisterSchema>;
@@ -484,6 +488,18 @@ export class AuthService {
   }
 
   async loginAdmin(input: AdminLoginInput) {
+    const normalizedEmail = input.email.trim().toLowerCase();
+    const attemptRecord = adminLoginAttempts.get(normalizedEmail);
+
+    if (attemptRecord?.lockedUntil && attemptRecord.lockedUntil > Date.now()) {
+      const remainingMinutes = Math.ceil((attemptRecord.lockedUntil - Date.now()) / 60000);
+      throw new AppError(
+        `Account is temporarily locked due to multiple failed login attempts. Please try again in ${remainingMinutes} minute${remainingMinutes === 1 ? "" : "s"}.`,
+        429,
+        "ACCOUNT_TEMPORARILY_LOCKED"
+      );
+    }
+
     const user = await prisma.user.findFirst({
       where: {
         role: UserRole.ADMIN,
@@ -498,12 +514,23 @@ export class AuthService {
       }
     });
 
+    const recordFailedAttempt = () => {
+      const current = adminLoginAttempts.get(normalizedEmail) || { count: 0 };
+      current.count += 1;
+      if (current.count >= MAX_ADMIN_FAILED_ATTEMPTS) {
+        current.lockedUntil = Date.now() + ADMIN_LOCKOUT_MS;
+      }
+      adminLoginAttempts.set(normalizedEmail, current);
+    };
+
     if (!user?.passwordHash) {
+      recordFailedAttempt();
       throw new AppError("Invalid admin credentials", 401, "INVALID_CREDENTIALS");
     }
 
     const isValid = await verifyPassword(input.password, user.passwordHash);
     if (!isValid) {
+      recordFailedAttempt();
       throw new AppError("Invalid admin credentials", 401, "INVALID_CREDENTIALS");
     }
 
@@ -521,10 +548,14 @@ export class AuthService {
           );
         }
         if (!verifyTotpCode(user.adminProfile.totpSecret, input.totpCode)) {
+          recordFailedAttempt();
           throw new AppError("Invalid two-factor authentication code", 401, "TOTP_INVALID");
         }
       }
     }
+
+    // Reset failed attempts on successful login
+    adminLoginAttempts.delete(normalizedEmail);
 
     const created = await this.createSession(user.id, input.device);
 

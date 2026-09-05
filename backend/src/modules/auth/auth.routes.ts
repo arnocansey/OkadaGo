@@ -41,10 +41,14 @@ export const authRoutes: FastifyPluginAsync = async (server) => {
     return reply.status(201).send(session);
   });
 
-  server.post("/auth/passenger/login", async (request) => {
-    const input = parseBody(request, passengerLoginSchema);
-    return authService.loginPassenger(input);
-  });
+  server.post(
+    "/auth/passenger/login",
+    { config: { rateLimit: { max: 20, timeWindow: "1 minute" } } },
+    async (request) => {
+      const input = parseBody(request, passengerLoginSchema);
+      return authService.loginPassenger(input);
+    }
+  );
 
   server.post("/auth/rider/signup", async (request, reply) => {
     const input = parseBody(request, riderSignupSchema);
@@ -52,15 +56,23 @@ export const authRoutes: FastifyPluginAsync = async (server) => {
     return reply.status(201).send(session);
   });
 
-  server.post("/auth/rider/login", async (request) => {
-    const input = parseBody(request, riderLoginSchema);
-    return authService.loginRider(input);
-  });
+  server.post(
+    "/auth/rider/login",
+    { config: { rateLimit: { max: 20, timeWindow: "1 minute" } } },
+    async (request) => {
+      const input = parseBody(request, riderLoginSchema);
+      return authService.loginRider(input);
+    }
+  );
 
-  server.post("/auth/admin/login", async (request) => {
-    const input = parseBody(request, adminLoginSchema);
-    return authService.loginAdmin(input);
-  });
+  server.post(
+    "/auth/admin/login",
+    { config: { rateLimit: { max: 10, timeWindow: "1 minute" } } },
+    async (request) => {
+      const input = parseBody(request, adminLoginSchema);
+      return authService.loginAdmin(input);
+    }
+  );
 
   server.get("/auth/admin/2fa", async (request) => {
     const token = extractBearerToken(request.headers.authorization);
@@ -210,13 +222,21 @@ export const authRoutes: FastifyPluginAsync = async (server) => {
     return authService.uploadAvatar(token, input);
   });
 
-  server.post("/auth/forgot-password", async (request) => {
-    const input = parseBody(request, forgotPasswordSchema);
-    return authService.forgotPassword(input);
-  });
+  server.post(
+    "/auth/forgot-password",
+    { config: { rateLimit: { max: 5, timeWindow: "15 minutes" } } },
+    async (request) => {
+      const input = parseBody(request, forgotPasswordSchema);
+      return authService.forgotPassword(input);
+    }
+  );
 
-  server.post("/auth/reset-password", async (request) => {
-    const input = parseBody(request, resetPasswordSchema);
-    return authService.resetPassword(input);
-  });
+  server.post(
+    "/auth/reset-password",
+    { config: { rateLimit: { max: 5, timeWindow: "15 minutes" } } },
+    async (request) => {
+      const input = parseBody(request, resetPasswordSchema);
+      return authService.resetPassword(input);
+    }
+  );
 };
