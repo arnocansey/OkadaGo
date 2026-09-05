@@ -479,15 +479,15 @@ export class AuthService {
     return user;
   }
 
-  async loginPassenger(input: PassengerLoginInput) {
-    return this.loginByRole(UserRole.PASSENGER, input, input.device);
+  async loginPassenger(input: PassengerLoginInput, ipAddress?: string) {
+    return this.loginByRole(UserRole.PASSENGER, input, input.device, ipAddress);
   }
 
-  async loginRider(input: RiderLoginInput) {
-    return this.loginByRole(UserRole.RIDER, input, input.device);
+  async loginRider(input: RiderLoginInput, ipAddress?: string) {
+    return this.loginByRole(UserRole.RIDER, input, input.device, ipAddress);
   }
 
-  async loginAdmin(input: AdminLoginInput) {
+  async loginAdmin(input: AdminLoginInput, ipAddress?: string) {
     const normalizedEmail = input.email.trim().toLowerCase();
     const attemptRecord = adminLoginAttempts.get(normalizedEmail);
 
@@ -557,7 +557,7 @@ export class AuthService {
     // Reset failed attempts on successful login
     adminLoginAttempts.delete(normalizedEmail);
 
-    const created = await this.createSession(user.id, input.device);
+    const created = await this.createSession(user.id, input.device, ipAddress);
 
     await prisma.auditLog.create({
       data: {
@@ -566,6 +566,7 @@ export class AuthService {
         action: "ADMIN_LOGIN",
         entityType: "UserSession",
         entityId: user.id,
+        ipAddress: ipAddress ?? null,
         userAgent: input.device?.userAgent ?? null,
         changes: {
           email: user.email,
@@ -1331,7 +1332,8 @@ export class AuthService {
   private async loginByRole(
     role: "PASSENGER" | "RIDER",
     input: PassengerLoginInput | RiderLoginInput,
-    device?: PassengerLoginInput["device"]
+    device?: PassengerLoginInput["device"],
+    ipAddress?: string
   ) {
     const user = await prisma.user.findFirst({
       where: {
@@ -1359,7 +1361,26 @@ export class AuthService {
       throw new AppError("Invalid credentials", 401, "INVALID_CREDENTIALS");
     }
 
-    return this.createSession(user.id, device);
+    const session = await this.createSession(user.id, device, ipAddress);
+
+    await prisma.auditLog.create({
+      data: {
+        actorUserId: user.id,
+        actorRole: role,
+        action: `${role}_LOGIN`,
+        entityType: "UserSession",
+        entityId: user.id,
+        ipAddress: ipAddress ?? null,
+        userAgent: device?.userAgent ?? null,
+        changes: {
+          phone: user.phoneE164,
+          platform: device?.platform ?? null,
+          role
+        }
+      }
+    });
+
+    return session;
   }
 
   private async createSession(
@@ -1368,7 +1389,8 @@ export class AuthService {
       deviceId?: string;
       platform?: string;
       userAgent?: string;
-    }
+    },
+    ipAddress?: string
   ) {
     const token = makeSessionToken();
     const expiresAt = makeExpiryDate();
@@ -1378,6 +1400,7 @@ export class AuthService {
         userId,
         refreshTokenId: token,
         userAgent: device?.userAgent,
+        ipAddress: ipAddress ?? null,
         expiresAt,
         lastUsedAt: new Date()
       },
@@ -1458,7 +1481,7 @@ export class AuthService {
     return session;
   }
 
-  private async requireAdminSession(token: string) {
+  async requireAdminSession(token: string) {
     const session = await this.getActiveSession(token);
 
     if (session.user.role !== UserRole.ADMIN || !session.user.adminProfile) {

@@ -31,18 +31,65 @@ export function PassengerProfileClient({ passengerId }: { passengerId: string })
       try {
         const token = session!.token;
 
+        type SinglePassengerResponse = {
+          passenger: PassengerRecord;
+          rides: RideRecord[];
+          deliveries: DeliveryRecord[];
+          walletTransactions: WalletTransactionRecord[];
+          sessions?: unknown[];
+        };
+
+        // 1. First attempt: Direct passenger details endpoint
+        const directResp = await requestJson<SinglePassengerResponse>(
+          `/bootstrap/passengers/${passengerId}`,
+          { token }
+        ).catch(() => null);
+
+        if (cancelled) return;
+
+        if (directResp?.passenger) {
+          setPassenger(directResp.passenger);
+          setRides(directResp.rides ?? []);
+          setDeliveries(directResp.deliveries ?? []);
+          setWalletTransactions(directResp.walletTransactions ?? []);
+          setIncidents([]);
+          setLoading(false);
+          return;
+        }
+
+        // 2. Fallback: Query bootstrap collections
         const [passengersResp, ridesResp, deliveriesResp, walletResp, incidentsResp] = await Promise.all([
-          requestJson<PassengerRecord[] | PagedResult<PassengerRecord>>("/bootstrap/passengers", { token }).catch(() => []),
-          requestJson<PagedResult<RideRecord>>("/bootstrap/rides?limit=200", { token }).catch(() => ({ items: [], total: 0 })),
-          requestJson<PagedResult<DeliveryRecord>>("/bootstrap/deliveries?limit=200", { token }).catch(() => ({ items: [], total: 0 })),
-          requestJson<WalletTransactionRecord[]>("/admin/wallet-transactions", { token }).catch(() => []),
-          requestJson<AdminIncidentRecord[]>("/admin/incidents", { token }).catch(() => [])
+          requestJson<{ data?: PassengerRecord[]; items?: PassengerRecord[] } | PassengerRecord[]>(
+            "/bootstrap/passengers?limit=200",
+            { token }
+          ).catch(() => null),
+          requestJson<{ data?: RideRecord[]; items?: RideRecord[] } | RideRecord[]>(
+            "/bootstrap/rides?limit=200",
+            { token }
+          ).catch(() => []),
+          requestJson<{ data?: DeliveryRecord[]; items?: DeliveryRecord[] } | DeliveryRecord[]>(
+            "/bootstrap/deliveries?limit=200",
+            { token }
+          ).catch(() => []),
+          requestJson<{ data?: WalletTransactionRecord[]; items?: WalletTransactionRecord[] } | WalletTransactionRecord[]>(
+            "/admin/payments/wallet-transactions",
+            { token }
+          ).catch(() => []),
+          requestJson<{ data?: AdminIncidentRecord[]; items?: AdminIncidentRecord[] } | AdminIncidentRecord[]>(
+            "/admin/incidents",
+            { token }
+          ).catch(() => [])
         ]);
 
         if (cancelled) return;
 
-        const passengersList = Array.isArray(passengersResp) ? passengersResp : (passengersResp?.items ?? []);
-        const foundPassenger = passengersList.find((p) => p.id === passengerId);
+        const passengersList: PassengerRecord[] = Array.isArray(passengersResp)
+          ? passengersResp
+          : (passengersResp?.data ?? passengersResp?.items ?? []);
+
+        const foundPassenger = passengersList.find(
+          (p) => p.id === passengerId || (p as { userId?: string }).userId === passengerId || p.user?.id === passengerId
+        );
 
         if (!foundPassenger) {
           setError("Passenger not found");
@@ -50,11 +97,24 @@ export function PassengerProfileClient({ passengerId }: { passengerId: string })
           return;
         }
 
+        const ridesList: RideRecord[] = Array.isArray(ridesResp)
+          ? ridesResp
+          : (ridesResp?.data ?? ridesResp?.items ?? []);
+        const deliveriesList: DeliveryRecord[] = Array.isArray(deliveriesResp)
+          ? deliveriesResp
+          : (deliveriesResp?.data ?? deliveriesResp?.items ?? []);
+        const walletList: WalletTransactionRecord[] = Array.isArray(walletResp)
+          ? walletResp
+          : (walletResp?.data ?? walletResp?.items ?? []);
+        const incidentsList: AdminIncidentRecord[] = Array.isArray(incidentsResp)
+          ? incidentsResp
+          : (incidentsResp?.data ?? incidentsResp?.items ?? []);
+
         setPassenger(foundPassenger);
-        setRides(Array.isArray(ridesResp) ? ridesResp : (ridesResp?.items ?? []));
-        setDeliveries(Array.isArray(deliveriesResp) ? deliveriesResp : (deliveriesResp?.items ?? []));
-        setWalletTransactions(Array.isArray(walletResp) ? walletResp : []);
-        setIncidents(Array.isArray(incidentsResp) ? incidentsResp : []);
+        setRides(ridesList);
+        setDeliveries(deliveriesList);
+        setWalletTransactions(walletList);
+        setIncidents(incidentsList);
       } catch {
         if (!cancelled) setError("Failed to load passenger profile");
       } finally {

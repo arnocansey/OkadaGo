@@ -1,34 +1,37 @@
 import { Redirect } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { BrandLogo } from "@/components/BrandLogo";
 import { useApp } from "@/context/AppContext";
-import { useTheme } from "@/context/ThemeContext";
-import { spacing } from "@/theme/tokens";
 
 const ONBOARDING_KEY = "@okadago_passenger_onboarding";
 const LOCATION_PROMPTED_KEY = "@okadago_passenger_location_prompted";
 
+const splashLogo = require("../assets/branding/okadago-logo-splash.png");
+
 export default function Index() {
   const { session, restoring } = useApp();
-  const { colors } = useTheme();
   const [onboardingChecked, setOnboardingChecked] = useState(false);
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
   const [locationPrompted, setLocationPrompted] = useState(false);
   const [locationChecked, setLocationChecked] = useState(false);
+
   const styles = useMemo(
     () =>
       StyleSheet.create({
         splash: {
           flex: 1,
-          backgroundColor: colors.background,
+          backgroundColor: "#FFFFFF",
           alignItems: "center",
           justifyContent: "center",
-          gap: spacing.lg,
+        },
+        splashLogo: {
+          width: 220,
+          height: 160,
+          resizeMode: "contain",
         },
       }),
-    [colors],
+    [],
   );
 
   useEffect(() => {
@@ -53,9 +56,11 @@ export default function Index() {
   if (restoring || !onboardingChecked || !locationChecked) {
     return (
       <View style={styles.splash}>
-        <BrandLogo variant="icon" size={72} />
-        <BrandLogo variant="wordmark" size={32} />
-        <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.md }} />
+        <Image
+          source={splashLogo}
+          style={styles.splashLogo}
+          accessibilityLabel="OkadaGo"
+        />
       </View>
     );
   }

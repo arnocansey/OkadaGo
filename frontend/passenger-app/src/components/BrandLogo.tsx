@@ -2,7 +2,7 @@ import { Image, type ImageStyle, type StyleProp } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
 
 type Props = {
-  variant?: "icon" | "wordmark";
+  variant?: "icon" | "wordmark" | "splash";
   size?: number;
   style?: StyleProp<ImageStyle>;
 };
@@ -11,9 +11,22 @@ const lockupLight = require("../../assets/branding/okadago-lockup-light.png");
 const lockupDark = require("../../assets/branding/okadago-lockup-dark-passenger.png");
 const iconLight = require("../../assets/branding/okadago-icon-dark.png");
 const iconDark = require("../../assets/branding/okadago-lockup-dark-passenger.png");
+const splashLogo = require("../../assets/branding/okadago-logo-splash.png");
 
 export function BrandLogo({ variant = "icon", size = 40, style }: Props) {
   const { isDark } = useTheme();
+
+  if (variant === "splash") {
+    const height = size;
+    const width = Math.round(size * 1.25);
+    return (
+      <Image
+        source={splashLogo}
+        style={[{ width, height, resizeMode: "contain" }, style]}
+        accessibilityLabel="OkadaGo"
+      />
+    );
+  }
 
   if (variant === "wordmark") {
     const height = size;

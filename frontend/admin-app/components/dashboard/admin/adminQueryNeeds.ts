@@ -18,6 +18,8 @@ export type AdminQueryNeed =
   | "adminModules"
   | "zones"
   | "auditLogs"
+  | "accessLogs"
+  | "unauthorizedUsers"
   | "supportTickets"
   | "escalationRules"
   | "scheduledBroadcasts"
@@ -69,7 +71,8 @@ const SCREEN_EXTRA: Record<AdminConsoleScreen, AdminQueryNeed[]> = {
   analytics: ["financeSummary", "rides", "deliveries", "riders"],
   notifications: ["scheduledBroadcasts", "opsJobStatus"],
   reports: ["financeSummary"],
-  auditLogs: ["auditLogs", "adminAccounts"],
+  auditLogs: ["auditLogs", "accessLogs", "adminAccounts"],
+  unauthorizedUsers: ["unauthorizedUsers"],
   settings: ["platformSettings"],
   companyProfile: ["platformSettings", "userStats", "adminAccounts"],
   accountSecurity: ["platformSettings"],

@@ -22,6 +22,14 @@ export function setErrorHandler(server: FastifyInstance) {
       });
     }
 
+    if (error instanceof SyntaxError) {
+      return reply.status(400).send({
+        code: "INVALID_JSON",
+        message: "Invalid JSON format in request body",
+        traceId: request.id
+      });
+    }
+
     const errorCode = (error as { code?: string }).code;
     if (errorCode === "P2002") {
       const meta = (error as { meta?: { target?: string[] | string } }).meta;

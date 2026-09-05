@@ -33,7 +33,8 @@ import {
   Settings,
   Star,
   Zap,
-  Sparkles
+  Sparkles,
+  UserX
 } from "lucide-react";
 import { MotorcycleIcon } from "@/components/icons/MotorcycleIcon";
 import { BrandMark } from "@/components/brand/BrandMark";
@@ -171,6 +172,7 @@ export function AdminMobileDrawer({
       { label: "Admin Staff", href: "/admins", icon: Shield, screen: "admins", group: "administration", badge: `${badgeData.adminAccountsCount}` },
       { label: "Roles & Permissions", href: "/roles-permissions", icon: ShieldCheck, screen: "rolesPermissions", group: "administration" },
       { label: "Audit Trail", href: "/audit-logs", icon: ClipboardList, screen: "auditLogs", group: "administration" },
+      { label: "Unauthorized Users", href: "/unauthorized-users", icon: UserX, screen: "unauthorizedUsers", group: "administration", badgeTone: "danger" },
       { label: "Company Profile", href: "/settings/company", icon: Settings, screen: "companyProfile", group: "administration" },
       { label: "Account Security", href: "/settings/security", screen: "accountSecurity", icon: Shield, group: "administration" },
       { label: "Integrations & API", href: "/integrations", screen: "integrations", icon: Settings, group: "administration" }

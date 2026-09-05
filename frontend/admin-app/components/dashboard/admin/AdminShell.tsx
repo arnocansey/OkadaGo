@@ -151,7 +151,8 @@ const screenMeta: Record<AdminConsoleScreen, AdminScreenMeta> = {
   admins: { eyebrow: "Governance", title: "Admin Users", description: "Administrative accounts & staff access", searchLabel: "", quickActionLabel: "", quickActionHref: "/settings", quickActionNote: "" },
   rolesPermissions: { eyebrow: "Governance", title: "Roles & Permissions", description: "RBAC privilege matrix configuration", searchLabel: "", quickActionLabel: "", quickActionHref: "/admins", quickActionNote: "" },
   ratings: { eyebrow: "Operations", title: "Ratings & Reviews", description: "Customer satisfaction and driver feedback", searchLabel: "", quickActionLabel: "", quickActionHref: "/finance", quickActionNote: "" },
-  riderAssignment: { eyebrow: "Operations", title: "Rider Assignment", description: "Manual and automated dispatch console", searchLabel: "", quickActionLabel: "", quickActionHref: "/rider-assignment", quickActionNote: "" }
+  riderAssignment: { eyebrow: "Operations", title: "Rider Assignment", description: "Manual and automated dispatch console", searchLabel: "", quickActionLabel: "", quickActionHref: "/rider-assignment", quickActionNote: "" },
+  unauthorizedUsers: { eyebrow: "Governance", title: "Unauthorized Users", description: "Review and remove unauthorized, unverified, or banned accounts", searchLabel: "", quickActionLabel: "", quickActionHref: "/audit-logs", quickActionNote: "" }
 };
 
 export function AdminShell({
@@ -261,7 +262,11 @@ export function AdminShell({
         screen: "passengers",
         group: "main",
         hint: "",
-        badge: `${badgeData.passengersCount}`
+        badge: `${badgeData.passengersCount}`,
+        children: [
+          { label: "All Passengers", href: "/users", screen: "passengers", badge: `${badgeData.passengersCount}` },
+          { label: "Unauthorized Users", href: "/unauthorized-users", screen: "unauthorizedUsers" }
+        ]
       },
       // 6. Payments
       {
@@ -373,7 +378,9 @@ export function AdminShell({
         group: "admin",
         hint: "",
         children: [
-          { label: "Audit Trail", href: "/audit-logs", screen: "auditLogs" },
+          { label: "All Audit Events", href: "/audit-logs", screen: "auditLogs" },
+          { label: "Passenger Access", href: "/audit-logs?tab=passengers", screen: "auditLogs" },
+          { label: "Rider Access", href: "/audit-logs?tab=riders", screen: "auditLogs" },
           { label: "Admin Users", href: "/admins", screen: "admins", badge: `${badgeData.adminAccountsCount}` },
           { label: "Roles & Permissions", href: "/roles-permissions", screen: "rolesPermissions" }
         ]
@@ -497,7 +504,7 @@ export function AdminShell({
                           <div className="exact-admin-subnav">
                             {item.children.map((child) => (
                               <a
-                                key={child.screen}
+                                key={child.href}
                                 href={child.href}
                                 className={child.screen === screen ? "active" : ""}
                                 onClick={closeSidebar}

@@ -103,7 +103,10 @@ export default async function AdminScreenPage({
     reports: "reports",
     analytics: "analytics",
     "audit-logs": "auditLogs",
-    audit: "auditLogs"
+    audit: "auditLogs",
+    "unauthorized-users": "unauthorizedUsers",
+    unauthorized: "unauthorizedUsers",
+    "banned-users": "unauthorizedUsers"
   };
 
   const canonicalPaths: Partial<Record<AdminConsoleScreen, string>> = {
@@ -146,7 +149,8 @@ export default async function AdminScreenPage({
     taxesCompliance: "/taxes-compliance",
     integrations: "/integrations",
     settingsNotifications: "/settings-notifications",
-    rolesPermissions: "/roles-permissions"
+    rolesPermissions: "/roles-permissions",
+    unauthorizedUsers: "/unauthorized-users"
   };
 
   const resolvedScreen = screenAliases[screen];

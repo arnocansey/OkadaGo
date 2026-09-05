@@ -46,7 +46,10 @@ export const authRoutes: FastifyPluginAsync = async (server) => {
     { config: { rateLimit: { max: 20, timeWindow: "1 minute" } } },
     async (request) => {
       const input = parseBody(request, passengerLoginSchema);
-      return authService.loginPassenger(input);
+      if (!input.device?.userAgent && request.headers["user-agent"]) {
+        input.device = { ...input.device, userAgent: request.headers["user-agent"] };
+      }
+      return authService.loginPassenger(input, request.ip);
     }
   );
 
@@ -61,7 +64,10 @@ export const authRoutes: FastifyPluginAsync = async (server) => {
     { config: { rateLimit: { max: 20, timeWindow: "1 minute" } } },
     async (request) => {
       const input = parseBody(request, riderLoginSchema);
-      return authService.loginRider(input);
+      if (!input.device?.userAgent && request.headers["user-agent"]) {
+        input.device = { ...input.device, userAgent: request.headers["user-agent"] };
+      }
+      return authService.loginRider(input, request.ip);
     }
   );
 
@@ -70,7 +76,10 @@ export const authRoutes: FastifyPluginAsync = async (server) => {
     { config: { rateLimit: { max: 10, timeWindow: "1 minute" } } },
     async (request) => {
       const input = parseBody(request, adminLoginSchema);
-      return authService.loginAdmin(input);
+      if (!input.device?.userAgent && request.headers["user-agent"]) {
+        input.device = { ...input.device, userAgent: request.headers["user-agent"] };
+      }
+      return authService.loginAdmin(input, request.ip);
     }
   );
 

@@ -27,6 +27,8 @@ import type {
   ServiceZoneRecord,
   RiderFinancialRow,
   AuditLogRecord,
+  AccessLogRecord,
+  UnauthorizedUserRecord,
   AdminSupportTicketRecord,
   EscalationRuleRecord,
   OpsJobStatus,
@@ -172,6 +174,16 @@ export function useAdminData(
   const [ratingsPage, setRatingsPage] = useState(1);
   const [incidentsPage, setIncidentsPage] = useState(1);
   const [auditPage, setAuditPage] = useState(1);
+  const [accessLogsPage, setAccessLogsPage] = useState(1);
+  const [accessLogsRole, setAccessLogsRole] = useState<"ALL" | "PASSENGER" | "RIDER">("ALL");
+  const [accessLogsStatus, setAccessLogsStatus] = useState<"ALL" | "ACTIVE" | "REVOKED" | "EXPIRED">("ALL");
+  const [accessLogsSearch, setAccessLogsSearch] = useState("");
+
+  const [unauthorizedUsersPage, setUnauthorizedUsersPage] = useState(1);
+  const [unauthorizedUsersRole, setUnauthorizedUsersRole] = useState<"ALL" | "PASSENGER" | "RIDER">("ALL");
+  const [unauthorizedUsersStatus, setUnauthorizedUsersStatus] = useState<"ALL" | "PENDING_VERIFICATION" | "SUSPENDED" | "BANNED">("ALL");
+  const [unauthorizedUsersSearch, setUnauthorizedUsersSearch] = useState("");
+
   const [ticketsPage, setTicketsPage] = useState(1);
   const [documentsPage, setDocumentsPage] = useState(1);
   const LIST_PAGE = 10;
@@ -186,6 +198,8 @@ export function useAdminData(
     setRatingsPage(1);
     setIncidentsPage(1);
     setAuditPage(1);
+    setAccessLogsPage(1);
+    setUnauthorizedUsersPage(1);
     setTicketsPage(1);
     setDocumentsPage(1);
   }, [screen]);
@@ -442,6 +456,77 @@ export function useAdminData(
     },
     enabled: want("auditLogs"),
     staleTime: 60000
+  });
+
+  const { data: accessLogsPaged, isPending: accessLogsPending } = useQuery<PagedResult<AccessLogRecord>>({
+    queryKey: [...QK.accessLogs, accessLogsPage, accessLogsRole, accessLogsStatus, accessLogsSearch, LIST_PAGE],
+    queryFn: async () => {
+      try {
+        const queryParams = new URLSearchParams();
+        if (accessLogsRole !== "ALL") queryParams.set("role", accessLogsRole);
+        if (accessLogsStatus !== "ALL") queryParams.set("status", accessLogsStatus);
+        if (accessLogsSearch.trim()) queryParams.set("search", accessLogsSearch.trim());
+
+        return await requestPagedJson<AccessLogRecord>(
+          "/admin/access-logs",
+          {
+            token,
+            page: accessLogsPage,
+            limit: LIST_PAGE,
+            extraQuery: queryParams.toString() || undefined
+          }
+        );
+      } catch (err) {
+        console.warn("Access logs not available in backend", err);
+        return { data: [], total: 0, page: accessLogsPage, limit: LIST_PAGE };
+      }
+    },
+    enabled: want("accessLogs") || want("auditLogs"),
+    staleTime: 30000
+  });
+
+  const revokeSessionMutation = useMutation({
+    mutationFn: async (sessionId: string) => {
+      return requestJson<{ success: boolean; message: string }>(
+        `/admin/access-logs/${sessionId}/revoke`,
+        { token, method: "POST" }
+      );
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: QK.accessLogs });
+      queryClient.invalidateQueries({ queryKey: QK.auditLogs });
+      addToast(data?.message || "Session revoked successfully", "success");
+    },
+    onError: (err) => {
+      addToast((err as Error)?.message || "Failed to revoke session", "error");
+    }
+  });
+
+  const { data: unauthorizedUsersPaged, isPending: unauthorizedUsersPending } = useQuery<PagedResult<UnauthorizedUserRecord>>({
+    queryKey: [...QK.unauthorizedUsers, unauthorizedUsersPage, unauthorizedUsersRole, unauthorizedUsersStatus, unauthorizedUsersSearch, LIST_PAGE],
+    queryFn: async () => {
+      try {
+        const queryParams = new URLSearchParams();
+        if (unauthorizedUsersRole !== "ALL") queryParams.set("role", unauthorizedUsersRole);
+        if (unauthorizedUsersStatus !== "ALL") queryParams.set("status", unauthorizedUsersStatus);
+        if (unauthorizedUsersSearch.trim()) queryParams.set("search", unauthorizedUsersSearch.trim());
+
+        return await requestPagedJson<UnauthorizedUserRecord>(
+          "/admin/unauthorized-users",
+          {
+            token,
+            page: unauthorizedUsersPage,
+            limit: LIST_PAGE,
+            extraQuery: queryParams.toString() || undefined
+          }
+        );
+      } catch (err) {
+        console.warn("Unauthorized users not available in backend", err);
+        return { data: [], total: 0, page: unauthorizedUsersPage, limit: LIST_PAGE };
+      }
+    },
+    enabled: want("unauthorizedUsers") || screen === "unauthorizedUsers",
+    staleTime: 30000
   });
 
   const { data: supportTicketsPaged, isPending: supportTicketsPending } = useQuery<
@@ -853,6 +938,10 @@ export function useAdminData(
   const zones = useMemo(() => zonesData ?? [], [zonesData]);
   const auditLogs = useMemo(() => auditLogsPaged?.data ?? [], [auditLogsPaged]);
   const auditTotal = auditLogsPaged?.total ?? auditLogs.length;
+  const accessLogs = useMemo(() => accessLogsPaged?.data ?? [], [accessLogsPaged]);
+  const accessLogsTotal = accessLogsPaged?.total ?? accessLogs.length;
+  const unauthorizedUsers = useMemo(() => unauthorizedUsersPaged?.data ?? [], [unauthorizedUsersPaged]);
+  const unauthorizedUsersTotal = unauthorizedUsersPaged?.total ?? unauthorizedUsers.length;
   const supportTickets = useMemo(() => supportTicketsPaged?.data ?? [], [supportTicketsPaged]);
   const supportTicketsTotal = supportTicketsPaged?.total ?? supportTickets.length;
   const riderDocuments = useMemo(() => riderDocumentsPaged?.data ?? [], [riderDocumentsPaged]);
@@ -2083,20 +2172,27 @@ export function useAdminData(
   });
 
   const deleteUserMutation = useMutation({
-    mutationFn: async (userId: string) =>
-      requestJson(`/admin/users/${userId}`, {
+    mutationFn: async (input: string | { userId: string; reason?: string }) => {
+      const userId = typeof input === "string" ? input : input.userId;
+      const reason = typeof input === "string" ? undefined : input.reason;
+      return requestJson<{ success: boolean; message: string }>(`/admin/users/${userId}`, {
         method: "DELETE",
-        token
-      }),
+        token,
+        body: reason ? JSON.stringify({ reason }) : undefined
+      });
+    },
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: QK.passengers }),
         queryClient.invalidateQueries({ queryKey: QK.riders }),
         queryClient.invalidateQueries({ queryKey: QK.userStats }),
         queryClient.invalidateQueries({ queryKey: QK.adminAccounts }),
+        queryClient.invalidateQueries({ queryKey: QK.auditLogs }),
+        queryClient.invalidateQueries({ queryKey: QK.accessLogs }),
+        queryClient.invalidateQueries({ queryKey: QK.unauthorizedUsers }),
         invalidateOpsSummary()
       ]);
-      addToast("User account deleted successfully", "success");
+      addToast("User account deleted and active sessions revoked", "success");
     },
     onError: (error) => addToast((error as Error).message || "Could not delete user account", "error")
   });
@@ -2526,6 +2622,10 @@ export function useAdminData(
     riderAssignment: [
       { label: "Active rides", value: `${assignmentActiveRidesData?.length ?? 0}` },
       { label: "Unassigned", value: `${(assignmentActiveRidesData ?? []).filter((r: { assignmentStatus: string }) => r.assignmentStatus === "unassigned").length}` }
+    ],
+    unauthorizedUsers: [
+      { label: "Unauthorized", value: `${unauthorizedUsersTotal}` },
+      { label: "Pending verification", value: `${unauthorizedUsers.filter((u) => !u.isPhoneVerified).length}` }
     ]
   }), [
     opsSummary, liveSnapshot, liveOnlineCount, activeRides, activeRiders, adminCurrency, totalDashboardRevenue,
@@ -2537,7 +2637,8 @@ export function useAdminData(
     blockedUsers, totalRevenue, pendingPayoutRequests, ratings, promoAdjustedTrips, promoSpend,
     zones, openTickets, resolvedTickets, auditLogs, adminAccounts, eligiblePassengers,
     supportTickets, openSosCount, incidents, scheduledBroadcasts, escalationRules,
-    walletTransactions, goPointRules, goPointBalances, messageTemplates
+    walletTransactions, goPointRules, goPointBalances, messageTemplates,
+    unauthorizedUsersTotal, unauthorizedUsers
   ]);
 
   // ── platform settings persistence ───────────────────────────────────────────
@@ -2841,6 +2942,23 @@ export function useAdminData(
     ratingsPage, setRatingsPage,
     incidentsPage, setIncidentsPage,
     auditPage, setAuditPage,
+    accessLogs,
+    accessLogsTotal,
+    accessLogsPage, setAccessLogsPage,
+    accessLogsRole, setAccessLogsRole,
+    accessLogsStatus, setAccessLogsStatus,
+    accessLogsSearch, setAccessLogsSearch,
+    accessLogsPending,
+    revokeSessionMutation,
+
+    unauthorizedUsers,
+    unauthorizedUsersTotal,
+    unauthorizedUsersPage, setUnauthorizedUsersPage,
+    unauthorizedUsersRole, setUnauthorizedUsersRole,
+    unauthorizedUsersStatus, setUnauthorizedUsersStatus,
+    unauthorizedUsersSearch, setUnauthorizedUsersSearch,
+    unauthorizedUsersPending,
+
     ticketsPage, setTicketsPage,
     documentsPage, setDocumentsPage,
 

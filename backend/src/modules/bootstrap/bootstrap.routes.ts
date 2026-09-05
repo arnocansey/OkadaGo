@@ -4,6 +4,7 @@ import {
   createPassengerSchema,
   createRiderSchema,
   createServiceZoneSchema,
+  passengerParamsSchema,
   serviceZoneParamsSchema,
   updateServiceZoneSchema
 } from "./bootstrap.schemas.js";
@@ -25,6 +26,11 @@ export const bootstrapRoutes: FastifyPluginAsync = async (server) => {
   server.get("/bootstrap/passengers", async (request) => {
     const query = parseQuery(request, listQuerySchema);
     return bootstrapService.listPassengers(query.limit, query.page ?? 1);
+  });
+
+  server.get("/bootstrap/passengers/:passengerId", async (request) => {
+    const params = parseParams(request, passengerParamsSchema);
+    return bootstrapService.getPassengerById(params.passengerId);
   });
 
   server.post("/bootstrap/passengers", async (request, reply) => {

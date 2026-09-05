@@ -1,3 +1,4 @@
+import { Image, StyleSheet, View } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
@@ -16,12 +17,22 @@ import { WebContainer } from "@/components/WebContainer";
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
+const splashLogo = require("../assets/branding/okadago-logo-splash.png");
+
 function RootNavigator() {
   const { isDark, stackHeaderOptions, ready } = useTheme();
   const [splashDone, setSplashDone] = useState(false);
 
   if (!ready) {
-    return null;
+    return (
+      <View style={layoutStyles.splashFallback}>
+        <Image
+          source={splashLogo}
+          style={layoutStyles.splashLogo}
+          accessibilityLabel="OkadaGo"
+        />
+      </View>
+    );
   }
 
   return (
@@ -77,3 +88,17 @@ export default function RootLayout() {
 }
 
 declare const __DEV__: boolean;
+
+const layoutStyles = StyleSheet.create({
+  splashFallback: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  splashLogo: {
+    width: 220,
+    height: 160,
+    resizeMode: "contain",
+  },
+});

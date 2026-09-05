@@ -16,6 +16,8 @@ export const QK = {
   adminModules: ["admin-modules"] as const,
   zones: ["service-zones"] as const,
   auditLogs: ["admin-audit-logs"] as const,
+  accessLogs: ["admin-access-logs"] as const,
+  unauthorizedUsers: ["admin-unauthorized-users"] as const,
   supportTickets: ["admin-support-tickets"] as const,
   ticketMessages: (ticketId: string) => ["admin-ticket-messages", ticketId] as const,
   escalationRules: ["admin-escalation-rules"] as const,

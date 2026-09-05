@@ -179,7 +179,9 @@ export default function RiderHome() {
               try {
                 await toggleOnline(locationPing);
               } catch (error) {
-                // Error handled in toggleOnline
+                const errMessage =
+                  error instanceof Error ? error.message : "Could not update availability.";
+                Alert.alert("Unable to Go Offline", errMessage);
               }
             },
           },
@@ -219,7 +221,9 @@ export default function RiderHome() {
     try {
       await toggleOnline(locationPing);
     } catch (error) {
-      // Handled in context
+      const errMessage =
+        error instanceof Error ? error.message : "Could not update availability. Please try again.";
+      Alert.alert("Unable to Go Online", errMessage);
     }
   }
 

@@ -159,6 +159,10 @@ const AuditLogsScreen = dynamic(
   () => import("./admin/AuditLogsScreen").then((m) => m.AuditLogsScreen),
   { loading: screenFallback }
 );
+const UnauthorizedUsersScreen = dynamic(
+  () => import("./admin/UnauthorizedUsersScreen").then((m) => m.UnauthorizedUsersScreen),
+  { loading: screenFallback }
+);
 const SettingsScreen = dynamic(
   () => import("./admin/SettingsScreen").then((m) => m.SettingsScreen),
   { loading: screenFallback }
@@ -759,13 +763,31 @@ export function AdminConsolePage({ screen }: { screen: AdminConsoleScreen }) {
         return (
           <AuditLogsScreen
             auditLogs={data.auditLogs}
+            accessLogs={data.accessLogs}
             totalAdmins={data.adminAccounts.length}
             onServerExport={() => void data.downloadServerCsv("audit-logs")}
-            dataLoading={data.auditLogsPending}
+            dataLoading={data.auditLogsPending || data.accessLogsPending}
             page={data.auditPage}
             totalItems={data.auditTotal}
             pageSize={data.listPageSize}
             onPageChange={data.setAuditPage}
+            onRevokeSession={(id) => data.revokeSessionMutation.mutate(id)}
+            isRevokingSession={data.revokeSessionMutation.isPending}
+          />
+        );
+
+      case "unauthorizedUsers":
+        return (
+          <UnauthorizedUsersScreen
+            unauthorizedUsers={data.unauthorizedUsers}
+            totalUsers={data.unauthorizedUsersTotal}
+            dataLoading={data.unauthorizedUsersPending}
+            onDeleteUser={(userId, reason) => data.deleteUserMutation.mutate({ userId, reason })}
+            isDeletingUser={data.deleteUserMutation.isPending}
+            page={data.unauthorizedUsersPage}
+            totalItems={data.unauthorizedUsersTotal}
+            pageSize={20}
+            onPageChange={data.setUnauthorizedUsersPage}
           />
         );
 

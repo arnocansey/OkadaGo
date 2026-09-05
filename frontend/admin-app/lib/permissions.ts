@@ -152,7 +152,8 @@ export const SCREEN_REQUIRED_PERMISSIONS: Record<AdminConsoleScreen, string[]> =
   paymentMethods: ["finance:write", "admin:write"],
   integrations: ["admin:write"],
   taxesCompliance: ["finance:read", "finance:write", "admin:write"],
-  settingsNotifications: ["admin:write"]
+  settingsNotifications: ["admin:write"],
+  unauthorizedUsers: ["users:write", "admin:write"]
 };
 
 /**

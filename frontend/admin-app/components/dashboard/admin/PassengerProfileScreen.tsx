@@ -56,16 +56,31 @@ export function PassengerProfileScreen({
   const stats = useMemo(() => {
     if (!passenger) return { totalRides: 0, completedRides: 0, totalSpending: 0, totalDeliveries: 0, walletBalance: 0 };
 
-    const pRides = rides.filter((r) => r.passenger?.user?.fullName === passenger.user.fullName);
-    const completed = pRides.filter((r) => r.status.toLowerCase() === "completed");
-    const totalSpending = completed.reduce((sum, r) => sum + parseNumber(r.finalFare), 0);
-    const pDeliveries = deliveries.filter((d) => d.passenger?.user?.fullName === passenger.user.fullName);
+    const passengerName = passenger.user?.fullName?.toLowerCase();
+    const pRides = rides.filter(
+      (r) =>
+        (r as { passengerId?: string }).passengerId === passenger.id ||
+        (passengerName && r.passenger?.user?.fullName?.toLowerCase() === passengerName)
+    );
+    const completed = pRides.filter((r) => (r.status ?? "").toLowerCase() === "completed");
+    const totalSpending = completed.reduce((sum, r) => sum + parseNumber(r.finalFare ?? r.estimatedFare ?? 0), 0);
+    const pDeliveries = deliveries.filter(
+      (d) =>
+        (d as { passengerId?: string }).passengerId === passenger.id ||
+        (passengerName && d.passenger?.user?.fullName?.toLowerCase() === passengerName)
+    );
 
-    const pTxns = walletTransactions.filter((t) => t.wallet?.user?.fullName === passenger.user.fullName);
-    const walletBalance = pTxns
-      .filter((t) => t.direction === "credit")
-      .reduce((sum, t) => sum + parseNumber(t.amount), 0) -
-      pTxns.filter((t) => t.direction === "debit")
+    const pTxns = walletTransactions.filter(
+      (t) =>
+        !t.wallet?.user?.fullName ||
+        (passengerName && t.wallet.user.fullName.toLowerCase() === passengerName)
+    );
+    const walletBalance =
+      pTxns
+        .filter((t) => t.direction === "credit")
+        .reduce((sum, t) => sum + parseNumber(t.amount), 0) -
+      pTxns
+        .filter((t) => t.direction === "debit")
         .reduce((sum, t) => sum + parseNumber(t.amount), 0);
 
     return {
@@ -91,8 +106,9 @@ export function PassengerProfileScreen({
     );
   }
 
-  const initials = passenger.user.fullName.split(" ").filter(Boolean).slice(0, 2).map((p) => p[0]).join("").toUpperCase();
-  const accountStatus = (passenger.user.accountStatus ?? "active").toLowerCase();
+  const fullName = passenger.user?.fullName || "Passenger";
+  const initials = fullName.split(" ").filter(Boolean).slice(0, 2).map((p) => p[0]).join("").toUpperCase() || "P";
+  const accountStatus = (passenger.user?.accountStatus ?? "active").toLowerCase();
 
   const TABS: Array<{ id: ProfileTab; label: string; icon: typeof User }> = [
     { id: "overview", label: "Overview", icon: User },

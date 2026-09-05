@@ -46,6 +46,7 @@ export type AdminConsoleScreen =
   | "auditLogs"
   | "admins"
   | "rolesPermissions"
+  | "unauthorizedUsers"
   | "escalationRules"
   | "ratings"
   | "refunds"
@@ -505,6 +506,45 @@ export type AuditLogRecord = {
     email: string | null;
     role: string;
   } | null;
+};
+
+export type AccessLogRecord = {
+  id: string;
+  userId: string;
+  role: "PASSENGER" | "RIDER" | "ADMIN" | "DISPATCHER";
+  status: "ACTIVE" | "REVOKED" | "EXPIRED";
+  ipAddress: string;
+  userAgent: string;
+  lastUsedAt: string;
+  createdAt: string;
+  expiresAt: string;
+  revokedAt: string | null;
+  user: {
+    id: string;
+    fullName: string;
+    email: string | null;
+    phoneE164: string;
+    accountStatus: string;
+    avatarUrl: string | null;
+    profileId: string | null;
+    displayCode: string | null;
+    city: string | null;
+  };
+};
+
+export type UnauthorizedUserRecord = {
+  id: string;
+  role: "PASSENGER" | "RIDER";
+  fullName: string;
+  email: string | null;
+  phoneE164: string;
+  accountStatus: string;
+  isPhoneVerified: boolean;
+  createdAt: string;
+  unauthorizedReason: string;
+  activeSessionCount: number;
+  profileId: string | null;
+  displayCode: string | null;
 };
 
 export type RiderFinancialRow = {

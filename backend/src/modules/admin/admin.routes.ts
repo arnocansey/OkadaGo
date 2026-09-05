@@ -33,6 +33,10 @@ import {
   riderRequestInfoSchema,
   adminExportParamsSchema,
   adminAuditLogsQuerySchema,
+  adminAccessLogsQuerySchema,
+  adminUnauthorizedUsersQuerySchema,
+  adminDeleteUserParamsSchema,
+  adminDeleteUserBodySchema,
   adminOpsSummaryQuerySchema,
   adminFinanceSummaryQuerySchema
 } from "./admin.schemas.js";
@@ -87,12 +91,6 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
   });
 
   server.delete("/admin/accounts/:userId", async (request) => {
-    const token = extractBearerToken(request.headers.authorization);
-    const params = parseParams(request, adminUserParamsSchema);
-    return authService.softDeleteAdmin(token, params.userId);
-  });
-
-  server.delete("/admin/users/:userId", async (request) => {
     const token = extractBearerToken(request.headers.authorization);
     const params = parseParams(request, adminUserParamsSchema);
     return authService.softDeleteAdmin(token, params.userId);
@@ -155,15 +153,352 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
     const query = parseQuery(request, adminAuditLogsQuerySchema);
     const limit = query.limit ?? 50;
     const skip = query.page ? (query.page - 1) * limit : query.offset ?? 0;
-    const logs = await prisma.auditLog.findMany({
-      orderBy: { createdAt: "desc" },
-      take: limit,
-      skip,
-      include: { actor: { select: { id: true, fullName: true, email: true } } }
-    });
+
+    const where: {
+      actorRole?: any;
+      action?: any;
+      OR?: any[];
+    } = {};
+
+    if (query.role && query.role !== "ALL") {
+      where.actorRole = query.role;
+    }
+    if (query.action) {
+      where.action = { contains: query.action, mode: "insensitive" };
+    }
+    if (query.search) {
+      where.OR = [
+        { action: { contains: query.search, mode: "insensitive" } },
+        { entityType: { contains: query.search, mode: "insensitive" } },
+        { ipAddress: { contains: query.search, mode: "insensitive" } },
+        { actor: { fullName: { contains: query.search, mode: "insensitive" } } },
+        { actor: { email: { contains: query.search, mode: "insensitive" } } },
+        { actor: { phoneE164: { contains: query.search, mode: "insensitive" } } }
+      ];
+    }
+
+    const [logs, total] = await Promise.all([
+      prisma.auditLog.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip,
+        include: {
+          actor: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              phoneE164: true,
+              role: true
+            }
+          }
+        }
+      }),
+      prisma.auditLog.count({ where })
+    ]);
+
     if (!query.page) return logs;
-    const total = await prisma.auditLog.count();
     return { data: logs, total, page: query.page, limit };
+  });
+
+  server.get("/admin/access-logs", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    await authService.listAdmins(token);
+    const query = parseQuery(request, adminAccessLogsQuerySchema);
+    const limit = query.limit ?? 50;
+    const page = query.page ?? 1;
+    const skip = (page - 1) * limit;
+
+    const now = new Date();
+    const where: {
+      user: {
+        deletedAt: null;
+        role?: any;
+        OR?: any[];
+      };
+      revokedAt?: any;
+      expiresAt?: any;
+    } = {
+      user: {
+        deletedAt: null
+      }
+    };
+
+    if (query.role && query.role !== "ALL") {
+      where.user.role = query.role;
+    } else {
+      where.user.role = { in: ["PASSENGER", "RIDER"] };
+    }
+
+    if (query.status === "ACTIVE") {
+      where.revokedAt = null;
+      where.expiresAt = { gt: now };
+    } else if (query.status === "REVOKED") {
+      where.revokedAt = { not: null };
+    } else if (query.status === "EXPIRED") {
+      where.revokedAt = null;
+      where.expiresAt = { lte: now };
+    }
+
+    if (query.search) {
+      where.user.OR = [
+        { fullName: { contains: query.search, mode: "insensitive" } },
+        { phoneE164: { contains: query.search, mode: "insensitive" } },
+        { email: { contains: query.search, mode: "insensitive" } },
+        { id: { contains: query.search, mode: "insensitive" } }
+      ];
+    }
+
+    const [sessions, total] = await Promise.all([
+      prisma.userSession.findMany({
+        where,
+        orderBy: { lastUsedAt: "desc" },
+        take: limit,
+        skip,
+        include: {
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              phoneE164: true,
+              role: true,
+              accountStatus: true,
+              avatarUrl: true,
+              createdAt: true,
+              passengerProfile: { select: { id: true, defaultServiceCity: true } },
+              riderProfile: { select: { id: true, displayCode: true, city: true, approvalStatus: true } }
+            }
+          }
+        }
+      }),
+      prisma.userSession.count({ where })
+    ]);
+
+    const formatted = sessions.map((s) => {
+      const isRevoked = Boolean(s.revokedAt);
+      const isExpired = s.expiresAt <= now;
+      const status = isRevoked ? "REVOKED" : isExpired ? "EXPIRED" : "ACTIVE";
+
+      return {
+        id: s.id,
+        userId: s.userId,
+        role: s.user.role,
+        status,
+        ipAddress: s.ipAddress || "Unknown IP",
+        userAgent: s.userAgent || "Unknown Device",
+        lastUsedAt: s.lastUsedAt?.toISOString() ?? s.createdAt.toISOString(),
+        createdAt: s.createdAt.toISOString(),
+        expiresAt: s.expiresAt.toISOString(),
+        revokedAt: s.revokedAt?.toISOString() ?? null,
+        user: {
+          id: s.user.id,
+          fullName: s.user.fullName,
+          email: s.user.email,
+          phoneE164: s.user.phoneE164,
+          accountStatus: s.user.accountStatus,
+          avatarUrl: s.user.avatarUrl,
+          profileId: s.user.passengerProfile?.id ?? s.user.riderProfile?.id ?? null,
+          displayCode: s.user.riderProfile?.displayCode ?? null,
+          city: s.user.passengerProfile?.defaultServiceCity ?? s.user.riderProfile?.city ?? null
+        }
+      };
+    });
+
+    return { data: formatted, total, page, limit };
+  });
+
+  server.post("/admin/access-logs/:sessionId/revoke", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const adminSession = await authService.requireAdminSession(token);
+    const params = request.params as { sessionId: string };
+
+    const session = await prisma.userSession.findUnique({
+      where: { id: params.sessionId },
+      include: { user: true }
+    });
+
+    if (!session) {
+      throw new AppError("Session not found", 404, "SESSION_NOT_FOUND");
+    }
+
+    await prisma.userSession.update({
+      where: { id: params.sessionId },
+      data: { revokedAt: new Date() }
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        actorUserId: adminSession.userId,
+        actorRole: "ADMIN",
+        action: "ADMIN_REVOKE_USER_SESSION",
+        entityType: "UserSession",
+        entityId: params.sessionId,
+        changes: {
+          targetUserId: session.userId,
+          targetUserRole: session.user.role,
+          targetUserName: session.user.fullName
+        }
+      }
+    });
+
+    return { success: true, message: "Session revoked successfully." };
+  });
+
+  server.get("/admin/unauthorized-users", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    await authService.listAdmins(token);
+    const query = parseQuery(request, adminUnauthorizedUsersQuerySchema);
+    const limit = query.limit ?? 50;
+    const page = query.page ?? 1;
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      deletedAt: null,
+      role: { in: ["PASSENGER", "RIDER"] },
+      OR: [
+        { accountStatus: { in: ["PENDING_VERIFICATION", "SUSPENDED", "BANNED"] } },
+        { isPhoneVerified: false },
+        { riderProfile: { approvalStatus: { in: ["PENDING", "REJECTED", "SUSPENDED"] } } }
+      ]
+    };
+
+    if (query.role && query.role !== "ALL") {
+      where.role = query.role;
+    }
+    if (query.status && query.status !== "ALL") {
+      where.accountStatus = query.status;
+    }
+    if (query.search) {
+      where.AND = [
+        {
+          OR: [
+            { fullName: { contains: query.search, mode: "insensitive" } },
+            { phoneE164: { contains: query.search, mode: "insensitive" } },
+            { email: { contains: query.search, mode: "insensitive" } },
+            { id: { contains: query.search, mode: "insensitive" } }
+          ]
+        }
+      ];
+    }
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip,
+        include: {
+          passengerProfile: true,
+          riderProfile: true,
+          sessions: {
+            where: { revokedAt: null, expiresAt: { gt: new Date() } },
+            select: { id: true }
+          }
+        }
+      }),
+      prisma.user.count({ where })
+    ]);
+
+    const formatted = users.map((u) => {
+      let unauthorizedReason = "Pending phone/account verification";
+      if (u.accountStatus === "BANNED") {
+        unauthorizedReason = "Account banned by system/policy";
+      } else if (u.accountStatus === "SUSPENDED") {
+        unauthorizedReason = u.riderProfile?.suspensionReason || "Account suspended";
+      } else if (u.riderProfile?.approvalStatus === "REJECTED") {
+        unauthorizedReason = "Rider documents/application rejected";
+      } else if (u.riderProfile?.approvalStatus === "PENDING") {
+        unauthorizedReason = "Rider onboarding pending approval";
+      } else if (!u.isPhoneVerified) {
+        unauthorizedReason = "Unverified phone number";
+      }
+
+      return {
+        id: u.id,
+        role: u.role,
+        fullName: u.fullName,
+        email: u.email,
+        phoneE164: u.phoneE164,
+        accountStatus: u.accountStatus,
+        isPhoneVerified: u.isPhoneVerified,
+        createdAt: u.createdAt.toISOString(),
+        unauthorizedReason,
+        activeSessionCount: u.sessions.length,
+        profileId: u.passengerProfile?.id ?? u.riderProfile?.id ?? null,
+        displayCode: u.riderProfile?.displayCode ?? null
+      };
+    });
+
+    return { data: formatted, total, page, limit };
+  });
+
+  server.delete("/admin/users/:userId", async (request) => {
+    const token = extractBearerToken(request.headers.authorization);
+    const adminSession = await authService.requireAdminSession(token);
+    const params = parseParams(request, adminDeleteUserParamsSchema);
+    const body = parseBody(request, adminDeleteUserBodySchema);
+
+    if (adminSession.userId === params.userId) {
+      throw new AppError("You cannot delete your own admin account", 400, "CANNOT_DELETE_SELF");
+    }
+
+    const targetUser = await prisma.user.findFirst({
+      where: { id: params.userId, deletedAt: null },
+      include: { adminProfile: true, passengerProfile: true, riderProfile: true }
+    });
+
+    if (!targetUser) {
+      throw new AppError("User not found or already deleted", 404, "USER_NOT_FOUND");
+    }
+
+    // Safety guard: Protect master administrators
+    if (targetUser.role === "ADMIN") {
+      throw new AppError(
+        "Admin accounts cannot be deleted from this screen. Use Administrator Management.",
+        403,
+        "CANNOT_DELETE_ADMIN_HERE"
+      );
+    }
+
+    // Revoke all active sessions and soft-delete user safely
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: params.userId },
+        data: {
+          deletedAt: new Date(),
+          accountStatus: "BANNED"
+        }
+      }),
+      prisma.userSession.updateMany({
+        where: { userId: params.userId, revokedAt: null },
+        data: { revokedAt: new Date() }
+      })
+    ]);
+
+    await prisma.auditLog.create({
+      data: {
+        actorUserId: adminSession.userId,
+        actorRole: "ADMIN",
+        action: "ADMIN_DELETE_UNAUTHORIZED_USER",
+        entityType: "User",
+        entityId: params.userId,
+        changes: {
+          targetUserId: targetUser.id,
+          targetRole: targetUser.role,
+          targetName: targetUser.fullName,
+          targetPhone: targetUser.phoneE164,
+          reason: body.reason || "Unauthorized account removal"
+        }
+      }
+    });
+
+    return {
+      success: true,
+      userId: params.userId,
+      message: `User ${targetUser.fullName} deleted successfully and all sessions revoked.`
+    };
   });
 
   server.get("/admin/payments/wallet-transactions", async (request) => {

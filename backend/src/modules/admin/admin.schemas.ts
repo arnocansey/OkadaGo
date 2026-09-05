@@ -94,9 +94,36 @@ export const adminExportParamsSchema = z.object({
 });
 
 export const adminAuditLogsQuerySchema = z.object({
+  role: z.enum(["ALL", "ADMIN", "PASSENGER", "RIDER", "DISPATCHER"]).optional(),
+  action: z.string().optional(),
+  search: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(500).optional(),
   offset: z.coerce.number().int().min(0).optional(),
   page: z.coerce.number().int().min(1).optional()
+});
+
+export const adminAccessLogsQuerySchema = z.object({
+  role: z.enum(["ALL", "PASSENGER", "RIDER"]).optional(),
+  status: z.enum(["ALL", "ACTIVE", "REVOKED", "EXPIRED"]).optional(),
+  search: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(200).optional(),
+  page: z.coerce.number().int().min(1).optional()
+});
+
+export const adminUnauthorizedUsersQuerySchema = z.object({
+  role: z.enum(["ALL", "PASSENGER", "RIDER"]).optional(),
+  status: z.enum(["ALL", "PENDING_VERIFICATION", "SUSPENDED", "BANNED"]).optional(),
+  search: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(200).optional(),
+  page: z.coerce.number().int().min(1).optional()
+});
+
+export const adminDeleteUserParamsSchema = z.object({
+  userId: z.string().min(1).max(128)
+});
+
+export const adminDeleteUserBodySchema = z.object({
+  reason: z.string().max(300).optional()
 });
 
 export const adminOpsSummaryQuerySchema = z.object({

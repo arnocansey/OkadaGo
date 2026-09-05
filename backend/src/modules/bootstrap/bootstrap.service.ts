@@ -1261,6 +1261,116 @@ export class BootstrapService {
     return { data, total, page: Math.max(page, 1), limit: take };
   }
 
+  async getPassengerById(passengerId: string) {
+    const passenger = await prisma.passengerProfile.findFirst({
+      where: {
+        OR: [
+          { id: passengerId },
+          { userId: passengerId }
+        ],
+        user: {
+          deletedAt: null
+        }
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            phoneE164: true,
+            phoneLocal: true,
+            phoneCountryCode: true,
+            preferredCurrency: true,
+            role: true,
+            accountStatus: true,
+            isPhoneVerified: true,
+            isEmailVerified: true,
+            createdAt: true,
+            avatarUrl: true
+          }
+        }
+      }
+    });
+
+    if (!passenger) {
+      throw new AppError("Passenger not found", 404, "PASSENGER_NOT_FOUND");
+    }
+
+    const [rides, deliveries, userWallets, sessions] = await Promise.all([
+      prisma.ride.findMany({
+        where: { passengerId: passenger.id },
+        orderBy: { createdAt: "desc" },
+        take: 100,
+        include: {
+          passenger: {
+            include: {
+              user: { select: { fullName: true, phoneE164: true, email: true } }
+            }
+          },
+          rider: {
+            include: {
+              user: { select: { fullName: true, phoneE164: true } }
+            }
+          }
+        }
+      }),
+      prisma.deliveryRequest.findMany({
+        where: { passengerId: passenger.id },
+        orderBy: { createdAt: "desc" },
+        take: 100,
+        include: {
+          passenger: {
+            include: {
+              user: { select: { fullName: true, phoneE164: true, email: true } }
+            }
+          },
+          rider: {
+            include: {
+              user: { select: { fullName: true, phoneE164: true } }
+            }
+          }
+        }
+      }),
+      prisma.wallet.findMany({
+        where: { userId: passenger.user.id },
+        include: {
+          transactions: {
+            orderBy: { createdAt: "desc" },
+            take: 100
+          }
+        }
+      }),
+      prisma.userSession.findMany({
+        where: { userId: passenger.user.id },
+        orderBy: { createdAt: "desc" },
+        take: 20
+      })
+    ]);
+
+    const walletTransactions = userWallets.flatMap((w: { id: string; type: any; currency: string; transactions: any[] }) =>
+      w.transactions.map((t: any) => ({
+        ...t,
+        wallet: {
+          id: w.id,
+          type: w.type,
+          currency: w.currency,
+          user: {
+            fullName: passenger.user.fullName
+          }
+        }
+      }))
+    );
+
+    return {
+      passenger,
+      rides,
+      deliveries,
+      walletTransactions,
+      sessions
+    };
+  }
+
   async listRiders(limit = 25, page = 1) {
     const where = {
       user: {
