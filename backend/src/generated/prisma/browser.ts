@@ -259,3 +259,28 @@ export type AssignmentAuditLog = Prisma.AssignmentAuditLogModel
  * 
  */
 export type RideDispatchOffer = Prisma.RideDispatchOfferModel
+/**
+ * Model FinanceLedgerEntry
+ * 
+ */
+export type FinanceLedgerEntry = Prisma.FinanceLedgerEntryModel
+/**
+ * Model CommissionPayment
+ * 
+ */
+export type CommissionPayment = Prisma.CommissionPaymentModel
+/**
+ * Model PaymentDispute
+ * 
+ */
+export type PaymentDispute = Prisma.PaymentDisputeModel
+/**
+ * Model FinanceAdjustment
+ * 
+ */
+export type FinanceAdjustment = Prisma.FinanceAdjustmentModel
+/**
+ * Model FinanceSetting
+ * 
+ */
+export type FinanceSetting = Prisma.FinanceSettingModel

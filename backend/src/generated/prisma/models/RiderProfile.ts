@@ -35,6 +35,9 @@ export type RiderProfileAvgAggregateOutputType = {
   completedTrips: number | null
   commissionPercent: runtime.Decimal | null
   currentHeading: number | null
+  outstandingCommission: runtime.Decimal | null
+  totalCashCollected: runtime.Decimal | null
+  totalCommissionPaid: runtime.Decimal | null
 }
 
 export type RiderProfileSumAggregateOutputType = {
@@ -46,6 +49,9 @@ export type RiderProfileSumAggregateOutputType = {
   completedTrips: number | null
   commissionPercent: runtime.Decimal | null
   currentHeading: number | null
+  outstandingCommission: runtime.Decimal | null
+  totalCashCollected: runtime.Decimal | null
+  totalCommissionPaid: runtime.Decimal | null
 }
 
 export type RiderProfileMinAggregateOutputType = {
@@ -77,6 +83,12 @@ export type RiderProfileMinAggregateOutputType = {
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
+  outstandingCommission: runtime.Decimal | null
+  totalCashCollected: runtime.Decimal | null
+  totalCommissionPaid: runtime.Decimal | null
+  isCashRestricted: boolean | null
+  cashRestrictedAt: Date | null
+  commissionWarningIssuedAt: Date | null
 }
 
 export type RiderProfileMaxAggregateOutputType = {
@@ -108,6 +120,12 @@ export type RiderProfileMaxAggregateOutputType = {
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
+  outstandingCommission: runtime.Decimal | null
+  totalCashCollected: runtime.Decimal | null
+  totalCommissionPaid: runtime.Decimal | null
+  isCashRestricted: boolean | null
+  cashRestrictedAt: Date | null
+  commissionWarningIssuedAt: Date | null
 }
 
 export type RiderProfileCountAggregateOutputType = {
@@ -139,6 +157,12 @@ export type RiderProfileCountAggregateOutputType = {
   createdAt: number
   updatedAt: number
   deletedAt: number
+  outstandingCommission: number
+  totalCashCollected: number
+  totalCommissionPaid: number
+  isCashRestricted: number
+  cashRestrictedAt: number
+  commissionWarningIssuedAt: number
   _all: number
 }
 
@@ -152,6 +176,9 @@ export type RiderProfileAvgAggregateInputType = {
   completedTrips?: true
   commissionPercent?: true
   currentHeading?: true
+  outstandingCommission?: true
+  totalCashCollected?: true
+  totalCommissionPaid?: true
 }
 
 export type RiderProfileSumAggregateInputType = {
@@ -163,6 +190,9 @@ export type RiderProfileSumAggregateInputType = {
   completedTrips?: true
   commissionPercent?: true
   currentHeading?: true
+  outstandingCommission?: true
+  totalCashCollected?: true
+  totalCommissionPaid?: true
 }
 
 export type RiderProfileMinAggregateInputType = {
@@ -194,6 +224,12 @@ export type RiderProfileMinAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
+  outstandingCommission?: true
+  totalCashCollected?: true
+  totalCommissionPaid?: true
+  isCashRestricted?: true
+  cashRestrictedAt?: true
+  commissionWarningIssuedAt?: true
 }
 
 export type RiderProfileMaxAggregateInputType = {
@@ -225,6 +261,12 @@ export type RiderProfileMaxAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
+  outstandingCommission?: true
+  totalCashCollected?: true
+  totalCommissionPaid?: true
+  isCashRestricted?: true
+  cashRestrictedAt?: true
+  commissionWarningIssuedAt?: true
 }
 
 export type RiderProfileCountAggregateInputType = {
@@ -256,6 +298,12 @@ export type RiderProfileCountAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
+  outstandingCommission?: true
+  totalCashCollected?: true
+  totalCommissionPaid?: true
+  isCashRestricted?: true
+  cashRestrictedAt?: true
+  commissionWarningIssuedAt?: true
   _all?: true
 }
 
@@ -374,6 +422,12 @@ export type RiderProfileGroupByOutputType = {
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
+  outstandingCommission: runtime.Decimal
+  totalCashCollected: runtime.Decimal
+  totalCommissionPaid: runtime.Decimal
+  isCashRestricted: boolean
+  cashRestrictedAt: Date | null
+  commissionWarningIssuedAt: Date | null
   _count: RiderProfileCountAggregateOutputType | null
   _avg: RiderProfileAvgAggregateOutputType | null
   _sum: RiderProfileSumAggregateOutputType | null
@@ -428,6 +482,12 @@ export type RiderProfileWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
+  outstandingCommission?: Prisma.DecimalFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFilter<"RiderProfile"> | boolean
+  cashRestrictedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
+  commissionWarningIssuedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   serviceZone?: Prisma.XOR<Prisma.ServiceZoneNullableScalarRelationFilter, Prisma.ServiceZoneWhereInput> | null
   vehicle?: Prisma.XOR<Prisma.VehicleNullableScalarRelationFilter, Prisma.VehicleWhereInput> | null
@@ -439,6 +499,10 @@ export type RiderProfileWhereInput = {
   incidents?: Prisma.IncidentListRelationFilter
   onlineLogs?: Prisma.RiderOnlineLogListRelationFilter
   dispatchOffers?: Prisma.RideDispatchOfferListRelationFilter
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryListRelationFilter
+  commissionPayments?: Prisma.CommissionPaymentListRelationFilter
+  financeAdjustments?: Prisma.FinanceAdjustmentListRelationFilter
+  paymentDisputes?: Prisma.PaymentDisputeListRelationFilter
 }
 
 export type RiderProfileOrderByWithRelationInput = {
@@ -470,6 +534,12 @@ export type RiderProfileOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  outstandingCommission?: Prisma.SortOrder
+  totalCashCollected?: Prisma.SortOrder
+  totalCommissionPaid?: Prisma.SortOrder
+  isCashRestricted?: Prisma.SortOrder
+  cashRestrictedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  commissionWarningIssuedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   serviceZone?: Prisma.ServiceZoneOrderByWithRelationInput
   vehicle?: Prisma.VehicleOrderByWithRelationInput
@@ -481,6 +551,10 @@ export type RiderProfileOrderByWithRelationInput = {
   incidents?: Prisma.IncidentOrderByRelationAggregateInput
   onlineLogs?: Prisma.RiderOnlineLogOrderByRelationAggregateInput
   dispatchOffers?: Prisma.RideDispatchOfferOrderByRelationAggregateInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryOrderByRelationAggregateInput
+  commissionPayments?: Prisma.CommissionPaymentOrderByRelationAggregateInput
+  financeAdjustments?: Prisma.FinanceAdjustmentOrderByRelationAggregateInput
+  paymentDisputes?: Prisma.PaymentDisputeOrderByRelationAggregateInput
 }
 
 export type RiderProfileWhereUniqueInput = Prisma.AtLeast<{
@@ -515,6 +589,12 @@ export type RiderProfileWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
+  outstandingCommission?: Prisma.DecimalFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFilter<"RiderProfile"> | boolean
+  cashRestrictedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
+  commissionWarningIssuedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   serviceZone?: Prisma.XOR<Prisma.ServiceZoneNullableScalarRelationFilter, Prisma.ServiceZoneWhereInput> | null
   vehicle?: Prisma.XOR<Prisma.VehicleNullableScalarRelationFilter, Prisma.VehicleWhereInput> | null
@@ -526,6 +606,10 @@ export type RiderProfileWhereUniqueInput = Prisma.AtLeast<{
   incidents?: Prisma.IncidentListRelationFilter
   onlineLogs?: Prisma.RiderOnlineLogListRelationFilter
   dispatchOffers?: Prisma.RideDispatchOfferListRelationFilter
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryListRelationFilter
+  commissionPayments?: Prisma.CommissionPaymentListRelationFilter
+  financeAdjustments?: Prisma.FinanceAdjustmentListRelationFilter
+  paymentDisputes?: Prisma.PaymentDisputeListRelationFilter
 }, "id" | "userId" | "displayCode">
 
 export type RiderProfileOrderByWithAggregationInput = {
@@ -557,6 +641,12 @@ export type RiderProfileOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  outstandingCommission?: Prisma.SortOrder
+  totalCashCollected?: Prisma.SortOrder
+  totalCommissionPaid?: Prisma.SortOrder
+  isCashRestricted?: Prisma.SortOrder
+  cashRestrictedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  commissionWarningIssuedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.RiderProfileCountOrderByAggregateInput
   _avg?: Prisma.RiderProfileAvgOrderByAggregateInput
   _max?: Prisma.RiderProfileMaxOrderByAggregateInput
@@ -596,6 +686,12 @@ export type RiderProfileScalarWhereWithAggregatesInput = {
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"RiderProfile"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"RiderProfile"> | Date | string
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"RiderProfile"> | Date | string | null
+  outstandingCommission?: Prisma.DecimalWithAggregatesFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalWithAggregatesFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalWithAggregatesFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolWithAggregatesFilter<"RiderProfile"> | boolean
+  cashRestrictedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"RiderProfile"> | Date | string | null
+  commissionWarningIssuedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"RiderProfile"> | Date | string | null
 }
 
 export type RiderProfileCreateInput = {
@@ -625,6 +721,12 @@ export type RiderProfileCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutRiderProfileInput
   serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidersInput
   vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
@@ -636,6 +738,10 @@ export type RiderProfileCreateInput = {
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
   dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateInput = {
@@ -667,6 +773,12 @@ export type RiderProfileUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
@@ -676,6 +788,10 @@ export type RiderProfileUncheckedCreateInput = {
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUpdateInput = {
@@ -705,6 +821,12 @@ export type RiderProfileUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutRiderProfileNestedInput
   serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidersNestedInput
   vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
@@ -716,6 +838,10 @@ export type RiderProfileUpdateInput = {
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateInput = {
@@ -747,6 +873,12 @@ export type RiderProfileUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
@@ -756,6 +888,10 @@ export type RiderProfileUncheckedUpdateInput = {
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileCreateManyInput = {
@@ -787,6 +923,12 @@ export type RiderProfileCreateManyInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
 }
 
 export type RiderProfileUpdateManyMutationInput = {
@@ -816,6 +958,12 @@ export type RiderProfileUpdateManyMutationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type RiderProfileUncheckedUpdateManyInput = {
@@ -847,6 +995,12 @@ export type RiderProfileUncheckedUpdateManyInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type RiderProfileNullableScalarRelationFilter = {
@@ -883,6 +1037,12 @@ export type RiderProfileCountOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+  outstandingCommission?: Prisma.SortOrder
+  totalCashCollected?: Prisma.SortOrder
+  totalCommissionPaid?: Prisma.SortOrder
+  isCashRestricted?: Prisma.SortOrder
+  cashRestrictedAt?: Prisma.SortOrder
+  commissionWarningIssuedAt?: Prisma.SortOrder
 }
 
 export type RiderProfileAvgOrderByAggregateInput = {
@@ -894,6 +1054,9 @@ export type RiderProfileAvgOrderByAggregateInput = {
   completedTrips?: Prisma.SortOrder
   commissionPercent?: Prisma.SortOrder
   currentHeading?: Prisma.SortOrder
+  outstandingCommission?: Prisma.SortOrder
+  totalCashCollected?: Prisma.SortOrder
+  totalCommissionPaid?: Prisma.SortOrder
 }
 
 export type RiderProfileMaxOrderByAggregateInput = {
@@ -925,6 +1088,12 @@ export type RiderProfileMaxOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+  outstandingCommission?: Prisma.SortOrder
+  totalCashCollected?: Prisma.SortOrder
+  totalCommissionPaid?: Prisma.SortOrder
+  isCashRestricted?: Prisma.SortOrder
+  cashRestrictedAt?: Prisma.SortOrder
+  commissionWarningIssuedAt?: Prisma.SortOrder
 }
 
 export type RiderProfileMinOrderByAggregateInput = {
@@ -956,6 +1125,12 @@ export type RiderProfileMinOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+  outstandingCommission?: Prisma.SortOrder
+  totalCashCollected?: Prisma.SortOrder
+  totalCommissionPaid?: Prisma.SortOrder
+  isCashRestricted?: Prisma.SortOrder
+  cashRestrictedAt?: Prisma.SortOrder
+  commissionWarningIssuedAt?: Prisma.SortOrder
 }
 
 export type RiderProfileSumOrderByAggregateInput = {
@@ -967,6 +1142,9 @@ export type RiderProfileSumOrderByAggregateInput = {
   completedTrips?: Prisma.SortOrder
   commissionPercent?: Prisma.SortOrder
   currentHeading?: Prisma.SortOrder
+  outstandingCommission?: Prisma.SortOrder
+  totalCashCollected?: Prisma.SortOrder
+  totalCommissionPaid?: Prisma.SortOrder
 }
 
 export type RiderProfileScalarRelationFilter = {
@@ -1218,6 +1396,66 @@ export type RiderProfileUpdateOneRequiredWithoutDispatchOffersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.RiderProfileUpdateToOneWithWhereWithoutDispatchOffersInput, Prisma.RiderProfileUpdateWithoutDispatchOffersInput>, Prisma.RiderProfileUncheckedUpdateWithoutDispatchOffersInput>
 }
 
+export type RiderProfileCreateNestedOneWithoutFinanceLedgerEntriesInput = {
+  create?: Prisma.XOR<Prisma.RiderProfileCreateWithoutFinanceLedgerEntriesInput, Prisma.RiderProfileUncheckedCreateWithoutFinanceLedgerEntriesInput>
+  connectOrCreate?: Prisma.RiderProfileCreateOrConnectWithoutFinanceLedgerEntriesInput
+  connect?: Prisma.RiderProfileWhereUniqueInput
+}
+
+export type RiderProfileUpdateOneWithoutFinanceLedgerEntriesNestedInput = {
+  create?: Prisma.XOR<Prisma.RiderProfileCreateWithoutFinanceLedgerEntriesInput, Prisma.RiderProfileUncheckedCreateWithoutFinanceLedgerEntriesInput>
+  connectOrCreate?: Prisma.RiderProfileCreateOrConnectWithoutFinanceLedgerEntriesInput
+  upsert?: Prisma.RiderProfileUpsertWithoutFinanceLedgerEntriesInput
+  disconnect?: Prisma.RiderProfileWhereInput | boolean
+  delete?: Prisma.RiderProfileWhereInput | boolean
+  connect?: Prisma.RiderProfileWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.RiderProfileUpdateToOneWithWhereWithoutFinanceLedgerEntriesInput, Prisma.RiderProfileUpdateWithoutFinanceLedgerEntriesInput>, Prisma.RiderProfileUncheckedUpdateWithoutFinanceLedgerEntriesInput>
+}
+
+export type RiderProfileCreateNestedOneWithoutCommissionPaymentsInput = {
+  create?: Prisma.XOR<Prisma.RiderProfileCreateWithoutCommissionPaymentsInput, Prisma.RiderProfileUncheckedCreateWithoutCommissionPaymentsInput>
+  connectOrCreate?: Prisma.RiderProfileCreateOrConnectWithoutCommissionPaymentsInput
+  connect?: Prisma.RiderProfileWhereUniqueInput
+}
+
+export type RiderProfileUpdateOneRequiredWithoutCommissionPaymentsNestedInput = {
+  create?: Prisma.XOR<Prisma.RiderProfileCreateWithoutCommissionPaymentsInput, Prisma.RiderProfileUncheckedCreateWithoutCommissionPaymentsInput>
+  connectOrCreate?: Prisma.RiderProfileCreateOrConnectWithoutCommissionPaymentsInput
+  upsert?: Prisma.RiderProfileUpsertWithoutCommissionPaymentsInput
+  connect?: Prisma.RiderProfileWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.RiderProfileUpdateToOneWithWhereWithoutCommissionPaymentsInput, Prisma.RiderProfileUpdateWithoutCommissionPaymentsInput>, Prisma.RiderProfileUncheckedUpdateWithoutCommissionPaymentsInput>
+}
+
+export type RiderProfileCreateNestedOneWithoutPaymentDisputesInput = {
+  create?: Prisma.XOR<Prisma.RiderProfileCreateWithoutPaymentDisputesInput, Prisma.RiderProfileUncheckedCreateWithoutPaymentDisputesInput>
+  connectOrCreate?: Prisma.RiderProfileCreateOrConnectWithoutPaymentDisputesInput
+  connect?: Prisma.RiderProfileWhereUniqueInput
+}
+
+export type RiderProfileUpdateOneWithoutPaymentDisputesNestedInput = {
+  create?: Prisma.XOR<Prisma.RiderProfileCreateWithoutPaymentDisputesInput, Prisma.RiderProfileUncheckedCreateWithoutPaymentDisputesInput>
+  connectOrCreate?: Prisma.RiderProfileCreateOrConnectWithoutPaymentDisputesInput
+  upsert?: Prisma.RiderProfileUpsertWithoutPaymentDisputesInput
+  disconnect?: Prisma.RiderProfileWhereInput | boolean
+  delete?: Prisma.RiderProfileWhereInput | boolean
+  connect?: Prisma.RiderProfileWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.RiderProfileUpdateToOneWithWhereWithoutPaymentDisputesInput, Prisma.RiderProfileUpdateWithoutPaymentDisputesInput>, Prisma.RiderProfileUncheckedUpdateWithoutPaymentDisputesInput>
+}
+
+export type RiderProfileCreateNestedOneWithoutFinanceAdjustmentsInput = {
+  create?: Prisma.XOR<Prisma.RiderProfileCreateWithoutFinanceAdjustmentsInput, Prisma.RiderProfileUncheckedCreateWithoutFinanceAdjustmentsInput>
+  connectOrCreate?: Prisma.RiderProfileCreateOrConnectWithoutFinanceAdjustmentsInput
+  connect?: Prisma.RiderProfileWhereUniqueInput
+}
+
+export type RiderProfileUpdateOneRequiredWithoutFinanceAdjustmentsNestedInput = {
+  create?: Prisma.XOR<Prisma.RiderProfileCreateWithoutFinanceAdjustmentsInput, Prisma.RiderProfileUncheckedCreateWithoutFinanceAdjustmentsInput>
+  connectOrCreate?: Prisma.RiderProfileCreateOrConnectWithoutFinanceAdjustmentsInput
+  upsert?: Prisma.RiderProfileUpsertWithoutFinanceAdjustmentsInput
+  connect?: Prisma.RiderProfileWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.RiderProfileUpdateToOneWithWhereWithoutFinanceAdjustmentsInput, Prisma.RiderProfileUpdateWithoutFinanceAdjustmentsInput>, Prisma.RiderProfileUncheckedUpdateWithoutFinanceAdjustmentsInput>
+}
+
 export type RiderProfileCreateWithoutUserInput = {
   id?: string
   displayCode: string
@@ -1245,6 +1483,12 @@ export type RiderProfileCreateWithoutUserInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidersInput
   vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentCreateNestedManyWithoutRiderInput
@@ -1255,6 +1499,10 @@ export type RiderProfileCreateWithoutUserInput = {
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
   dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutUserInput = {
@@ -1285,6 +1533,12 @@ export type RiderProfileUncheckedCreateWithoutUserInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
@@ -1294,6 +1548,10 @@ export type RiderProfileUncheckedCreateWithoutUserInput = {
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutUserInput = {
@@ -1339,6 +1597,12 @@ export type RiderProfileUpdateWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidersNestedInput
   vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUpdateManyWithoutRiderNestedInput
@@ -1349,6 +1613,10 @@ export type RiderProfileUpdateWithoutUserInput = {
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutUserInput = {
@@ -1379,6 +1647,12 @@ export type RiderProfileUncheckedUpdateWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
@@ -1388,6 +1662,10 @@ export type RiderProfileUncheckedUpdateWithoutUserInput = {
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileCreateWithoutOnlineLogsInput = {
@@ -1417,6 +1695,12 @@ export type RiderProfileCreateWithoutOnlineLogsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutRiderProfileInput
   serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidersInput
   vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
@@ -1427,6 +1711,10 @@ export type RiderProfileCreateWithoutOnlineLogsInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
   dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutOnlineLogsInput = {
@@ -1458,6 +1746,12 @@ export type RiderProfileUncheckedCreateWithoutOnlineLogsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
@@ -1466,6 +1760,10 @@ export type RiderProfileUncheckedCreateWithoutOnlineLogsInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutOnlineLogsInput = {
@@ -1511,6 +1809,12 @@ export type RiderProfileUpdateWithoutOnlineLogsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutRiderProfileNestedInput
   serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidersNestedInput
   vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
@@ -1521,6 +1825,10 @@ export type RiderProfileUpdateWithoutOnlineLogsInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutOnlineLogsInput = {
@@ -1552,6 +1860,12 @@ export type RiderProfileUncheckedUpdateWithoutOnlineLogsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
@@ -1560,6 +1874,10 @@ export type RiderProfileUncheckedUpdateWithoutOnlineLogsInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileCreateWithoutVehicleInput = {
@@ -1589,6 +1907,12 @@ export type RiderProfileCreateWithoutVehicleInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutRiderProfileInput
   serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidersInput
   documents?: Prisma.RiderDocumentCreateNestedManyWithoutRiderInput
@@ -1599,6 +1923,10 @@ export type RiderProfileCreateWithoutVehicleInput = {
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
   dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutVehicleInput = {
@@ -1630,6 +1958,12 @@ export type RiderProfileUncheckedCreateWithoutVehicleInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
   deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutRiderInput
@@ -1638,6 +1972,10 @@ export type RiderProfileUncheckedCreateWithoutVehicleInput = {
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutVehicleInput = {
@@ -1683,6 +2021,12 @@ export type RiderProfileUpdateWithoutVehicleInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutRiderProfileNestedInput
   serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidersNestedInput
   documents?: Prisma.RiderDocumentUpdateManyWithoutRiderNestedInput
@@ -1693,6 +2037,10 @@ export type RiderProfileUpdateWithoutVehicleInput = {
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutVehicleInput = {
@@ -1724,6 +2072,12 @@ export type RiderProfileUncheckedUpdateWithoutVehicleInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
   deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutRiderNestedInput
@@ -1732,6 +2086,10 @@ export type RiderProfileUncheckedUpdateWithoutVehicleInput = {
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileCreateWithoutDocumentsInput = {
@@ -1761,6 +2119,12 @@ export type RiderProfileCreateWithoutDocumentsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutRiderProfileInput
   serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidersInput
   vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
@@ -1771,6 +2135,10 @@ export type RiderProfileCreateWithoutDocumentsInput = {
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
   dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutDocumentsInput = {
@@ -1802,6 +2170,12 @@ export type RiderProfileUncheckedCreateWithoutDocumentsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
   deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutRiderInput
@@ -1810,6 +2184,10 @@ export type RiderProfileUncheckedCreateWithoutDocumentsInput = {
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutDocumentsInput = {
@@ -1855,6 +2233,12 @@ export type RiderProfileUpdateWithoutDocumentsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutRiderProfileNestedInput
   serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidersNestedInput
   vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
@@ -1865,6 +2249,10 @@ export type RiderProfileUpdateWithoutDocumentsInput = {
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutDocumentsInput = {
@@ -1896,6 +2284,12 @@ export type RiderProfileUncheckedUpdateWithoutDocumentsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
   rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
   deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutRiderNestedInput
@@ -1904,6 +2298,10 @@ export type RiderProfileUncheckedUpdateWithoutDocumentsInput = {
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileCreateWithoutServiceZoneInput = {
@@ -1933,6 +2331,12 @@ export type RiderProfileCreateWithoutServiceZoneInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutRiderProfileInput
   vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentCreateNestedManyWithoutRiderInput
@@ -1943,6 +2347,10 @@ export type RiderProfileCreateWithoutServiceZoneInput = {
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
   dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutServiceZoneInput = {
@@ -1973,6 +2381,12 @@ export type RiderProfileUncheckedCreateWithoutServiceZoneInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
@@ -1982,6 +2396,10 @@ export type RiderProfileUncheckedCreateWithoutServiceZoneInput = {
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutServiceZoneInput = {
@@ -2042,6 +2460,12 @@ export type RiderProfileScalarWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
+  outstandingCommission?: Prisma.DecimalFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFilter<"RiderProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFilter<"RiderProfile"> | boolean
+  cashRestrictedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
+  commissionWarningIssuedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
 }
 
 export type RiderProfileCreateWithoutRidesInput = {
@@ -2071,6 +2495,12 @@ export type RiderProfileCreateWithoutRidesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutRiderProfileInput
   serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidersInput
   vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
@@ -2081,6 +2511,10 @@ export type RiderProfileCreateWithoutRidesInput = {
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
   dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutRidesInput = {
@@ -2112,6 +2546,12 @@ export type RiderProfileUncheckedCreateWithoutRidesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
   deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutRiderInput
@@ -2120,6 +2560,10 @@ export type RiderProfileUncheckedCreateWithoutRidesInput = {
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutRidesInput = {
@@ -2165,6 +2609,12 @@ export type RiderProfileUpdateWithoutRidesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutRiderProfileNestedInput
   serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidersNestedInput
   vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
@@ -2175,6 +2625,10 @@ export type RiderProfileUpdateWithoutRidesInput = {
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutRidesInput = {
@@ -2206,6 +2660,12 @@ export type RiderProfileUncheckedUpdateWithoutRidesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
   deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutRiderNestedInput
@@ -2214,6 +2674,10 @@ export type RiderProfileUncheckedUpdateWithoutRidesInput = {
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileCreateWithoutDeliveriesInput = {
@@ -2243,6 +2707,12 @@ export type RiderProfileCreateWithoutDeliveriesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutRiderProfileInput
   serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidersInput
   vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
@@ -2253,6 +2723,10 @@ export type RiderProfileCreateWithoutDeliveriesInput = {
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
   dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutDeliveriesInput = {
@@ -2284,6 +2758,12 @@ export type RiderProfileUncheckedCreateWithoutDeliveriesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
@@ -2292,6 +2772,10 @@ export type RiderProfileUncheckedCreateWithoutDeliveriesInput = {
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutDeliveriesInput = {
@@ -2337,6 +2821,12 @@ export type RiderProfileUpdateWithoutDeliveriesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutRiderProfileNestedInput
   serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidersNestedInput
   vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
@@ -2347,6 +2837,10 @@ export type RiderProfileUpdateWithoutDeliveriesInput = {
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutDeliveriesInput = {
@@ -2378,6 +2872,12 @@ export type RiderProfileUncheckedUpdateWithoutDeliveriesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
@@ -2386,6 +2886,10 @@ export type RiderProfileUncheckedUpdateWithoutDeliveriesInput = {
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileCreateWithoutPayoutRequestsInput = {
@@ -2415,6 +2919,12 @@ export type RiderProfileCreateWithoutPayoutRequestsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutRiderProfileInput
   serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidersInput
   vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
@@ -2425,6 +2935,10 @@ export type RiderProfileCreateWithoutPayoutRequestsInput = {
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
   dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutPayoutRequestsInput = {
@@ -2456,6 +2970,12 @@ export type RiderProfileUncheckedCreateWithoutPayoutRequestsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
@@ -2464,6 +2984,10 @@ export type RiderProfileUncheckedCreateWithoutPayoutRequestsInput = {
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutPayoutRequestsInput = {
@@ -2509,6 +3033,12 @@ export type RiderProfileUpdateWithoutPayoutRequestsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutRiderProfileNestedInput
   serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidersNestedInput
   vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
@@ -2519,6 +3049,10 @@ export type RiderProfileUpdateWithoutPayoutRequestsInput = {
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutPayoutRequestsInput = {
@@ -2550,6 +3084,12 @@ export type RiderProfileUncheckedUpdateWithoutPayoutRequestsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
@@ -2558,6 +3098,10 @@ export type RiderProfileUncheckedUpdateWithoutPayoutRequestsInput = {
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileCreateWithoutPayoutAccountsInput = {
@@ -2587,6 +3131,12 @@ export type RiderProfileCreateWithoutPayoutAccountsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutRiderProfileInput
   serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidersInput
   vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
@@ -2597,6 +3147,10 @@ export type RiderProfileCreateWithoutPayoutAccountsInput = {
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
   dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutPayoutAccountsInput = {
@@ -2628,6 +3182,12 @@ export type RiderProfileUncheckedCreateWithoutPayoutAccountsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
@@ -2636,6 +3196,10 @@ export type RiderProfileUncheckedCreateWithoutPayoutAccountsInput = {
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutPayoutAccountsInput = {
@@ -2681,6 +3245,12 @@ export type RiderProfileUpdateWithoutPayoutAccountsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutRiderProfileNestedInput
   serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidersNestedInput
   vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
@@ -2691,6 +3261,10 @@ export type RiderProfileUpdateWithoutPayoutAccountsInput = {
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutPayoutAccountsInput = {
@@ -2722,6 +3296,12 @@ export type RiderProfileUncheckedUpdateWithoutPayoutAccountsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
@@ -2730,6 +3310,10 @@ export type RiderProfileUncheckedUpdateWithoutPayoutAccountsInput = {
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileCreateWithoutIncidentsInput = {
@@ -2759,6 +3343,12 @@ export type RiderProfileCreateWithoutIncidentsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutRiderProfileInput
   serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidersInput
   vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
@@ -2769,6 +3359,10 @@ export type RiderProfileCreateWithoutIncidentsInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
   dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutIncidentsInput = {
@@ -2800,6 +3394,12 @@ export type RiderProfileUncheckedCreateWithoutIncidentsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
@@ -2808,6 +3408,10 @@ export type RiderProfileUncheckedCreateWithoutIncidentsInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutIncidentsInput = {
@@ -2853,6 +3457,12 @@ export type RiderProfileUpdateWithoutIncidentsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutRiderProfileNestedInput
   serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidersNestedInput
   vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
@@ -2863,6 +3473,10 @@ export type RiderProfileUpdateWithoutIncidentsInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutIncidentsInput = {
@@ -2894,6 +3508,12 @@ export type RiderProfileUncheckedUpdateWithoutIncidentsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
@@ -2902,6 +3522,10 @@ export type RiderProfileUncheckedUpdateWithoutIncidentsInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileCreateWithoutDispatchOffersInput = {
@@ -2931,6 +3555,12 @@ export type RiderProfileCreateWithoutDispatchOffersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutRiderProfileInput
   serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidersInput
   vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
@@ -2941,6 +3571,10 @@ export type RiderProfileCreateWithoutDispatchOffersInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutDispatchOffersInput = {
@@ -2972,6 +3606,12 @@ export type RiderProfileUncheckedCreateWithoutDispatchOffersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
   vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
   documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
   rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
@@ -2980,6 +3620,10 @@ export type RiderProfileUncheckedCreateWithoutDispatchOffersInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutDispatchOffersInput = {
@@ -3025,6 +3669,12 @@ export type RiderProfileUpdateWithoutDispatchOffersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutRiderProfileNestedInput
   serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidersNestedInput
   vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
@@ -3035,6 +3685,10 @@ export type RiderProfileUpdateWithoutDispatchOffersInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutDispatchOffersInput = {
@@ -3066,6 +3720,12 @@ export type RiderProfileUncheckedUpdateWithoutDispatchOffersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
@@ -3074,6 +3734,858 @@ export type RiderProfileUncheckedUpdateWithoutDispatchOffersInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedUpdateManyWithoutRiderNestedInput
+}
+
+export type RiderProfileCreateWithoutFinanceLedgerEntriesInput = {
+  id?: string
+  displayCode: string
+  approvalStatus?: $Enums.RiderApprovalStatus
+  city?: string | null
+  onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
+  currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
+  ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: number
+  commissionPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: string | null
+  approvedAt?: Date | string | null
+  suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
+  lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
+  user: Prisma.UserCreateNestedOneWithoutRiderProfileInput
+  serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidersInput
+  vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
+  documents?: Prisma.RiderDocumentCreateNestedManyWithoutRiderInput
+  rides?: Prisma.RideCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutRiderInput
+  payoutRequests?: Prisma.PayoutRequestCreateNestedManyWithoutRiderInput
+  payoutAccounts?: Prisma.RiderPayoutAccountCreateNestedManyWithoutRiderInput
+  incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
+  onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeCreateNestedManyWithoutRiderInput
+}
+
+export type RiderProfileUncheckedCreateWithoutFinanceLedgerEntriesInput = {
+  id?: string
+  userId: string
+  displayCode: string
+  approvalStatus?: $Enums.RiderApprovalStatus
+  city?: string | null
+  serviceZoneId?: string | null
+  onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
+  currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
+  ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: number
+  commissionPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: string | null
+  approvedAt?: Date | string | null
+  suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
+  lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
+  vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
+  documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
+  rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutRiderInput
+  payoutRequests?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutRiderInput
+  payoutAccounts?: Prisma.RiderPayoutAccountUncheckedCreateNestedManyWithoutRiderInput
+  incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
+  onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedCreateNestedManyWithoutRiderInput
+}
+
+export type RiderProfileCreateOrConnectWithoutFinanceLedgerEntriesInput = {
+  where: Prisma.RiderProfileWhereUniqueInput
+  create: Prisma.XOR<Prisma.RiderProfileCreateWithoutFinanceLedgerEntriesInput, Prisma.RiderProfileUncheckedCreateWithoutFinanceLedgerEntriesInput>
+}
+
+export type RiderProfileUpsertWithoutFinanceLedgerEntriesInput = {
+  update: Prisma.XOR<Prisma.RiderProfileUpdateWithoutFinanceLedgerEntriesInput, Prisma.RiderProfileUncheckedUpdateWithoutFinanceLedgerEntriesInput>
+  create: Prisma.XOR<Prisma.RiderProfileCreateWithoutFinanceLedgerEntriesInput, Prisma.RiderProfileUncheckedCreateWithoutFinanceLedgerEntriesInput>
+  where?: Prisma.RiderProfileWhereInput
+}
+
+export type RiderProfileUpdateToOneWithWhereWithoutFinanceLedgerEntriesInput = {
+  where?: Prisma.RiderProfileWhereInput
+  data: Prisma.XOR<Prisma.RiderProfileUpdateWithoutFinanceLedgerEntriesInput, Prisma.RiderProfileUncheckedUpdateWithoutFinanceLedgerEntriesInput>
+}
+
+export type RiderProfileUpdateWithoutFinanceLedgerEntriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  displayCode?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
+  currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: Prisma.IntFieldUpdateOperationsInput | number
+  commissionPercent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  user?: Prisma.UserUpdateOneRequiredWithoutRiderProfileNestedInput
+  serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidersNestedInput
+  vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
+  documents?: Prisma.RiderDocumentUpdateManyWithoutRiderNestedInput
+  rides?: Prisma.RideUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUpdateManyWithoutRiderNestedInput
+  payoutRequests?: Prisma.PayoutRequestUpdateManyWithoutRiderNestedInput
+  payoutAccounts?: Prisma.RiderPayoutAccountUpdateManyWithoutRiderNestedInput
+  incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
+  onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUpdateManyWithoutRiderNestedInput
+}
+
+export type RiderProfileUncheckedUpdateWithoutFinanceLedgerEntriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  displayCode?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serviceZoneId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
+  currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: Prisma.IntFieldUpdateOperationsInput | number
+  commissionPercent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
+  documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
+  rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutRiderNestedInput
+  payoutRequests?: Prisma.PayoutRequestUncheckedUpdateManyWithoutRiderNestedInput
+  payoutAccounts?: Prisma.RiderPayoutAccountUncheckedUpdateManyWithoutRiderNestedInput
+  incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
+  onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedUpdateManyWithoutRiderNestedInput
+}
+
+export type RiderProfileCreateWithoutCommissionPaymentsInput = {
+  id?: string
+  displayCode: string
+  approvalStatus?: $Enums.RiderApprovalStatus
+  city?: string | null
+  onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
+  currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
+  ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: number
+  commissionPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: string | null
+  approvedAt?: Date | string | null
+  suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
+  lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
+  user: Prisma.UserCreateNestedOneWithoutRiderProfileInput
+  serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidersInput
+  vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
+  documents?: Prisma.RiderDocumentCreateNestedManyWithoutRiderInput
+  rides?: Prisma.RideCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutRiderInput
+  payoutRequests?: Prisma.PayoutRequestCreateNestedManyWithoutRiderInput
+  payoutAccounts?: Prisma.RiderPayoutAccountCreateNestedManyWithoutRiderInput
+  incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
+  onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeCreateNestedManyWithoutRiderInput
+}
+
+export type RiderProfileUncheckedCreateWithoutCommissionPaymentsInput = {
+  id?: string
+  userId: string
+  displayCode: string
+  approvalStatus?: $Enums.RiderApprovalStatus
+  city?: string | null
+  serviceZoneId?: string | null
+  onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
+  currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
+  ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: number
+  commissionPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: string | null
+  approvedAt?: Date | string | null
+  suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
+  lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
+  vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
+  documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
+  rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutRiderInput
+  payoutRequests?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutRiderInput
+  payoutAccounts?: Prisma.RiderPayoutAccountUncheckedCreateNestedManyWithoutRiderInput
+  incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
+  onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedCreateNestedManyWithoutRiderInput
+}
+
+export type RiderProfileCreateOrConnectWithoutCommissionPaymentsInput = {
+  where: Prisma.RiderProfileWhereUniqueInput
+  create: Prisma.XOR<Prisma.RiderProfileCreateWithoutCommissionPaymentsInput, Prisma.RiderProfileUncheckedCreateWithoutCommissionPaymentsInput>
+}
+
+export type RiderProfileUpsertWithoutCommissionPaymentsInput = {
+  update: Prisma.XOR<Prisma.RiderProfileUpdateWithoutCommissionPaymentsInput, Prisma.RiderProfileUncheckedUpdateWithoutCommissionPaymentsInput>
+  create: Prisma.XOR<Prisma.RiderProfileCreateWithoutCommissionPaymentsInput, Prisma.RiderProfileUncheckedCreateWithoutCommissionPaymentsInput>
+  where?: Prisma.RiderProfileWhereInput
+}
+
+export type RiderProfileUpdateToOneWithWhereWithoutCommissionPaymentsInput = {
+  where?: Prisma.RiderProfileWhereInput
+  data: Prisma.XOR<Prisma.RiderProfileUpdateWithoutCommissionPaymentsInput, Prisma.RiderProfileUncheckedUpdateWithoutCommissionPaymentsInput>
+}
+
+export type RiderProfileUpdateWithoutCommissionPaymentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  displayCode?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
+  currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: Prisma.IntFieldUpdateOperationsInput | number
+  commissionPercent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  user?: Prisma.UserUpdateOneRequiredWithoutRiderProfileNestedInput
+  serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidersNestedInput
+  vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
+  documents?: Prisma.RiderDocumentUpdateManyWithoutRiderNestedInput
+  rides?: Prisma.RideUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUpdateManyWithoutRiderNestedInput
+  payoutRequests?: Prisma.PayoutRequestUpdateManyWithoutRiderNestedInput
+  payoutAccounts?: Prisma.RiderPayoutAccountUpdateManyWithoutRiderNestedInput
+  incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
+  onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUpdateManyWithoutRiderNestedInput
+}
+
+export type RiderProfileUncheckedUpdateWithoutCommissionPaymentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  displayCode?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serviceZoneId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
+  currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: Prisma.IntFieldUpdateOperationsInput | number
+  commissionPercent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
+  documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
+  rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutRiderNestedInput
+  payoutRequests?: Prisma.PayoutRequestUncheckedUpdateManyWithoutRiderNestedInput
+  payoutAccounts?: Prisma.RiderPayoutAccountUncheckedUpdateManyWithoutRiderNestedInput
+  incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
+  onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedUpdateManyWithoutRiderNestedInput
+}
+
+export type RiderProfileCreateWithoutPaymentDisputesInput = {
+  id?: string
+  displayCode: string
+  approvalStatus?: $Enums.RiderApprovalStatus
+  city?: string | null
+  onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
+  currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
+  ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: number
+  commissionPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: string | null
+  approvedAt?: Date | string | null
+  suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
+  lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
+  user: Prisma.UserCreateNestedOneWithoutRiderProfileInput
+  serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidersInput
+  vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
+  documents?: Prisma.RiderDocumentCreateNestedManyWithoutRiderInput
+  rides?: Prisma.RideCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutRiderInput
+  payoutRequests?: Prisma.PayoutRequestCreateNestedManyWithoutRiderInput
+  payoutAccounts?: Prisma.RiderPayoutAccountCreateNestedManyWithoutRiderInput
+  incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
+  onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentCreateNestedManyWithoutRiderInput
+}
+
+export type RiderProfileUncheckedCreateWithoutPaymentDisputesInput = {
+  id?: string
+  userId: string
+  displayCode: string
+  approvalStatus?: $Enums.RiderApprovalStatus
+  city?: string | null
+  serviceZoneId?: string | null
+  onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
+  currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
+  ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: number
+  commissionPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: string | null
+  approvedAt?: Date | string | null
+  suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
+  lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
+  vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
+  documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
+  rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutRiderInput
+  payoutRequests?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutRiderInput
+  payoutAccounts?: Prisma.RiderPayoutAccountUncheckedCreateNestedManyWithoutRiderInput
+  incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
+  onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedCreateNestedManyWithoutRiderInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedCreateNestedManyWithoutRiderInput
+}
+
+export type RiderProfileCreateOrConnectWithoutPaymentDisputesInput = {
+  where: Prisma.RiderProfileWhereUniqueInput
+  create: Prisma.XOR<Prisma.RiderProfileCreateWithoutPaymentDisputesInput, Prisma.RiderProfileUncheckedCreateWithoutPaymentDisputesInput>
+}
+
+export type RiderProfileUpsertWithoutPaymentDisputesInput = {
+  update: Prisma.XOR<Prisma.RiderProfileUpdateWithoutPaymentDisputesInput, Prisma.RiderProfileUncheckedUpdateWithoutPaymentDisputesInput>
+  create: Prisma.XOR<Prisma.RiderProfileCreateWithoutPaymentDisputesInput, Prisma.RiderProfileUncheckedCreateWithoutPaymentDisputesInput>
+  where?: Prisma.RiderProfileWhereInput
+}
+
+export type RiderProfileUpdateToOneWithWhereWithoutPaymentDisputesInput = {
+  where?: Prisma.RiderProfileWhereInput
+  data: Prisma.XOR<Prisma.RiderProfileUpdateWithoutPaymentDisputesInput, Prisma.RiderProfileUncheckedUpdateWithoutPaymentDisputesInput>
+}
+
+export type RiderProfileUpdateWithoutPaymentDisputesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  displayCode?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
+  currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: Prisma.IntFieldUpdateOperationsInput | number
+  commissionPercent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  user?: Prisma.UserUpdateOneRequiredWithoutRiderProfileNestedInput
+  serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidersNestedInput
+  vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
+  documents?: Prisma.RiderDocumentUpdateManyWithoutRiderNestedInput
+  rides?: Prisma.RideUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUpdateManyWithoutRiderNestedInput
+  payoutRequests?: Prisma.PayoutRequestUpdateManyWithoutRiderNestedInput
+  payoutAccounts?: Prisma.RiderPayoutAccountUpdateManyWithoutRiderNestedInput
+  incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
+  onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUpdateManyWithoutRiderNestedInput
+}
+
+export type RiderProfileUncheckedUpdateWithoutPaymentDisputesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  displayCode?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serviceZoneId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
+  currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: Prisma.IntFieldUpdateOperationsInput | number
+  commissionPercent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
+  documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
+  rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutRiderNestedInput
+  payoutRequests?: Prisma.PayoutRequestUncheckedUpdateManyWithoutRiderNestedInput
+  payoutAccounts?: Prisma.RiderPayoutAccountUncheckedUpdateManyWithoutRiderNestedInput
+  incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
+  onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedUpdateManyWithoutRiderNestedInput
+}
+
+export type RiderProfileCreateWithoutFinanceAdjustmentsInput = {
+  id?: string
+  displayCode: string
+  approvalStatus?: $Enums.RiderApprovalStatus
+  city?: string | null
+  onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
+  currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
+  ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: number
+  commissionPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: string | null
+  approvedAt?: Date | string | null
+  suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
+  lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
+  user: Prisma.UserCreateNestedOneWithoutRiderProfileInput
+  serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidersInput
+  vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
+  documents?: Prisma.RiderDocumentCreateNestedManyWithoutRiderInput
+  rides?: Prisma.RideCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutRiderInput
+  payoutRequests?: Prisma.PayoutRequestCreateNestedManyWithoutRiderInput
+  payoutAccounts?: Prisma.RiderPayoutAccountCreateNestedManyWithoutRiderInput
+  incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
+  onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeCreateNestedManyWithoutRiderInput
+}
+
+export type RiderProfileUncheckedCreateWithoutFinanceAdjustmentsInput = {
+  id?: string
+  userId: string
+  displayCode: string
+  approvalStatus?: $Enums.RiderApprovalStatus
+  city?: string | null
+  serviceZoneId?: string | null
+  onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
+  currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
+  ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: number
+  commissionPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: string | null
+  approvedAt?: Date | string | null
+  suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
+  lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
+  vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
+  documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
+  rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutRiderInput
+  payoutRequests?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutRiderInput
+  payoutAccounts?: Prisma.RiderPayoutAccountUncheckedCreateNestedManyWithoutRiderInput
+  incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
+  onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutRiderInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedCreateNestedManyWithoutRiderInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedCreateNestedManyWithoutRiderInput
+}
+
+export type RiderProfileCreateOrConnectWithoutFinanceAdjustmentsInput = {
+  where: Prisma.RiderProfileWhereUniqueInput
+  create: Prisma.XOR<Prisma.RiderProfileCreateWithoutFinanceAdjustmentsInput, Prisma.RiderProfileUncheckedCreateWithoutFinanceAdjustmentsInput>
+}
+
+export type RiderProfileUpsertWithoutFinanceAdjustmentsInput = {
+  update: Prisma.XOR<Prisma.RiderProfileUpdateWithoutFinanceAdjustmentsInput, Prisma.RiderProfileUncheckedUpdateWithoutFinanceAdjustmentsInput>
+  create: Prisma.XOR<Prisma.RiderProfileCreateWithoutFinanceAdjustmentsInput, Prisma.RiderProfileUncheckedCreateWithoutFinanceAdjustmentsInput>
+  where?: Prisma.RiderProfileWhereInput
+}
+
+export type RiderProfileUpdateToOneWithWhereWithoutFinanceAdjustmentsInput = {
+  where?: Prisma.RiderProfileWhereInput
+  data: Prisma.XOR<Prisma.RiderProfileUpdateWithoutFinanceAdjustmentsInput, Prisma.RiderProfileUncheckedUpdateWithoutFinanceAdjustmentsInput>
+}
+
+export type RiderProfileUpdateWithoutFinanceAdjustmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  displayCode?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
+  currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: Prisma.IntFieldUpdateOperationsInput | number
+  commissionPercent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  user?: Prisma.UserUpdateOneRequiredWithoutRiderProfileNestedInput
+  serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidersNestedInput
+  vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
+  documents?: Prisma.RiderDocumentUpdateManyWithoutRiderNestedInput
+  rides?: Prisma.RideUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUpdateManyWithoutRiderNestedInput
+  payoutRequests?: Prisma.PayoutRequestUpdateManyWithoutRiderNestedInput
+  payoutAccounts?: Prisma.RiderPayoutAccountUpdateManyWithoutRiderNestedInput
+  incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
+  onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUpdateManyWithoutRiderNestedInput
+}
+
+export type RiderProfileUncheckedUpdateWithoutFinanceAdjustmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  displayCode?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serviceZoneId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
+  currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: Prisma.IntFieldUpdateOperationsInput | number
+  commissionPercent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
+  documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
+  rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutRiderNestedInput
+  payoutRequests?: Prisma.PayoutRequestUncheckedUpdateManyWithoutRiderNestedInput
+  payoutAccounts?: Prisma.RiderPayoutAccountUncheckedUpdateManyWithoutRiderNestedInput
+  incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
+  onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileCreateManyServiceZoneInput = {
@@ -3104,6 +4616,12 @@ export type RiderProfileCreateManyServiceZoneInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  outstandingCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: boolean
+  cashRestrictedAt?: Date | string | null
+  commissionWarningIssuedAt?: Date | string | null
 }
 
 export type RiderProfileUpdateWithoutServiceZoneInput = {
@@ -3133,6 +4651,12 @@ export type RiderProfileUpdateWithoutServiceZoneInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutRiderProfileNestedInput
   vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUpdateManyWithoutRiderNestedInput
@@ -3143,6 +4667,10 @@ export type RiderProfileUpdateWithoutServiceZoneInput = {
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutServiceZoneInput = {
@@ -3173,6 +4701,12 @@ export type RiderProfileUncheckedUpdateWithoutServiceZoneInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
   documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
   rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
@@ -3182,6 +4716,10 @@ export type RiderProfileUncheckedUpdateWithoutServiceZoneInput = {
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
   dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutRiderNestedInput
+  commissionPayments?: Prisma.CommissionPaymentUncheckedUpdateManyWithoutRiderNestedInput
+  financeAdjustments?: Prisma.FinanceAdjustmentUncheckedUpdateManyWithoutRiderNestedInput
+  paymentDisputes?: Prisma.PaymentDisputeUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateManyWithoutServiceZoneInput = {
@@ -3212,6 +4750,12 @@ export type RiderProfileUncheckedUpdateManyWithoutServiceZoneInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outstandingCommission?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCashCollected?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalCommissionPaid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isCashRestricted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cashRestrictedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  commissionWarningIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -3228,6 +4772,10 @@ export type RiderProfileCountOutputType = {
   incidents: number
   onlineLogs: number
   dispatchOffers: number
+  financeLedgerEntries: number
+  commissionPayments: number
+  financeAdjustments: number
+  paymentDisputes: number
 }
 
 export type RiderProfileCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3239,6 +4787,10 @@ export type RiderProfileCountOutputTypeSelect<ExtArgs extends runtime.Types.Exte
   incidents?: boolean | RiderProfileCountOutputTypeCountIncidentsArgs
   onlineLogs?: boolean | RiderProfileCountOutputTypeCountOnlineLogsArgs
   dispatchOffers?: boolean | RiderProfileCountOutputTypeCountDispatchOffersArgs
+  financeLedgerEntries?: boolean | RiderProfileCountOutputTypeCountFinanceLedgerEntriesArgs
+  commissionPayments?: boolean | RiderProfileCountOutputTypeCountCommissionPaymentsArgs
+  financeAdjustments?: boolean | RiderProfileCountOutputTypeCountFinanceAdjustmentsArgs
+  paymentDisputes?: boolean | RiderProfileCountOutputTypeCountPaymentDisputesArgs
 }
 
 /**
@@ -3307,6 +4859,34 @@ export type RiderProfileCountOutputTypeCountDispatchOffersArgs<ExtArgs extends r
   where?: Prisma.RideDispatchOfferWhereInput
 }
 
+/**
+ * RiderProfileCountOutputType without action
+ */
+export type RiderProfileCountOutputTypeCountFinanceLedgerEntriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FinanceLedgerEntryWhereInput
+}
+
+/**
+ * RiderProfileCountOutputType without action
+ */
+export type RiderProfileCountOutputTypeCountCommissionPaymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CommissionPaymentWhereInput
+}
+
+/**
+ * RiderProfileCountOutputType without action
+ */
+export type RiderProfileCountOutputTypeCountFinanceAdjustmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FinanceAdjustmentWhereInput
+}
+
+/**
+ * RiderProfileCountOutputType without action
+ */
+export type RiderProfileCountOutputTypeCountPaymentDisputesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PaymentDisputeWhereInput
+}
+
 
 export type RiderProfileSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -3337,6 +4917,12 @@ export type RiderProfileSelect<ExtArgs extends runtime.Types.Extensions.Internal
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
+  outstandingCommission?: boolean
+  totalCashCollected?: boolean
+  totalCommissionPaid?: boolean
+  isCashRestricted?: boolean
+  cashRestrictedAt?: boolean
+  commissionWarningIssuedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   serviceZone?: boolean | Prisma.RiderProfile$serviceZoneArgs<ExtArgs>
   vehicle?: boolean | Prisma.RiderProfile$vehicleArgs<ExtArgs>
@@ -3348,6 +4934,10 @@ export type RiderProfileSelect<ExtArgs extends runtime.Types.Extensions.Internal
   incidents?: boolean | Prisma.RiderProfile$incidentsArgs<ExtArgs>
   onlineLogs?: boolean | Prisma.RiderProfile$onlineLogsArgs<ExtArgs>
   dispatchOffers?: boolean | Prisma.RiderProfile$dispatchOffersArgs<ExtArgs>
+  financeLedgerEntries?: boolean | Prisma.RiderProfile$financeLedgerEntriesArgs<ExtArgs>
+  commissionPayments?: boolean | Prisma.RiderProfile$commissionPaymentsArgs<ExtArgs>
+  financeAdjustments?: boolean | Prisma.RiderProfile$financeAdjustmentsArgs<ExtArgs>
+  paymentDisputes?: boolean | Prisma.RiderProfile$paymentDisputesArgs<ExtArgs>
   _count?: boolean | Prisma.RiderProfileCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["riderProfile"]>
 
@@ -3380,6 +4970,12 @@ export type RiderProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
+  outstandingCommission?: boolean
+  totalCashCollected?: boolean
+  totalCommissionPaid?: boolean
+  isCashRestricted?: boolean
+  cashRestrictedAt?: boolean
+  commissionWarningIssuedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   serviceZone?: boolean | Prisma.RiderProfile$serviceZoneArgs<ExtArgs>
 }, ExtArgs["result"]["riderProfile"]>
@@ -3413,6 +5009,12 @@ export type RiderProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
+  outstandingCommission?: boolean
+  totalCashCollected?: boolean
+  totalCommissionPaid?: boolean
+  isCashRestricted?: boolean
+  cashRestrictedAt?: boolean
+  commissionWarningIssuedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   serviceZone?: boolean | Prisma.RiderProfile$serviceZoneArgs<ExtArgs>
 }, ExtArgs["result"]["riderProfile"]>
@@ -3446,9 +5048,15 @@ export type RiderProfileSelectScalar = {
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
+  outstandingCommission?: boolean
+  totalCashCollected?: boolean
+  totalCommissionPaid?: boolean
+  isCashRestricted?: boolean
+  cashRestrictedAt?: boolean
+  commissionWarningIssuedAt?: boolean
 }
 
-export type RiderProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "displayCode" | "approvalStatus" | "city" | "serviceZoneId" | "onlineStatus" | "jobPreference" | "currentLatitude" | "currentLongitude" | "lastLocationMocked" | "lastLocationMockedAt" | "ratingAverage" | "acceptanceRate" | "cancellationRate" | "completedTrips" | "commissionPercent" | "bio" | "approvedAt" | "suspendedAt" | "suspensionReason" | "suspensionEndsAt" | "lastOnlineAt" | "tripStatus" | "currentHeading" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["riderProfile"]>
+export type RiderProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "displayCode" | "approvalStatus" | "city" | "serviceZoneId" | "onlineStatus" | "jobPreference" | "currentLatitude" | "currentLongitude" | "lastLocationMocked" | "lastLocationMockedAt" | "ratingAverage" | "acceptanceRate" | "cancellationRate" | "completedTrips" | "commissionPercent" | "bio" | "approvedAt" | "suspendedAt" | "suspensionReason" | "suspensionEndsAt" | "lastOnlineAt" | "tripStatus" | "currentHeading" | "createdAt" | "updatedAt" | "deletedAt" | "outstandingCommission" | "totalCashCollected" | "totalCommissionPaid" | "isCashRestricted" | "cashRestrictedAt" | "commissionWarningIssuedAt", ExtArgs["result"]["riderProfile"]>
 export type RiderProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   serviceZone?: boolean | Prisma.RiderProfile$serviceZoneArgs<ExtArgs>
@@ -3461,6 +5069,10 @@ export type RiderProfileInclude<ExtArgs extends runtime.Types.Extensions.Interna
   incidents?: boolean | Prisma.RiderProfile$incidentsArgs<ExtArgs>
   onlineLogs?: boolean | Prisma.RiderProfile$onlineLogsArgs<ExtArgs>
   dispatchOffers?: boolean | Prisma.RiderProfile$dispatchOffersArgs<ExtArgs>
+  financeLedgerEntries?: boolean | Prisma.RiderProfile$financeLedgerEntriesArgs<ExtArgs>
+  commissionPayments?: boolean | Prisma.RiderProfile$commissionPaymentsArgs<ExtArgs>
+  financeAdjustments?: boolean | Prisma.RiderProfile$financeAdjustmentsArgs<ExtArgs>
+  paymentDisputes?: boolean | Prisma.RiderProfile$paymentDisputesArgs<ExtArgs>
   _count?: boolean | Prisma.RiderProfileCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type RiderProfileIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3486,6 +5098,10 @@ export type $RiderProfilePayload<ExtArgs extends runtime.Types.Extensions.Intern
     incidents: Prisma.$IncidentPayload<ExtArgs>[]
     onlineLogs: Prisma.$RiderOnlineLogPayload<ExtArgs>[]
     dispatchOffers: Prisma.$RideDispatchOfferPayload<ExtArgs>[]
+    financeLedgerEntries: Prisma.$FinanceLedgerEntryPayload<ExtArgs>[]
+    commissionPayments: Prisma.$CommissionPaymentPayload<ExtArgs>[]
+    financeAdjustments: Prisma.$FinanceAdjustmentPayload<ExtArgs>[]
+    paymentDisputes: Prisma.$PaymentDisputePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3526,6 +5142,12 @@ export type $RiderProfilePayload<ExtArgs extends runtime.Types.Extensions.Intern
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
+    outstandingCommission: runtime.Decimal
+    totalCashCollected: runtime.Decimal
+    totalCommissionPaid: runtime.Decimal
+    isCashRestricted: boolean
+    cashRestrictedAt: Date | null
+    commissionWarningIssuedAt: Date | null
   }, ExtArgs["result"]["riderProfile"]>
   composites: {}
 }
@@ -3931,6 +5553,10 @@ export interface Prisma__RiderProfileClient<T, Null = never, ExtArgs extends run
   incidents<T extends Prisma.RiderProfile$incidentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RiderProfile$incidentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$IncidentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   onlineLogs<T extends Prisma.RiderProfile$onlineLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RiderProfile$onlineLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RiderOnlineLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   dispatchOffers<T extends Prisma.RiderProfile$dispatchOffersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RiderProfile$dispatchOffersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RideDispatchOfferPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  financeLedgerEntries<T extends Prisma.RiderProfile$financeLedgerEntriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RiderProfile$financeLedgerEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FinanceLedgerEntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  commissionPayments<T extends Prisma.RiderProfile$commissionPaymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RiderProfile$commissionPaymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CommissionPaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  financeAdjustments<T extends Prisma.RiderProfile$financeAdjustmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RiderProfile$financeAdjustmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FinanceAdjustmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  paymentDisputes<T extends Prisma.RiderProfile$paymentDisputesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RiderProfile$paymentDisputesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentDisputePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3988,6 +5614,12 @@ export interface RiderProfileFieldRefs {
   readonly createdAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
   readonly deletedAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
+  readonly outstandingCommission: Prisma.FieldRef<"RiderProfile", 'Decimal'>
+  readonly totalCashCollected: Prisma.FieldRef<"RiderProfile", 'Decimal'>
+  readonly totalCommissionPaid: Prisma.FieldRef<"RiderProfile", 'Decimal'>
+  readonly isCashRestricted: Prisma.FieldRef<"RiderProfile", 'Boolean'>
+  readonly cashRestrictedAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
+  readonly commissionWarningIssuedAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
 }
     
 
@@ -4616,6 +6248,102 @@ export type RiderProfile$dispatchOffersArgs<ExtArgs extends runtime.Types.Extens
   take?: number
   skip?: number
   distinct?: Prisma.RideDispatchOfferScalarFieldEnum | Prisma.RideDispatchOfferScalarFieldEnum[]
+}
+
+/**
+ * RiderProfile.financeLedgerEntries
+ */
+export type RiderProfile$financeLedgerEntriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FinanceLedgerEntry
+   */
+  select?: Prisma.FinanceLedgerEntrySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FinanceLedgerEntry
+   */
+  omit?: Prisma.FinanceLedgerEntryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FinanceLedgerEntryInclude<ExtArgs> | null
+  where?: Prisma.FinanceLedgerEntryWhereInput
+  orderBy?: Prisma.FinanceLedgerEntryOrderByWithRelationInput | Prisma.FinanceLedgerEntryOrderByWithRelationInput[]
+  cursor?: Prisma.FinanceLedgerEntryWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FinanceLedgerEntryScalarFieldEnum | Prisma.FinanceLedgerEntryScalarFieldEnum[]
+}
+
+/**
+ * RiderProfile.commissionPayments
+ */
+export type RiderProfile$commissionPaymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CommissionPayment
+   */
+  select?: Prisma.CommissionPaymentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CommissionPayment
+   */
+  omit?: Prisma.CommissionPaymentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CommissionPaymentInclude<ExtArgs> | null
+  where?: Prisma.CommissionPaymentWhereInput
+  orderBy?: Prisma.CommissionPaymentOrderByWithRelationInput | Prisma.CommissionPaymentOrderByWithRelationInput[]
+  cursor?: Prisma.CommissionPaymentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CommissionPaymentScalarFieldEnum | Prisma.CommissionPaymentScalarFieldEnum[]
+}
+
+/**
+ * RiderProfile.financeAdjustments
+ */
+export type RiderProfile$financeAdjustmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FinanceAdjustment
+   */
+  select?: Prisma.FinanceAdjustmentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FinanceAdjustment
+   */
+  omit?: Prisma.FinanceAdjustmentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FinanceAdjustmentInclude<ExtArgs> | null
+  where?: Prisma.FinanceAdjustmentWhereInput
+  orderBy?: Prisma.FinanceAdjustmentOrderByWithRelationInput | Prisma.FinanceAdjustmentOrderByWithRelationInput[]
+  cursor?: Prisma.FinanceAdjustmentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FinanceAdjustmentScalarFieldEnum | Prisma.FinanceAdjustmentScalarFieldEnum[]
+}
+
+/**
+ * RiderProfile.paymentDisputes
+ */
+export type RiderProfile$paymentDisputesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PaymentDispute
+   */
+  select?: Prisma.PaymentDisputeSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PaymentDispute
+   */
+  omit?: Prisma.PaymentDisputeOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentDisputeInclude<ExtArgs> | null
+  where?: Prisma.PaymentDisputeWhereInput
+  orderBy?: Prisma.PaymentDisputeOrderByWithRelationInput | Prisma.PaymentDisputeOrderByWithRelationInput[]
+  cursor?: Prisma.PaymentDisputeWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PaymentDisputeScalarFieldEnum | Prisma.PaymentDisputeScalarFieldEnum[]
 }
 
 /**

@@ -265,20 +265,18 @@ export default function TripScreen() {
     });
   }
 
-  async function advance(customPhotoBase64?: string) {
-    if (!trip || !session) return;
-    const curStatus = (trip.status ?? "assigned").toLowerCase();
-    const targetStatus = isRide
-      ? nextRideStatus(curStatus)
-      : nextDeliveryStatus(curStatus);
+  async function advance(param?: { cashCollectedAmount?: number; notes?: string } | string) {
+    if (!trip || !session?.token) return;
+    const currentStatus = trip.status ?? "assigned";
+    const targetStatus = isRide ? nextRideStatus(currentStatus) : nextDeliveryStatus(currentStatus);
     if (!targetStatus) return;
 
-    let proofPhotoBase64: string | undefined = customPhotoBase64;
+    const cashData = typeof param === "object" ? param : undefined;
+    let proofPhotoBase64: string | undefined = typeof param === "string" ? param : undefined;
     if (!isRide && targetStatus === "delivered" && !proofPhotoBase64) {
       const photo = await captureProofOfDeliveryPhoto();
-      if (photo) {
-        proofPhotoBase64 = photo;
-      }
+      if (!photo) return;
+      proofPhotoBase64 = photo;
     }
 
     setLoading(true);
@@ -291,6 +289,8 @@ export default function TripScreen() {
             nextStatus: targetStatus,
             actorRole: "rider",
             actorUserId: session.user.id,
+            cashCollectedAmount: cashData?.cashCollectedAmount,
+            cashConfirmed: Boolean(cashData),
           },
         });
       } else {
@@ -353,12 +353,16 @@ export default function TripScreen() {
             estimatedFare: ride.estimatedFare
               ? Number(ride.estimatedFare)
               : undefined,
+            finalFare: ride.finalFare
+              ? Number(ride.finalFare)
+              : undefined,
             riderEarnings: ride.riderEarnings
               ? Number(ride.riderEarnings)
               : undefined,
             currency: ride.currency,
             rideType: ride.rideType ?? undefined,
             tripPin: (ride as any).tripPin ?? undefined,
+            paymentMethod: (ride as any).paymentMethod ?? "CASH",
           }}
           onAdvance={advance}
           onVerifyPin={async (pin: string) => {
@@ -443,7 +447,7 @@ export default function TripScreen() {
                 }))
               : undefined,
           }}
-          onAdvance={advance}
+          onAdvance={(photo) => advance(photo)}
           onCompleteStop={async (stopId: string) => {
             if (!session?.token) return;
             await api(`/deliveries/${delivery.id}/stops/${stopId}/complete`, {

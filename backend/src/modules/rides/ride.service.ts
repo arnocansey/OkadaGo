@@ -16,6 +16,9 @@ import {
   WalletType
 } from "../../generated/prisma/enums.js";
 import { FareService } from "../pricing/fare.service.js";
+import { commissionService } from "../finance/commission.service.js";
+import { financeLedgerService } from "../finance/finance-ledger.service.js";
+import { FinanceLedgerType, LedgerDirection } from "../../generated/prisma/client.js";
 import { MatchingService } from "../matching/matching.service.js";
 import { dispatchService } from "../matching/dispatch.service.js";
 import { pushService } from "../notifications/push.service.js";
@@ -1520,39 +1523,92 @@ export class RideService {
         const platformCommissionAmount = Number(updatedRide.platformCommission ?? 0);
 
         if (updatedRide.paymentMethod === PaymentMethod.CASH) {
-          if (platformCommissionAmount > 0) {
-            await tx.wallet.update({
-              where: {
-                id: riderWallet.id
-              },
-              data: {
-                availableBalance: {
-                  decrement: platformCommissionAmount
-                }
-              }
-            });
+          const cashAmountCollected = Number(input.cashCollectedAmount ?? finalAmount);
 
-            await tx.walletTransaction.upsert({
-              where: {
-                reference: `RIDE-COMMISSION-${rideId}`
-              },
-              update: {},
-              create: {
-                walletId: riderWallet.id,
-                rideId,
-                paymentId: payment.id,
-                type: WalletTransactionType.COMMISSION,
-                status: WalletTransactionStatus.POSTED,
-                amount: platformCommissionAmount,
-                currency: updatedRide.currency,
-                direction: "debit",
-                reference: `RIDE-COMMISSION-${rideId}`,
-                description: "Cash trip commission owed",
-                postedAt: new Date()
-              }
+          await tx.ride.update({
+            where: { id: rideId },
+            data: {
+              cashCollected: cashAmountCollected,
+              cashConfirmedByRiderAt: new Date(),
+              cashDeclaredAmount: cashAmountCollected,
+              commissionLiability: platformCommissionAmount
+            }
+          });
+
+          await tx.payment.update({
+            where: { id: payment.id },
+            data: {
+              status: PaymentStatus.CASH_COLLECTED
+            }
+          });
+
+          await commissionService.accrueCashTripCommission(tx, {
+            rideId,
+            riderProfileId: updatedRide.riderId!,
+            passengerProfileId: updatedRide.passengerId,
+            cashAmountCollected,
+            commissionAmount: platformCommissionAmount,
+            riderEarnings: riderSettlementAmount,
+            currency: updatedRide.currency
+          });
+
+          await tx.walletTransaction.upsert({
+            where: {
+              reference: `RIDE-COMMISSION-${rideId}`
+            },
+            update: {},
+            create: {
+              walletId: riderWallet.id,
+              rideId,
+              paymentId: payment.id,
+              type: WalletTransactionType.COMMISSION,
+              status: WalletTransactionStatus.POSTED,
+              amount: platformCommissionAmount,
+              currency: updatedRide.currency,
+              direction: "debit",
+              reference: `RIDE-COMMISSION-${rideId}`,
+              description: "Cash trip commission liability owed",
+              postedAt: new Date()
+            }
+          });
+        } else if (riderSettlementAmount > 0) {
+          await tx.payment.update({
+            where: { id: payment.id },
+            data: {
+              status: PaymentStatus.PAID
+            }
+          });
+
+          await financeLedgerService.recordEntry(tx, {
+            riderId: updatedRide.riderId,
+            passengerId: updatedRide.passengerId,
+            rideId,
+            amount: finalAmount,
+            currency: updatedRide.currency,
+            type: FinanceLedgerType.TRIP_EARNING,
+            direction: LedgerDirection.CREDIT,
+            description: `Gross fare for digital trip #${rideId.slice(-6).toUpperCase()}`,
+            paymentMethod: updatedRide.paymentMethod,
+            referenceId: `DIGITAL-${rideId}`,
+            idempotencyKey: `DIGITAL-GROSS-${rideId}`
+          });
+
+          if (platformCommissionAmount > 0) {
+            await financeLedgerService.recordEntry(tx, {
+              riderId: updatedRide.riderId,
+              passengerId: updatedRide.passengerId,
+              rideId,
+              amount: platformCommissionAmount,
+              currency: updatedRide.currency,
+              type: FinanceLedgerType.OKADAGO_COMMISSION,
+              direction: LedgerDirection.DEBIT,
+              description: `Platform commission retained on digital trip #${rideId.slice(-6).toUpperCase()}`,
+              paymentMethod: updatedRide.paymentMethod,
+              referenceId: `COMM-${rideId}`,
+              idempotencyKey: `DIGITAL-COMM-${rideId}`
             });
           }
-        } else if (riderSettlementAmount > 0) {
+
           await tx.wallet.update({
             where: {
               id: riderWallet.id
@@ -1579,7 +1635,7 @@ export class RideService {
               currency: updatedRide.currency,
               direction: "credit",
               reference: `RIDE-CREDIT-${rideId}`,
-              description: "Rider trip earnings",
+              description: "Rider trip net earnings",
               postedAt: new Date()
             }
           });

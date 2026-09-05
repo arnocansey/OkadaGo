@@ -114,11 +114,57 @@ enum PaymentMethod {
 
 enum PaymentStatus {
   PENDING
+  PROCESSING
   AUTHORIZED
   CAPTURED
+  PAID
   FAILED
   REFUNDED
   CANCELLED
+  CASH_COLLECTED
+}
+
+enum FinanceLedgerType {
+  TRIP_EARNING
+  CASH_COLLECTION
+  OKADAGO_COMMISSION
+  COMMISSION_PAYMENT
+  RIDER_PAYOUT
+  REFUND
+  ADJUSTMENT
+  BONUS
+  PENALTY
+  REVERSAL
+}
+
+enum LedgerDirection {
+  DEBIT
+  CREDIT
+}
+
+enum PaymentDisputeType {
+  CASH_NOT_PAID
+  WRONG_CASH_AMOUNT
+  INCORRECT_FARE
+  DUPLICATE_PAYMENT
+  DIGITAL_PAYMENT_FAILURE
+  REFUND_DISPUTE
+  COMMISSION_DISPUTE
+}
+
+enum PaymentDisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  REJECTED
+}
+
+enum CommissionStatus {
+  PENDING
+  SETTLED
+  OVERDUE
+  WAIVED
+  DISPUTED
 }
 
 enum WalletType {
@@ -270,6 +316,7 @@ model User {
   approvedPayouts   PayoutRequest[]    @relation("PayoutReviewer")
   adminNotes        AdminNote[]        @relation("AdminNoteAuthor")
   savedPaymentMethods SavedPaymentMethod[]
+  disputesReported    PaymentDispute[]   @relation("DisputeReporter")
 
   @@index([role, accountStatus])
   @@index([createdAt])
@@ -323,6 +370,8 @@ model PassengerProfile {
   promoRedemptions   PromoRedemption[]
   goPointBalance     GoPointBalance?
   goPointLedger      GoPointLedger[]
+  paymentDisputes      PaymentDispute[]     @relation("PassengerDisputes")
+  financeLedgerEntries FinanceLedgerEntry[]
 
   @@index([defaultServiceCity])
 }
@@ -371,6 +420,16 @@ model RiderProfile {
   incidents         Incident[]
   onlineLogs        RiderOnlineLog[]
   dispatchOffers    RideDispatchOffer[]
+  outstandingCommission     Decimal              @default(0) @db.Decimal(12, 2)
+  totalCashCollected        Decimal              @default(0) @db.Decimal(14, 2)
+  totalCommissionPaid       Decimal              @default(0) @db.Decimal(14, 2)
+  isCashRestricted          Boolean              @default(false)
+  cashRestrictedAt          DateTime?
+  commissionWarningIssuedAt DateTime?
+  financeLedgerEntries      FinanceLedgerEntry[]
+  commissionPayments        CommissionPayment[]
+  financeAdjustments        FinanceAdjustment[]
+  paymentDisputes           PaymentDispute[]     @relation("RiderDisputes")
 
   @@index([approvalStatus, onlineStatus])
   @@index([serviceZoneId, city])
@@ -627,6 +686,14 @@ model Ride {
   riderEarnings            Decimal?            @db.Decimal(12, 2)
   platformCommission       Decimal?            @db.Decimal(12, 2)
   currency                 String              @db.VarChar(3)
+  cashCollected            Decimal?            @db.Decimal(12, 2)
+  cashConfirmedByRiderAt   DateTime?
+  cashConfirmedByPassengerAt DateTime?
+  cashDeclaredAmount       Decimal?            @db.Decimal(12, 2)
+  commissionLiability      Decimal?            @db.Decimal(12, 2)
+  commissionStatus         CommissionStatus    @default(PENDING)
+  commissionSettledAt      DateTime?
+  fareBreakdown            Json?
   notes                    String?             @db.VarChar(500)
   createdAt                DateTime            @default(now())
   updatedAt                DateTime            @updatedAt
@@ -645,6 +712,8 @@ model Ride {
   promoRedemptions         PromoRedemption[]
   assignmentAuditLogs      AssignmentAuditLog[]
   dispatchOffers           RideDispatchOffer[]
+  financeLedgerEntries     FinanceLedgerEntry[]
+  paymentDisputes          PaymentDispute[]
 
   @@index([status, requestedAt])
   @@index([serviceZoneId, status])
@@ -699,6 +768,7 @@ model DeliveryRequest {
   ratings                  Rating[]
   reviews                  Review[]
   stops                    DeliveryStop[]
+  financeLedgerEntries     FinanceLedgerEntry[]
 
   @@index([status, requestedAt])
   @@index([serviceZoneId, status])
@@ -1312,3 +1382,113 @@ model RideDispatchOffer {
   @@index([riderId, status])
   @@index([offeredAt])
 }
+
+model FinanceLedgerEntry {
+  id             String            @id @default(cuid())
+  transactionId  String            @unique @db.VarChar(64)
+  riderId        String?
+  passengerId    String?
+  rideId         String?
+  deliveryId     String?
+  amount         Decimal           @db.Decimal(14, 2)
+  currency       String            @default("GHS") @db.VarChar(3)
+  type           FinanceLedgerType
+  direction      LedgerDirection
+  description    String            @db.VarChar(255)
+  paymentMethod  PaymentMethod?
+  status         String            @default("POSTED") @db.VarChar(20)
+  referenceId    String?           @db.VarChar(120)
+  idempotencyKey String?           @unique @db.VarChar(120)
+  createdBy      String?           @db.VarChar(120)
+  metadata       Json?
+  createdAt      DateTime          @default(now())
+
+  rider          RiderProfile?     @relation(fields: [riderId], references: [id])
+  passenger      PassengerProfile? @relation(fields: [passengerId], references: [id])
+  ride           Ride?             @relation(fields: [rideId], references: [id])
+  delivery       DeliveryRequest?  @relation(fields: [deliveryId], references: [id])
+
+  @@index([riderId, createdAt])
+  @@index([rideId])
+  @@index([type, status])
+  @@index([createdAt])
+  @@index([referenceId])
+}
+
+model CommissionPayment {
+  id                 String       @id @default(cuid())
+  riderId            String
+  amount             Decimal      @db.Decimal(12, 2)
+  currency           String       @default("GHS") @db.VarChar(3)
+  paymentMethod      String       @db.VarChar(40)
+  status             String       @default("SUCCESSFUL") @db.VarChar(20)
+  reference          String       @unique @db.VarChar(120)
+  provider           String?      @db.VarChar(60)
+  notes              String?      @db.VarChar(255)
+  recordedByAdminId  String?      @db.VarChar(60)
+  createdAt          DateTime     @default(now())
+  settledAt          DateTime?
+
+  rider              RiderProfile @relation(fields: [riderId], references: [id])
+
+  @@index([riderId, createdAt])
+  @@index([status, createdAt])
+}
+
+model PaymentDispute {
+  id               String               @id @default(cuid())
+  rideId           String
+  reporterUserId   String
+  riderId          String?
+  passengerId      String?
+  disputeType      PaymentDisputeType
+  amountDisputed   Decimal?             @db.Decimal(12, 2)
+  status           PaymentDisputeStatus @default(OPEN)
+  description      String               @db.VarChar(1000)
+  evidence         Json?
+  resolutionNotes  String?              @db.VarChar(1000)
+  resolvedByUserId String?
+  resolvedAt       DateTime?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  ride             Ride                 @relation(fields: [rideId], references: [id])
+  reporter         User                 @relation("DisputeReporter", fields: [reporterUserId], references: [id])
+  rider            RiderProfile?        @relation("RiderDisputes", fields: [riderId], references: [id])
+  passenger        PassengerProfile?    @relation("PassengerDisputes", fields: [passengerId], references: [id])
+
+  @@index([rideId])
+  @@index([status, createdAt])
+  @@index([riderId, status])
+}
+
+model FinanceAdjustment {
+  id                 String       @id @default(cuid())
+  riderId            String
+  amount             Decimal      @db.Decimal(12, 2)
+  adjustmentType     String       @db.VarChar(40)
+  reason             String       @db.VarChar(500)
+  authorizedByUserId String       @db.VarChar(60)
+  ledgerEntryId      String?      @db.VarChar(64)
+  createdAt          DateTime     @default(now())
+
+  rider              RiderProfile @relation(fields: [riderId], references: [id])
+
+  @@index([riderId, createdAt])
+}
+
+model FinanceSetting {
+  id                            String   @id @default(cuid())
+  commissionPercentage          Decimal  @default(15.0) @db.Decimal(5, 2)
+  minimumCommission             Decimal  @default(1.0) @db.Decimal(12, 2)
+  cashPaymentEnabled            Boolean  @default(true)
+  digitalPaymentEnabled         Boolean  @default(true)
+  commissionWarningThreshold    Decimal  @default(50.0) @db.Decimal(12, 2)
+  commissionRestrictionThreshold Decimal @default(150.0) @db.Decimal(12, 2)
+  minPayoutAmount               Decimal  @default(20.0) @db.Decimal(12, 2)
+  maxPayoutAmountDaily          Decimal  @default(2000.0) @db.Decimal(12, 2)
+  currency                      String   @default("GHS") @db.VarChar(3)
+  updatedAt                     DateTime @updatedAt
+  updatedByUserId               String?  @db.VarChar(60)
+}
+

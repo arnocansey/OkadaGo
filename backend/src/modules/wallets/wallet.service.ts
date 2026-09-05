@@ -13,6 +13,8 @@ import {
   WalletTransactionType,
   WalletType
 } from "../../generated/prisma/enums.js";
+import { financeLedgerService } from "../finance/finance-ledger.service.js";
+import { FinanceLedgerType, LedgerDirection } from "../../generated/prisma/client.js";
 import type { z } from "zod";
 import {
   adminPayoutRequestsQuerySchema,
@@ -505,6 +507,15 @@ export class WalletService {
         }
       });
     }
+
+    await financeLedgerService.recordEntry(tx, {
+      amount: Number(payoutRequest.amount),
+      type: FinanceLedgerType.RIDER_PAYOUT,
+      direction: LedgerDirection.DEBIT,
+      description: `Rider payout disbursement to ${payoutRequest.destinationLabel}`,
+      referenceId: payoutRequest.id,
+      idempotencyKey: `PAYOUT-DISBURSE-${payoutRequest.id}`
+    });
   }
 
   private async applyPayoutUnlockLedger(
@@ -1377,6 +1388,18 @@ export class WalletService {
       hasPendingComplianceIssue,
       hasPendingPayout
     });
+
+    const outstandingDebt = Number(riderProfile.outstandingCommission ?? 0);
+    const availableBal = Number(settlementWallet.availableBalance);
+    const maxWithdrawable = Math.max(0, availableBal - outstandingDebt);
+
+    if (input.amount > maxWithdrawable) {
+      throw new AppError(
+        `Requested payout of GH₵ ${input.amount.toFixed(2)} exceeds withdrawable balance of GH₵ ${maxWithdrawable.toFixed(2)}. GH₵ ${outstandingDebt.toFixed(2)} is committed to outstanding commission debt.`,
+        409,
+        "COMMISSION_DEBT_RESTRICTION"
+      );
+    }
 
     const result = await prisma.$transaction(async (tx) => {
       await this.upsertRiderPayoutAccount(

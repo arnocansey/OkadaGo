@@ -2,76 +2,127 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
+  ActivityIndicator
 } from "react-native";
-import { Zap } from "lucide-react-native";
+import {
+  Zap,
+  AlertTriangle,
+  CheckCircle2,
+  CreditCard,
+  Banknote,
+  ArrowUpRight,
+  ArrowDownLeft,
+  ShieldAlert,
+  ShieldCheck,
+  RotateCcw,
+  Wallet as WalletIcon,
+  X
+} from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api, compactDate, money } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useToast } from "@/context/ToastContext";
 import { PaystackCheckout } from "@/components/PaystackCheckout";
-import { Badge, statusTone } from "@/components/ui/Badge";
-import { BalanceHero } from "@/components/ui/BalanceHero";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { Input } from "@/components/ui/Input";
 import { NavigationHeader } from "@/components/ScreenHeader";
-import { SkeletonList } from "@/components/ui/Skeleton";
 import { spacing } from "@/theme/tokens";
 import type { PayoutAccount } from "@/types";
 
-const RIDER_DEFICIT_WARNING_THRESHOLD = 100;
-const RIDER_DEFICIT_OFFLINE_THRESHOLD = 200;
-const RIDER_MIN_ONLINE_BALANCE = 0;
+export interface RiderFinanceMetrics {
+  availableEarnings: number;
+  cashCollected: number;
+  digitalEarnings: number;
+  commissionGenerated: number;
+  commissionPaid: number;
+  outstandingCommission: number;
+  totalEarnings: number;
+  withdrawableBalance: number;
+  totalPayouts: number;
+  cashTripsCount: number;
+}
+
+export interface FinanceProfileResponse {
+  rider: {
+    id: string;
+    fullName: string;
+    displayCode: string;
+    isCashRestricted: boolean;
+    onlineStatus: boolean;
+  };
+  metrics: RiderFinanceMetrics;
+  thresholds: {
+    warning: number;
+    restriction: number;
+  };
+  ledgerEntries: Array<{
+    id: string;
+    transactionId: string;
+    amount: number;
+    type: string;
+    direction: string;
+    description: string;
+    createdAt: string;
+  }>;
+}
 
 export default function WalletScreen() {
-  const { session, wallets, transactions, payouts, loading, refresh, setMessage } = useApp();
-  const { colors, typography } = useTheme();
+  const { session, wallets, refresh } = useApp();
+  const { colors, typography, isDark } = useTheme();
   const { showToast } = useToast();
-  const [topUpAmount, setTopUpAmount] = useState("10");
+
+  const [financeData, setFinanceData] = useState<FinanceProfileResponse | null>(null);
+  const [dataLoading, setDataLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Pay Commission State
+  const [showPayCommissionModal, setShowPayCommissionModal] = useState(false);
+  const [payAmount, setPayAmount] = useState("");
+  const [settleMethod, setSettleMethod] = useState<"MOBILE_MONEY" | "WALLET_BALANCE" | "CARD">("MOBILE_MONEY");
+  const [settleLoading, setSettleLoading] = useState(false);
+
+  // Payout State
   const [payoutAmount, setPayoutAmount] = useState("");
   const [destination, setDestination] = useState("");
   const [payoutAccounts, setPayoutAccounts] = useState<PayoutAccount[]>([]);
-  const [savePayoutLoading, setSavePayoutLoading] = useState(false);
-  const [topUpLoading, setTopUpLoading] = useState(false);
   const [payoutLoading, setPayoutLoading] = useState(false);
+
+  // Top-Up State
+  const [topUpAmount, setTopUpAmount] = useState("20");
+  const [topUpLoading, setTopUpLoading] = useState(false);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
 
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await refresh();
-    setRefreshing(false);
-  }, [refresh]);
-  const wallet =
-    wallets.find((w) => (w.type ?? "").toLowerCase() === "rider_settlement") ?? wallets[0];
-  const availableBalance = Number(wallet?.availableBalance ?? 0);
-  const deficit = availableBalance < 0 ? Math.abs(availableBalance) : 0;
-  const needsFloat = RIDER_MIN_ONLINE_BALANCE > 0 && availableBalance < RIDER_MIN_ONLINE_BALANCE;
+  const riderProfileId = session?.user?.riderProfileId;
 
-  const destinationTelco = useMemo(() => {
-    const digits = destination.replace(/\D/g, "");
-    const national = digits.startsWith("233") ? `0${digits.slice(3)}` : digits;
-    const prefix = national.slice(0, 3);
-    if (["024", "054", "055", "059", "025"].includes(prefix)) {
-      return { name: "MTN MoMo", color: "#CA8A04", bg: "rgba(234, 179, 8, 0.15)" };
+  const loadFinanceProfile = useCallback(async () => {
+    if (!session?.token || !riderProfileId) return;
+    try {
+      setDataLoading(true);
+      const res = await api<FinanceProfileResponse>(`/finance/rider/${riderProfileId}/profile`, {
+        token: session.token,
+      });
+      setFinanceData(res);
+      setPayAmount(Number(res.metrics.outstandingCommission).toFixed(2));
+    } catch {
+      // Non-blocking fallback
+    } finally {
+      setDataLoading(false);
     }
-    if (["020", "050"].includes(prefix)) {
-      return { name: "Telecel Cash", color: "#EF4444", bg: "rgba(239, 68, 68, 0.15)" };
-    }
-    if (["027", "057", "026", "056"].includes(prefix)) {
-      return { name: "AT Money", color: "#3B82F6", bg: "rgba(59, 130, 246, 0.15)" };
-    }
-    return null;
-  }, [destination]);
+  }, [session?.token, riderProfileId]);
+
+  useEffect(() => {
+    void loadFinanceProfile();
+  }, [loadFinanceProfile]);
 
   useEffect(() => {
     if (!session?.token) return;
@@ -87,56 +138,111 @@ export default function WalletScreen() {
           setDestination(defaultAccount.destinationLabel);
         }
       } catch {
-        // Non-blocking; rider can still enter a number manually.
+        // Non-blocking
       }
     })();
   }, [session?.token]);
 
-  const styles = useMemo(
-    () =>
-      StyleSheet.create({
-        screen: { flex: 1, backgroundColor: colors.background },
-        content: { padding: spacing.xl, paddingBottom: spacing.xxxl },
-        deficitBanner: {
-          backgroundColor: colors.danger,
-          borderColor: colors.danger,
-          marginBottom: spacing.lg,
-        },
-        floatBanner: {
-          backgroundColor: colors.warning,
-          borderColor: colors.warning,
-          marginBottom: spacing.lg,
-        },
-        bannerTitle: { ...typography.bodySemibold, color: colors.textOnPrimary },
-        bannerBody: { ...typography.caption, color: colors.textOnPrimary, marginTop: spacing.xs, opacity: 0.9 },
-        form: { gap: spacing.md, marginBottom: spacing.xxl },
-        section: { ...typography.h3, marginBottom: spacing.lg, color: colors.text },
-        savedHint: { ...typography.caption, color: colors.textMuted, marginTop: -spacing.xs },
-        tx: {
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: spacing.md,
-          paddingVertical: spacing.md,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border,
-        },
-        txTitle: { ...typography.bodyMedium, color: colors.text },
-        txSub: { ...typography.caption, color: colors.textMuted, marginTop: spacing.xs },
-        txAmount: { ...typography.bodySemibold, color: colors.primary },
-        badgeWrap: { marginTop: spacing.sm },
-      }),
-    [colors, typography],
-  );
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([refresh(), loadFinanceProfile()]);
+    setRefreshing(false);
+  }, [refresh, loadFinanceProfile]);
 
-  async function topUp() {
-    const amount = Number(topUpAmount);
-    if (!session?.token || !wallet) return;
-    if (!Number.isFinite(amount) || amount <= 0) {
+  const m = financeData?.metrics ?? {
+    availableEarnings: Number(wallets[0]?.availableBalance ?? 0),
+    cashCollected: 0,
+    digitalEarnings: 0,
+    commissionGenerated: 0,
+    commissionPaid: 0,
+    outstandingCommission: 0,
+    totalEarnings: 0,
+    withdrawableBalance: Math.max(0, Number(wallets[0]?.availableBalance ?? 0)),
+    totalPayouts: 0,
+    cashTripsCount: 0,
+  };
+
+  const thresholds = financeData?.thresholds ?? { warning: 50, restriction: 150 };
+  const isRestricted = financeData?.rider?.isCashRestricted || m.outstandingCommission >= thresholds.restriction;
+  const isWarning = !isRestricted && m.outstandingCommission >= thresholds.warning;
+
+  // Handle Commission Settlement
+  async function handleSettleCommission() {
+    const amt = parseFloat(payAmount);
+    if (isNaN(amt) || amt <= 0) {
+      Alert.alert("Invalid Amount", "Please enter a valid amount to settle.");
+      return;
+    }
+    if (amt > m.outstandingCommission) {
+      Alert.alert("Invalid Amount", `Amount exceeds your outstanding commission of GH₵ ${m.outstandingCommission.toFixed(2)}`);
+      return;
+    }
+
+    setSettleLoading(true);
+    try {
+      await api("/finance/settle-commission", {
+        method: "POST",
+        token: session!.token,
+        body: {
+          riderProfileId,
+          amount: amt,
+          paymentMethod: settleMethod,
+        },
+      });
+
+      setShowPayCommissionModal(false);
+      showToast(`Settlement of GH₵ ${amt.toFixed(2)} processed successfully!`, "success");
+      await loadFinanceProfile();
+      await refresh();
+    } catch (e: any) {
+      Alert.alert("Settlement Failed", e.message || "Could not process commission settlement.");
+    } finally {
+      setSettleLoading(false);
+    }
+  }
+
+  // Handle Payout Request
+  async function requestPayout() {
+    const amt = parseFloat(payoutAmount);
+    if (isNaN(amt) || amt <= 0) {
+      Alert.alert("Invalid Amount", "Enter a withdrawal amount greater than zero.");
+      return;
+    }
+    if (amt > m.withdrawableBalance) {
       Alert.alert(
-        "Invalid amount",
-        "Enter a valid top-up amount greater than GH₵ 0.",
+        "Withdrawal Restricted",
+        `Requested GH₵ ${amt.toFixed(2)} exceeds your withdrawable balance of GH₵ ${m.withdrawableBalance.toFixed(2)}. ${m.outstandingCommission > 0 ? `GH₵ ${m.outstandingCommission.toFixed(2)} is reserved for outstanding commission.` : ""}`
       );
+      return;
+    }
+    if (!destination.trim()) {
+      Alert.alert("Destination Needed", "Enter the mobile money phone number for disbursement.");
+      return;
+    }
+
+    setPayoutLoading(true);
+    try {
+      await api("/wallets/rider/payout-requests", {
+        method: "POST",
+        token: session!.token,
+        body: { amount: amt, method: "MOBILE_MONEY", destinationLabel: destination.trim() },
+      });
+      setPayoutAmount("");
+      showToast("Payout requested. We'll disburse to your MoMo account shortly.", "success");
+      await loadFinanceProfile();
+      await refresh();
+    } catch (e: any) {
+      Alert.alert("Payout Failed", e.message || "Payout request failed.");
+    } finally {
+      setPayoutLoading(false);
+    }
+  }
+
+  // Handle Wallet Top-Up
+  async function topUp() {
+    const amt = parseFloat(topUpAmount);
+    if (isNaN(amt) || amt <= 0) {
+      Alert.alert("Invalid Amount", "Enter a valid top-up amount.");
       return;
     }
 
@@ -144,97 +250,199 @@ export default function WalletScreen() {
     try {
       const result = await api<{ authorizationUrl: string }>("/wallets/top-up/paystack/initialize", {
         method: "POST",
-        token: session.token,
+        token: session!.token,
         body: {
-          amount,
-          currency: wallet.currency ?? session.user.preferredCurrency ?? "GHS",
+          amount: amt,
+          currency: "GHS",
           walletType: "rider_settlement",
           description: "OkadaGo rider wallet top-up",
         },
       });
-
       setCheckoutUrl(result.authorizationUrl);
-    } catch (e) {
-      const detail = e instanceof Error ? e.message : "Could not start Paystack checkout.";
-      Alert.alert(
-        "Paystack top-up failed",
-        `${detail}\n\nCheck your connection and MoMo number, then try again.`,
-        [{ text: "OK" }],
-      );
+    } catch (e: any) {
+      Alert.alert("Top-Up Failed", e.message || "Could not initialize MoMo checkout.");
     } finally {
       setTopUpLoading(false);
     }
   }
 
-  async function handleCheckoutSuccess(reference: string) {
-    setCheckoutUrl(null);
-    showToast(`Payment received (${reference}). Balance updated!`, "success");
-    await refresh();
-  }
+  const s = useMemo(
+    () =>
+      StyleSheet.create({
+        screen: { flex: 1, backgroundColor: colors.background },
+        content: { padding: spacing.lg, paddingBottom: spacing.xxxl },
 
-  function handleCheckoutCancel() {
-    setCheckoutUrl(null);
-  }
-
-  async function savePayoutAccount() {
-    if (!destination.trim()) {
-      Alert.alert("Destination needed", "Enter the mobile money number to save.");
-      return;
-    }
-    setSavePayoutLoading(true);
-    try {
-      await api("/wallets/rider/payout-accounts", {
-        method: "POST",
-        token: session!.token,
-        body: {
-          method: "MOBILE_MONEY",
-          destinationLabel: destination.trim(),
-          makeDefault: true,
+        /* Alert Banners */
+        alertBanner: {
+          borderRadius: 16,
+          padding: 16,
+          marginBottom: 16,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 12,
+          borderWidth: 1,
         },
-      });
-      const res = await api<{ accounts: PayoutAccount[] }>("/wallets/rider/payout-accounts", {
-        token: session!.token,
-      });
-      setPayoutAccounts(Array.isArray(res.accounts) ? res.accounts : []);
-      showToast("Payout account saved and ready for withdrawals.", "success");
-    } catch (e) {
-      Alert.alert("Could not save", e instanceof Error ? e.message : "Save failed.");
-    } finally {
-      setSavePayoutLoading(false);
-    }
-  }
+        bannerRestricted: {
+          backgroundColor: "rgba(239, 68, 68, 0.12)",
+          borderColor: "rgba(239, 68, 68, 0.3)",
+        },
+        bannerWarning: {
+          backgroundColor: "rgba(234, 179, 8, 0.12)",
+          borderColor: "rgba(234, 179, 8, 0.3)",
+        },
+        bannerTitle: { fontSize: 14, fontWeight: "800", marginBottom: 2 },
+        bannerBody: { fontSize: 12, lineHeight: 17 },
 
-  async function requestPayout() {
-    const amount = Number(payoutAmount);
-    if (!Number.isFinite(amount) || amount <= 0) {
-      Alert.alert("Invalid amount", "Enter a payout amount greater than zero.");
-      return;
-    }
-    if (!destination.trim()) {
-      Alert.alert("Destination needed", "Enter the mobile money number for this payout.");
-      return;
-    }
-    setPayoutLoading(true);
-    try {
-      await api("/wallets/rider/payout-requests", {
-        method: "POST",
-        token: session!.token,
-        body: { amount, method: "MOBILE_MONEY", destinationLabel: destination.trim() },
-      });
-      setPayoutAmount("");
-      const res = await api<{ accounts: PayoutAccount[] }>("/wallets/rider/payout-accounts", {
-        token: session!.token,
-      });
-      setPayoutAccounts(Array.isArray(res.accounts) ? res.accounts : []);
-      await refresh();
-      showToast("Payout requested. We'll transfer funds to your MoMo number.", "success");
-    } catch (e) {
-      Alert.alert("Payout failed", e instanceof Error ? e.message : "Payout request failed.");
-      setMessage(e instanceof Error ? e.message : "Payout request failed.");
-    } finally {
-      setPayoutLoading(false);
-    }
-  }
+        /* Hero Debt Card */
+        debtHero: {
+          backgroundColor: isDark ? "#1E2638" : "#FFFFFF",
+          borderRadius: 22,
+          padding: 20,
+          marginBottom: 18,
+          borderWidth: 1,
+          borderColor: m.outstandingCommission > 0 ? (isRestricted ? "#EF4444" : "#CA8A04") : (isDark ? "rgba(255,255,255,0.08)" : "#E2E8F0"),
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: isDark ? 0.4 : 0.08,
+          shadowRadius: 12,
+          elevation: 4,
+        },
+        heroLabel: {
+          fontSize: 12,
+          fontWeight: "700",
+          color: colors.textMuted,
+          textTransform: "uppercase",
+          letterSpacing: 0.8,
+          marginBottom: 6,
+        },
+        heroAmount: {
+          fontSize: 34,
+          fontWeight: "900",
+          color: m.outstandingCommission > 0 ? (isRestricted ? "#EF4444" : "#CA8A04") : colors.text,
+          marginBottom: 12,
+        },
+        heroRow: {
+          flexDirection: "row",
+          gap: 10,
+          alignItems: "center",
+        },
+        payBtn: {
+          flex: 1,
+          backgroundColor: "#22C55E",
+          paddingVertical: 13,
+          borderRadius: 12,
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "row",
+          gap: 6,
+        },
+        payBtnText: { color: "#FFFFFF", fontWeight: "800", fontSize: 14 },
+
+        /* 8 Required Financial Metrics Grid */
+        metricsGrid: {
+          flexDirection: "row",
+          flexWrap: "wrap",
+          gap: 10,
+          marginBottom: 20,
+        },
+        metricCard: {
+          width: "48.5%",
+          backgroundColor: isDark ? "#182030" : "#F8FAFC",
+          borderRadius: 16,
+          padding: 14,
+          borderWidth: 1,
+          borderColor: isDark ? "rgba(255,255,255,0.06)" : "#E2E8F0",
+        },
+        metricLabel: {
+          fontSize: 10,
+          fontWeight: "700",
+          color: colors.textMuted,
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
+          marginBottom: 6,
+        },
+        metricValue: {
+          fontSize: 18,
+          fontWeight: "800",
+          color: colors.text,
+        },
+        metricSub: {
+          fontSize: 10,
+          color: colors.textSecondary,
+          marginTop: 4,
+        },
+
+        /* Action Cards */
+        sectionCard: {
+          backgroundColor: isDark ? "#1E2638" : "#FFFFFF",
+          borderRadius: 18,
+          padding: 16,
+          marginBottom: 16,
+          borderWidth: 1,
+          borderColor: isDark ? "rgba(255,255,255,0.08)" : "#E2E8F0",
+        },
+        sectionTitle: {
+          fontSize: 16,
+          fontWeight: "800",
+          color: colors.text,
+          marginBottom: 12,
+        },
+        input: {
+          backgroundColor: isDark ? "#2A364F" : "#F1F5F9",
+          borderRadius: 12,
+          paddingHorizontal: 14,
+          paddingVertical: 12,
+          fontSize: 15,
+          color: colors.text,
+          marginBottom: 12,
+          borderWidth: 1,
+          borderColor: isDark ? "rgba(255,255,255,0.1)" : "#CBD5E1",
+        },
+
+        /* Quick chip selector */
+        chipRow: {
+          flexDirection: "row",
+          gap: 8,
+          marginBottom: 12,
+        },
+        chip: {
+          flex: 1,
+          paddingVertical: 8,
+          borderRadius: 10,
+          alignItems: "center",
+          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "#F1F5F9",
+          borderWidth: 1,
+          borderColor: isDark ? "rgba(255,255,255,0.1)" : "#CBD5E1",
+        },
+        chipSelected: {
+          backgroundColor: "#22C55E",
+          borderColor: "#22C55E",
+        },
+        chipText: {
+          fontSize: 12,
+          fontWeight: "700",
+          color: colors.text,
+        },
+        chipTextSelected: {
+          color: "#FFFFFF",
+        },
+
+        /* Ledger Row */
+        txRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingVertical: 12,
+          borderBottomWidth: 1,
+          borderBottomColor: isDark ? "rgba(255,255,255,0.06)" : "#F1F5F9",
+        },
+        txLeft: { flex: 1, marginRight: 12 },
+        txDesc: { fontSize: 13, fontWeight: "600", color: colors.text },
+        txDate: { fontSize: 11, color: colors.textMuted, marginTop: 2 },
+        txAmount: { fontSize: 14, fontWeight: "800" },
+      }),
+    [colors, isDark, m.outstandingCommission, isRestricted]
+  );
 
   return (
     <KeyboardAvoidingView
@@ -242,252 +450,339 @@ export default function WalletScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={Platform.OS === "ios" ? 88 : 0}
     >
-      <SafeAreaView style={styles.screen}>
+      <SafeAreaView style={s.screen}>
         <PaystackCheckout
           authorizationUrl={checkoutUrl ?? ""}
           visible={!!checkoutUrl}
-          onSuccess={(reference) => void handleCheckoutSuccess(reference)}
-          onCancel={handleCheckoutCancel}
+          onSuccess={() => {
+            setCheckoutUrl(null);
+            showToast("Wallet top-up successful!", "success");
+            void loadFinanceProfile();
+            void refresh();
+          }}
+          onCancel={() => setCheckoutUrl(null)}
         />
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}>
-          <NavigationHeader title="Wallet" />
 
-          {deficit >= RIDER_DEFICIT_WARNING_THRESHOLD ? (
-            <Card elevated style={styles.deficitBanner}>
-              <Text style={styles.bannerTitle}>You owe {money(deficit, wallet?.currency ?? "GHS")}</Text>
-              <Text style={styles.bannerBody}>
-                {deficit >= RIDER_DEFICIT_OFFLINE_THRESHOLD
-                  ? `You've been taken offline until this is cleared below ${money(RIDER_DEFICIT_OFFLINE_THRESHOLD, wallet?.currency ?? "GHS")}.`
-                  : `Clear your balance before it reaches ${money(RIDER_DEFICIT_OFFLINE_THRESHOLD, wallet?.currency ?? "GHS")} to keep earning online.`}
-              </Text>
-            </Card>
+        <ScrollView
+          contentContainerStyle={s.content}
+          keyboardShouldPersistTaps="handled"
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+        >
+          <NavigationHeader title="Rider Financial Center" />
+
+          {/* Restriction Banner */}
+          {isRestricted ? (
+            <View style={[s.alertBanner, s.bannerRestricted]}>
+              <ShieldAlert size={24} color="#EF4444" />
+              <View style={{ flex: 1 }}>
+                <Text style={[s.bannerTitle, { color: "#EF4444" }]}>Cash Trips Restricted</Text>
+                <Text style={[s.bannerBody, { color: isDark ? "#FCA5A5" : "#B91C1C" }]}>
+                  Cash trips are temporarily restricted. Your outstanding commission exceeds GH₵ {thresholds.restriction.toFixed(2)}. Settle your balance to accept cash jobs.
+                </Text>
+              </View>
+            </View>
+          ) : isWarning ? (
+            <View style={[s.alertBanner, s.bannerWarning]}>
+              <AlertTriangle size={24} color="#CA8A04" />
+              <View style={{ flex: 1 }}>
+                <Text style={[s.bannerTitle, { color: "#CA8A04" }]}>Commission Payment Reminder</Text>
+                <Text style={[s.bannerBody, { color: isDark ? "#FDE047" : "#854D0E" }]}>
+                  Your outstanding OkadaGo commission is GH₵ {m.outstandingCommission.toFixed(2)}. Please settle your balance before it reaches GH₵ {thresholds.restriction.toFixed(2)}.
+                </Text>
+              </View>
+            </View>
           ) : null}
 
-          {needsFloat && deficit === 0 ? (
-            <Card elevated style={styles.floatBanner}>
-              <Text style={styles.bannerTitle}>Top up to go online</Text>
-              <Text style={styles.bannerBody}>
-                Keep at least GH₵ {RIDER_MIN_ONLINE_BALANCE} in your wallet to receive jobs.
-              </Text>
-            </Card>
-          ) : null}
+          {/* Hero Debt & Settlement Card */}
+          <View style={s.debtHero}>
+            <Text style={s.heroLabel}>Outstanding Commission Owed</Text>
+            <Text style={s.heroAmount}>GH₵ {m.outstandingCommission.toFixed(2)}</Text>
+            <View style={s.heroRow}>
+              {m.outstandingCommission > 0 ? (
+                <Pressable
+                  style={s.payBtn}
+                  onPress={() => {
+                    setPayAmount(m.outstandingCommission.toFixed(2));
+                    setShowPayCommissionModal(true);
+                  }}
+                >
+                  <Banknote size={18} color="#FFFFFF" />
+                  <Text style={s.payBtnText}>PAY COMMISSION</Text>
+                </Pressable>
+              ) : (
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <CheckCircle2 size={18} color="#22C55E" />
+                  <Text style={{ color: "#22C55E", fontWeight: "700", fontSize: 13 }}>All Commission Settled (GH₵ 0.00)</Text>
+                </View>
+              )}
+            </View>
+          </View>
 
-          <BalanceHero
-            label="Available balance"
-            amount={money(wallet?.availableBalance, wallet?.currency ?? "GHS")}
-            hint="Platform fee: 10% per completed ride"
-          />
+          {/* The 8 Financial Metrics Required by Specifications */}
+          <Text style={[typography.h3, { color: colors.text, marginBottom: 12 }]}>Wallet & Financial Overview</Text>
+          <View style={s.metricsGrid}>
+            <View style={s.metricCard}>
+              <Text style={s.metricLabel}>Withdrawable Balance</Text>
+              <Text style={[s.metricValue, { color: "#22C55E" }]}>GH₵ {m.withdrawableBalance.toFixed(2)}</Text>
+              <Text style={s.metricSub}>Available - Debt</Text>
+            </View>
 
-          <Card style={styles.form}>
-            <Text style={styles.section}>Top up via MoMo</Text>
-            <Input
-              label="Amount (GHS)"
-              value={topUpAmount}
-              onChangeText={setTopUpAmount}
-              keyboardType="decimal-pad"
-              placeholder="10"
-            />
-            <Button
-              label="Top Up Now"
-              loading={topUpLoading}
-              onPress={() => void topUp()}
-              fullWidth
-            />
-          </Card>
+            <View style={s.metricCard}>
+              <Text style={s.metricLabel}>Available Earnings</Text>
+              <Text style={s.metricValue}>GH₵ {m.availableEarnings.toFixed(2)}</Text>
+              <Text style={s.metricSub}>Gross in wallet</Text>
+            </View>
 
-          <Card style={styles.form}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-              <Text style={styles.section}>Request Instant Payout</Text>
+            <View style={s.metricCard}>
+              <Text style={s.metricLabel}>Cash Collected</Text>
+              <Text style={[s.metricValue, { color: "#3B82F6" }]}>GH₵ {m.cashCollected.toFixed(2)}</Text>
+              <Text style={s.metricSub}>{m.cashTripsCount} cash trips</Text>
+            </View>
+
+            <View style={s.metricCard}>
+              <Text style={s.metricLabel}>Digital Earnings</Text>
+              <Text style={s.metricValue}>GH₵ {m.digitalEarnings.toFixed(2)}</Text>
+              <Text style={s.metricSub}>MoMo & Card rides</Text>
+            </View>
+
+            <View style={s.metricCard}>
+              <Text style={s.metricLabel}>OkadaGo Commission</Text>
+              <Text style={[s.metricValue, { color: "#EF4444" }]}>GH₵ {m.commissionGenerated.toFixed(2)}</Text>
+              <Text style={s.metricSub}>Total accrued</Text>
+            </View>
+
+            <View style={s.metricCard}>
+              <Text style={s.metricLabel}>Commission Paid</Text>
+              <Text style={[s.metricValue, { color: "#22C55E" }]}>GH₵ {m.commissionPaid.toFixed(2)}</Text>
+              <Text style={s.metricSub}>Settled to platform</Text>
+            </View>
+
+            <View style={s.metricCard}>
+              <Text style={s.metricLabel}>Total Net Earnings</Text>
+              <Text style={[s.metricValue, { color: "#CA8A04" }]}>GH₵ {m.totalEarnings.toFixed(2)}</Text>
+              <Text style={s.metricSub}>Cash + Digital net</Text>
+            </View>
+
+            <View style={s.metricCard}>
+              <Text style={s.metricLabel}>Total Payouts</Text>
+              <Text style={s.metricValue}>GH₵ {m.totalPayouts.toFixed(2)}</Text>
+              <Text style={s.metricSub}>Disbursed to MoMo</Text>
+            </View>
+          </View>
+
+          {/* Instant Payout Form */}
+          <View style={s.sectionCard}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <Text style={s.sectionTitle}>Request Instant Payout</Text>
               <View style={{ backgroundColor: "rgba(34, 197, 94, 0.15)", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
                 <Text style={{ fontSize: 10, fontWeight: "800", color: "#16A34A" }}>⚡ 0-5 MINS</Text>
               </View>
             </View>
 
-            {/* Quick Withdrawal Amount Chips */}
-            <View style={{ flexDirection: "row", gap: 6, marginBottom: 8 }}>
-              {[25, 50, 100, 200].map((amt) => (
+            {/* Quick Chips */}
+            <View style={s.chipRow}>
+              {[25, 50, 100].map((amt) => (
                 <Pressable
                   key={amt}
                   onPress={() => setPayoutAmount(String(amt))}
-                  style={{
-                    flex: 1,
-                    paddingVertical: 7,
-                    alignItems: "center",
-                    borderRadius: 8,
-                    backgroundColor: payoutAmount === String(amt) ? colors.primary : colors.surfaceElevated,
-                    borderWidth: 1,
-                    borderColor: payoutAmount === String(amt) ? colors.primary : colors.border,
-                  }}
+                  style={[s.chip, payoutAmount === String(amt) && s.chipSelected]}
                 >
-                  <Text
-                    style={{
-                      fontSize: 11,
-                      fontWeight: "700",
-                      color: payoutAmount === String(amt) ? "#000000" : colors.text,
-                    }}
-                  >
+                  <Text style={[s.chipText, payoutAmount === String(amt) && s.chipTextSelected]}>
                     GH₵ {amt}
                   </Text>
                 </Pressable>
               ))}
-              {availableBalance > 0 ? (
+              {m.withdrawableBalance > 0 && (
                 <Pressable
-                  onPress={() => setPayoutAmount(String(Math.floor(availableBalance)))}
-                  style={{
-                    flex: 1,
-                    paddingVertical: 7,
-                    alignItems: "center",
-                    borderRadius: 8,
-                    backgroundColor: colors.surfaceElevated,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                  }}
+                  onPress={() => setPayoutAmount(String(Math.floor(m.withdrawableBalance)))}
+                  style={[s.chip, payoutAmount === String(Math.floor(m.withdrawableBalance)) && s.chipSelected]}
                 >
-                  <Text style={{ fontSize: 11, fontWeight: "800", color: colors.primary }}>
-                    Max
+                  <Text style={[s.chipText, payoutAmount === String(Math.floor(m.withdrawableBalance)) && s.chipTextSelected]}>
+                    Max (GH₵ {Math.floor(m.withdrawableBalance)})
                   </Text>
                 </Pressable>
-              ) : null}
+              )}
             </View>
 
-            <Input
-              label="Amount (GHS)"
+            <TextInput
+              style={s.input}
+              placeholder="Withdrawal Amount (GH₵)"
+              placeholderTextColor={colors.textMuted}
+              keyboardType="decimal-pad"
               value={payoutAmount}
               onChangeText={setPayoutAmount}
-              keyboardType="decimal-pad"
             />
-            <Input
-              label="Mobile money number"
+
+            <TextInput
+              style={s.input}
+              placeholder="MoMo Phone Number (e.g. 024XXXXXXX)"
+              placeholderTextColor={colors.textMuted}
+              keyboardType="phone-pad"
               value={destination}
               onChangeText={setDestination}
-              keyboardType="phone-pad"
             />
-            {destinationTelco ? (
-              <View style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 6,
-                backgroundColor: destinationTelco.bg,
-                paddingHorizontal: 10,
-                paddingVertical: 5,
-                borderRadius: 8,
-                alignSelf: "flex-start",
-                marginTop: -4,
-              }}>
-                <Zap size={13} color={destinationTelco.color} />
-                <Text style={{ fontSize: 11, fontWeight: "700", color: destinationTelco.color }}>
-                  ⚡ Instant to {destinationTelco.name}
-                </Text>
-              </View>
-            ) : null}
-            {payoutAccounts.length > 0 ? (
-              <Text style={styles.savedHint}>
-                Saved: {payoutAccounts.find((a) => a.isDefault)?.destinationLabel ?? payoutAccounts[0].destinationLabel}
-              </Text>
-            ) : null}
+
             <Button
-              label="Save payout account"
-              variant="secondary"
-              loading={savePayoutLoading}
-              onPress={() => void savePayoutAccount()}
-              fullWidth
-            />
-            <Button
-              label="⚡ Instant Cashout to MoMo"
-              variant="accent"
+              label={payoutLoading ? "Processing Payout..." : `Withdraw to MoMo`}
               loading={payoutLoading}
+              disabled={payoutLoading || m.withdrawableBalance <= 0}
               onPress={() => void requestPayout()}
               fullWidth
             />
-          </Card>
+          </View>
 
-          <Text style={styles.section}>Transactions</Text>
-          {loading && transactions.length === 0 ? (
-            <SkeletonList count={3} />
-          ) : (
-            (transactions.length > 0
-              ? transactions
-              : [
-                  {
-                    id: "tx-demo-1",
-                    walletId: wallet?.id ?? "demo-wallet",
-                    type: "CREDIT",
-                    amount: 45.00,
-                    currency: "GH₵",
-                    description: "Trip Fare Credit - Airport Ride",
-                    status: "COMPLETED",
-                    createdAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
-                  },
-                  {
-                    id: "tx-demo-2",
-                    walletId: wallet?.id ?? "demo-wallet",
-                    type: "CREDIT",
-                    amount: 32.50,
-                    currency: "GH₵",
-                    description: "Delivery Fee Credit - Package",
-                    status: "COMPLETED",
-                    createdAt: new Date(Date.now() - 5 * 3600 * 1000).toISOString(),
-                  },
-                  {
-                    id: "tx-demo-3",
-                    walletId: wallet?.id ?? "demo-wallet",
-                    type: "DEBIT",
-                    amount: 6.75,
-                    currency: "GH₵",
-                    description: "OkadaGo Platform Service Fee (15%)",
-                    status: "COMPLETED",
-                    createdAt: new Date(Date.now() - 6 * 3600 * 1000).toISOString(),
-                  },
-                  {
-                    id: "tx-demo-4",
-                    walletId: wallet?.id ?? "demo-wallet",
-                    type: "DEBIT",
-                    amount: 100.00,
-                    currency: "GH₵",
-                    description: "MTN Mobile Money Instant Cashout",
-                    status: "COMPLETED",
-                    createdAt: new Date(Date.now() - 72 * 3600 * 1000).toISOString(),
-                  },
-                ]
-            ).slice(0, 10).map((tx) => (
-              <View key={tx.id} style={styles.tx}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.txTitle}>{tx.description ?? tx.type}</Text>
-                  <Text style={styles.txSub}>{compactDate(tx.createdAt)}</Text>
-                  {tx.status ? (
-                    <View style={styles.badgeWrap}>
-                      <Badge label={String(tx.status).replace(/_/g, " ")} tone={statusTone(String(tx.status))} />
-                    </View>
-                  ) : null}
-                </View>
-                <Text style={styles.txAmount}>{money(tx.amount, tx.currency)}</Text>
-              </View>
-            ))
-          )}
+          {/* Top-up Form */}
+          <View style={s.sectionCard}>
+            <Text style={s.sectionTitle}>Top Up via Mobile Money</Text>
+            <TextInput
+              style={s.input}
+              placeholder="Top-Up Amount (GH₵)"
+              placeholderTextColor={colors.textMuted}
+              keyboardType="decimal-pad"
+              value={topUpAmount}
+              onChangeText={setTopUpAmount}
+            />
+            <Button
+              label={topUpLoading ? "Initializing..." : "Top Up Now"}
+              loading={topUpLoading}
+              onPress={() => void topUp()}
+              fullWidth
+            />
+          </View>
 
-          {payouts.length > 0 ? (
-            <>
-              <Text style={[styles.section, { marginTop: spacing.xl }]}>Payout requests</Text>
-              {payouts.slice(0, 5).map((p) => (
-                <View key={p.id} style={styles.tx}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.txTitle}>{p.destinationLabel}</Text>
-                    <Text style={styles.txSub}>{compactDate(p.requestedAt)}</Text>
-                    <View style={styles.badgeWrap}>
-                      <Badge label={p.status.replace(/_/g, " ")} tone={statusTone(p.status)} />
+          {/* Financial Ledger Section */}
+          <View style={s.sectionCard}>
+            <Text style={s.sectionTitle}>Recent Financial Ledger</Text>
+            {(financeData?.ledgerEntries?.length ?? 0) === 0 ? (
+              <Text style={{ fontSize: 13, color: colors.textMuted, textAlign: "center", paddingVertical: 16 }}>
+                No recent financial ledger entries found.
+              </Text>
+            ) : (
+              financeData!.ledgerEntries.slice(0, 15).map((entry) => {
+                const isCredit = entry.direction.toLowerCase() === "credit";
+                return (
+                  <View key={entry.id} style={s.txRow}>
+                    <View style={s.txLeft}>
+                      <Text style={s.txDesc} numberOfLines={1}>{entry.description}</Text>
+                      <Text style={s.txDate}>{compactDate(entry.createdAt)} • {entry.type.replace(/_/g, " ")}</Text>
                     </View>
+                    <Text
+                      style={[
+                        s.txAmount,
+                        { color: isCredit ? "#22C55E" : "#EF4444" }
+                      ]}
+                    >
+                      {isCredit ? "+" : "-"}GH₵ {Number(entry.amount).toFixed(2)}
+                    </Text>
                   </View>
-                  <Text style={styles.txAmount}>{money(p.amount, p.currency)}</Text>
-                </View>
-              ))}
-            </>
-          ) : (
-            <>
-              <Text style={[styles.section, { marginTop: spacing.xl }]}>Payout requests</Text>
-              <EmptyState title="No payout requests" message="Request a payout above when you have available balance." />
-            </>
-          )}
+                );
+              })
+            )}
+          </View>
         </ScrollView>
+
+        {/* PAY COMMISSION MODAL (Section 9) */}
+        <Modal
+          visible={showPayCommissionModal}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowPayCommissionModal(false)}
+        >
+          <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "flex-end" }}>
+            <View
+              style={{
+                backgroundColor: isDark ? "#121826" : "#FFFFFF",
+                borderTopLeftRadius: 28,
+                borderTopRightRadius: 28,
+                padding: 24,
+                paddingBottom: Platform.OS === "ios" ? 40 : 24,
+              }}
+            >
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <Text style={{ fontSize: 20, fontWeight: "800", color: colors.text }}>PAY COMMISSION</Text>
+                <Pressable onPress={() => setShowPayCommissionModal(false)} hitSlop={12}>
+                  <X size={20} color={colors.textSecondary} />
+                </Pressable>
+              </View>
+
+              <View
+                style={{
+                  backgroundColor: isDark ? "#1E2638" : "#F8FAFC",
+                  borderRadius: 16,
+                  padding: 16,
+                  marginBottom: 16,
+                  borderWidth: 1,
+                  borderColor: isDark ? "rgba(255,255,255,0.08)" : "#E2E8F0",
+                }}
+              >
+                <Text style={{ fontSize: 12, color: colors.textMuted, fontWeight: "600", textTransform: "uppercase" }}>
+                  Outstanding Commission Owed
+                </Text>
+                <Text style={{ fontSize: 26, fontWeight: "900", color: "#CA8A04", marginTop: 4 }}>
+                  GH₵ {m.outstandingCommission.toFixed(2)}
+                </Text>
+              </View>
+
+              <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text, marginBottom: 6 }}>
+                Amount to Pay (GH₵)
+              </Text>
+              <TextInput
+                style={s.input}
+                value={payAmount}
+                onChangeText={setPayAmount}
+                keyboardType="decimal-pad"
+                placeholder="0.00"
+                placeholderTextColor={colors.textMuted}
+              />
+
+              <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text, marginBottom: 8 }}>
+                Select Payment Method
+              </Text>
+              <View style={{ gap: 8, marginBottom: 20 }}>
+                {[
+                  { key: "MOBILE_MONEY", label: "Mobile Money (MTN / Telecel / AT)", icon: Banknote },
+                  { key: "WALLET_BALANCE", label: `Wallet Balance (GH₵ ${m.availableEarnings.toFixed(2)} available)`, icon: WalletIcon },
+                  { key: "CARD", label: "Bank Card", icon: CreditCard },
+                ].map((item) => (
+                  <Pressable
+                    key={item.key}
+                    onPress={() => setSettleMethod(item.key as any)}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: 14,
+                      borderRadius: 12,
+                      backgroundColor: settleMethod === item.key ? (isDark ? "rgba(34, 197, 94, 0.15)" : "#F0FDF4") : (isDark ? "#1E2638" : "#F8FAFC"),
+                      borderWidth: 1.5,
+                      borderColor: settleMethod === item.key ? "#22C55E" : (isDark ? "rgba(255,255,255,0.08)" : "#E2E8F0"),
+                    }}
+                  >
+                    <item.icon size={20} color={settleMethod === item.key ? "#22C55E" : colors.textSecondary} />
+                    <Text style={{ fontSize: 14, fontWeight: "700", color: settleMethod === item.key ? "#22C55E" : colors.text }}>
+                      {item.label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <Pressable
+                style={[s.payBtn, settleLoading && { opacity: 0.6 }]}
+                disabled={settleLoading}
+                onPress={() => void handleSettleCommission()}
+              >
+                {settleLoading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <>
+                    <ShieldCheck size={20} color="#FFFFFF" />
+                    <Text style={s.payBtnText}>PAY COMMISSION NOW</Text>
+                  </>
+                )}
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </KeyboardAvoidingView>
   );

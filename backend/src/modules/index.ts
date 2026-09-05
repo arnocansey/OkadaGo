@@ -17,6 +17,7 @@ import { safetyRoutes } from "./safety/safety.routes.js";
 import { deliveryRoutes } from "./deliveries/delivery.routes.js";
 import { foodRoutes } from "./food/food.routes.js";
 import { ticketRoutes } from "./tickets/ticket.routes.js";
+import { financeRoutes } from "./finance/finance.routes.js";
 
 export const registerRoutes: FastifyPluginAsync = async (server) => {
   await server.register(healthRoutes);
@@ -37,4 +38,5 @@ export const registerRoutes: FastifyPluginAsync = async (server) => {
   await server.register(documentRoutes);
   await server.register(ticketRoutes);
   await server.register(adminRoutes);
+  await server.register(financeRoutes);
 };

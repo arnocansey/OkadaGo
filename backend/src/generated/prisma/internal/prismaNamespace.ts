@@ -431,7 +431,12 @@ export const ModelName = {
   MessageTemplate: 'MessageTemplate',
   AssignmentRule: 'AssignmentRule',
   AssignmentAuditLog: 'AssignmentAuditLog',
-  RideDispatchOffer: 'RideDispatchOffer'
+  RideDispatchOffer: 'RideDispatchOffer',
+  FinanceLedgerEntry: 'FinanceLedgerEntry',
+  CommissionPayment: 'CommissionPayment',
+  PaymentDispute: 'PaymentDispute',
+  FinanceAdjustment: 'FinanceAdjustment',
+  FinanceSetting: 'FinanceSetting'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -447,7 +452,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "riderOnlineLog" | "adminProfile" | "savedPaymentMethod" | "adminNote" | "platformSetting" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "deliveryRequest" | "deliveryStop" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "riderPayoutAccount" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog" | "escalationRule" | "scheduledBroadcast" | "opsJobHeartbeat" | "goPointRule" | "goPointBalance" | "goPointLedger" | "goPointRedemption" | "messageTemplate" | "assignmentRule" | "assignmentAuditLog" | "rideDispatchOffer"
+    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "riderOnlineLog" | "adminProfile" | "savedPaymentMethod" | "adminNote" | "platformSetting" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "deliveryRequest" | "deliveryStop" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "riderPayoutAccount" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog" | "escalationRule" | "scheduledBroadcast" | "opsJobHeartbeat" | "goPointRule" | "goPointBalance" | "goPointLedger" | "goPointRedemption" | "messageTemplate" | "assignmentRule" | "assignmentAuditLog" | "rideDispatchOffer" | "financeLedgerEntry" | "commissionPayment" | "paymentDispute" | "financeAdjustment" | "financeSetting"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -4003,6 +4008,376 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    FinanceLedgerEntry: {
+      payload: Prisma.$FinanceLedgerEntryPayload<ExtArgs>
+      fields: Prisma.FinanceLedgerEntryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FinanceLedgerEntryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceLedgerEntryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FinanceLedgerEntryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceLedgerEntryPayload>
+        }
+        findFirst: {
+          args: Prisma.FinanceLedgerEntryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceLedgerEntryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FinanceLedgerEntryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceLedgerEntryPayload>
+        }
+        findMany: {
+          args: Prisma.FinanceLedgerEntryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceLedgerEntryPayload>[]
+        }
+        create: {
+          args: Prisma.FinanceLedgerEntryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceLedgerEntryPayload>
+        }
+        createMany: {
+          args: Prisma.FinanceLedgerEntryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FinanceLedgerEntryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceLedgerEntryPayload>[]
+        }
+        delete: {
+          args: Prisma.FinanceLedgerEntryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceLedgerEntryPayload>
+        }
+        update: {
+          args: Prisma.FinanceLedgerEntryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceLedgerEntryPayload>
+        }
+        deleteMany: {
+          args: Prisma.FinanceLedgerEntryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FinanceLedgerEntryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FinanceLedgerEntryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceLedgerEntryPayload>[]
+        }
+        upsert: {
+          args: Prisma.FinanceLedgerEntryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceLedgerEntryPayload>
+        }
+        aggregate: {
+          args: Prisma.FinanceLedgerEntryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFinanceLedgerEntry>
+        }
+        groupBy: {
+          args: Prisma.FinanceLedgerEntryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FinanceLedgerEntryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FinanceLedgerEntryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FinanceLedgerEntryCountAggregateOutputType> | number
+        }
+      }
+    }
+    CommissionPayment: {
+      payload: Prisma.$CommissionPaymentPayload<ExtArgs>
+      fields: Prisma.CommissionPaymentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CommissionPaymentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionPaymentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CommissionPaymentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionPaymentPayload>
+        }
+        findFirst: {
+          args: Prisma.CommissionPaymentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionPaymentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CommissionPaymentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionPaymentPayload>
+        }
+        findMany: {
+          args: Prisma.CommissionPaymentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionPaymentPayload>[]
+        }
+        create: {
+          args: Prisma.CommissionPaymentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionPaymentPayload>
+        }
+        createMany: {
+          args: Prisma.CommissionPaymentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CommissionPaymentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionPaymentPayload>[]
+        }
+        delete: {
+          args: Prisma.CommissionPaymentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionPaymentPayload>
+        }
+        update: {
+          args: Prisma.CommissionPaymentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionPaymentPayload>
+        }
+        deleteMany: {
+          args: Prisma.CommissionPaymentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CommissionPaymentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CommissionPaymentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionPaymentPayload>[]
+        }
+        upsert: {
+          args: Prisma.CommissionPaymentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommissionPaymentPayload>
+        }
+        aggregate: {
+          args: Prisma.CommissionPaymentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCommissionPayment>
+        }
+        groupBy: {
+          args: Prisma.CommissionPaymentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CommissionPaymentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CommissionPaymentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CommissionPaymentCountAggregateOutputType> | number
+        }
+      }
+    }
+    PaymentDispute: {
+      payload: Prisma.$PaymentDisputePayload<ExtArgs>
+      fields: Prisma.PaymentDisputeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PaymentDisputeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentDisputePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PaymentDisputeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentDisputePayload>
+        }
+        findFirst: {
+          args: Prisma.PaymentDisputeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentDisputePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PaymentDisputeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentDisputePayload>
+        }
+        findMany: {
+          args: Prisma.PaymentDisputeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentDisputePayload>[]
+        }
+        create: {
+          args: Prisma.PaymentDisputeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentDisputePayload>
+        }
+        createMany: {
+          args: Prisma.PaymentDisputeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PaymentDisputeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentDisputePayload>[]
+        }
+        delete: {
+          args: Prisma.PaymentDisputeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentDisputePayload>
+        }
+        update: {
+          args: Prisma.PaymentDisputeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentDisputePayload>
+        }
+        deleteMany: {
+          args: Prisma.PaymentDisputeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PaymentDisputeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PaymentDisputeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentDisputePayload>[]
+        }
+        upsert: {
+          args: Prisma.PaymentDisputeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentDisputePayload>
+        }
+        aggregate: {
+          args: Prisma.PaymentDisputeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePaymentDispute>
+        }
+        groupBy: {
+          args: Prisma.PaymentDisputeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PaymentDisputeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PaymentDisputeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PaymentDisputeCountAggregateOutputType> | number
+        }
+      }
+    }
+    FinanceAdjustment: {
+      payload: Prisma.$FinanceAdjustmentPayload<ExtArgs>
+      fields: Prisma.FinanceAdjustmentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FinanceAdjustmentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceAdjustmentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FinanceAdjustmentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceAdjustmentPayload>
+        }
+        findFirst: {
+          args: Prisma.FinanceAdjustmentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceAdjustmentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FinanceAdjustmentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceAdjustmentPayload>
+        }
+        findMany: {
+          args: Prisma.FinanceAdjustmentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceAdjustmentPayload>[]
+        }
+        create: {
+          args: Prisma.FinanceAdjustmentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceAdjustmentPayload>
+        }
+        createMany: {
+          args: Prisma.FinanceAdjustmentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FinanceAdjustmentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceAdjustmentPayload>[]
+        }
+        delete: {
+          args: Prisma.FinanceAdjustmentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceAdjustmentPayload>
+        }
+        update: {
+          args: Prisma.FinanceAdjustmentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceAdjustmentPayload>
+        }
+        deleteMany: {
+          args: Prisma.FinanceAdjustmentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FinanceAdjustmentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FinanceAdjustmentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceAdjustmentPayload>[]
+        }
+        upsert: {
+          args: Prisma.FinanceAdjustmentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceAdjustmentPayload>
+        }
+        aggregate: {
+          args: Prisma.FinanceAdjustmentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFinanceAdjustment>
+        }
+        groupBy: {
+          args: Prisma.FinanceAdjustmentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FinanceAdjustmentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FinanceAdjustmentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FinanceAdjustmentCountAggregateOutputType> | number
+        }
+      }
+    }
+    FinanceSetting: {
+      payload: Prisma.$FinanceSettingPayload<ExtArgs>
+      fields: Prisma.FinanceSettingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FinanceSettingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceSettingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FinanceSettingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceSettingPayload>
+        }
+        findFirst: {
+          args: Prisma.FinanceSettingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceSettingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FinanceSettingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceSettingPayload>
+        }
+        findMany: {
+          args: Prisma.FinanceSettingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceSettingPayload>[]
+        }
+        create: {
+          args: Prisma.FinanceSettingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceSettingPayload>
+        }
+        createMany: {
+          args: Prisma.FinanceSettingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FinanceSettingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceSettingPayload>[]
+        }
+        delete: {
+          args: Prisma.FinanceSettingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceSettingPayload>
+        }
+        update: {
+          args: Prisma.FinanceSettingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceSettingPayload>
+        }
+        deleteMany: {
+          args: Prisma.FinanceSettingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FinanceSettingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FinanceSettingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceSettingPayload>[]
+        }
+        upsert: {
+          args: Prisma.FinanceSettingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinanceSettingPayload>
+        }
+        aggregate: {
+          args: Prisma.FinanceSettingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFinanceSetting>
+        }
+        groupBy: {
+          args: Prisma.FinanceSettingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FinanceSettingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FinanceSettingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FinanceSettingCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -4139,7 +4514,13 @@ export const RiderProfileScalarFieldEnum = {
   currentHeading: 'currentHeading',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
+  deletedAt: 'deletedAt',
+  outstandingCommission: 'outstandingCommission',
+  totalCashCollected: 'totalCashCollected',
+  totalCommissionPaid: 'totalCommissionPaid',
+  isCashRestricted: 'isCashRestricted',
+  cashRestrictedAt: 'cashRestrictedAt',
+  commissionWarningIssuedAt: 'commissionWarningIssuedAt'
 } as const
 
 export type RiderProfileScalarFieldEnum = (typeof RiderProfileScalarFieldEnum)[keyof typeof RiderProfileScalarFieldEnum]
@@ -4373,6 +4754,14 @@ export const RideScalarFieldEnum = {
   riderEarnings: 'riderEarnings',
   platformCommission: 'platformCommission',
   currency: 'currency',
+  cashCollected: 'cashCollected',
+  cashConfirmedByRiderAt: 'cashConfirmedByRiderAt',
+  cashConfirmedByPassengerAt: 'cashConfirmedByPassengerAt',
+  cashDeclaredAmount: 'cashDeclaredAmount',
+  commissionLiability: 'commissionLiability',
+  commissionStatus: 'commissionStatus',
+  commissionSettledAt: 'commissionSettledAt',
+  fareBreakdown: 'fareBreakdown',
   notes: 'notes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -4948,6 +5337,101 @@ export const RideDispatchOfferScalarFieldEnum = {
 export type RideDispatchOfferScalarFieldEnum = (typeof RideDispatchOfferScalarFieldEnum)[keyof typeof RideDispatchOfferScalarFieldEnum]
 
 
+export const FinanceLedgerEntryScalarFieldEnum = {
+  id: 'id',
+  transactionId: 'transactionId',
+  riderId: 'riderId',
+  passengerId: 'passengerId',
+  rideId: 'rideId',
+  deliveryId: 'deliveryId',
+  amount: 'amount',
+  currency: 'currency',
+  type: 'type',
+  direction: 'direction',
+  description: 'description',
+  paymentMethod: 'paymentMethod',
+  status: 'status',
+  referenceId: 'referenceId',
+  idempotencyKey: 'idempotencyKey',
+  createdBy: 'createdBy',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type FinanceLedgerEntryScalarFieldEnum = (typeof FinanceLedgerEntryScalarFieldEnum)[keyof typeof FinanceLedgerEntryScalarFieldEnum]
+
+
+export const CommissionPaymentScalarFieldEnum = {
+  id: 'id',
+  riderId: 'riderId',
+  amount: 'amount',
+  currency: 'currency',
+  paymentMethod: 'paymentMethod',
+  status: 'status',
+  reference: 'reference',
+  provider: 'provider',
+  notes: 'notes',
+  recordedByAdminId: 'recordedByAdminId',
+  createdAt: 'createdAt',
+  settledAt: 'settledAt'
+} as const
+
+export type CommissionPaymentScalarFieldEnum = (typeof CommissionPaymentScalarFieldEnum)[keyof typeof CommissionPaymentScalarFieldEnum]
+
+
+export const PaymentDisputeScalarFieldEnum = {
+  id: 'id',
+  rideId: 'rideId',
+  reporterUserId: 'reporterUserId',
+  riderId: 'riderId',
+  passengerId: 'passengerId',
+  disputeType: 'disputeType',
+  amountDisputed: 'amountDisputed',
+  status: 'status',
+  description: 'description',
+  evidence: 'evidence',
+  resolutionNotes: 'resolutionNotes',
+  resolvedByUserId: 'resolvedByUserId',
+  resolvedAt: 'resolvedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PaymentDisputeScalarFieldEnum = (typeof PaymentDisputeScalarFieldEnum)[keyof typeof PaymentDisputeScalarFieldEnum]
+
+
+export const FinanceAdjustmentScalarFieldEnum = {
+  id: 'id',
+  riderId: 'riderId',
+  amount: 'amount',
+  adjustmentType: 'adjustmentType',
+  reason: 'reason',
+  authorizedByUserId: 'authorizedByUserId',
+  ledgerEntryId: 'ledgerEntryId',
+  createdAt: 'createdAt'
+} as const
+
+export type FinanceAdjustmentScalarFieldEnum = (typeof FinanceAdjustmentScalarFieldEnum)[keyof typeof FinanceAdjustmentScalarFieldEnum]
+
+
+export const FinanceSettingScalarFieldEnum = {
+  id: 'id',
+  commissionPercentage: 'commissionPercentage',
+  minimumCommission: 'minimumCommission',
+  cashPaymentEnabled: 'cashPaymentEnabled',
+  digitalPaymentEnabled: 'digitalPaymentEnabled',
+  commissionWarningThreshold: 'commissionWarningThreshold',
+  commissionRestrictionThreshold: 'commissionRestrictionThreshold',
+  minPayoutAmount: 'minPayoutAmount',
+  maxPayoutAmountDaily: 'maxPayoutAmountDaily',
+  currency: 'currency',
+  updatedAt: 'updatedAt',
+  updatedByUserId: 'updatedByUserId'
+} as const
+
+export type FinanceSettingScalarFieldEnum = (typeof FinanceSettingScalarFieldEnum)[keyof typeof FinanceSettingScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -5304,6 +5788,20 @@ export type ListEnumCancellationPartyFieldRefInput<$PrismaModel> = FieldRefInput
 
 
 /**
+ * Reference to a field of type 'CommissionStatus'
+ */
+export type EnumCommissionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CommissionStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'CommissionStatus[]'
+ */
+export type ListEnumCommissionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CommissionStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'DeliveryStatus'
  */
 export type EnumDeliveryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeliveryStatus'>
@@ -5582,6 +6080,62 @@ export type EnumOfferStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pris
 export type ListEnumOfferStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OfferStatus[]'>
     
 
+
+/**
+ * Reference to a field of type 'FinanceLedgerType'
+ */
+export type EnumFinanceLedgerTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FinanceLedgerType'>
+    
+
+
+/**
+ * Reference to a field of type 'FinanceLedgerType[]'
+ */
+export type ListEnumFinanceLedgerTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FinanceLedgerType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'LedgerDirection'
+ */
+export type EnumLedgerDirectionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LedgerDirection'>
+    
+
+
+/**
+ * Reference to a field of type 'LedgerDirection[]'
+ */
+export type ListEnumLedgerDirectionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LedgerDirection[]'>
+    
+
+
+/**
+ * Reference to a field of type 'PaymentDisputeType'
+ */
+export type EnumPaymentDisputeTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentDisputeType'>
+    
+
+
+/**
+ * Reference to a field of type 'PaymentDisputeType[]'
+ */
+export type ListEnumPaymentDisputeTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentDisputeType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'PaymentDisputeStatus'
+ */
+export type EnumPaymentDisputeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentDisputeStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'PaymentDisputeStatus[]'
+ */
+export type ListEnumPaymentDisputeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentDisputeStatus[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -5740,6 +6294,11 @@ export type GlobalOmitConfig = {
   assignmentRule?: Prisma.AssignmentRuleOmit
   assignmentAuditLog?: Prisma.AssignmentAuditLogOmit
   rideDispatchOffer?: Prisma.RideDispatchOfferOmit
+  financeLedgerEntry?: Prisma.FinanceLedgerEntryOmit
+  commissionPayment?: Prisma.CommissionPaymentOmit
+  paymentDispute?: Prisma.PaymentDisputeOmit
+  financeAdjustment?: Prisma.FinanceAdjustmentOmit
+  financeSetting?: Prisma.FinanceSettingOmit
 }
 
 /* Types for Logging */

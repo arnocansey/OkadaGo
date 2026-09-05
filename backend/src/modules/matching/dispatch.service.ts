@@ -2,6 +2,7 @@ import { prisma } from "../../common/prisma.js";
 import { AppError } from "../../common/errors.js";
 import {
   OfferStatus,
+  PaymentMethod,
   RideStatus,
   RiderApprovalStatus,
   RiderTripStatus,
@@ -108,6 +109,7 @@ export class DispatchService {
         currentLongitude: { not: null },
         serviceZoneId: ride.serviceZoneId ?? undefined,
         id: { notIn: Array.from(rejectedRiderIds) },
+        ...(ride.paymentMethod === PaymentMethod.CASH ? { isCashRestricted: false } : {}),
       },
       include: {
         user: true,

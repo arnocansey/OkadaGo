@@ -158,14 +158,75 @@ export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod]
 
 export const PaymentStatus = {
   PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
   AUTHORIZED: 'AUTHORIZED',
   CAPTURED: 'CAPTURED',
+  PAID: 'PAID',
   FAILED: 'FAILED',
   REFUNDED: 'REFUNDED',
-  CANCELLED: 'CANCELLED'
+  CANCELLED: 'CANCELLED',
+  CASH_COLLECTED: 'CASH_COLLECTED'
 } as const
 
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
+
+
+export const FinanceLedgerType = {
+  TRIP_EARNING: 'TRIP_EARNING',
+  CASH_COLLECTION: 'CASH_COLLECTION',
+  OKADAGO_COMMISSION: 'OKADAGO_COMMISSION',
+  COMMISSION_PAYMENT: 'COMMISSION_PAYMENT',
+  RIDER_PAYOUT: 'RIDER_PAYOUT',
+  REFUND: 'REFUND',
+  ADJUSTMENT: 'ADJUSTMENT',
+  BONUS: 'BONUS',
+  PENALTY: 'PENALTY',
+  REVERSAL: 'REVERSAL'
+} as const
+
+export type FinanceLedgerType = (typeof FinanceLedgerType)[keyof typeof FinanceLedgerType]
+
+
+export const LedgerDirection = {
+  DEBIT: 'DEBIT',
+  CREDIT: 'CREDIT'
+} as const
+
+export type LedgerDirection = (typeof LedgerDirection)[keyof typeof LedgerDirection]
+
+
+export const PaymentDisputeType = {
+  CASH_NOT_PAID: 'CASH_NOT_PAID',
+  WRONG_CASH_AMOUNT: 'WRONG_CASH_AMOUNT',
+  INCORRECT_FARE: 'INCORRECT_FARE',
+  DUPLICATE_PAYMENT: 'DUPLICATE_PAYMENT',
+  DIGITAL_PAYMENT_FAILURE: 'DIGITAL_PAYMENT_FAILURE',
+  REFUND_DISPUTE: 'REFUND_DISPUTE',
+  COMMISSION_DISPUTE: 'COMMISSION_DISPUTE'
+} as const
+
+export type PaymentDisputeType = (typeof PaymentDisputeType)[keyof typeof PaymentDisputeType]
+
+
+export const PaymentDisputeStatus = {
+  OPEN: 'OPEN',
+  UNDER_REVIEW: 'UNDER_REVIEW',
+  RESOLVED: 'RESOLVED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type PaymentDisputeStatus = (typeof PaymentDisputeStatus)[keyof typeof PaymentDisputeStatus]
+
+
+export const CommissionStatus = {
+  PENDING: 'PENDING',
+  SETTLED: 'SETTLED',
+  OVERDUE: 'OVERDUE',
+  WAIVED: 'WAIVED',
+  DISPUTED: 'DISPUTED'
+} as const
+
+export type CommissionStatus = (typeof CommissionStatus)[keyof typeof CommissionStatus]
 
 
 export const WalletType = {

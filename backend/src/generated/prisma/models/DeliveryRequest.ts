@@ -522,6 +522,7 @@ export type DeliveryRequestWhereInput = {
   ratings?: Prisma.RatingListRelationFilter
   reviews?: Prisma.ReviewListRelationFilter
   stops?: Prisma.DeliveryStopListRelationFilter
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryListRelationFilter
 }
 
 export type DeliveryRequestOrderByWithRelationInput = {
@@ -569,6 +570,7 @@ export type DeliveryRequestOrderByWithRelationInput = {
   ratings?: Prisma.RatingOrderByRelationAggregateInput
   reviews?: Prisma.ReviewOrderByRelationAggregateInput
   stops?: Prisma.DeliveryStopOrderByRelationAggregateInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryOrderByRelationAggregateInput
 }
 
 export type DeliveryRequestWhereUniqueInput = Prisma.AtLeast<{
@@ -619,6 +621,7 @@ export type DeliveryRequestWhereUniqueInput = Prisma.AtLeast<{
   ratings?: Prisma.RatingListRelationFilter
   reviews?: Prisma.ReviewListRelationFilter
   stops?: Prisma.DeliveryStopListRelationFilter
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryListRelationFilter
 }, "id">
 
 export type DeliveryRequestOrderByWithAggregationInput = {
@@ -753,6 +756,7 @@ export type DeliveryRequestCreateInput = {
   ratings?: Prisma.RatingCreateNestedManyWithoutDeliveryInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutDeliveryInput
   stops?: Prisma.DeliveryStopCreateNestedManyWithoutDeliveryInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestUncheckedCreateInput = {
@@ -797,6 +801,7 @@ export type DeliveryRequestUncheckedCreateInput = {
   ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutDeliveryInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutDeliveryInput
   stops?: Prisma.DeliveryStopUncheckedCreateNestedManyWithoutDeliveryInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestUpdateInput = {
@@ -841,6 +846,7 @@ export type DeliveryRequestUpdateInput = {
   ratings?: Prisma.RatingUpdateManyWithoutDeliveryNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutDeliveryNestedInput
   stops?: Prisma.DeliveryStopUpdateManyWithoutDeliveryNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutDeliveryNestedInput
 }
 
 export type DeliveryRequestUncheckedUpdateInput = {
@@ -885,6 +891,7 @@ export type DeliveryRequestUncheckedUpdateInput = {
   ratings?: Prisma.RatingUncheckedUpdateManyWithoutDeliveryNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutDeliveryNestedInput
   stops?: Prisma.DeliveryStopUncheckedUpdateManyWithoutDeliveryNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutDeliveryNestedInput
 }
 
 export type DeliveryRequestCreateManyInput = {
@@ -1352,6 +1359,22 @@ export type DeliveryRequestUpdateOneWithoutReviewsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.DeliveryRequestUpdateToOneWithWhereWithoutReviewsInput, Prisma.DeliveryRequestUpdateWithoutReviewsInput>, Prisma.DeliveryRequestUncheckedUpdateWithoutReviewsInput>
 }
 
+export type DeliveryRequestCreateNestedOneWithoutFinanceLedgerEntriesInput = {
+  create?: Prisma.XOR<Prisma.DeliveryRequestCreateWithoutFinanceLedgerEntriesInput, Prisma.DeliveryRequestUncheckedCreateWithoutFinanceLedgerEntriesInput>
+  connectOrCreate?: Prisma.DeliveryRequestCreateOrConnectWithoutFinanceLedgerEntriesInput
+  connect?: Prisma.DeliveryRequestWhereUniqueInput
+}
+
+export type DeliveryRequestUpdateOneWithoutFinanceLedgerEntriesNestedInput = {
+  create?: Prisma.XOR<Prisma.DeliveryRequestCreateWithoutFinanceLedgerEntriesInput, Prisma.DeliveryRequestUncheckedCreateWithoutFinanceLedgerEntriesInput>
+  connectOrCreate?: Prisma.DeliveryRequestCreateOrConnectWithoutFinanceLedgerEntriesInput
+  upsert?: Prisma.DeliveryRequestUpsertWithoutFinanceLedgerEntriesInput
+  disconnect?: Prisma.DeliveryRequestWhereInput | boolean
+  delete?: Prisma.DeliveryRequestWhereInput | boolean
+  connect?: Prisma.DeliveryRequestWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DeliveryRequestUpdateToOneWithWhereWithoutFinanceLedgerEntriesInput, Prisma.DeliveryRequestUpdateWithoutFinanceLedgerEntriesInput>, Prisma.DeliveryRequestUncheckedUpdateWithoutFinanceLedgerEntriesInput>
+}
+
 export type DeliveryRequestCreateWithoutPassengerInput = {
   id?: string
   status?: $Enums.DeliveryStatus
@@ -1393,6 +1416,7 @@ export type DeliveryRequestCreateWithoutPassengerInput = {
   ratings?: Prisma.RatingCreateNestedManyWithoutDeliveryInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutDeliveryInput
   stops?: Prisma.DeliveryStopCreateNestedManyWithoutDeliveryInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestUncheckedCreateWithoutPassengerInput = {
@@ -1436,6 +1460,7 @@ export type DeliveryRequestUncheckedCreateWithoutPassengerInput = {
   ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutDeliveryInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutDeliveryInput
   stops?: Prisma.DeliveryStopUncheckedCreateNestedManyWithoutDeliveryInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestCreateOrConnectWithoutPassengerInput = {
@@ -1549,6 +1574,7 @@ export type DeliveryRequestCreateWithoutRiderInput = {
   ratings?: Prisma.RatingCreateNestedManyWithoutDeliveryInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutDeliveryInput
   stops?: Prisma.DeliveryStopCreateNestedManyWithoutDeliveryInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestUncheckedCreateWithoutRiderInput = {
@@ -1592,6 +1618,7 @@ export type DeliveryRequestUncheckedCreateWithoutRiderInput = {
   ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutDeliveryInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutDeliveryInput
   stops?: Prisma.DeliveryStopUncheckedCreateNestedManyWithoutDeliveryInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestCreateOrConnectWithoutRiderInput = {
@@ -1661,6 +1688,7 @@ export type DeliveryRequestCreateWithoutServiceZoneInput = {
   ratings?: Prisma.RatingCreateNestedManyWithoutDeliveryInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutDeliveryInput
   stops?: Prisma.DeliveryStopCreateNestedManyWithoutDeliveryInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestUncheckedCreateWithoutServiceZoneInput = {
@@ -1704,6 +1732,7 @@ export type DeliveryRequestUncheckedCreateWithoutServiceZoneInput = {
   ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutDeliveryInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutDeliveryInput
   stops?: Prisma.DeliveryStopUncheckedCreateNestedManyWithoutDeliveryInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestCreateOrConnectWithoutServiceZoneInput = {
@@ -1773,6 +1802,7 @@ export type DeliveryRequestCreateWithoutStopsInput = {
   serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutDeliveriesInput
   ratings?: Prisma.RatingCreateNestedManyWithoutDeliveryInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutDeliveryInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestUncheckedCreateWithoutStopsInput = {
@@ -1816,6 +1846,7 @@ export type DeliveryRequestUncheckedCreateWithoutStopsInput = {
   updatedAt?: Date | string
   ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutDeliveryInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutDeliveryInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestCreateOrConnectWithoutStopsInput = {
@@ -1875,6 +1906,7 @@ export type DeliveryRequestUpdateWithoutStopsInput = {
   serviceZone?: Prisma.ServiceZoneUpdateOneWithoutDeliveriesNestedInput
   ratings?: Prisma.RatingUpdateManyWithoutDeliveryNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutDeliveryNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutDeliveryNestedInput
 }
 
 export type DeliveryRequestUncheckedUpdateWithoutStopsInput = {
@@ -1918,6 +1950,7 @@ export type DeliveryRequestUncheckedUpdateWithoutStopsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ratings?: Prisma.RatingUncheckedUpdateManyWithoutDeliveryNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutDeliveryNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutDeliveryNestedInput
 }
 
 export type DeliveryRequestCreateWithoutRatingsInput = {
@@ -1961,6 +1994,7 @@ export type DeliveryRequestCreateWithoutRatingsInput = {
   serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutDeliveriesInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutDeliveryInput
   stops?: Prisma.DeliveryStopCreateNestedManyWithoutDeliveryInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestUncheckedCreateWithoutRatingsInput = {
@@ -2004,6 +2038,7 @@ export type DeliveryRequestUncheckedCreateWithoutRatingsInput = {
   updatedAt?: Date | string
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutDeliveryInput
   stops?: Prisma.DeliveryStopUncheckedCreateNestedManyWithoutDeliveryInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestCreateOrConnectWithoutRatingsInput = {
@@ -2063,6 +2098,7 @@ export type DeliveryRequestUpdateWithoutRatingsInput = {
   serviceZone?: Prisma.ServiceZoneUpdateOneWithoutDeliveriesNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutDeliveryNestedInput
   stops?: Prisma.DeliveryStopUpdateManyWithoutDeliveryNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutDeliveryNestedInput
 }
 
 export type DeliveryRequestUncheckedUpdateWithoutRatingsInput = {
@@ -2106,6 +2142,7 @@ export type DeliveryRequestUncheckedUpdateWithoutRatingsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutDeliveryNestedInput
   stops?: Prisma.DeliveryStopUncheckedUpdateManyWithoutDeliveryNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutDeliveryNestedInput
 }
 
 export type DeliveryRequestCreateWithoutReviewsInput = {
@@ -2149,6 +2186,7 @@ export type DeliveryRequestCreateWithoutReviewsInput = {
   serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutDeliveriesInput
   ratings?: Prisma.RatingCreateNestedManyWithoutDeliveryInput
   stops?: Prisma.DeliveryStopCreateNestedManyWithoutDeliveryInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestUncheckedCreateWithoutReviewsInput = {
@@ -2192,6 +2230,7 @@ export type DeliveryRequestUncheckedCreateWithoutReviewsInput = {
   updatedAt?: Date | string
   ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutDeliveryInput
   stops?: Prisma.DeliveryStopUncheckedCreateNestedManyWithoutDeliveryInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedCreateNestedManyWithoutDeliveryInput
 }
 
 export type DeliveryRequestCreateOrConnectWithoutReviewsInput = {
@@ -2251,6 +2290,7 @@ export type DeliveryRequestUpdateWithoutReviewsInput = {
   serviceZone?: Prisma.ServiceZoneUpdateOneWithoutDeliveriesNestedInput
   ratings?: Prisma.RatingUpdateManyWithoutDeliveryNestedInput
   stops?: Prisma.DeliveryStopUpdateManyWithoutDeliveryNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutDeliveryNestedInput
 }
 
 export type DeliveryRequestUncheckedUpdateWithoutReviewsInput = {
@@ -2293,6 +2333,199 @@ export type DeliveryRequestUncheckedUpdateWithoutReviewsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ratings?: Prisma.RatingUncheckedUpdateManyWithoutDeliveryNestedInput
+  stops?: Prisma.DeliveryStopUncheckedUpdateManyWithoutDeliveryNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutDeliveryNestedInput
+}
+
+export type DeliveryRequestCreateWithoutFinanceLedgerEntriesInput = {
+  id?: string
+  status?: $Enums.DeliveryStatus
+  paymentMethod?: $Enums.PaymentMethod | null
+  cancellationParty?: $Enums.CancellationParty | null
+  cancellationReason?: string | null
+  requestedAt?: Date | string
+  assignedAt?: Date | string | null
+  pickedUpAt?: Date | string | null
+  inTransitAt?: Date | string | null
+  deliveredAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  pickupAddress: string
+  pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
+  dropoffAddress: string
+  dropoffLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: string | null
+  recipientName: string
+  recipientPhoneE164: string
+  packageType?: string
+  packageDescription: string
+  proofPhotoUrl?: string | null
+  pickupLocationMocked?: boolean
+  estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: number | null
+  estimatedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency: string
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  passenger: Prisma.PassengerProfileCreateNestedOneWithoutDeliveriesInput
+  rider?: Prisma.RiderProfileCreateNestedOneWithoutDeliveriesInput
+  serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutDeliveriesInput
+  ratings?: Prisma.RatingCreateNestedManyWithoutDeliveryInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutDeliveryInput
+  stops?: Prisma.DeliveryStopCreateNestedManyWithoutDeliveryInput
+}
+
+export type DeliveryRequestUncheckedCreateWithoutFinanceLedgerEntriesInput = {
+  id?: string
+  passengerId: string
+  riderId?: string | null
+  serviceZoneId?: string | null
+  status?: $Enums.DeliveryStatus
+  paymentMethod?: $Enums.PaymentMethod | null
+  cancellationParty?: $Enums.CancellationParty | null
+  cancellationReason?: string | null
+  requestedAt?: Date | string
+  assignedAt?: Date | string | null
+  pickedUpAt?: Date | string | null
+  inTransitAt?: Date | string | null
+  deliveredAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  pickupAddress: string
+  pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
+  dropoffAddress: string
+  dropoffLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: string | null
+  recipientName: string
+  recipientPhoneE164: string
+  packageType?: string
+  packageDescription: string
+  proofPhotoUrl?: string | null
+  pickupLocationMocked?: boolean
+  estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: number | null
+  estimatedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency: string
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutDeliveryInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutDeliveryInput
+  stops?: Prisma.DeliveryStopUncheckedCreateNestedManyWithoutDeliveryInput
+}
+
+export type DeliveryRequestCreateOrConnectWithoutFinanceLedgerEntriesInput = {
+  where: Prisma.DeliveryRequestWhereUniqueInput
+  create: Prisma.XOR<Prisma.DeliveryRequestCreateWithoutFinanceLedgerEntriesInput, Prisma.DeliveryRequestUncheckedCreateWithoutFinanceLedgerEntriesInput>
+}
+
+export type DeliveryRequestUpsertWithoutFinanceLedgerEntriesInput = {
+  update: Prisma.XOR<Prisma.DeliveryRequestUpdateWithoutFinanceLedgerEntriesInput, Prisma.DeliveryRequestUncheckedUpdateWithoutFinanceLedgerEntriesInput>
+  create: Prisma.XOR<Prisma.DeliveryRequestCreateWithoutFinanceLedgerEntriesInput, Prisma.DeliveryRequestUncheckedCreateWithoutFinanceLedgerEntriesInput>
+  where?: Prisma.DeliveryRequestWhereInput
+}
+
+export type DeliveryRequestUpdateToOneWithWhereWithoutFinanceLedgerEntriesInput = {
+  where?: Prisma.DeliveryRequestWhereInput
+  data: Prisma.XOR<Prisma.DeliveryRequestUpdateWithoutFinanceLedgerEntriesInput, Prisma.DeliveryRequestUncheckedUpdateWithoutFinanceLedgerEntriesInput>
+}
+
+export type DeliveryRequestUpdateWithoutFinanceLedgerEntriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumDeliveryStatusFieldUpdateOperationsInput | $Enums.DeliveryStatus
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pickedUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inTransitAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dropoffAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  dropoffLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recipientName?: Prisma.StringFieldUpdateOperationsInput | string
+  recipientPhoneE164?: Prisma.StringFieldUpdateOperationsInput | string
+  packageType?: Prisma.StringFieldUpdateOperationsInput | string
+  packageDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  estimatedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passenger?: Prisma.PassengerProfileUpdateOneRequiredWithoutDeliveriesNestedInput
+  rider?: Prisma.RiderProfileUpdateOneWithoutDeliveriesNestedInput
+  serviceZone?: Prisma.ServiceZoneUpdateOneWithoutDeliveriesNestedInput
+  ratings?: Prisma.RatingUpdateManyWithoutDeliveryNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutDeliveryNestedInput
+  stops?: Prisma.DeliveryStopUpdateManyWithoutDeliveryNestedInput
+}
+
+export type DeliveryRequestUncheckedUpdateWithoutFinanceLedgerEntriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  passengerId?: Prisma.StringFieldUpdateOperationsInput | string
+  riderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serviceZoneId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDeliveryStatusFieldUpdateOperationsInput | $Enums.DeliveryStatus
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pickedUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inTransitAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dropoffAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  dropoffLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  dropoffLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recipientName?: Prisma.StringFieldUpdateOperationsInput | string
+  recipientPhoneE164?: Prisma.StringFieldUpdateOperationsInput | string
+  packageType?: Prisma.StringFieldUpdateOperationsInput | string
+  packageDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  estimatedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ratings?: Prisma.RatingUncheckedUpdateManyWithoutDeliveryNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutDeliveryNestedInput
   stops?: Prisma.DeliveryStopUncheckedUpdateManyWithoutDeliveryNestedInput
 }
 
@@ -2377,6 +2610,7 @@ export type DeliveryRequestUpdateWithoutPassengerInput = {
   ratings?: Prisma.RatingUpdateManyWithoutDeliveryNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutDeliveryNestedInput
   stops?: Prisma.DeliveryStopUpdateManyWithoutDeliveryNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutDeliveryNestedInput
 }
 
 export type DeliveryRequestUncheckedUpdateWithoutPassengerInput = {
@@ -2420,6 +2654,7 @@ export type DeliveryRequestUncheckedUpdateWithoutPassengerInput = {
   ratings?: Prisma.RatingUncheckedUpdateManyWithoutDeliveryNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutDeliveryNestedInput
   stops?: Prisma.DeliveryStopUncheckedUpdateManyWithoutDeliveryNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutDeliveryNestedInput
 }
 
 export type DeliveryRequestUncheckedUpdateManyWithoutPassengerInput = {
@@ -2543,6 +2778,7 @@ export type DeliveryRequestUpdateWithoutRiderInput = {
   ratings?: Prisma.RatingUpdateManyWithoutDeliveryNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutDeliveryNestedInput
   stops?: Prisma.DeliveryStopUpdateManyWithoutDeliveryNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutDeliveryNestedInput
 }
 
 export type DeliveryRequestUncheckedUpdateWithoutRiderInput = {
@@ -2586,6 +2822,7 @@ export type DeliveryRequestUncheckedUpdateWithoutRiderInput = {
   ratings?: Prisma.RatingUncheckedUpdateManyWithoutDeliveryNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutDeliveryNestedInput
   stops?: Prisma.DeliveryStopUncheckedUpdateManyWithoutDeliveryNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutDeliveryNestedInput
 }
 
 export type DeliveryRequestUncheckedUpdateManyWithoutRiderInput = {
@@ -2709,6 +2946,7 @@ export type DeliveryRequestUpdateWithoutServiceZoneInput = {
   ratings?: Prisma.RatingUpdateManyWithoutDeliveryNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutDeliveryNestedInput
   stops?: Prisma.DeliveryStopUpdateManyWithoutDeliveryNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUpdateManyWithoutDeliveryNestedInput
 }
 
 export type DeliveryRequestUncheckedUpdateWithoutServiceZoneInput = {
@@ -2752,6 +2990,7 @@ export type DeliveryRequestUncheckedUpdateWithoutServiceZoneInput = {
   ratings?: Prisma.RatingUncheckedUpdateManyWithoutDeliveryNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutDeliveryNestedInput
   stops?: Prisma.DeliveryStopUncheckedUpdateManyWithoutDeliveryNestedInput
+  financeLedgerEntries?: Prisma.FinanceLedgerEntryUncheckedUpdateManyWithoutDeliveryNestedInput
 }
 
 export type DeliveryRequestUncheckedUpdateManyWithoutServiceZoneInput = {
@@ -2803,12 +3042,14 @@ export type DeliveryRequestCountOutputType = {
   ratings: number
   reviews: number
   stops: number
+  financeLedgerEntries: number
 }
 
 export type DeliveryRequestCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ratings?: boolean | DeliveryRequestCountOutputTypeCountRatingsArgs
   reviews?: boolean | DeliveryRequestCountOutputTypeCountReviewsArgs
   stops?: boolean | DeliveryRequestCountOutputTypeCountStopsArgs
+  financeLedgerEntries?: boolean | DeliveryRequestCountOutputTypeCountFinanceLedgerEntriesArgs
 }
 
 /**
@@ -2840,6 +3081,13 @@ export type DeliveryRequestCountOutputTypeCountReviewsArgs<ExtArgs extends runti
  */
 export type DeliveryRequestCountOutputTypeCountStopsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.DeliveryStopWhereInput
+}
+
+/**
+ * DeliveryRequestCountOutputType without action
+ */
+export type DeliveryRequestCountOutputTypeCountFinanceLedgerEntriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FinanceLedgerEntryWhereInput
 }
 
 
@@ -2888,6 +3136,7 @@ export type DeliveryRequestSelect<ExtArgs extends runtime.Types.Extensions.Inter
   ratings?: boolean | Prisma.DeliveryRequest$ratingsArgs<ExtArgs>
   reviews?: boolean | Prisma.DeliveryRequest$reviewsArgs<ExtArgs>
   stops?: boolean | Prisma.DeliveryRequest$stopsArgs<ExtArgs>
+  financeLedgerEntries?: boolean | Prisma.DeliveryRequest$financeLedgerEntriesArgs<ExtArgs>
   _count?: boolean | Prisma.DeliveryRequestCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["deliveryRequest"]>
 
@@ -3028,6 +3277,7 @@ export type DeliveryRequestInclude<ExtArgs extends runtime.Types.Extensions.Inte
   ratings?: boolean | Prisma.DeliveryRequest$ratingsArgs<ExtArgs>
   reviews?: boolean | Prisma.DeliveryRequest$reviewsArgs<ExtArgs>
   stops?: boolean | Prisma.DeliveryRequest$stopsArgs<ExtArgs>
+  financeLedgerEntries?: boolean | Prisma.DeliveryRequest$financeLedgerEntriesArgs<ExtArgs>
   _count?: boolean | Prisma.DeliveryRequestCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type DeliveryRequestIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3050,6 +3300,7 @@ export type $DeliveryRequestPayload<ExtArgs extends runtime.Types.Extensions.Int
     ratings: Prisma.$RatingPayload<ExtArgs>[]
     reviews: Prisma.$ReviewPayload<ExtArgs>[]
     stops: Prisma.$DeliveryStopPayload<ExtArgs>[]
+    financeLedgerEntries: Prisma.$FinanceLedgerEntryPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3490,6 +3741,7 @@ export interface Prisma__DeliveryRequestClient<T, Null = never, ExtArgs extends 
   ratings<T extends Prisma.DeliveryRequest$ratingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DeliveryRequest$ratingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RatingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reviews<T extends Prisma.DeliveryRequest$reviewsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DeliveryRequest$reviewsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   stops<T extends Prisma.DeliveryRequest$stopsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DeliveryRequest$stopsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeliveryStopPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  financeLedgerEntries<T extends Prisma.DeliveryRequest$financeLedgerEntriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DeliveryRequest$financeLedgerEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FinanceLedgerEntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4065,6 +4317,30 @@ export type DeliveryRequest$stopsArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.DeliveryStopScalarFieldEnum | Prisma.DeliveryStopScalarFieldEnum[]
+}
+
+/**
+ * DeliveryRequest.financeLedgerEntries
+ */
+export type DeliveryRequest$financeLedgerEntriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FinanceLedgerEntry
+   */
+  select?: Prisma.FinanceLedgerEntrySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FinanceLedgerEntry
+   */
+  omit?: Prisma.FinanceLedgerEntryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FinanceLedgerEntryInclude<ExtArgs> | null
+  where?: Prisma.FinanceLedgerEntryWhereInput
+  orderBy?: Prisma.FinanceLedgerEntryOrderByWithRelationInput | Prisma.FinanceLedgerEntryOrderByWithRelationInput[]
+  cursor?: Prisma.FinanceLedgerEntryWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FinanceLedgerEntryScalarFieldEnum | Prisma.FinanceLedgerEntryScalarFieldEnum[]
 }
 
 /**

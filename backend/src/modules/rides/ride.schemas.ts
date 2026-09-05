@@ -86,7 +86,9 @@ export const rideStatusUpdateSchema = z.object({
   riderProfileId: z.string().cuid().optional(),
   cancellationReason: z.string().max(300).optional(),
   pin: z.string().min(4).max(6).optional(),
-  tipAmount: z.number().nonnegative().optional()
+  tipAmount: z.number().nonnegative().optional(),
+  cashCollectedAmount: z.number().nonnegative().optional(),
+  cashConfirmed: z.boolean().optional()
 });
 
 export const rideIdParamsSchema = z.object({

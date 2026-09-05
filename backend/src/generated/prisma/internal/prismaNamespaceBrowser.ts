@@ -98,7 +98,12 @@ export const ModelName = {
   MessageTemplate: 'MessageTemplate',
   AssignmentRule: 'AssignmentRule',
   AssignmentAuditLog: 'AssignmentAuditLog',
-  RideDispatchOffer: 'RideDispatchOffer'
+  RideDispatchOffer: 'RideDispatchOffer',
+  FinanceLedgerEntry: 'FinanceLedgerEntry',
+  CommissionPayment: 'CommissionPayment',
+  PaymentDispute: 'PaymentDispute',
+  FinanceAdjustment: 'FinanceAdjustment',
+  FinanceSetting: 'FinanceSetting'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -214,7 +219,13 @@ export const RiderProfileScalarFieldEnum = {
   currentHeading: 'currentHeading',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
+  deletedAt: 'deletedAt',
+  outstandingCommission: 'outstandingCommission',
+  totalCashCollected: 'totalCashCollected',
+  totalCommissionPaid: 'totalCommissionPaid',
+  isCashRestricted: 'isCashRestricted',
+  cashRestrictedAt: 'cashRestrictedAt',
+  commissionWarningIssuedAt: 'commissionWarningIssuedAt'
 } as const
 
 export type RiderProfileScalarFieldEnum = (typeof RiderProfileScalarFieldEnum)[keyof typeof RiderProfileScalarFieldEnum]
@@ -448,6 +459,14 @@ export const RideScalarFieldEnum = {
   riderEarnings: 'riderEarnings',
   platformCommission: 'platformCommission',
   currency: 'currency',
+  cashCollected: 'cashCollected',
+  cashConfirmedByRiderAt: 'cashConfirmedByRiderAt',
+  cashConfirmedByPassengerAt: 'cashConfirmedByPassengerAt',
+  cashDeclaredAmount: 'cashDeclaredAmount',
+  commissionLiability: 'commissionLiability',
+  commissionStatus: 'commissionStatus',
+  commissionSettledAt: 'commissionSettledAt',
+  fareBreakdown: 'fareBreakdown',
   notes: 'notes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -1021,6 +1040,101 @@ export const RideDispatchOfferScalarFieldEnum = {
 } as const
 
 export type RideDispatchOfferScalarFieldEnum = (typeof RideDispatchOfferScalarFieldEnum)[keyof typeof RideDispatchOfferScalarFieldEnum]
+
+
+export const FinanceLedgerEntryScalarFieldEnum = {
+  id: 'id',
+  transactionId: 'transactionId',
+  riderId: 'riderId',
+  passengerId: 'passengerId',
+  rideId: 'rideId',
+  deliveryId: 'deliveryId',
+  amount: 'amount',
+  currency: 'currency',
+  type: 'type',
+  direction: 'direction',
+  description: 'description',
+  paymentMethod: 'paymentMethod',
+  status: 'status',
+  referenceId: 'referenceId',
+  idempotencyKey: 'idempotencyKey',
+  createdBy: 'createdBy',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type FinanceLedgerEntryScalarFieldEnum = (typeof FinanceLedgerEntryScalarFieldEnum)[keyof typeof FinanceLedgerEntryScalarFieldEnum]
+
+
+export const CommissionPaymentScalarFieldEnum = {
+  id: 'id',
+  riderId: 'riderId',
+  amount: 'amount',
+  currency: 'currency',
+  paymentMethod: 'paymentMethod',
+  status: 'status',
+  reference: 'reference',
+  provider: 'provider',
+  notes: 'notes',
+  recordedByAdminId: 'recordedByAdminId',
+  createdAt: 'createdAt',
+  settledAt: 'settledAt'
+} as const
+
+export type CommissionPaymentScalarFieldEnum = (typeof CommissionPaymentScalarFieldEnum)[keyof typeof CommissionPaymentScalarFieldEnum]
+
+
+export const PaymentDisputeScalarFieldEnum = {
+  id: 'id',
+  rideId: 'rideId',
+  reporterUserId: 'reporterUserId',
+  riderId: 'riderId',
+  passengerId: 'passengerId',
+  disputeType: 'disputeType',
+  amountDisputed: 'amountDisputed',
+  status: 'status',
+  description: 'description',
+  evidence: 'evidence',
+  resolutionNotes: 'resolutionNotes',
+  resolvedByUserId: 'resolvedByUserId',
+  resolvedAt: 'resolvedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PaymentDisputeScalarFieldEnum = (typeof PaymentDisputeScalarFieldEnum)[keyof typeof PaymentDisputeScalarFieldEnum]
+
+
+export const FinanceAdjustmentScalarFieldEnum = {
+  id: 'id',
+  riderId: 'riderId',
+  amount: 'amount',
+  adjustmentType: 'adjustmentType',
+  reason: 'reason',
+  authorizedByUserId: 'authorizedByUserId',
+  ledgerEntryId: 'ledgerEntryId',
+  createdAt: 'createdAt'
+} as const
+
+export type FinanceAdjustmentScalarFieldEnum = (typeof FinanceAdjustmentScalarFieldEnum)[keyof typeof FinanceAdjustmentScalarFieldEnum]
+
+
+export const FinanceSettingScalarFieldEnum = {
+  id: 'id',
+  commissionPercentage: 'commissionPercentage',
+  minimumCommission: 'minimumCommission',
+  cashPaymentEnabled: 'cashPaymentEnabled',
+  digitalPaymentEnabled: 'digitalPaymentEnabled',
+  commissionWarningThreshold: 'commissionWarningThreshold',
+  commissionRestrictionThreshold: 'commissionRestrictionThreshold',
+  minPayoutAmount: 'minPayoutAmount',
+  maxPayoutAmountDaily: 'maxPayoutAmountDaily',
+  currency: 'currency',
+  updatedAt: 'updatedAt',
+  updatedByUserId: 'updatedByUserId'
+} as const
+
+export type FinanceSettingScalarFieldEnum = (typeof FinanceSettingScalarFieldEnum)[keyof typeof FinanceSettingScalarFieldEnum]
 
 
 export const SortOrder = {

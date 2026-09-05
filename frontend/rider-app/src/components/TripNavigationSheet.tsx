@@ -37,6 +37,7 @@ import { TripChatModal } from "./TripChatModal";
 import { MotorcycleNavigation } from "@/components/MotorcycleNavigation";
 import { PinVerificationSheet } from "@/components/PinVerificationSheet";
 import { SafetyCenter } from "@/components/SafetyCenter";
+import { CashTripCompletionModal } from "./CashTripCompletionModal";
 import { useTheme } from "@/context/ThemeContext";
 import { useLiveRoutePreview } from "@/hooks/useLiveRoutePreview";
 import { useUserLocation } from "@/hooks/useUserLocation";
@@ -64,11 +65,13 @@ type TripData = {
   currency?: string;
   rideType?: string;
   tripPin?: string;
+  paymentMethod?: string;
+  finalFare?: number;
 };
 
 type Props = {
   trip: TripData;
-  onAdvance: () => void;
+  onAdvance: (cashData?: { cashCollectedAmount?: number; notes?: string }) => void;
   onVerifyPin?: (pin: string) => Promise<boolean>;
   loading?: boolean;
 };
@@ -134,6 +137,7 @@ export function TripNavigationSheet({
   const [showInAppNav, setShowInAppNav] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showChatModal, setShowChatModal] = useState(false);
+  const [showCashModal, setShowCashModal] = useState(false);
 
   const status = trip.status?.toLowerCase() ?? "assigned";
   const isArriving = status === "arriving";
@@ -221,6 +225,11 @@ export function TripNavigationSheet({
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (isArrived) {
       setShowPinSheet(true);
+      return;
+    }
+    const isCash = (trip.paymentMethod ?? "cash").toLowerCase() === "cash";
+    if (isTripPhase && isCash) {
+      setShowCashModal(true);
       return;
     }
     onAdvance();
@@ -1005,6 +1014,18 @@ export function TripNavigationSheet({
         onVerified={handlePinVerified}
         onSkip={handlePinVerified}
         onVerify={onVerifyPin}
+      />
+
+      {/* ─── Cash Trip Completion Modal ────────────────────────────── */}
+      <CashTripCompletionModal
+        visible={showCashModal}
+        fareAmount={trip.finalFare ?? trip.estimatedFare ?? 0}
+        currency={trip.currency ?? "GH₵"}
+        onConfirm={(data) => {
+          setShowCashModal(false);
+          onAdvance(data);
+        }}
+        onCancel={() => setShowCashModal(false)}
       />
 
       {/* ─── Comprehensive Trip Details Modal ────────────────────── */}
