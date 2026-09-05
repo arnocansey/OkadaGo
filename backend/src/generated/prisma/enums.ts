@@ -89,6 +89,27 @@ export const JobPreference = {
 export type JobPreference = (typeof JobPreference)[keyof typeof JobPreference]
 
 
+export const RiderTripStatus = {
+  IDLE: 'IDLE',
+  OFFERED: 'OFFERED',
+  ARRIVING: 'ARRIVING',
+  ARRIVED: 'ARRIVED',
+  ON_TRIP: 'ON_TRIP'
+} as const
+
+export type RiderTripStatus = (typeof RiderTripStatus)[keyof typeof RiderTripStatus]
+
+
+export const OfferStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
+  EXPIRED: 'EXPIRED'
+} as const
+
+export type OfferStatus = (typeof OfferStatus)[keyof typeof OfferStatus]
+
+
 export const RideStatus = {
   SCHEDULED: 'SCHEDULED',
   SEARCHING: 'SEARCHING',

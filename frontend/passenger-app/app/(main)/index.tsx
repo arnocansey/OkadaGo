@@ -2,8 +2,10 @@ import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   Briefcase,
+  Calendar,
   Clock,
   CreditCard,
   Home,
@@ -11,8 +13,11 @@ import {
   Navigation,
   Package,
   Search,
+  ShieldCheck,
   Star,
   User,
+  X,
+  Zap,
 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { AppMap } from "@/components/AppMap";
@@ -38,6 +43,35 @@ export default function HomeScreen() {
   const [nearbyRiders, setNearbyRiders] = useState<
     Array<{ id: string; latitude: number; longitude: number; distanceKm: number; etaMinutes: number }>
   >([]);
+  const [kycDismissed, setKycDismissed] = useState(false);
+
+  /* ─── Check KYC Banner Dismissed State ────────────────────── */
+  useEffect(() => {
+    AsyncStorage.getItem("kyc_banner_dismissed")
+      .then((val) => {
+        if (val === "true") setKycDismissed(true);
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleDismissKyc = useCallback(() => {
+    setKycDismissed(true);
+    AsyncStorage.setItem("kyc_banner_dismissed", "true").catch(() => {});
+  }, []);
+
+  /* ─── Personalized Greeting & Name ────────────────────────── */
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  }, []);
+
+  const firstName = useMemo(() => {
+    const name = session?.user?.fullName?.trim();
+    if (!name) return "Kwame";
+    return name.split(" ")[0];
+  }, [session?.user?.fullName]);
 
   /* ─── Fetch saved places ──────────────────────────────────── */
   useEffect(() => {
@@ -201,10 +235,16 @@ export default function HomeScreen() {
           color: "#000000",
         },
         logoWordmark: {
-          fontSize: 20,
+          fontSize: 18,
           fontWeight: "800",
           color: colors.text,
           letterSpacing: -0.3,
+        },
+        greetingText: {
+          fontSize: 12,
+          fontWeight: "600",
+          color: colors.textSecondary,
+          marginBottom: 1,
         },
         avatarBtn: {
           width: 38,
@@ -402,37 +442,140 @@ export default function HomeScreen() {
           maxWidth: 110,
         },
 
-        /* ─── Quick Actions ────────────────────────────────── */
-        quickActions: {
+        /* ─── Identity Verification Banner ─────────────────── */
+        kycBanner: {
           flexDirection: "row",
+          alignItems: "center",
+          backgroundColor: isDark ? "rgba(22, 163, 74, 0.15)" : "#F0FDF4",
+          borderRadius: 14,
+          paddingHorizontal: 12,
+          paddingVertical: 9,
+          marginBottom: 10,
+          gap: 10,
+          borderWidth: 1,
+          borderColor: isDark ? "rgba(34, 197, 94, 0.25)" : "#BBF7D0",
+        },
+        kycIconBox: {
+          width: 30,
+          height: 30,
+          borderRadius: 8,
+          backgroundColor: isDark ? "rgba(34, 197, 94, 0.2)" : "#DCFCE7",
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        kycTitle: {
+          fontSize: 12,
+          fontWeight: "700",
+          color: isDark ? "#4ADE80" : "#15803D",
+        },
+        kycSubtitle: {
+          fontSize: 10,
+          fontWeight: "500",
+          color: colors.textSecondary,
+        },
+        kycDismissBtn: {
+          padding: 4,
+        },
+
+        /* ─── "Later" Pill in Search Bar ─────────────────────── */
+        laterPill: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 4,
+          backgroundColor: isDark ? "rgba(255,255,255,0.12)" : "#E5E7EB",
+          paddingHorizontal: 9,
+          paddingVertical: 5,
+          borderRadius: 14,
+        },
+        laterText: {
+          fontSize: 11,
+          fontWeight: "700",
+          color: colors.text,
+        },
+
+        /* ─── 2x2 Service Grid Tiles ─────────────────────────── */
+        serviceGrid: {
           gap: 8,
           marginTop: 12,
           paddingTop: 10,
           borderTopWidth: 1,
           borderTopColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
         },
-        quickAction: {
+        serviceGridRow: {
+          flexDirection: "row",
+          gap: 8,
+        },
+        serviceTile: {
           flex: 1,
           flexDirection: "row",
           alignItems: "center",
-          justifyContent: "center",
-          gap: 5,
-          paddingVertical: 10,
-          borderRadius: 12,
-          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "#F9FAFB",
+          borderRadius: 14,
+          padding: 10,
+          gap: 10,
+          borderWidth: 1.5,
+          borderColor: isDark ? "rgba(255,255,255,0.06)" : "#E5E7EB",
         },
-        quickActionActive: {
-          backgroundColor: isDark ? "rgba(250, 204, 21, 0.12)" : "rgba(250, 204, 21, 0.1)",
-          borderWidth: 1,
+        serviceTileActive: {
           borderColor: colors.primary,
+          backgroundColor: isDark ? "rgba(250, 204, 21, 0.08)" : "rgba(250, 204, 21, 0.06)",
         },
-        quickActionText: {
+        serviceIconBox: {
+          width: 36,
+          height: 36,
+          borderRadius: 10,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        serviceTileContent: {
+          flex: 1,
+          gap: 2,
+        },
+        serviceTileTitle: {
           fontSize: 12,
-          fontWeight: "600",
+          fontWeight: "700",
+          color: colors.text,
+        },
+        serviceTileSubtitle: {
+          fontSize: 10,
+          fontWeight: "500",
           color: colors.textMuted,
         },
-        quickActionTextActive: {
-          color: colors.primary,
+
+        /* ─── Recent Locations List ──────────────────────────── */
+        recentsSection: {
+          marginTop: 10,
+          paddingTop: 8,
+          borderTopWidth: 1,
+          borderTopColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          gap: 4,
+        },
+        recentRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          paddingVertical: 6,
+          gap: 10,
+        },
+        recentIconBox: {
+          width: 30,
+          height: 30,
+          borderRadius: 15,
+          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "#F3F4F6",
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        recentTextContainer: {
+          flex: 1,
+          gap: 1,
+        },
+        recentTitle: {
+          fontSize: 12,
+          fontWeight: "600",
+          color: colors.text,
+        },
+        recentSubtitle: {
+          fontSize: 10,
+          color: colors.textMuted,
         },
 
         /* ─── Floating Nav Dock ────────────────────────────── */
@@ -504,7 +647,14 @@ export default function HomeScreen() {
           <View style={s.logoMark}>
             <Text style={s.logoMarkText}>O</Text>
           </View>
-          <Text style={s.logoWordmark}>OkadaGo</Text>
+          <View>
+            {session?.user ? (
+              <Text style={s.greetingText}>
+                {greeting}, {firstName} 👋
+              </Text>
+            ) : null}
+            <Text style={s.logoWordmark}>OkadaGo</Text>
+          </View>
         </View>
         <Pressable
           style={s.avatarBtn}
@@ -558,6 +708,30 @@ export default function HomeScreen() {
           )}
 
           <View style={s.searchCardInner}>
+            {/* Identity verification banner (Feature 1) */}
+            {!kycDismissed && session?.user && session.user.isPhoneVerified === false && (
+              <View style={s.kycBanner}>
+                <View style={s.kycIconBox}>
+                  <ShieldCheck size={18} color="#16A34A" />
+                </View>
+                <Pressable
+                  style={{ flex: 1 }}
+                  onPress={() => router.push("/(main)/profile")}
+                >
+                  <Text style={s.kycTitle}>Verify your identity</Text>
+                  <Text style={s.kycSubtitle}>This helps keep rides safe and secure</Text>
+                </Pressable>
+                <Pressable
+                  style={s.kycDismissBtn}
+                  onPress={handleDismissKyc}
+                  hitSlop={8}
+                  accessibilityLabel="Dismiss verification notice"
+                >
+                  <X size={15} color={colors.textMuted} />
+                </Pressable>
+              </View>
+            )}
+
             {/* Pickup */}
             <View style={s.pickupRow}>
               <View style={s.pickupDot} />
@@ -572,7 +746,7 @@ export default function HomeScreen() {
               <View style={s.routeDash} />
             </View>
 
-            {/* Destination field */}
+            {/* Destination field with Later pill (Feature 4) */}
             <Pressable
               style={s.destField}
               onPress={() => setSearchOpen(true)}
@@ -580,75 +754,151 @@ export default function HomeScreen() {
               accessibilityLabel="Search destination"
             >
               <View style={s.destIcon} />
-              <Text style={s.destText}>Where are you going?</Text>
-              <Search size={18} color={colors.textMuted} />
+              <Text style={s.destText} numberOfLines={1}>
+                Where are you going?
+              </Text>
+              <Pressable
+                style={s.laterPill}
+                onPress={(e) => {
+                  e.stopPropagation?.();
+                  router.push({
+                    pathname: "/ride/book",
+                    params: { mode: "ride", schedule: "true" },
+                  });
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Schedule ride for later"
+              >
+                <Clock size={12} color={colors.text} />
+                <Text style={s.laterText}>Later</Text>
+              </Pressable>
             </Pressable>
 
-            {/* 1-Tap Quick Destination Chips (Home, Work, Recents) */}
-            <View style={s.quickChipsRow}>
-              {homePlace && (
+            {/* 1-Tap Saved Shortcuts (Home / Work) */}
+            {(homePlace || workPlace) && (
+              <View style={s.quickChipsRow}>
+                {homePlace && (
+                  <Pressable
+                    style={s.quickDestChip}
+                    onPress={() => handleSelectSavedPlace(homePlace)}
+                  >
+                    <Home size={12} color={colors.primary} />
+                    <Text style={s.quickDestText} numberOfLines={1}>Home</Text>
+                  </Pressable>
+                )}
+                {workPlace && (
+                  <Pressable
+                    style={s.quickDestChip}
+                    onPress={() => handleSelectSavedPlace(workPlace)}
+                  >
+                    <Briefcase size={12} color={colors.primary} />
+                    <Text style={s.quickDestText} numberOfLines={1}>Work</Text>
+                  </Pressable>
+                )}
+              </View>
+            )}
+
+            {/* 2×2 Service Grid (Feature 3) */}
+            <View style={s.serviceGrid}>
+              <View style={s.serviceGridRow}>
                 <Pressable
-                  style={s.quickDestChip}
-                  onPress={() => handleSelectSavedPlace(homePlace)}
+                  style={[s.serviceTile, s.serviceTileActive]}
+                  onPress={() => handleQuickAction("ride")}
+                  accessibilityRole="button"
+                  accessibilityLabel="Go Now"
                 >
-                  <Home size={12} color={colors.primary} />
-                  <Text style={s.quickDestText} numberOfLines={1}>Home</Text>
+                  <View style={[s.serviceIconBox, { backgroundColor: "rgba(250, 204, 21, 0.16)" }]}>
+                    <Zap size={18} color={colors.primary} />
+                  </View>
+                  <View style={s.serviceTileContent}>
+                    <Text style={s.serviceTileTitle}>Go Now</Text>
+                    <Text style={s.serviceTileSubtitle}>Let's get moving</Text>
+                  </View>
                 </Pressable>
-              )}
-              {workPlace && (
+
                 <Pressable
-                  style={s.quickDestChip}
-                  onPress={() => handleSelectSavedPlace(workPlace)}
+                  style={s.serviceTile}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/ride/book",
+                      params: { mode: "ride", schedule: "true" },
+                    })
+                  }
+                  accessibilityRole="button"
+                  accessibilityLabel="Schedule ride"
                 >
-                  <Briefcase size={12} color={colors.primary} />
-                  <Text style={s.quickDestText} numberOfLines={1}>Work</Text>
+                  <View style={[s.serviceIconBox, { backgroundColor: "rgba(59, 130, 246, 0.14)" }]}>
+                    <Calendar size={18} color="#2563EB" />
+                  </View>
+                  <View style={s.serviceTileContent}>
+                    <Text style={s.serviceTileTitle}>Schedule</Text>
+                    <Text style={s.serviceTileSubtitle}>Book ahead</Text>
+                  </View>
                 </Pressable>
-              )}
-              {recentDestinations.slice(0, 2).map((dest, idx) => (
+              </View>
+
+              <View style={s.serviceGridRow}>
                 <Pressable
-                  key={idx}
-                  style={s.quickDestChip}
-                  onPress={() => handleSelectDestination(dest)}
+                  style={s.serviceTile}
+                  onPress={() => handleQuickAction("send")}
+                  accessibilityRole="button"
+                  accessibilityLabel="Send parcel"
                 >
-                  <Clock size={12} color={colors.textMuted} />
-                  <Text style={s.quickDestText} numberOfLines={1}>
-                    {dest.address.split(",")[0]}
-                  </Text>
+                  <View style={[s.serviceIconBox, { backgroundColor: "rgba(249, 115, 22, 0.14)" }]}>
+                    <Package size={18} color="#EA580C" />
+                  </View>
+                  <View style={s.serviceTileContent}>
+                    <Text style={s.serviceTileTitle}>Send Parcel</Text>
+                    <Text style={s.serviceTileSubtitle}>Quick courier</Text>
+                  </View>
                 </Pressable>
-              ))}
+
+                <Pressable
+                  style={s.serviceTile}
+                  onPress={() => setSearchOpen(true)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Saved places"
+                >
+                  <View style={[s.serviceIconBox, { backgroundColor: "rgba(34, 197, 94, 0.14)" }]}>
+                    <Star size={18} color="#16A34A" />
+                  </View>
+                  <View style={s.serviceTileContent}>
+                    <Text style={s.serviceTileTitle}>Saved Places</Text>
+                    <Text style={s.serviceTileSubtitle}>Your favourites</Text>
+                  </View>
+                </Pressable>
+              </View>
             </View>
 
-            {/* Quick actions */}
-            <View style={s.quickActions}>
-              <Pressable
-                style={[s.quickAction, s.quickActionActive]}
-                onPress={() => handleQuickAction("ride")}
-              >
-                <Navigation size={13} color={colors.primary} />
-                <Text style={[s.quickActionText, s.quickActionTextActive]}>Go Now</Text>
-              </Pressable>
-              <Pressable
-                style={s.quickAction}
-                onPress={() => handleQuickAction("send")}
-              >
-                <Package size={13} color={colors.textMuted} />
-                <Text style={s.quickActionText}>Send</Text>
-              </Pressable>
-              <Pressable
-                style={s.quickAction}
-                onPress={() => router.push({ pathname: "/ride/book", params: { mode: "ride", schedule: "true" } })}
-              >
-                <Clock size={13} color={colors.textMuted} />
-                <Text style={s.quickActionText}>Schedule</Text>
-              </Pressable>
-              <Pressable
-                style={s.quickAction}
-                onPress={() => setSearchOpen(true)}
-              >
-                <Star size={13} color={colors.textMuted} />
-                <Text style={s.quickActionText}>Saved</Text>
-              </Pressable>
-            </View>
+            {/* Standalone Recent Locations List (Feature 5) */}
+            {recentDestinations.length > 0 && (
+              <View style={s.recentsSection}>
+                {recentDestinations.slice(0, 3).map((item, idx) => {
+                  const parts = item.address.split(",");
+                  const mainName = parts[0]?.trim() || item.address;
+                  const locality = parts.slice(1).join(",").trim() || "Accra, Ghana";
+                  return (
+                    <Pressable
+                      key={`${item.latitude}-${item.longitude}-${idx}`}
+                      style={s.recentRow}
+                      onPress={() => handleSelectDestination(item)}
+                    >
+                      <View style={s.recentIconBox}>
+                        <Clock size={15} color={colors.textMuted} />
+                      </View>
+                      <View style={s.recentTextContainer}>
+                        <Text style={s.recentTitle} numberOfLines={1}>
+                          {mainName}
+                        </Text>
+                        <Text style={s.recentSubtitle} numberOfLines={1}>
+                          {locality}
+                        </Text>
+                      </View>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            )}
           </View>
         </View>
       )}

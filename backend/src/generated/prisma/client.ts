@@ -278,3 +278,8 @@ export type AssignmentRule = Prisma.AssignmentRuleModel
  * 
  */
 export type AssignmentAuditLog = Prisma.AssignmentAuditLogModel
+/**
+ * Model RideDispatchOffer
+ * 
+ */
+export type RideDispatchOffer = Prisma.RideDispatchOfferModel

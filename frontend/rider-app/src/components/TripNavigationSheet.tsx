@@ -219,6 +219,10 @@ export function TripNavigationSheet({
 
   function handleAction() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (isArrived) {
+      setShowPinSheet(true);
+      return;
+    }
     onAdvance();
   }
 
@@ -1132,6 +1136,19 @@ export function TripNavigationSheet({
         visible={showChatModal}
         tripId={trip.id}
         onClose={() => setShowChatModal(false)}
+      />
+
+      {/* ─── PIN Verification Sheet ─────────────────────────────── */}
+      <PinVerificationSheet
+        visible={showPinSheet}
+        tripId={trip.id}
+        passengerName={trip.passengerName}
+        onVerify={onVerifyPin}
+        onVerified={handlePinVerified}
+        onSkip={() => {
+          setShowPinSheet(false);
+          onAdvance();
+        }}
       />
     </View>
   );

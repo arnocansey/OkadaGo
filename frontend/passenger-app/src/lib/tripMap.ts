@@ -26,7 +26,7 @@ export function markersForRide(ride: Ride, palette: ThemeColors = defaultColors)
   const riderLon = coord(ride.rider?.currentLongitude);
 
   if (pickupLat != null && pickupLon != null) {
-    markers.push({ id: "pickup", latitude: pickupLat, longitude: pickupLon, title: "Pickup", pinColor: palette.mapMarkerPickup });
+    markers.push({ id: "pickup", latitude: pickupLat, longitude: pickupLon, title: "Pickup", pinColor: palette.mapMarkerPickup, type: "pickup" });
   }
   if (destLat != null && destLon != null) {
     markers.push({ id: "destination", latitude: destLat, longitude: destLon, title: "Destination", pinColor: palette.mapMarkerDestination, type: "destination" });

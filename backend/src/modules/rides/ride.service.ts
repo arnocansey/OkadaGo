@@ -9,6 +9,7 @@ import {
   PaymentStatus,
   RideStatus,
   RiderApprovalStatus,
+  RiderTripStatus,
   VehicleType,
   WalletTransactionStatus,
   WalletTransactionType,
@@ -16,6 +17,7 @@ import {
 } from "../../generated/prisma/enums.js";
 import { FareService } from "../pricing/fare.service.js";
 import { MatchingService } from "../matching/matching.service.js";
+import { dispatchService } from "../matching/dispatch.service.js";
 import { pushService } from "../notifications/push.service.js";
 import { hasSmsConfig } from "../notifications/sms.service.js";
 import { promotionService } from "../promotions/promotion.service.js";
@@ -648,6 +650,8 @@ export class RideService {
       waitingMinutes: input.waitingMinutes
     });
 
+    const safetyPin = dispatchService.generateSafetyPin();
+
     const ride = await prisma.$transaction(async (tx) => {
       const createdRide = await tx.ride.create({
         data: {
@@ -655,6 +659,8 @@ export class RideService {
           riderId: selectedRider?.id,
           serviceZoneId: serviceZone.id,
           promoCodeId,
+          safetyPin,
+          dispatchRound: isFutureSchedule ? 0 : 1,
           status: isFutureSchedule
             ? RideStatus.SCHEDULED
             : selectedRider
@@ -782,28 +788,9 @@ export class RideService {
         passengerUserId: passenger.userId
       });
 
-      const candidateRiderUserIds = Array.from(
-        new Set(
-          rankedCandidates
-            .map((c) => c.riderId)
-            .map((riderId) => riders.find((r) => r.id === riderId)?.userId)
-            .filter((id): id is string => Boolean(id))
-        )
-      );
-
-      if (candidateRiderUserIds.length > 0) {
-        emitRideRequestToRiders({
-          ride: realtimeRide,
-          riderUserIds: candidateRiderUserIds
-        });
-
-        for (const riderUserId of candidateRiderUserIds) {
-          void pushService.sendToUser(riderUserId, {
-            title: "New ride request nearby",
-            body: `Pickup: ${ride.pickupAddress}`,
-            data: { rideId: ride.id, type: "ride_assigned" }
-          });
-        }
+      if (!isFutureSchedule) {
+        // Trigger multi-round intelligent dispatch escalation
+        void dispatchService.dispatchRide(ride.id, 1);
       }
     }
 
@@ -1356,6 +1343,29 @@ export class RideService {
           }
         }
       });
+
+      const activeRiderId = assignedRider?.id ?? ride.riderId;
+      if (activeRiderId) {
+        let nextTripStatus: RiderTripStatus | undefined;
+        if (input.nextStatus === "arriving") nextTripStatus = RiderTripStatus.ARRIVING;
+        if (input.nextStatus === "arrived") nextTripStatus = RiderTripStatus.ARRIVED;
+        if (input.nextStatus === "started") nextTripStatus = RiderTripStatus.ON_TRIP;
+        if (input.nextStatus === "completed" || input.nextStatus === "cancelled") nextTripStatus = RiderTripStatus.IDLE;
+
+        if (nextTripStatus) {
+          await tx.riderProfile.update({
+            where: { id: activeRiderId },
+            data: {
+              tripStatus: nextTripStatus,
+              ...(input.nextStatus === "completed" ? { onlineStatus: true } : {})
+            }
+          });
+        }
+      }
+
+      if (input.nextStatus === "cancelled") {
+        void dispatchService.cancelDispatch(rideId);
+      }
 
       if (input.nextStatus === "completed") {
         const finalAmount = Number(updatedRide.finalFare ?? updatedRide.estimatedFare ?? 0);

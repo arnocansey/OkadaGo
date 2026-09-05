@@ -363,6 +363,14 @@ export function RequestDashboardScreen({
                       </div>
                       <div className="admin-request-card-meta">
                         <span>Rider: {ride.rider?.user.fullName ?? "Unassigned"}</span>
+                        {((ride as any).dispatchRound ?? 0) > 0 && isActionableStatus(ride.status) && (
+                          <span style={{ color: "#EAB308", fontWeight: 600 }}>
+                            Round {(ride as any).dispatchRound} ({Number((ride as any).dispatchRound) === 1 ? "1.2km" : Number((ride as any).dispatchRound) === 2 ? "2.5km" : "4.0km"})
+                          </span>
+                        )}
+                        {(ride as any).safetyPin && (
+                          <span style={{ fontWeight: 600 }}>PIN: {(ride as any).safetyPin}</span>
+                        )}
                         <span>
                           Fare:{" "}
                           {formatMoney(

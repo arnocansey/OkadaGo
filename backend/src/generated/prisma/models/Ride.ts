@@ -27,6 +27,7 @@ export type AggregateRide = {
 }
 
 export type RideAvgAggregateOutputType = {
+  dispatchRound: number | null
   pickupLatitude: runtime.Decimal | null
   pickupLongitude: runtime.Decimal | null
   destinationLatitude: runtime.Decimal | null
@@ -47,6 +48,7 @@ export type RideAvgAggregateOutputType = {
 }
 
 export type RideSumAggregateOutputType = {
+  dispatchRound: number | null
   pickupLatitude: runtime.Decimal | null
   pickupLongitude: runtime.Decimal | null
   destinationLatitude: runtime.Decimal | null
@@ -76,6 +78,11 @@ export type RideMinAggregateOutputType = {
   paymentMethod: $Enums.PaymentMethod | null
   cancellationParty: $Enums.CancellationParty | null
   cancellationReason: string | null
+  safetyPin: string | null
+  pinVerifiedAt: Date | null
+  dispatchRound: number | null
+  currentOfferRiderId: string | null
+  offerExpiresAt: Date | null
   requestedAt: Date | null
   scheduledFor: Date | null
   assignedAt: Date | null
@@ -122,6 +129,11 @@ export type RideMaxAggregateOutputType = {
   paymentMethod: $Enums.PaymentMethod | null
   cancellationParty: $Enums.CancellationParty | null
   cancellationReason: string | null
+  safetyPin: string | null
+  pinVerifiedAt: Date | null
+  dispatchRound: number | null
+  currentOfferRiderId: string | null
+  offerExpiresAt: Date | null
   requestedAt: Date | null
   scheduledFor: Date | null
   assignedAt: Date | null
@@ -168,6 +180,11 @@ export type RideCountAggregateOutputType = {
   paymentMethod: number
   cancellationParty: number
   cancellationReason: number
+  safetyPin: number
+  pinVerifiedAt: number
+  dispatchRound: number
+  currentOfferRiderId: number
+  offerExpiresAt: number
   requestedAt: number
   scheduledFor: number
   assignedAt: number
@@ -207,6 +224,7 @@ export type RideCountAggregateOutputType = {
 
 
 export type RideAvgAggregateInputType = {
+  dispatchRound?: true
   pickupLatitude?: true
   pickupLongitude?: true
   destinationLatitude?: true
@@ -227,6 +245,7 @@ export type RideAvgAggregateInputType = {
 }
 
 export type RideSumAggregateInputType = {
+  dispatchRound?: true
   pickupLatitude?: true
   pickupLongitude?: true
   destinationLatitude?: true
@@ -256,6 +275,11 @@ export type RideMinAggregateInputType = {
   paymentMethod?: true
   cancellationParty?: true
   cancellationReason?: true
+  safetyPin?: true
+  pinVerifiedAt?: true
+  dispatchRound?: true
+  currentOfferRiderId?: true
+  offerExpiresAt?: true
   requestedAt?: true
   scheduledFor?: true
   assignedAt?: true
@@ -302,6 +326,11 @@ export type RideMaxAggregateInputType = {
   paymentMethod?: true
   cancellationParty?: true
   cancellationReason?: true
+  safetyPin?: true
+  pinVerifiedAt?: true
+  dispatchRound?: true
+  currentOfferRiderId?: true
+  offerExpiresAt?: true
   requestedAt?: true
   scheduledFor?: true
   assignedAt?: true
@@ -348,6 +377,11 @@ export type RideCountAggregateInputType = {
   paymentMethod?: true
   cancellationParty?: true
   cancellationReason?: true
+  safetyPin?: true
+  pinVerifiedAt?: true
+  dispatchRound?: true
+  currentOfferRiderId?: true
+  offerExpiresAt?: true
   requestedAt?: true
   scheduledFor?: true
   assignedAt?: true
@@ -481,6 +515,11 @@ export type RideGroupByOutputType = {
   paymentMethod: $Enums.PaymentMethod | null
   cancellationParty: $Enums.CancellationParty | null
   cancellationReason: string | null
+  safetyPin: string
+  pinVerifiedAt: Date | null
+  dispatchRound: number
+  currentOfferRiderId: string | null
+  offerExpiresAt: Date | null
   requestedAt: Date
   scheduledFor: Date | null
   assignedAt: Date | null
@@ -550,6 +589,11 @@ export type RideWhereInput = {
   paymentMethod?: Prisma.EnumPaymentMethodNullableFilter<"Ride"> | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.EnumCancellationPartyNullableFilter<"Ride"> | $Enums.CancellationParty | null
   cancellationReason?: Prisma.StringNullableFilter<"Ride"> | string | null
+  safetyPin?: Prisma.StringFilter<"Ride"> | string
+  pinVerifiedAt?: Prisma.DateTimeNullableFilter<"Ride"> | Date | string | null
+  dispatchRound?: Prisma.IntFilter<"Ride"> | number
+  currentOfferRiderId?: Prisma.StringNullableFilter<"Ride"> | string | null
+  offerExpiresAt?: Prisma.DateTimeNullableFilter<"Ride"> | Date | string | null
   requestedAt?: Prisma.DateTimeFilter<"Ride"> | Date | string
   scheduledFor?: Prisma.DateTimeNullableFilter<"Ride"> | Date | string | null
   assignedAt?: Prisma.DateTimeNullableFilter<"Ride"> | Date | string | null
@@ -598,6 +642,7 @@ export type RideWhereInput = {
   incidents?: Prisma.IncidentListRelationFilter
   promoRedemptions?: Prisma.PromoRedemptionListRelationFilter
   assignmentAuditLogs?: Prisma.AssignmentAuditLogListRelationFilter
+  dispatchOffers?: Prisma.RideDispatchOfferListRelationFilter
 }
 
 export type RideOrderByWithRelationInput = {
@@ -610,6 +655,11 @@ export type RideOrderByWithRelationInput = {
   paymentMethod?: Prisma.SortOrderInput | Prisma.SortOrder
   cancellationParty?: Prisma.SortOrderInput | Prisma.SortOrder
   cancellationReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  safetyPin?: Prisma.SortOrder
+  pinVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  dispatchRound?: Prisma.SortOrder
+  currentOfferRiderId?: Prisma.SortOrderInput | Prisma.SortOrder
+  offerExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   requestedAt?: Prisma.SortOrder
   scheduledFor?: Prisma.SortOrderInput | Prisma.SortOrder
   assignedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -658,6 +708,7 @@ export type RideOrderByWithRelationInput = {
   incidents?: Prisma.IncidentOrderByRelationAggregateInput
   promoRedemptions?: Prisma.PromoRedemptionOrderByRelationAggregateInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogOrderByRelationAggregateInput
+  dispatchOffers?: Prisma.RideDispatchOfferOrderByRelationAggregateInput
 }
 
 export type RideWhereUniqueInput = Prisma.AtLeast<{
@@ -673,6 +724,11 @@ export type RideWhereUniqueInput = Prisma.AtLeast<{
   paymentMethod?: Prisma.EnumPaymentMethodNullableFilter<"Ride"> | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.EnumCancellationPartyNullableFilter<"Ride"> | $Enums.CancellationParty | null
   cancellationReason?: Prisma.StringNullableFilter<"Ride"> | string | null
+  safetyPin?: Prisma.StringFilter<"Ride"> | string
+  pinVerifiedAt?: Prisma.DateTimeNullableFilter<"Ride"> | Date | string | null
+  dispatchRound?: Prisma.IntFilter<"Ride"> | number
+  currentOfferRiderId?: Prisma.StringNullableFilter<"Ride"> | string | null
+  offerExpiresAt?: Prisma.DateTimeNullableFilter<"Ride"> | Date | string | null
   requestedAt?: Prisma.DateTimeFilter<"Ride"> | Date | string
   scheduledFor?: Prisma.DateTimeNullableFilter<"Ride"> | Date | string | null
   assignedAt?: Prisma.DateTimeNullableFilter<"Ride"> | Date | string | null
@@ -721,6 +777,7 @@ export type RideWhereUniqueInput = Prisma.AtLeast<{
   incidents?: Prisma.IncidentListRelationFilter
   promoRedemptions?: Prisma.PromoRedemptionListRelationFilter
   assignmentAuditLogs?: Prisma.AssignmentAuditLogListRelationFilter
+  dispatchOffers?: Prisma.RideDispatchOfferListRelationFilter
 }, "id">
 
 export type RideOrderByWithAggregationInput = {
@@ -733,6 +790,11 @@ export type RideOrderByWithAggregationInput = {
   paymentMethod?: Prisma.SortOrderInput | Prisma.SortOrder
   cancellationParty?: Prisma.SortOrderInput | Prisma.SortOrder
   cancellationReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  safetyPin?: Prisma.SortOrder
+  pinVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  dispatchRound?: Prisma.SortOrder
+  currentOfferRiderId?: Prisma.SortOrderInput | Prisma.SortOrder
+  offerExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   requestedAt?: Prisma.SortOrder
   scheduledFor?: Prisma.SortOrderInput | Prisma.SortOrder
   assignedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -787,6 +849,11 @@ export type RideScalarWhereWithAggregatesInput = {
   paymentMethod?: Prisma.EnumPaymentMethodNullableWithAggregatesFilter<"Ride"> | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.EnumCancellationPartyNullableWithAggregatesFilter<"Ride"> | $Enums.CancellationParty | null
   cancellationReason?: Prisma.StringNullableWithAggregatesFilter<"Ride"> | string | null
+  safetyPin?: Prisma.StringWithAggregatesFilter<"Ride"> | string
+  pinVerifiedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Ride"> | Date | string | null
+  dispatchRound?: Prisma.IntWithAggregatesFilter<"Ride"> | number
+  currentOfferRiderId?: Prisma.StringNullableWithAggregatesFilter<"Ride"> | string | null
+  offerExpiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Ride"> | Date | string | null
   requestedAt?: Prisma.DateTimeWithAggregatesFilter<"Ride"> | Date | string
   scheduledFor?: Prisma.DateTimeNullableWithAggregatesFilter<"Ride"> | Date | string | null
   assignedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Ride"> | Date | string | null
@@ -829,6 +896,11 @@ export type RideCreateInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -877,6 +949,7 @@ export type RideCreateInput = {
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateInput = {
@@ -889,6 +962,11 @@ export type RideUncheckedCreateInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -933,6 +1011,7 @@ export type RideUncheckedCreateInput = {
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideUpdateInput = {
@@ -941,6 +1020,11 @@ export type RideUpdateInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -989,6 +1073,7 @@ export type RideUpdateInput = {
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateInput = {
@@ -1001,6 +1086,11 @@ export type RideUncheckedUpdateInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1045,6 +1135,7 @@ export type RideUncheckedUpdateInput = {
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideCreateManyInput = {
@@ -1057,6 +1148,11 @@ export type RideCreateManyInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -1099,6 +1195,11 @@ export type RideUpdateManyMutationInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1145,6 +1246,11 @@ export type RideUncheckedUpdateManyInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1201,6 +1307,11 @@ export type RideCountOrderByAggregateInput = {
   paymentMethod?: Prisma.SortOrder
   cancellationParty?: Prisma.SortOrder
   cancellationReason?: Prisma.SortOrder
+  safetyPin?: Prisma.SortOrder
+  pinVerifiedAt?: Prisma.SortOrder
+  dispatchRound?: Prisma.SortOrder
+  currentOfferRiderId?: Prisma.SortOrder
+  offerExpiresAt?: Prisma.SortOrder
   requestedAt?: Prisma.SortOrder
   scheduledFor?: Prisma.SortOrder
   assignedAt?: Prisma.SortOrder
@@ -1238,6 +1349,7 @@ export type RideCountOrderByAggregateInput = {
 }
 
 export type RideAvgOrderByAggregateInput = {
+  dispatchRound?: Prisma.SortOrder
   pickupLatitude?: Prisma.SortOrder
   pickupLongitude?: Prisma.SortOrder
   destinationLatitude?: Prisma.SortOrder
@@ -1267,6 +1379,11 @@ export type RideMaxOrderByAggregateInput = {
   paymentMethod?: Prisma.SortOrder
   cancellationParty?: Prisma.SortOrder
   cancellationReason?: Prisma.SortOrder
+  safetyPin?: Prisma.SortOrder
+  pinVerifiedAt?: Prisma.SortOrder
+  dispatchRound?: Prisma.SortOrder
+  currentOfferRiderId?: Prisma.SortOrder
+  offerExpiresAt?: Prisma.SortOrder
   requestedAt?: Prisma.SortOrder
   scheduledFor?: Prisma.SortOrder
   assignedAt?: Prisma.SortOrder
@@ -1313,6 +1430,11 @@ export type RideMinOrderByAggregateInput = {
   paymentMethod?: Prisma.SortOrder
   cancellationParty?: Prisma.SortOrder
   cancellationReason?: Prisma.SortOrder
+  safetyPin?: Prisma.SortOrder
+  pinVerifiedAt?: Prisma.SortOrder
+  dispatchRound?: Prisma.SortOrder
+  currentOfferRiderId?: Prisma.SortOrder
+  offerExpiresAt?: Prisma.SortOrder
   requestedAt?: Prisma.SortOrder
   scheduledFor?: Prisma.SortOrder
   assignedAt?: Prisma.SortOrder
@@ -1350,6 +1472,7 @@ export type RideMinOrderByAggregateInput = {
 }
 
 export type RideSumOrderByAggregateInput = {
+  dispatchRound?: Prisma.SortOrder
   pickupLatitude?: Prisma.SortOrder
   pickupLongitude?: Prisma.SortOrder
   destinationLatitude?: Prisma.SortOrder
@@ -1707,12 +1830,31 @@ export type RideUpdateOneRequiredWithoutAssignmentAuditLogsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.RideUpdateToOneWithWhereWithoutAssignmentAuditLogsInput, Prisma.RideUpdateWithoutAssignmentAuditLogsInput>, Prisma.RideUncheckedUpdateWithoutAssignmentAuditLogsInput>
 }
 
+export type RideCreateNestedOneWithoutDispatchOffersInput = {
+  create?: Prisma.XOR<Prisma.RideCreateWithoutDispatchOffersInput, Prisma.RideUncheckedCreateWithoutDispatchOffersInput>
+  connectOrCreate?: Prisma.RideCreateOrConnectWithoutDispatchOffersInput
+  connect?: Prisma.RideWhereUniqueInput
+}
+
+export type RideUpdateOneRequiredWithoutDispatchOffersNestedInput = {
+  create?: Prisma.XOR<Prisma.RideCreateWithoutDispatchOffersInput, Prisma.RideUncheckedCreateWithoutDispatchOffersInput>
+  connectOrCreate?: Prisma.RideCreateOrConnectWithoutDispatchOffersInput
+  upsert?: Prisma.RideUpsertWithoutDispatchOffersInput
+  connect?: Prisma.RideWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.RideUpdateToOneWithWhereWithoutDispatchOffersInput, Prisma.RideUpdateWithoutDispatchOffersInput>, Prisma.RideUncheckedUpdateWithoutDispatchOffersInput>
+}
+
 export type RideCreateWithoutPassengerInput = {
   id?: string
   status?: $Enums.RideStatus
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -1760,6 +1902,7 @@ export type RideCreateWithoutPassengerInput = {
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutPassengerInput = {
@@ -1771,6 +1914,11 @@ export type RideUncheckedCreateWithoutPassengerInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -1815,6 +1963,7 @@ export type RideUncheckedCreateWithoutPassengerInput = {
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutPassengerInput = {
@@ -1856,6 +2005,11 @@ export type RideScalarWhereInput = {
   paymentMethod?: Prisma.EnumPaymentMethodNullableFilter<"Ride"> | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.EnumCancellationPartyNullableFilter<"Ride"> | $Enums.CancellationParty | null
   cancellationReason?: Prisma.StringNullableFilter<"Ride"> | string | null
+  safetyPin?: Prisma.StringFilter<"Ride"> | string
+  pinVerifiedAt?: Prisma.DateTimeNullableFilter<"Ride"> | Date | string | null
+  dispatchRound?: Prisma.IntFilter<"Ride"> | number
+  currentOfferRiderId?: Prisma.StringNullableFilter<"Ride"> | string | null
+  offerExpiresAt?: Prisma.DateTimeNullableFilter<"Ride"> | Date | string | null
   requestedAt?: Prisma.DateTimeFilter<"Ride"> | Date | string
   scheduledFor?: Prisma.DateTimeNullableFilter<"Ride"> | Date | string | null
   assignedAt?: Prisma.DateTimeNullableFilter<"Ride"> | Date | string | null
@@ -1898,6 +2052,11 @@ export type RideCreateWithoutRiderInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -1945,6 +2104,7 @@ export type RideCreateWithoutRiderInput = {
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutRiderInput = {
@@ -1956,6 +2116,11 @@ export type RideUncheckedCreateWithoutRiderInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -2000,6 +2165,7 @@ export type RideUncheckedCreateWithoutRiderInput = {
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutRiderInput = {
@@ -2034,6 +2200,11 @@ export type RideCreateWithoutServiceZoneInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -2081,6 +2252,7 @@ export type RideCreateWithoutServiceZoneInput = {
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutServiceZoneInput = {
@@ -2092,6 +2264,11 @@ export type RideUncheckedCreateWithoutServiceZoneInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -2136,6 +2313,7 @@ export type RideUncheckedCreateWithoutServiceZoneInput = {
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutServiceZoneInput = {
@@ -2170,6 +2348,11 @@ export type RideCreateWithoutLocationsInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -2217,6 +2400,7 @@ export type RideCreateWithoutLocationsInput = {
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutLocationsInput = {
@@ -2229,6 +2413,11 @@ export type RideUncheckedCreateWithoutLocationsInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -2272,6 +2461,7 @@ export type RideUncheckedCreateWithoutLocationsInput = {
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutLocationsInput = {
@@ -2296,6 +2486,11 @@ export type RideUpdateWithoutLocationsInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2343,6 +2538,7 @@ export type RideUpdateWithoutLocationsInput = {
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutLocationsInput = {
@@ -2355,6 +2551,11 @@ export type RideUncheckedUpdateWithoutLocationsInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2398,6 +2599,7 @@ export type RideUncheckedUpdateWithoutLocationsInput = {
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideCreateWithoutEventsInput = {
@@ -2406,6 +2608,11 @@ export type RideCreateWithoutEventsInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -2453,6 +2660,7 @@ export type RideCreateWithoutEventsInput = {
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutEventsInput = {
@@ -2465,6 +2673,11 @@ export type RideUncheckedCreateWithoutEventsInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -2508,6 +2721,7 @@ export type RideUncheckedCreateWithoutEventsInput = {
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutEventsInput = {
@@ -2532,6 +2746,11 @@ export type RideUpdateWithoutEventsInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2579,6 +2798,7 @@ export type RideUpdateWithoutEventsInput = {
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutEventsInput = {
@@ -2591,6 +2811,11 @@ export type RideUncheckedUpdateWithoutEventsInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2634,6 +2859,7 @@ export type RideUncheckedUpdateWithoutEventsInput = {
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideCreateWithoutPaymentInput = {
@@ -2642,6 +2868,11 @@ export type RideCreateWithoutPaymentInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -2689,6 +2920,7 @@ export type RideCreateWithoutPaymentInput = {
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutPaymentInput = {
@@ -2701,6 +2933,11 @@ export type RideUncheckedCreateWithoutPaymentInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -2744,6 +2981,7 @@ export type RideUncheckedCreateWithoutPaymentInput = {
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutPaymentInput = {
@@ -2768,6 +3006,11 @@ export type RideUpdateWithoutPaymentInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2815,6 +3058,7 @@ export type RideUpdateWithoutPaymentInput = {
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutPaymentInput = {
@@ -2827,6 +3071,11 @@ export type RideUncheckedUpdateWithoutPaymentInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2870,6 +3119,7 @@ export type RideUncheckedUpdateWithoutPaymentInput = {
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideCreateWithoutWalletTransactionsInput = {
@@ -2878,6 +3128,11 @@ export type RideCreateWithoutWalletTransactionsInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -2925,6 +3180,7 @@ export type RideCreateWithoutWalletTransactionsInput = {
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutWalletTransactionsInput = {
@@ -2937,6 +3193,11 @@ export type RideUncheckedCreateWithoutWalletTransactionsInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -2980,6 +3241,7 @@ export type RideUncheckedCreateWithoutWalletTransactionsInput = {
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutWalletTransactionsInput = {
@@ -3004,6 +3266,11 @@ export type RideUpdateWithoutWalletTransactionsInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3051,6 +3318,7 @@ export type RideUpdateWithoutWalletTransactionsInput = {
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutWalletTransactionsInput = {
@@ -3063,6 +3331,11 @@ export type RideUncheckedUpdateWithoutWalletTransactionsInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3106,6 +3379,7 @@ export type RideUncheckedUpdateWithoutWalletTransactionsInput = {
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideCreateWithoutRatingsInput = {
@@ -3114,6 +3388,11 @@ export type RideCreateWithoutRatingsInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -3161,6 +3440,7 @@ export type RideCreateWithoutRatingsInput = {
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutRatingsInput = {
@@ -3173,6 +3453,11 @@ export type RideUncheckedCreateWithoutRatingsInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -3216,6 +3501,7 @@ export type RideUncheckedCreateWithoutRatingsInput = {
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutRatingsInput = {
@@ -3240,6 +3526,11 @@ export type RideUpdateWithoutRatingsInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3287,6 +3578,7 @@ export type RideUpdateWithoutRatingsInput = {
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutRatingsInput = {
@@ -3299,6 +3591,11 @@ export type RideUncheckedUpdateWithoutRatingsInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3342,6 +3639,7 @@ export type RideUncheckedUpdateWithoutRatingsInput = {
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideCreateWithoutReviewsInput = {
@@ -3350,6 +3648,11 @@ export type RideCreateWithoutReviewsInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -3397,6 +3700,7 @@ export type RideCreateWithoutReviewsInput = {
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutReviewsInput = {
@@ -3409,6 +3713,11 @@ export type RideUncheckedCreateWithoutReviewsInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -3452,6 +3761,7 @@ export type RideUncheckedCreateWithoutReviewsInput = {
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutReviewsInput = {
@@ -3476,6 +3786,11 @@ export type RideUpdateWithoutReviewsInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3523,6 +3838,7 @@ export type RideUpdateWithoutReviewsInput = {
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutReviewsInput = {
@@ -3535,6 +3851,11 @@ export type RideUncheckedUpdateWithoutReviewsInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3578,6 +3899,7 @@ export type RideUncheckedUpdateWithoutReviewsInput = {
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideCreateWithoutPromoCodeInput = {
@@ -3586,6 +3908,11 @@ export type RideCreateWithoutPromoCodeInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -3633,6 +3960,7 @@ export type RideCreateWithoutPromoCodeInput = {
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutPromoCodeInput = {
@@ -3644,6 +3972,11 @@ export type RideUncheckedCreateWithoutPromoCodeInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -3688,6 +4021,7 @@ export type RideUncheckedCreateWithoutPromoCodeInput = {
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutPromoCodeInput = {
@@ -3722,6 +4056,11 @@ export type RideCreateWithoutPromoRedemptionsInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -3769,6 +4108,7 @@ export type RideCreateWithoutPromoRedemptionsInput = {
   ticket?: Prisma.SupportTicketCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutPromoRedemptionsInput = {
@@ -3781,6 +4121,11 @@ export type RideUncheckedCreateWithoutPromoRedemptionsInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -3824,6 +4169,7 @@ export type RideUncheckedCreateWithoutPromoRedemptionsInput = {
   ticket?: Prisma.SupportTicketUncheckedCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutPromoRedemptionsInput = {
@@ -3848,6 +4194,11 @@ export type RideUpdateWithoutPromoRedemptionsInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3895,6 +4246,7 @@ export type RideUpdateWithoutPromoRedemptionsInput = {
   ticket?: Prisma.SupportTicketUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutPromoRedemptionsInput = {
@@ -3907,6 +4259,11 @@ export type RideUncheckedUpdateWithoutPromoRedemptionsInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3950,6 +4307,7 @@ export type RideUncheckedUpdateWithoutPromoRedemptionsInput = {
   ticket?: Prisma.SupportTicketUncheckedUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideCreateWithoutTicketInput = {
@@ -3958,6 +4316,11 @@ export type RideCreateWithoutTicketInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -4005,6 +4368,7 @@ export type RideCreateWithoutTicketInput = {
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutTicketInput = {
@@ -4017,6 +4381,11 @@ export type RideUncheckedCreateWithoutTicketInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -4060,6 +4429,7 @@ export type RideUncheckedCreateWithoutTicketInput = {
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutTicketInput = {
@@ -4084,6 +4454,11 @@ export type RideUpdateWithoutTicketInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4131,6 +4506,7 @@ export type RideUpdateWithoutTicketInput = {
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutTicketInput = {
@@ -4143,6 +4519,11 @@ export type RideUncheckedUpdateWithoutTicketInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4186,6 +4567,7 @@ export type RideUncheckedUpdateWithoutTicketInput = {
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideCreateWithoutIncidentsInput = {
@@ -4194,6 +4576,11 @@ export type RideCreateWithoutIncidentsInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -4241,6 +4628,7 @@ export type RideCreateWithoutIncidentsInput = {
   ticket?: Prisma.SupportTicketCreateNestedOneWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutIncidentsInput = {
@@ -4253,6 +4641,11 @@ export type RideUncheckedCreateWithoutIncidentsInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -4296,6 +4689,7 @@ export type RideUncheckedCreateWithoutIncidentsInput = {
   ticket?: Prisma.SupportTicketUncheckedCreateNestedOneWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutIncidentsInput = {
@@ -4320,6 +4714,11 @@ export type RideUpdateWithoutIncidentsInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4367,6 +4766,7 @@ export type RideUpdateWithoutIncidentsInput = {
   ticket?: Prisma.SupportTicketUpdateOneWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutIncidentsInput = {
@@ -4379,6 +4779,11 @@ export type RideUncheckedUpdateWithoutIncidentsInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4422,6 +4827,7 @@ export type RideUncheckedUpdateWithoutIncidentsInput = {
   ticket?: Prisma.SupportTicketUncheckedUpdateOneWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideCreateWithoutAssignmentAuditLogsInput = {
@@ -4430,6 +4836,11 @@ export type RideCreateWithoutAssignmentAuditLogsInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -4477,6 +4888,7 @@ export type RideCreateWithoutAssignmentAuditLogsInput = {
   ticket?: Prisma.SupportTicketCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRideInput
 }
 
 export type RideUncheckedCreateWithoutAssignmentAuditLogsInput = {
@@ -4489,6 +4901,11 @@ export type RideUncheckedCreateWithoutAssignmentAuditLogsInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -4532,6 +4949,7 @@ export type RideUncheckedCreateWithoutAssignmentAuditLogsInput = {
   ticket?: Prisma.SupportTicketUncheckedCreateNestedOneWithoutRideInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRideInput
 }
 
 export type RideCreateOrConnectWithoutAssignmentAuditLogsInput = {
@@ -4556,6 +4974,11 @@ export type RideUpdateWithoutAssignmentAuditLogsInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4603,6 +5026,7 @@ export type RideUpdateWithoutAssignmentAuditLogsInput = {
   ticket?: Prisma.SupportTicketUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutAssignmentAuditLogsInput = {
@@ -4615,6 +5039,11 @@ export type RideUncheckedUpdateWithoutAssignmentAuditLogsInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4658,6 +5087,267 @@ export type RideUncheckedUpdateWithoutAssignmentAuditLogsInput = {
   ticket?: Prisma.SupportTicketUncheckedUpdateOneWithoutRideNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRideNestedInput
+}
+
+export type RideCreateWithoutDispatchOffersInput = {
+  id?: string
+  status?: $Enums.RideStatus
+  paymentMethod?: $Enums.PaymentMethod | null
+  cancellationParty?: $Enums.CancellationParty | null
+  cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
+  requestedAt?: Date | string
+  scheduledFor?: Date | string | null
+  assignedAt?: Date | string | null
+  riderArrivedAt?: Date | string | null
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  pickupAddress: string
+  pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
+  destinationAddress: string
+  destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
+  routePolyline?: string | null
+  estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: number | null
+  actualDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  actualDurationMinutes?: number | null
+  estimatedFare?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFare?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  promoDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  referralDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  surgeAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  waitingAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency: string
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  passenger: Prisma.PassengerProfileCreateNestedOneWithoutRidesInput
+  rider?: Prisma.RiderProfileCreateNestedOneWithoutRidesInput
+  serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidesInput
+  promoCode?: Prisma.PromoCodeCreateNestedOneWithoutRidesInput
+  payment?: Prisma.PaymentCreateNestedOneWithoutRideInput
+  walletTransactions?: Prisma.WalletTransactionCreateNestedManyWithoutRideInput
+  locations?: Prisma.RideLocationCreateNestedManyWithoutRideInput
+  events?: Prisma.RideEventCreateNestedManyWithoutRideInput
+  ratings?: Prisma.RatingCreateNestedManyWithoutRideInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutRideInput
+  ticket?: Prisma.SupportTicketCreateNestedOneWithoutRideInput
+  incidents?: Prisma.IncidentCreateNestedManyWithoutRideInput
+  promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogCreateNestedManyWithoutRideInput
+}
+
+export type RideUncheckedCreateWithoutDispatchOffersInput = {
+  id?: string
+  passengerId: string
+  riderId?: string | null
+  serviceZoneId?: string | null
+  promoCodeId?: string | null
+  status?: $Enums.RideStatus
+  paymentMethod?: $Enums.PaymentMethod | null
+  cancellationParty?: $Enums.CancellationParty | null
+  cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
+  requestedAt?: Date | string
+  scheduledFor?: Date | string | null
+  assignedAt?: Date | string | null
+  riderArrivedAt?: Date | string | null
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  pickupAddress: string
+  pickupLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: string | null
+  destinationAddress: string
+  destinationLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: string | null
+  pickupLocationMocked?: boolean
+  routePolyline?: string | null
+  estimatedDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: number | null
+  actualDistanceKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  actualDurationMinutes?: number | null
+  estimatedFare?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFare?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  promoDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  referralDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  surgeAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  waitingAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency: string
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  payment?: Prisma.PaymentUncheckedCreateNestedOneWithoutRideInput
+  walletTransactions?: Prisma.WalletTransactionUncheckedCreateNestedManyWithoutRideInput
+  locations?: Prisma.RideLocationUncheckedCreateNestedManyWithoutRideInput
+  events?: Prisma.RideEventUncheckedCreateNestedManyWithoutRideInput
+  ratings?: Prisma.RatingUncheckedCreateNestedManyWithoutRideInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutRideInput
+  ticket?: Prisma.SupportTicketUncheckedCreateNestedOneWithoutRideInput
+  incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRideInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutRideInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedCreateNestedManyWithoutRideInput
+}
+
+export type RideCreateOrConnectWithoutDispatchOffersInput = {
+  where: Prisma.RideWhereUniqueInput
+  create: Prisma.XOR<Prisma.RideCreateWithoutDispatchOffersInput, Prisma.RideUncheckedCreateWithoutDispatchOffersInput>
+}
+
+export type RideUpsertWithoutDispatchOffersInput = {
+  update: Prisma.XOR<Prisma.RideUpdateWithoutDispatchOffersInput, Prisma.RideUncheckedUpdateWithoutDispatchOffersInput>
+  create: Prisma.XOR<Prisma.RideCreateWithoutDispatchOffersInput, Prisma.RideUncheckedCreateWithoutDispatchOffersInput>
+  where?: Prisma.RideWhereInput
+}
+
+export type RideUpdateToOneWithWhereWithoutDispatchOffersInput = {
+  where?: Prisma.RideWhereInput
+  data: Prisma.XOR<Prisma.RideUpdateWithoutDispatchOffersInput, Prisma.RideUncheckedUpdateWithoutDispatchOffersInput>
+}
+
+export type RideUpdateWithoutDispatchOffersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumRideStatusFieldUpdateOperationsInput | $Enums.RideStatus
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  riderArrivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  actualDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  actualDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  estimatedFare?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFare?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  promoDiscount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  referralDiscount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  surgeAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  waitingAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passenger?: Prisma.PassengerProfileUpdateOneRequiredWithoutRidesNestedInput
+  rider?: Prisma.RiderProfileUpdateOneWithoutRidesNestedInput
+  serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidesNestedInput
+  promoCode?: Prisma.PromoCodeUpdateOneWithoutRidesNestedInput
+  payment?: Prisma.PaymentUpdateOneWithoutRideNestedInput
+  walletTransactions?: Prisma.WalletTransactionUpdateManyWithoutRideNestedInput
+  locations?: Prisma.RideLocationUpdateManyWithoutRideNestedInput
+  events?: Prisma.RideEventUpdateManyWithoutRideNestedInput
+  ratings?: Prisma.RatingUpdateManyWithoutRideNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutRideNestedInput
+  ticket?: Prisma.SupportTicketUpdateOneWithoutRideNestedInput
+  incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
+}
+
+export type RideUncheckedUpdateWithoutDispatchOffersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  passengerId?: Prisma.StringFieldUpdateOperationsInput | string
+  riderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serviceZoneId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promoCodeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumRideStatusFieldUpdateOperationsInput | $Enums.RideStatus
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  riderArrivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pickupAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  pickupLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pickupLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  destinationAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  destinationLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  destinationLandmark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pickupLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  routePolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estimatedDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  actualDistanceKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  actualDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  estimatedFare?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  finalFare?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  promoDiscount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  referralDiscount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  surgeAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  waitingAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  riderEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  platformCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  payment?: Prisma.PaymentUncheckedUpdateOneWithoutRideNestedInput
+  walletTransactions?: Prisma.WalletTransactionUncheckedUpdateManyWithoutRideNestedInput
+  locations?: Prisma.RideLocationUncheckedUpdateManyWithoutRideNestedInput
+  events?: Prisma.RideEventUncheckedUpdateManyWithoutRideNestedInput
+  ratings?: Prisma.RatingUncheckedUpdateManyWithoutRideNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutRideNestedInput
+  ticket?: Prisma.SupportTicketUncheckedUpdateOneWithoutRideNestedInput
+  incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
+  assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideCreateManyPassengerInput = {
@@ -4669,6 +5359,11 @@ export type RideCreateManyPassengerInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -4711,6 +5406,11 @@ export type RideUpdateWithoutPassengerInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4758,6 +5458,7 @@ export type RideUpdateWithoutPassengerInput = {
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutPassengerInput = {
@@ -4769,6 +5470,11 @@ export type RideUncheckedUpdateWithoutPassengerInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4813,6 +5519,7 @@ export type RideUncheckedUpdateWithoutPassengerInput = {
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateManyWithoutPassengerInput = {
@@ -4824,6 +5531,11 @@ export type RideUncheckedUpdateManyWithoutPassengerInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4869,6 +5581,11 @@ export type RideCreateManyRiderInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -4911,6 +5628,11 @@ export type RideUpdateWithoutRiderInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4958,6 +5680,7 @@ export type RideUpdateWithoutRiderInput = {
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutRiderInput = {
@@ -4969,6 +5692,11 @@ export type RideUncheckedUpdateWithoutRiderInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5013,6 +5741,7 @@ export type RideUncheckedUpdateWithoutRiderInput = {
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateManyWithoutRiderInput = {
@@ -5024,6 +5753,11 @@ export type RideUncheckedUpdateManyWithoutRiderInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5069,6 +5803,11 @@ export type RideCreateManyServiceZoneInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -5111,6 +5850,11 @@ export type RideUpdateWithoutServiceZoneInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5158,6 +5902,7 @@ export type RideUpdateWithoutServiceZoneInput = {
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutServiceZoneInput = {
@@ -5169,6 +5914,11 @@ export type RideUncheckedUpdateWithoutServiceZoneInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5213,6 +5963,7 @@ export type RideUncheckedUpdateWithoutServiceZoneInput = {
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateManyWithoutServiceZoneInput = {
@@ -5224,6 +5975,11 @@ export type RideUncheckedUpdateManyWithoutServiceZoneInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5269,6 +6025,11 @@ export type RideCreateManyPromoCodeInput = {
   paymentMethod?: $Enums.PaymentMethod | null
   cancellationParty?: $Enums.CancellationParty | null
   cancellationReason?: string | null
+  safetyPin?: string
+  pinVerifiedAt?: Date | string | null
+  dispatchRound?: number
+  currentOfferRiderId?: string | null
+  offerExpiresAt?: Date | string | null
   requestedAt?: Date | string
   scheduledFor?: Date | string | null
   assignedAt?: Date | string | null
@@ -5311,6 +6072,11 @@ export type RideUpdateWithoutPromoCodeInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5358,6 +6124,7 @@ export type RideUpdateWithoutPromoCodeInput = {
   incidents?: Prisma.IncidentUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateWithoutPromoCodeInput = {
@@ -5369,6 +6136,11 @@ export type RideUncheckedUpdateWithoutPromoCodeInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5413,6 +6185,7 @@ export type RideUncheckedUpdateWithoutPromoCodeInput = {
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRideNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutRideNestedInput
   assignmentAuditLogs?: Prisma.AssignmentAuditLogUncheckedUpdateManyWithoutRideNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRideNestedInput
 }
 
 export type RideUncheckedUpdateManyWithoutPromoCodeInput = {
@@ -5424,6 +6197,11 @@ export type RideUncheckedUpdateManyWithoutPromoCodeInput = {
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   cancellationParty?: Prisma.NullableEnumCancellationPartyFieldUpdateOperationsInput | $Enums.CancellationParty | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  safetyPin?: Prisma.StringFieldUpdateOperationsInput | string
+  pinVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dispatchRound?: Prisma.IntFieldUpdateOperationsInput | number
+  currentOfferRiderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  offerExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5474,6 +6252,7 @@ export type RideCountOutputType = {
   incidents: number
   promoRedemptions: number
   assignmentAuditLogs: number
+  dispatchOffers: number
 }
 
 export type RideCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -5485,6 +6264,7 @@ export type RideCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   incidents?: boolean | RideCountOutputTypeCountIncidentsArgs
   promoRedemptions?: boolean | RideCountOutputTypeCountPromoRedemptionsArgs
   assignmentAuditLogs?: boolean | RideCountOutputTypeCountAssignmentAuditLogsArgs
+  dispatchOffers?: boolean | RideCountOutputTypeCountDispatchOffersArgs
 }
 
 /**
@@ -5553,6 +6333,13 @@ export type RideCountOutputTypeCountAssignmentAuditLogsArgs<ExtArgs extends runt
   where?: Prisma.AssignmentAuditLogWhereInput
 }
 
+/**
+ * RideCountOutputType without action
+ */
+export type RideCountOutputTypeCountDispatchOffersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.RideDispatchOfferWhereInput
+}
+
 
 export type RideSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -5564,6 +6351,11 @@ export type RideSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   paymentMethod?: boolean
   cancellationParty?: boolean
   cancellationReason?: boolean
+  safetyPin?: boolean
+  pinVerifiedAt?: boolean
+  dispatchRound?: boolean
+  currentOfferRiderId?: boolean
+  offerExpiresAt?: boolean
   requestedAt?: boolean
   scheduledFor?: boolean
   assignedAt?: boolean
@@ -5612,6 +6404,7 @@ export type RideSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   incidents?: boolean | Prisma.Ride$incidentsArgs<ExtArgs>
   promoRedemptions?: boolean | Prisma.Ride$promoRedemptionsArgs<ExtArgs>
   assignmentAuditLogs?: boolean | Prisma.Ride$assignmentAuditLogsArgs<ExtArgs>
+  dispatchOffers?: boolean | Prisma.Ride$dispatchOffersArgs<ExtArgs>
   _count?: boolean | Prisma.RideCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["ride"]>
 
@@ -5625,6 +6418,11 @@ export type RideSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   paymentMethod?: boolean
   cancellationParty?: boolean
   cancellationReason?: boolean
+  safetyPin?: boolean
+  pinVerifiedAt?: boolean
+  dispatchRound?: boolean
+  currentOfferRiderId?: boolean
+  offerExpiresAt?: boolean
   requestedAt?: boolean
   scheduledFor?: boolean
   assignedAt?: boolean
@@ -5675,6 +6473,11 @@ export type RideSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   paymentMethod?: boolean
   cancellationParty?: boolean
   cancellationReason?: boolean
+  safetyPin?: boolean
+  pinVerifiedAt?: boolean
+  dispatchRound?: boolean
+  currentOfferRiderId?: boolean
+  offerExpiresAt?: boolean
   requestedAt?: boolean
   scheduledFor?: boolean
   assignedAt?: boolean
@@ -5725,6 +6528,11 @@ export type RideSelectScalar = {
   paymentMethod?: boolean
   cancellationParty?: boolean
   cancellationReason?: boolean
+  safetyPin?: boolean
+  pinVerifiedAt?: boolean
+  dispatchRound?: boolean
+  currentOfferRiderId?: boolean
+  offerExpiresAt?: boolean
   requestedAt?: boolean
   scheduledFor?: boolean
   assignedAt?: boolean
@@ -5761,7 +6569,7 @@ export type RideSelectScalar = {
   updatedAt?: boolean
 }
 
-export type RideOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "passengerId" | "riderId" | "serviceZoneId" | "promoCodeId" | "status" | "paymentMethod" | "cancellationParty" | "cancellationReason" | "requestedAt" | "scheduledFor" | "assignedAt" | "riderArrivedAt" | "startedAt" | "completedAt" | "cancelledAt" | "pickupAddress" | "pickupLatitude" | "pickupLongitude" | "pickupLandmark" | "destinationAddress" | "destinationLatitude" | "destinationLongitude" | "destinationLandmark" | "pickupLocationMocked" | "routePolyline" | "estimatedDistanceKm" | "estimatedDurationMinutes" | "actualDistanceKm" | "actualDurationMinutes" | "estimatedFare" | "finalFare" | "promoDiscount" | "referralDiscount" | "surgeAmount" | "waitingAmount" | "cancellationFee" | "riderEarnings" | "platformCommission" | "currency" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["ride"]>
+export type RideOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "passengerId" | "riderId" | "serviceZoneId" | "promoCodeId" | "status" | "paymentMethod" | "cancellationParty" | "cancellationReason" | "safetyPin" | "pinVerifiedAt" | "dispatchRound" | "currentOfferRiderId" | "offerExpiresAt" | "requestedAt" | "scheduledFor" | "assignedAt" | "riderArrivedAt" | "startedAt" | "completedAt" | "cancelledAt" | "pickupAddress" | "pickupLatitude" | "pickupLongitude" | "pickupLandmark" | "destinationAddress" | "destinationLatitude" | "destinationLongitude" | "destinationLandmark" | "pickupLocationMocked" | "routePolyline" | "estimatedDistanceKm" | "estimatedDurationMinutes" | "actualDistanceKm" | "actualDurationMinutes" | "estimatedFare" | "finalFare" | "promoDiscount" | "referralDiscount" | "surgeAmount" | "waitingAmount" | "cancellationFee" | "riderEarnings" | "platformCommission" | "currency" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["ride"]>
 export type RideInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   passenger?: boolean | Prisma.PassengerProfileDefaultArgs<ExtArgs>
   rider?: boolean | Prisma.Ride$riderArgs<ExtArgs>
@@ -5777,6 +6585,7 @@ export type RideInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   incidents?: boolean | Prisma.Ride$incidentsArgs<ExtArgs>
   promoRedemptions?: boolean | Prisma.Ride$promoRedemptionsArgs<ExtArgs>
   assignmentAuditLogs?: boolean | Prisma.Ride$assignmentAuditLogsArgs<ExtArgs>
+  dispatchOffers?: boolean | Prisma.Ride$dispatchOffersArgs<ExtArgs>
   _count?: boolean | Prisma.RideCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type RideIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -5809,6 +6618,7 @@ export type $RidePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     incidents: Prisma.$IncidentPayload<ExtArgs>[]
     promoRedemptions: Prisma.$PromoRedemptionPayload<ExtArgs>[]
     assignmentAuditLogs: Prisma.$AssignmentAuditLogPayload<ExtArgs>[]
+    dispatchOffers: Prisma.$RideDispatchOfferPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -5820,6 +6630,11 @@ export type $RidePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     paymentMethod: $Enums.PaymentMethod | null
     cancellationParty: $Enums.CancellationParty | null
     cancellationReason: string | null
+    safetyPin: string
+    pinVerifiedAt: Date | null
+    dispatchRound: number
+    currentOfferRiderId: string | null
+    offerExpiresAt: Date | null
     requestedAt: Date
     scheduledFor: Date | null
     assignedAt: Date | null
@@ -6262,6 +7077,7 @@ export interface Prisma__RideClient<T, Null = never, ExtArgs extends runtime.Typ
   incidents<T extends Prisma.Ride$incidentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Ride$incidentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$IncidentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   promoRedemptions<T extends Prisma.Ride$promoRedemptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Ride$promoRedemptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PromoRedemptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   assignmentAuditLogs<T extends Prisma.Ride$assignmentAuditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Ride$assignmentAuditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AssignmentAuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  dispatchOffers<T extends Prisma.Ride$dispatchOffersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Ride$dispatchOffersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RideDispatchOfferPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6300,6 +7116,11 @@ export interface RideFieldRefs {
   readonly paymentMethod: Prisma.FieldRef<"Ride", 'PaymentMethod'>
   readonly cancellationParty: Prisma.FieldRef<"Ride", 'CancellationParty'>
   readonly cancellationReason: Prisma.FieldRef<"Ride", 'String'>
+  readonly safetyPin: Prisma.FieldRef<"Ride", 'String'>
+  readonly pinVerifiedAt: Prisma.FieldRef<"Ride", 'DateTime'>
+  readonly dispatchRound: Prisma.FieldRef<"Ride", 'Int'>
+  readonly currentOfferRiderId: Prisma.FieldRef<"Ride", 'String'>
+  readonly offerExpiresAt: Prisma.FieldRef<"Ride", 'DateTime'>
   readonly requestedAt: Prisma.FieldRef<"Ride", 'DateTime'>
   readonly scheduledFor: Prisma.FieldRef<"Ride", 'DateTime'>
   readonly assignedAt: Prisma.FieldRef<"Ride", 'DateTime'>
@@ -7019,6 +7840,30 @@ export type Ride$assignmentAuditLogsArgs<ExtArgs extends runtime.Types.Extension
   take?: number
   skip?: number
   distinct?: Prisma.AssignmentAuditLogScalarFieldEnum | Prisma.AssignmentAuditLogScalarFieldEnum[]
+}
+
+/**
+ * Ride.dispatchOffers
+ */
+export type Ride$dispatchOffersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the RideDispatchOffer
+   */
+  select?: Prisma.RideDispatchOfferSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the RideDispatchOffer
+   */
+  omit?: Prisma.RideDispatchOfferOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RideDispatchOfferInclude<ExtArgs> | null
+  where?: Prisma.RideDispatchOfferWhereInput
+  orderBy?: Prisma.RideDispatchOfferOrderByWithRelationInput | Prisma.RideDispatchOfferOrderByWithRelationInput[]
+  cursor?: Prisma.RideDispatchOfferWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.RideDispatchOfferScalarFieldEnum | Prisma.RideDispatchOfferScalarFieldEnum[]
 }
 
 /**

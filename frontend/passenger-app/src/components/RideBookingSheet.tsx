@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { X, Plus } from "lucide-react-native";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -41,10 +42,16 @@ export type RideTier = {
   label: string;
   subtitle: string;
   fare: number;
+  /** Original price before promo/discount — always shown struck-through when set */
   originalFare?: number;
   etaMinutes: number;
   capacity: string;
+  /** Shows yellow RECOMMENDED chip */
   recommended?: boolean;
+  /** Shows green FASTER chip */
+  faster?: boolean;
+  /** Greys out the card and blocks selection */
+  busy?: boolean;
 };
 
 type Props = {
@@ -52,6 +59,8 @@ type Props = {
   destinationAddress: string;
   onEditPickup?: () => void;
   onEditDestination?: () => void;
+  /** Optional close/back handler for the route header ✕ button */
+  onClose?: () => void;
   tiers: RideTier[];
   selectedTier: RideTierId;
   onSelectTier: (id: RideTierId) => void;
@@ -92,6 +101,7 @@ export function RideBookingSheet({
   destinationAddress,
   onEditPickup,
   onEditDestination,
+  onClose,
   tiers,
   selectedTier,
   onSelectTier,
@@ -218,6 +228,67 @@ export function RideBookingSheet({
           marginLeft: 18,
         },
 
+        /* ─── Promo Banner Strip (Bolt style) ─────────────────── */
+        promoBannerStrip: {
+          backgroundColor: isDark ? "rgba(22, 163, 74, 0.2)" : "#DCFCE7",
+          paddingVertical: 8,
+          paddingHorizontal: 16,
+          borderTopLeftRadius: 28,
+          borderTopRightRadius: 28,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 6,
+          borderBottomWidth: 1,
+          borderBottomColor: isDark ? "rgba(34, 197, 94, 0.25)" : "#BBF7D0",
+        },
+        promoBannerText: {
+          fontSize: 12,
+          fontWeight: "700",
+          color: isDark ? "#4ADE80" : "#15803D",
+        },
+
+        /* ─── Route Header Bar ───────────────────────────────── */
+        routeHeader: {
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 12,
+          paddingVertical: 10,
+          gap: 8,
+          borderBottomWidth: 1,
+          borderBottomColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
+        },
+        routeHeaderBtn: {
+          width: 34,
+          height: 34,
+          borderRadius: 17,
+          backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        routeHeaderCenter: {
+          flex: 1,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 4,
+        },
+        routeHeaderPickup: {
+          fontSize: 13,
+          fontWeight: "600",
+          color: colors.primary,
+          flex: 1,
+        },
+        routeHeaderArrow: {
+          fontSize: 14,
+          color: colors.textMuted,
+        },
+        routeHeaderDest: {
+          fontSize: 13,
+          fontWeight: "600",
+          color: colors.text,
+          flex: 1,
+        },
+
         /* ─── Tiers List (Bolt / Uber style) ────────────────── */
         tiersList: {
           gap: 8,
@@ -236,6 +307,9 @@ export function RideBookingSheet({
           borderColor: colors.primary,
           backgroundColor: isDark ? "rgba(250, 204, 21, 0.08)" : "rgba(250, 204, 21, 0.06)",
         },
+        tierCardBusy: {
+          opacity: 0.42,
+        },
         tierVehicleBox: {
           width: 68,
           alignItems: "center",
@@ -243,18 +317,20 @@ export function RideBookingSheet({
         },
         tierInfo: {
           flex: 1,
-          gap: 2,
+          gap: 3,
         },
         tierTitleRow: {
           flexDirection: "row",
           alignItems: "center",
           gap: 6,
+          flexWrap: "wrap",
         },
         tierName: {
           fontSize: 15,
           fontWeight: "700",
           color: colors.text,
         },
+        /* RECOMMENDED chip — yellow */
         recBadge: {
           backgroundColor: colors.primary,
           paddingHorizontal: 6,
@@ -266,6 +342,35 @@ export function RideBookingSheet({
           fontWeight: "800",
           color: "#000000",
           textTransform: "uppercase",
+          letterSpacing: 0.3,
+        },
+        /* FASTER chip — green */
+        fasterBadge: {
+          backgroundColor: "#16A34A",
+          paddingHorizontal: 6,
+          paddingVertical: 2,
+          borderRadius: 6,
+        },
+        fasterText: {
+          fontSize: 9,
+          fontWeight: "800",
+          color: "#FFFFFF",
+          textTransform: "uppercase",
+          letterSpacing: 0.3,
+        },
+        /* BUSY chip — grey */
+        busyBadge: {
+          backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "#E5E7EB",
+          paddingHorizontal: 6,
+          paddingVertical: 2,
+          borderRadius: 6,
+        },
+        busyText: {
+          fontSize: 9,
+          fontWeight: "700",
+          color: colors.textMuted,
+          textTransform: "uppercase",
+          letterSpacing: 0.3,
         },
         tierEta: {
           fontSize: 12,
@@ -429,6 +534,48 @@ export function RideBookingSheet({
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? insets.top + 10 : 0}
       >
+        {/* ─── Promo Banner Strip (Feature 9) ─────────────── */}
+        {promoDiscount > 0 ? (
+          <View style={s.promoBannerStrip}>
+            <Check size={14} color={isDark ? "#4ADE80" : "#16A34A"} strokeWidth={2.5} />
+            <Text style={s.promoBannerText}>
+              {promoMessage || `${currency} ${promoDiscount.toFixed(2)} promo discount applied`}
+            </Text>
+          </View>
+        ) : null}
+
+        {/* ─── Handle ─────────────────────────────────────── */}
+        <View style={s.handleBar} />
+
+        {/* ─── Route Header Bar ───────────────────────────── */}
+        <View style={s.routeHeader}>
+          <Pressable
+            style={s.routeHeaderBtn}
+            onPress={onClose ?? onEditPickup}
+            accessibilityLabel="Close"
+          >
+            <X size={16} color={colors.text} />
+          </Pressable>
+
+          <Pressable style={s.routeHeaderCenter} onPress={onEditPickup}>
+            <Text style={s.routeHeaderPickup} numberOfLines={1}>
+              {pickupAddress ? pickupAddress.split(",")[0] : "Pickup"}
+            </Text>
+            <Text style={s.routeHeaderArrow}>→</Text>
+            <Text style={s.routeHeaderDest} numberOfLines={1}>
+              {destinationAddress ? destinationAddress.split(",")[0] : "Destination"}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={s.routeHeaderBtn}
+            onPress={onEditDestination}
+            accessibilityLabel="Add stop"
+          >
+            <Plus size={16} color={colors.text} />
+          </Pressable>
+        </View>
+
         <ScrollView
           contentContainerStyle={s.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -436,40 +583,26 @@ export function RideBookingSheet({
           keyboardShouldPersistTaps="handled"
           automaticallyAdjustKeyboardInsets={true}
         >
-          {/* Handle */}
-          <View style={s.handleBar} />
 
-          {/* ─── Route summary capsule ──────────────────────── */}
-          <View style={s.routeCapsule}>
-            <Pressable style={s.routeRow} onPress={onEditPickup}>
-              <View style={s.dotPickup} />
-              <Text style={s.routeText} numberOfLines={1}>
-                {pickupAddress || "Current location"}
-              </Text>
-              <Edit3 size={13} color={colors.textMuted} />
-            </Pressable>
-            <View style={s.routeDivider} />
-            <Pressable style={s.routeRow} onPress={onEditDestination}>
-              <View style={s.dotDropoff} />
-              <Text style={s.routeText} numberOfLines={1}>
-                {destinationAddress || "Select destination"}
-              </Text>
-              <Edit3 size={13} color={colors.textMuted} />
-            </Pressable>
-          </View>
-
-          {/* ─── Vehicle Tiers (Uber / Bolt style) ──────────── */}
+          {/* ─── Vehicle Tiers (Bolt style) ──────────────────── */}
           <View style={s.tiersList}>
             {tiers.map((tier) => {
               const isSelected = tier.id === selectedTier;
               const tierFinalFare = Math.max(0, tier.fare - (isSelected ? promoDiscount : 0));
+              const showStrike = tier.originalFare != null || (promoDiscount > 0 && isSelected);
+              const strikePrice = tier.originalFare ?? tier.fare;
 
               return (
                 <Pressable
                   key={tier.id}
-                  style={[s.tierCard, isSelected && s.tierCardActive]}
-                  onPress={() => onSelectTier(tier.id)}
-                  accessibilityRole="button"
+                  style={[
+                    s.tierCard,
+                    isSelected && s.tierCardActive,
+                    tier.busy && s.tierCardBusy,
+                  ]}
+                  onPress={() => !tier.busy && onSelectTier(tier.id)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: isSelected, disabled: tier.busy }}
                 >
                   <View style={s.tierVehicleBox}>{getVehicleComponent(tier.id)}</View>
                   <View style={s.tierInfo}>
@@ -477,21 +610,33 @@ export function RideBookingSheet({
                       <Text style={s.tierName}>{tier.label}</Text>
                       {tier.recommended && (
                         <View style={s.recBadge}>
-                          <Text style={s.recText}>Best</Text>
+                          <Text style={s.recText}>Recommended</Text>
+                        </View>
+                      )}
+                      {tier.faster && (
+                        <View style={s.fasterBadge}>
+                          <Text style={s.fasterText}>Faster</Text>
+                        </View>
+                      )}
+                      {tier.busy && (
+                        <View style={s.busyBadge}>
+                          <Text style={s.busyText}>Busy</Text>
                         </View>
                       )}
                     </View>
                     <Text style={s.tierEta}>
-                      ⏱ ~{tier.etaMinutes} min • {tier.subtitle}
+                      {tier.busy
+                        ? tier.subtitle
+                        : `⏱ ~${tier.etaMinutes} min • ${tier.subtitle}`}
                     </Text>
                   </View>
                   <View style={s.tierPriceBox}>
                     <Text style={s.tierPrice}>
                       {currency} {tierFinalFare.toFixed(2)}
                     </Text>
-                    {promoDiscount > 0 && isSelected && (
+                    {showStrike && (
                       <Text style={s.tierOriginalPrice}>
-                        {currency} {tier.fare.toFixed(2)}
+                        {currency} {strikePrice.toFixed(2)}
                       </Text>
                     )}
                   </View>

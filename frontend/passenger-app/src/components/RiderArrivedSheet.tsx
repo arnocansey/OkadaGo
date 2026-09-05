@@ -204,36 +204,42 @@ export function RiderArrivedSheet({
           alignItems: "center",
           gap: 10,
           marginBottom: 14,
-          paddingVertical: 10,
-          paddingHorizontal: 14,
-          borderRadius: 12,
-          backgroundColor: isDark ? colors.surfaceOverlay : "#F8F9FA",
+          paddingVertical: 12,
+          paddingHorizontal: 16,
+          borderRadius: 14,
+          backgroundColor: isDark ? "rgba(250, 204, 21, 0.1)" : "rgba(250, 204, 21, 0.12)",
+          borderWidth: 1.5,
+          borderColor: isDark ? "rgba(250, 204, 21, 0.3)" : "rgba(250, 204, 21, 0.35)",
         },
-        pinLabel: {
+        pinBannerTitle: {
+          fontSize: 13,
+          fontWeight: "800",
+          color: isDark ? colors.text : "#1F2937",
+          letterSpacing: 0.2,
+        },
+        pinBannerSub: {
           fontSize: 11,
-          fontWeight: "600",
-          color: colors.textMuted,
-          textTransform: "uppercase",
-          letterSpacing: 0.5,
+          color: colors.textSecondary,
+          marginTop: 2,
         },
         pinDigits: {
           flexDirection: "row",
-          gap: 5,
+          gap: 6,
         },
         pinDigit: {
-          width: 34,
-          height: 38,
+          width: 36,
+          height: 40,
           borderRadius: 8,
-          backgroundColor: isDark ? "rgba(250,204,21,0.08)" : "rgba(250,204,21,0.06)",
-          borderWidth: 1,
-          borderColor: isDark ? "rgba(250,204,21,0.15)" : "rgba(250,204,21,0.12)",
+          backgroundColor: isDark ? "rgba(250,204,21,0.2)" : "rgba(250,204,21,0.18)",
+          borderWidth: 1.5,
+          borderColor: colors.primary,
           alignItems: "center",
           justifyContent: "center",
         },
         pinDigitText: {
-          fontSize: 17,
-          fontWeight: "700",
-          color: colors.primary,
+          fontSize: 18,
+          fontWeight: "800",
+          color: isDark ? "#FACC15" : "#854D0E",
         },
 
         /* ─── Actions ───────────────────────────────────── */
@@ -340,9 +346,12 @@ export function RiderArrivedSheet({
         {/* ─── Trip PIN ──────────────────────────────────── */}
         {tripPin && tripPin.length > 0 ? (
           <View style={s.pinRow}>
-            <Text style={s.pinLabel}>PIN</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={s.pinBannerTitle}>Pickup Safety PIN</Text>
+              <Text style={s.pinBannerSub}>Share with rider to begin trip</Text>
+            </View>
             <View style={s.pinDigits}>
-              {tripPin.split("").slice(0, 6).map((digit, i) => (
+              {tripPin.split("").slice(0, 4).map((digit, i) => (
                 <View key={i} style={s.pinDigit}>
                   <Text style={s.pinDigitText}>{digit}</Text>
                 </View>

@@ -36,7 +36,12 @@ import { CancellationReasonModal } from "@/components/ui/CancellationReasonModal
 import { brand } from "@/theme/design-system";
 
 export default function RequestScreen() {
-  const { id, kind } = useLocalSearchParams<{ id: string; kind?: string }>();
+  const { id, kind, offerId, expiresIn } = useLocalSearchParams<{
+    id: string;
+    kind?: string;
+    offerId?: string;
+    expiresIn?: string;
+  }>();
   const { session, rides, deliveries, refresh, dismissRequest } = useApp();
   const { colors, isDark } = useTheme();
   const [acting, setActing] = useState(false);
@@ -45,15 +50,16 @@ export default function RequestScreen() {
   const isRide = kind === "ride";
   const trip = isRide ? rides.find((r) => r.id === id) : deliveries.find((d) => d.id === id);
 
-  // Countdown timer — 20 seconds
-  const [countdown, setCountdown] = useState(20);
+  // 10–15 second countdown timer
+  const initialSeconds = Math.max(5, Math.min(20, Number(expiresIn) || 12));
+  const [countdown, setCountdown] = useState(initialSeconds);
   const progressAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     requestAlarm.start();
     const animation = Animated.timing(progressAnim, {
       toValue: 0,
-      duration: 20000,
+      duration: initialSeconds * 1000,
       useNativeDriver: false,
     });
     animation.start();
@@ -75,7 +81,7 @@ export default function RequestScreen() {
       animation.stop();
       requestAlarm.stop();
     };
-  }, []);
+  }, [initialSeconds, progressAnim]);
 
   useEffect(() => {
     if (trip && (trip.status ?? "").toLowerCase() === "cancelled") {
@@ -97,16 +103,23 @@ export default function RequestScreen() {
     if (!trip || !session || acting) return;
     requestAlarm.stop();
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    const nextStatus = isRide ? "arriving" : "assigned";
     setActing(true);
     try {
-      if (isRide) {
+      if (isRide && offerId) {
+        await api(`/rides/offers/${offerId}/accept`, {
+          method: "POST",
+          token: session.token,
+          body: { riderProfileId: session.user.riderProfileId },
+        });
+      } else if (isRide) {
+        const nextStatus = "arriving";
         await api(`/rides/${trip.id}/status`, {
           method: "PATCH",
           token: session.token,
           body: { nextStatus, actorRole: "rider", actorUserId: session.user.id },
         });
       } else {
+        const nextStatus = "assigned";
         await api(`/deliveries/${trip.id}/status`, {
           method: "PATCH",
           token: session.token,
@@ -131,17 +144,28 @@ export default function RequestScreen() {
     setActing(true);
     try {
       dismissRequest(trip.id);
-      const endpoint = isRide ? `/rides/${trip.id}/status` : `/deliveries/${trip.id}/status`;
-      await api(endpoint, {
-        method: "PATCH",
-        token: session.token,
-        body: {
-          nextStatus: "cancelled",
-          actorRole: "rider",
-          actorUserId: session.user.id,
-          cancellationReason: reason,
-        },
-      });
+      if (isRide && offerId) {
+        await api(`/rides/offers/${offerId}/reject`, {
+          method: "POST",
+          token: session.token,
+          body: {
+            riderProfileId: session.user.riderProfileId,
+            reason: reason ?? "DECLINED_BY_RIDER",
+          },
+        });
+      } else {
+        const endpoint = isRide ? `/rides/${trip.id}/status` : `/deliveries/${trip.id}/status`;
+        await api(endpoint, {
+          method: "PATCH",
+          token: session.token,
+          body: {
+            nextStatus: "cancelled",
+            actorRole: "rider",
+            actorUserId: session.user.id,
+            cancellationReason: reason,
+          },
+        });
+      }
       await refresh();
     } finally {
       setShowDeclineModal(false);

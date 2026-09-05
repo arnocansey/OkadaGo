@@ -34,6 +34,7 @@ export type RiderProfileAvgAggregateOutputType = {
   cancellationRate: runtime.Decimal | null
   completedTrips: number | null
   commissionPercent: runtime.Decimal | null
+  currentHeading: number | null
 }
 
 export type RiderProfileSumAggregateOutputType = {
@@ -44,6 +45,7 @@ export type RiderProfileSumAggregateOutputType = {
   cancellationRate: runtime.Decimal | null
   completedTrips: number | null
   commissionPercent: runtime.Decimal | null
+  currentHeading: number | null
 }
 
 export type RiderProfileMinAggregateOutputType = {
@@ -70,6 +72,8 @@ export type RiderProfileMinAggregateOutputType = {
   suspensionReason: string | null
   suspensionEndsAt: Date | null
   lastOnlineAt: Date | null
+  tripStatus: $Enums.RiderTripStatus | null
+  currentHeading: number | null
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
@@ -99,6 +103,8 @@ export type RiderProfileMaxAggregateOutputType = {
   suspensionReason: string | null
   suspensionEndsAt: Date | null
   lastOnlineAt: Date | null
+  tripStatus: $Enums.RiderTripStatus | null
+  currentHeading: number | null
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
@@ -128,6 +134,8 @@ export type RiderProfileCountAggregateOutputType = {
   suspensionReason: number
   suspensionEndsAt: number
   lastOnlineAt: number
+  tripStatus: number
+  currentHeading: number
   createdAt: number
   updatedAt: number
   deletedAt: number
@@ -143,6 +151,7 @@ export type RiderProfileAvgAggregateInputType = {
   cancellationRate?: true
   completedTrips?: true
   commissionPercent?: true
+  currentHeading?: true
 }
 
 export type RiderProfileSumAggregateInputType = {
@@ -153,6 +162,7 @@ export type RiderProfileSumAggregateInputType = {
   cancellationRate?: true
   completedTrips?: true
   commissionPercent?: true
+  currentHeading?: true
 }
 
 export type RiderProfileMinAggregateInputType = {
@@ -179,6 +189,8 @@ export type RiderProfileMinAggregateInputType = {
   suspensionReason?: true
   suspensionEndsAt?: true
   lastOnlineAt?: true
+  tripStatus?: true
+  currentHeading?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -208,6 +220,8 @@ export type RiderProfileMaxAggregateInputType = {
   suspensionReason?: true
   suspensionEndsAt?: true
   lastOnlineAt?: true
+  tripStatus?: true
+  currentHeading?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -237,6 +251,8 @@ export type RiderProfileCountAggregateInputType = {
   suspensionReason?: true
   suspensionEndsAt?: true
   lastOnlineAt?: true
+  tripStatus?: true
+  currentHeading?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -353,6 +369,8 @@ export type RiderProfileGroupByOutputType = {
   suspensionReason: string | null
   suspensionEndsAt: Date | null
   lastOnlineAt: Date | null
+  tripStatus: $Enums.RiderTripStatus
+  currentHeading: number | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -405,6 +423,8 @@ export type RiderProfileWhereInput = {
   suspensionReason?: Prisma.StringNullableFilter<"RiderProfile"> | string | null
   suspensionEndsAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   lastOnlineAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFilter<"RiderProfile"> | $Enums.RiderTripStatus
+  currentHeading?: Prisma.FloatNullableFilter<"RiderProfile"> | number | null
   createdAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
@@ -418,6 +438,7 @@ export type RiderProfileWhereInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountListRelationFilter
   incidents?: Prisma.IncidentListRelationFilter
   onlineLogs?: Prisma.RiderOnlineLogListRelationFilter
+  dispatchOffers?: Prisma.RideDispatchOfferListRelationFilter
 }
 
 export type RiderProfileOrderByWithRelationInput = {
@@ -444,6 +465,8 @@ export type RiderProfileOrderByWithRelationInput = {
   suspensionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   suspensionEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastOnlineAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  tripStatus?: Prisma.SortOrder
+  currentHeading?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -457,6 +480,7 @@ export type RiderProfileOrderByWithRelationInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountOrderByRelationAggregateInput
   incidents?: Prisma.IncidentOrderByRelationAggregateInput
   onlineLogs?: Prisma.RiderOnlineLogOrderByRelationAggregateInput
+  dispatchOffers?: Prisma.RideDispatchOfferOrderByRelationAggregateInput
 }
 
 export type RiderProfileWhereUniqueInput = Prisma.AtLeast<{
@@ -486,6 +510,8 @@ export type RiderProfileWhereUniqueInput = Prisma.AtLeast<{
   suspensionReason?: Prisma.StringNullableFilter<"RiderProfile"> | string | null
   suspensionEndsAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   lastOnlineAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFilter<"RiderProfile"> | $Enums.RiderTripStatus
+  currentHeading?: Prisma.FloatNullableFilter<"RiderProfile"> | number | null
   createdAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
@@ -499,6 +525,7 @@ export type RiderProfileWhereUniqueInput = Prisma.AtLeast<{
   payoutAccounts?: Prisma.RiderPayoutAccountListRelationFilter
   incidents?: Prisma.IncidentListRelationFilter
   onlineLogs?: Prisma.RiderOnlineLogListRelationFilter
+  dispatchOffers?: Prisma.RideDispatchOfferListRelationFilter
 }, "id" | "userId" | "displayCode">
 
 export type RiderProfileOrderByWithAggregationInput = {
@@ -525,6 +552,8 @@ export type RiderProfileOrderByWithAggregationInput = {
   suspensionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   suspensionEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastOnlineAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  tripStatus?: Prisma.SortOrder
+  currentHeading?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -562,6 +591,8 @@ export type RiderProfileScalarWhereWithAggregatesInput = {
   suspensionReason?: Prisma.StringNullableWithAggregatesFilter<"RiderProfile"> | string | null
   suspensionEndsAt?: Prisma.DateTimeNullableWithAggregatesFilter<"RiderProfile"> | Date | string | null
   lastOnlineAt?: Prisma.DateTimeNullableWithAggregatesFilter<"RiderProfile"> | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusWithAggregatesFilter<"RiderProfile"> | $Enums.RiderTripStatus
+  currentHeading?: Prisma.FloatNullableWithAggregatesFilter<"RiderProfile"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"RiderProfile"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"RiderProfile"> | Date | string
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"RiderProfile"> | Date | string | null
@@ -589,6 +620,8 @@ export type RiderProfileCreateInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -602,6 +635,7 @@ export type RiderProfileCreateInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateInput = {
@@ -628,6 +662,8 @@ export type RiderProfileUncheckedCreateInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -639,6 +675,7 @@ export type RiderProfileUncheckedCreateInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUpdateInput = {
@@ -663,6 +700,8 @@ export type RiderProfileUpdateInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -676,6 +715,7 @@ export type RiderProfileUpdateInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateInput = {
@@ -702,6 +742,8 @@ export type RiderProfileUncheckedUpdateInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -713,6 +755,7 @@ export type RiderProfileUncheckedUpdateInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileCreateManyInput = {
@@ -739,6 +782,8 @@ export type RiderProfileCreateManyInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -766,6 +811,8 @@ export type RiderProfileUpdateManyMutationInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -795,6 +842,8 @@ export type RiderProfileUncheckedUpdateManyInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -829,6 +878,8 @@ export type RiderProfileCountOrderByAggregateInput = {
   suspensionReason?: Prisma.SortOrder
   suspensionEndsAt?: Prisma.SortOrder
   lastOnlineAt?: Prisma.SortOrder
+  tripStatus?: Prisma.SortOrder
+  currentHeading?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -842,6 +893,7 @@ export type RiderProfileAvgOrderByAggregateInput = {
   cancellationRate?: Prisma.SortOrder
   completedTrips?: Prisma.SortOrder
   commissionPercent?: Prisma.SortOrder
+  currentHeading?: Prisma.SortOrder
 }
 
 export type RiderProfileMaxOrderByAggregateInput = {
@@ -868,6 +920,8 @@ export type RiderProfileMaxOrderByAggregateInput = {
   suspensionReason?: Prisma.SortOrder
   suspensionEndsAt?: Prisma.SortOrder
   lastOnlineAt?: Prisma.SortOrder
+  tripStatus?: Prisma.SortOrder
+  currentHeading?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -897,6 +951,8 @@ export type RiderProfileMinOrderByAggregateInput = {
   suspensionReason?: Prisma.SortOrder
   suspensionEndsAt?: Prisma.SortOrder
   lastOnlineAt?: Prisma.SortOrder
+  tripStatus?: Prisma.SortOrder
+  currentHeading?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -910,6 +966,7 @@ export type RiderProfileSumOrderByAggregateInput = {
   cancellationRate?: Prisma.SortOrder
   completedTrips?: Prisma.SortOrder
   commissionPercent?: Prisma.SortOrder
+  currentHeading?: Prisma.SortOrder
 }
 
 export type RiderProfileScalarRelationFilter = {
@@ -973,6 +1030,18 @@ export type NullableDecimalFieldUpdateOperationsInput = {
   decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string
   multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string
   divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
+}
+
+export type EnumRiderTripStatusFieldUpdateOperationsInput = {
+  set?: $Enums.RiderTripStatus
+}
+
+export type NullableFloatFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type RiderProfileCreateNestedOneWithoutOnlineLogsInput = {
@@ -1135,6 +1204,20 @@ export type RiderProfileUpdateOneWithoutIncidentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.RiderProfileUpdateToOneWithWhereWithoutIncidentsInput, Prisma.RiderProfileUpdateWithoutIncidentsInput>, Prisma.RiderProfileUncheckedUpdateWithoutIncidentsInput>
 }
 
+export type RiderProfileCreateNestedOneWithoutDispatchOffersInput = {
+  create?: Prisma.XOR<Prisma.RiderProfileCreateWithoutDispatchOffersInput, Prisma.RiderProfileUncheckedCreateWithoutDispatchOffersInput>
+  connectOrCreate?: Prisma.RiderProfileCreateOrConnectWithoutDispatchOffersInput
+  connect?: Prisma.RiderProfileWhereUniqueInput
+}
+
+export type RiderProfileUpdateOneRequiredWithoutDispatchOffersNestedInput = {
+  create?: Prisma.XOR<Prisma.RiderProfileCreateWithoutDispatchOffersInput, Prisma.RiderProfileUncheckedCreateWithoutDispatchOffersInput>
+  connectOrCreate?: Prisma.RiderProfileCreateOrConnectWithoutDispatchOffersInput
+  upsert?: Prisma.RiderProfileUpsertWithoutDispatchOffersInput
+  connect?: Prisma.RiderProfileWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.RiderProfileUpdateToOneWithWhereWithoutDispatchOffersInput, Prisma.RiderProfileUpdateWithoutDispatchOffersInput>, Prisma.RiderProfileUncheckedUpdateWithoutDispatchOffersInput>
+}
+
 export type RiderProfileCreateWithoutUserInput = {
   id?: string
   displayCode: string
@@ -1157,6 +1240,8 @@ export type RiderProfileCreateWithoutUserInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1169,6 +1254,7 @@ export type RiderProfileCreateWithoutUserInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutUserInput = {
@@ -1194,6 +1280,8 @@ export type RiderProfileUncheckedCreateWithoutUserInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1205,6 +1293,7 @@ export type RiderProfileUncheckedCreateWithoutUserInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutUserInput = {
@@ -1245,6 +1334,8 @@ export type RiderProfileUpdateWithoutUserInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1257,6 +1348,7 @@ export type RiderProfileUpdateWithoutUserInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutUserInput = {
@@ -1282,6 +1374,8 @@ export type RiderProfileUncheckedUpdateWithoutUserInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1293,6 +1387,7 @@ export type RiderProfileUncheckedUpdateWithoutUserInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileCreateWithoutOnlineLogsInput = {
@@ -1317,6 +1412,8 @@ export type RiderProfileCreateWithoutOnlineLogsInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1329,6 +1426,7 @@ export type RiderProfileCreateWithoutOnlineLogsInput = {
   payoutRequests?: Prisma.PayoutRequestCreateNestedManyWithoutRiderInput
   payoutAccounts?: Prisma.RiderPayoutAccountCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutOnlineLogsInput = {
@@ -1355,6 +1453,8 @@ export type RiderProfileUncheckedCreateWithoutOnlineLogsInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1365,6 +1465,7 @@ export type RiderProfileUncheckedCreateWithoutOnlineLogsInput = {
   payoutRequests?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutRiderInput
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutOnlineLogsInput = {
@@ -1405,6 +1506,8 @@ export type RiderProfileUpdateWithoutOnlineLogsInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1417,6 +1520,7 @@ export type RiderProfileUpdateWithoutOnlineLogsInput = {
   payoutRequests?: Prisma.PayoutRequestUpdateManyWithoutRiderNestedInput
   payoutAccounts?: Prisma.RiderPayoutAccountUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutOnlineLogsInput = {
@@ -1443,6 +1547,8 @@ export type RiderProfileUncheckedUpdateWithoutOnlineLogsInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1453,6 +1559,7 @@ export type RiderProfileUncheckedUpdateWithoutOnlineLogsInput = {
   payoutRequests?: Prisma.PayoutRequestUncheckedUpdateManyWithoutRiderNestedInput
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileCreateWithoutVehicleInput = {
@@ -1477,6 +1584,8 @@ export type RiderProfileCreateWithoutVehicleInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1489,6 +1598,7 @@ export type RiderProfileCreateWithoutVehicleInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutVehicleInput = {
@@ -1515,6 +1625,8 @@ export type RiderProfileUncheckedCreateWithoutVehicleInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1525,6 +1637,7 @@ export type RiderProfileUncheckedCreateWithoutVehicleInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutVehicleInput = {
@@ -1565,6 +1678,8 @@ export type RiderProfileUpdateWithoutVehicleInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1577,6 +1692,7 @@ export type RiderProfileUpdateWithoutVehicleInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutVehicleInput = {
@@ -1603,6 +1719,8 @@ export type RiderProfileUncheckedUpdateWithoutVehicleInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1613,6 +1731,7 @@ export type RiderProfileUncheckedUpdateWithoutVehicleInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileCreateWithoutDocumentsInput = {
@@ -1637,6 +1756,8 @@ export type RiderProfileCreateWithoutDocumentsInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1649,6 +1770,7 @@ export type RiderProfileCreateWithoutDocumentsInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutDocumentsInput = {
@@ -1675,6 +1797,8 @@ export type RiderProfileUncheckedCreateWithoutDocumentsInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1685,6 +1809,7 @@ export type RiderProfileUncheckedCreateWithoutDocumentsInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutDocumentsInput = {
@@ -1725,6 +1850,8 @@ export type RiderProfileUpdateWithoutDocumentsInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1737,6 +1864,7 @@ export type RiderProfileUpdateWithoutDocumentsInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutDocumentsInput = {
@@ -1763,6 +1891,8 @@ export type RiderProfileUncheckedUpdateWithoutDocumentsInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1773,6 +1903,7 @@ export type RiderProfileUncheckedUpdateWithoutDocumentsInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileCreateWithoutServiceZoneInput = {
@@ -1797,6 +1928,8 @@ export type RiderProfileCreateWithoutServiceZoneInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1809,6 +1942,7 @@ export type RiderProfileCreateWithoutServiceZoneInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutServiceZoneInput = {
@@ -1834,6 +1968,8 @@ export type RiderProfileUncheckedCreateWithoutServiceZoneInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1845,6 +1981,7 @@ export type RiderProfileUncheckedCreateWithoutServiceZoneInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutServiceZoneInput = {
@@ -1900,6 +2037,8 @@ export type RiderProfileScalarWhereInput = {
   suspensionReason?: Prisma.StringNullableFilter<"RiderProfile"> | string | null
   suspensionEndsAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   lastOnlineAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFilter<"RiderProfile"> | $Enums.RiderTripStatus
+  currentHeading?: Prisma.FloatNullableFilter<"RiderProfile"> | number | null
   createdAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
@@ -1927,6 +2066,8 @@ export type RiderProfileCreateWithoutRidesInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1939,6 +2080,7 @@ export type RiderProfileCreateWithoutRidesInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutRidesInput = {
@@ -1965,6 +2107,8 @@ export type RiderProfileUncheckedCreateWithoutRidesInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1975,6 +2119,7 @@ export type RiderProfileUncheckedCreateWithoutRidesInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutRidesInput = {
@@ -2015,6 +2160,8 @@ export type RiderProfileUpdateWithoutRidesInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2027,6 +2174,7 @@ export type RiderProfileUpdateWithoutRidesInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutRidesInput = {
@@ -2053,6 +2201,8 @@ export type RiderProfileUncheckedUpdateWithoutRidesInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2063,6 +2213,7 @@ export type RiderProfileUncheckedUpdateWithoutRidesInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileCreateWithoutDeliveriesInput = {
@@ -2087,6 +2238,8 @@ export type RiderProfileCreateWithoutDeliveriesInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2099,6 +2252,7 @@ export type RiderProfileCreateWithoutDeliveriesInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutDeliveriesInput = {
@@ -2125,6 +2279,8 @@ export type RiderProfileUncheckedCreateWithoutDeliveriesInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2135,6 +2291,7 @@ export type RiderProfileUncheckedCreateWithoutDeliveriesInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutDeliveriesInput = {
@@ -2175,6 +2332,8 @@ export type RiderProfileUpdateWithoutDeliveriesInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2187,6 +2346,7 @@ export type RiderProfileUpdateWithoutDeliveriesInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutDeliveriesInput = {
@@ -2213,6 +2373,8 @@ export type RiderProfileUncheckedUpdateWithoutDeliveriesInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2223,6 +2385,7 @@ export type RiderProfileUncheckedUpdateWithoutDeliveriesInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileCreateWithoutPayoutRequestsInput = {
@@ -2247,6 +2410,8 @@ export type RiderProfileCreateWithoutPayoutRequestsInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2259,6 +2424,7 @@ export type RiderProfileCreateWithoutPayoutRequestsInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutPayoutRequestsInput = {
@@ -2285,6 +2451,8 @@ export type RiderProfileUncheckedCreateWithoutPayoutRequestsInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2295,6 +2463,7 @@ export type RiderProfileUncheckedCreateWithoutPayoutRequestsInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutPayoutRequestsInput = {
@@ -2335,6 +2504,8 @@ export type RiderProfileUpdateWithoutPayoutRequestsInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2347,6 +2518,7 @@ export type RiderProfileUpdateWithoutPayoutRequestsInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutPayoutRequestsInput = {
@@ -2373,6 +2545,8 @@ export type RiderProfileUncheckedUpdateWithoutPayoutRequestsInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2383,6 +2557,7 @@ export type RiderProfileUncheckedUpdateWithoutPayoutRequestsInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileCreateWithoutPayoutAccountsInput = {
@@ -2407,6 +2582,8 @@ export type RiderProfileCreateWithoutPayoutAccountsInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2419,6 +2596,7 @@ export type RiderProfileCreateWithoutPayoutAccountsInput = {
   payoutRequests?: Prisma.PayoutRequestCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutPayoutAccountsInput = {
@@ -2445,6 +2623,8 @@ export type RiderProfileUncheckedCreateWithoutPayoutAccountsInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2455,6 +2635,7 @@ export type RiderProfileUncheckedCreateWithoutPayoutAccountsInput = {
   payoutRequests?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutRiderInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutPayoutAccountsInput = {
@@ -2495,6 +2676,8 @@ export type RiderProfileUpdateWithoutPayoutAccountsInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2507,6 +2690,7 @@ export type RiderProfileUpdateWithoutPayoutAccountsInput = {
   payoutRequests?: Prisma.PayoutRequestUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutPayoutAccountsInput = {
@@ -2533,6 +2717,8 @@ export type RiderProfileUncheckedUpdateWithoutPayoutAccountsInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2543,6 +2729,7 @@ export type RiderProfileUncheckedUpdateWithoutPayoutAccountsInput = {
   payoutRequests?: Prisma.PayoutRequestUncheckedUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileCreateWithoutIncidentsInput = {
@@ -2567,6 +2754,8 @@ export type RiderProfileCreateWithoutIncidentsInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2579,6 +2768,7 @@ export type RiderProfileCreateWithoutIncidentsInput = {
   payoutRequests?: Prisma.PayoutRequestCreateNestedManyWithoutRiderInput
   payoutAccounts?: Prisma.RiderPayoutAccountCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutIncidentsInput = {
@@ -2605,6 +2795,8 @@ export type RiderProfileUncheckedCreateWithoutIncidentsInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2615,6 +2807,7 @@ export type RiderProfileUncheckedCreateWithoutIncidentsInput = {
   payoutRequests?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutRiderInput
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedCreateNestedManyWithoutRiderInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutIncidentsInput = {
@@ -2655,6 +2848,8 @@ export type RiderProfileUpdateWithoutIncidentsInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2667,6 +2862,7 @@ export type RiderProfileUpdateWithoutIncidentsInput = {
   payoutRequests?: Prisma.PayoutRequestUpdateManyWithoutRiderNestedInput
   payoutAccounts?: Prisma.RiderPayoutAccountUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutIncidentsInput = {
@@ -2693,6 +2889,8 @@ export type RiderProfileUncheckedUpdateWithoutIncidentsInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2702,6 +2900,179 @@ export type RiderProfileUncheckedUpdateWithoutIncidentsInput = {
   deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutRiderNestedInput
   payoutRequests?: Prisma.PayoutRequestUncheckedUpdateManyWithoutRiderNestedInput
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedUpdateManyWithoutRiderNestedInput
+  onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
+}
+
+export type RiderProfileCreateWithoutDispatchOffersInput = {
+  id?: string
+  displayCode: string
+  approvalStatus?: $Enums.RiderApprovalStatus
+  city?: string | null
+  onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
+  currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
+  ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: number
+  commissionPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: string | null
+  approvedAt?: Date | string | null
+  suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
+  lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  user: Prisma.UserCreateNestedOneWithoutRiderProfileInput
+  serviceZone?: Prisma.ServiceZoneCreateNestedOneWithoutRidersInput
+  vehicle?: Prisma.VehicleCreateNestedOneWithoutRiderInput
+  documents?: Prisma.RiderDocumentCreateNestedManyWithoutRiderInput
+  rides?: Prisma.RideCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestCreateNestedManyWithoutRiderInput
+  payoutRequests?: Prisma.PayoutRequestCreateNestedManyWithoutRiderInput
+  payoutAccounts?: Prisma.RiderPayoutAccountCreateNestedManyWithoutRiderInput
+  incidents?: Prisma.IncidentCreateNestedManyWithoutRiderInput
+  onlineLogs?: Prisma.RiderOnlineLogCreateNestedManyWithoutRiderProfileInput
+}
+
+export type RiderProfileUncheckedCreateWithoutDispatchOffersInput = {
+  id?: string
+  userId: string
+  displayCode: string
+  approvalStatus?: $Enums.RiderApprovalStatus
+  city?: string | null
+  serviceZoneId?: string | null
+  onlineStatus?: boolean
+  jobPreference?: $Enums.JobPreference
+  currentLatitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: boolean
+  lastLocationMockedAt?: Date | string | null
+  ratingAverage?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: number
+  commissionPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: string | null
+  approvedAt?: Date | string | null
+  suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  suspensionEndsAt?: Date | string | null
+  lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  vehicle?: Prisma.VehicleUncheckedCreateNestedOneWithoutRiderInput
+  documents?: Prisma.RiderDocumentUncheckedCreateNestedManyWithoutRiderInput
+  rides?: Prisma.RideUncheckedCreateNestedManyWithoutRiderInput
+  deliveries?: Prisma.DeliveryRequestUncheckedCreateNestedManyWithoutRiderInput
+  payoutRequests?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutRiderInput
+  payoutAccounts?: Prisma.RiderPayoutAccountUncheckedCreateNestedManyWithoutRiderInput
+  incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutRiderInput
+  onlineLogs?: Prisma.RiderOnlineLogUncheckedCreateNestedManyWithoutRiderProfileInput
+}
+
+export type RiderProfileCreateOrConnectWithoutDispatchOffersInput = {
+  where: Prisma.RiderProfileWhereUniqueInput
+  create: Prisma.XOR<Prisma.RiderProfileCreateWithoutDispatchOffersInput, Prisma.RiderProfileUncheckedCreateWithoutDispatchOffersInput>
+}
+
+export type RiderProfileUpsertWithoutDispatchOffersInput = {
+  update: Prisma.XOR<Prisma.RiderProfileUpdateWithoutDispatchOffersInput, Prisma.RiderProfileUncheckedUpdateWithoutDispatchOffersInput>
+  create: Prisma.XOR<Prisma.RiderProfileCreateWithoutDispatchOffersInput, Prisma.RiderProfileUncheckedCreateWithoutDispatchOffersInput>
+  where?: Prisma.RiderProfileWhereInput
+}
+
+export type RiderProfileUpdateToOneWithWhereWithoutDispatchOffersInput = {
+  where?: Prisma.RiderProfileWhereInput
+  data: Prisma.XOR<Prisma.RiderProfileUpdateWithoutDispatchOffersInput, Prisma.RiderProfileUncheckedUpdateWithoutDispatchOffersInput>
+}
+
+export type RiderProfileUpdateWithoutDispatchOffersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  displayCode?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
+  currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: Prisma.IntFieldUpdateOperationsInput | number
+  commissionPercent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  user?: Prisma.UserUpdateOneRequiredWithoutRiderProfileNestedInput
+  serviceZone?: Prisma.ServiceZoneUpdateOneWithoutRidersNestedInput
+  vehicle?: Prisma.VehicleUpdateOneWithoutRiderNestedInput
+  documents?: Prisma.RiderDocumentUpdateManyWithoutRiderNestedInput
+  rides?: Prisma.RideUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUpdateManyWithoutRiderNestedInput
+  payoutRequests?: Prisma.PayoutRequestUpdateManyWithoutRiderNestedInput
+  payoutAccounts?: Prisma.RiderPayoutAccountUpdateManyWithoutRiderNestedInput
+  incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
+  onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
+}
+
+export type RiderProfileUncheckedUpdateWithoutDispatchOffersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  displayCode?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.EnumRiderApprovalStatusFieldUpdateOperationsInput | $Enums.RiderApprovalStatus
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serviceZoneId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onlineStatus?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  jobPreference?: Prisma.EnumJobPreferenceFieldUpdateOperationsInput | $Enums.JobPreference
+  currentLatitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currentLongitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  lastLocationMocked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLocationMockedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  ratingAverage?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  acceptanceRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  cancellationRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  completedTrips?: Prisma.IntFieldUpdateOperationsInput | number
+  commissionPercent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  vehicle?: Prisma.VehicleUncheckedUpdateOneWithoutRiderNestedInput
+  documents?: Prisma.RiderDocumentUncheckedUpdateManyWithoutRiderNestedInput
+  rides?: Prisma.RideUncheckedUpdateManyWithoutRiderNestedInput
+  deliveries?: Prisma.DeliveryRequestUncheckedUpdateManyWithoutRiderNestedInput
+  payoutRequests?: Prisma.PayoutRequestUncheckedUpdateManyWithoutRiderNestedInput
+  payoutAccounts?: Prisma.RiderPayoutAccountUncheckedUpdateManyWithoutRiderNestedInput
+  incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
 }
 
@@ -2728,6 +3099,8 @@ export type RiderProfileCreateManyServiceZoneInput = {
   suspensionReason?: string | null
   suspensionEndsAt?: Date | string | null
   lastOnlineAt?: Date | string | null
+  tripStatus?: $Enums.RiderTripStatus
+  currentHeading?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2755,6 +3128,8 @@ export type RiderProfileUpdateWithoutServiceZoneInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2767,6 +3142,7 @@ export type RiderProfileUpdateWithoutServiceZoneInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutServiceZoneInput = {
@@ -2792,6 +3168,8 @@ export type RiderProfileUncheckedUpdateWithoutServiceZoneInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2803,6 +3181,7 @@ export type RiderProfileUncheckedUpdateWithoutServiceZoneInput = {
   payoutAccounts?: Prisma.RiderPayoutAccountUncheckedUpdateManyWithoutRiderNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutRiderNestedInput
   onlineLogs?: Prisma.RiderOnlineLogUncheckedUpdateManyWithoutRiderProfileNestedInput
+  dispatchOffers?: Prisma.RideDispatchOfferUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateManyWithoutServiceZoneInput = {
@@ -2828,6 +3207,8 @@ export type RiderProfileUncheckedUpdateManyWithoutServiceZoneInput = {
   suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suspensionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tripStatus?: Prisma.EnumRiderTripStatusFieldUpdateOperationsInput | $Enums.RiderTripStatus
+  currentHeading?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2846,6 +3227,7 @@ export type RiderProfileCountOutputType = {
   payoutAccounts: number
   incidents: number
   onlineLogs: number
+  dispatchOffers: number
 }
 
 export type RiderProfileCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2856,6 +3238,7 @@ export type RiderProfileCountOutputTypeSelect<ExtArgs extends runtime.Types.Exte
   payoutAccounts?: boolean | RiderProfileCountOutputTypeCountPayoutAccountsArgs
   incidents?: boolean | RiderProfileCountOutputTypeCountIncidentsArgs
   onlineLogs?: boolean | RiderProfileCountOutputTypeCountOnlineLogsArgs
+  dispatchOffers?: boolean | RiderProfileCountOutputTypeCountDispatchOffersArgs
 }
 
 /**
@@ -2917,6 +3300,13 @@ export type RiderProfileCountOutputTypeCountOnlineLogsArgs<ExtArgs extends runti
   where?: Prisma.RiderOnlineLogWhereInput
 }
 
+/**
+ * RiderProfileCountOutputType without action
+ */
+export type RiderProfileCountOutputTypeCountDispatchOffersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.RideDispatchOfferWhereInput
+}
+
 
 export type RiderProfileSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2942,6 +3332,8 @@ export type RiderProfileSelect<ExtArgs extends runtime.Types.Extensions.Internal
   suspensionReason?: boolean
   suspensionEndsAt?: boolean
   lastOnlineAt?: boolean
+  tripStatus?: boolean
+  currentHeading?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -2955,6 +3347,7 @@ export type RiderProfileSelect<ExtArgs extends runtime.Types.Extensions.Internal
   payoutAccounts?: boolean | Prisma.RiderProfile$payoutAccountsArgs<ExtArgs>
   incidents?: boolean | Prisma.RiderProfile$incidentsArgs<ExtArgs>
   onlineLogs?: boolean | Prisma.RiderProfile$onlineLogsArgs<ExtArgs>
+  dispatchOffers?: boolean | Prisma.RiderProfile$dispatchOffersArgs<ExtArgs>
   _count?: boolean | Prisma.RiderProfileCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["riderProfile"]>
 
@@ -2982,6 +3375,8 @@ export type RiderProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   suspensionReason?: boolean
   suspensionEndsAt?: boolean
   lastOnlineAt?: boolean
+  tripStatus?: boolean
+  currentHeading?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -3013,6 +3408,8 @@ export type RiderProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   suspensionReason?: boolean
   suspensionEndsAt?: boolean
   lastOnlineAt?: boolean
+  tripStatus?: boolean
+  currentHeading?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -3044,12 +3441,14 @@ export type RiderProfileSelectScalar = {
   suspensionReason?: boolean
   suspensionEndsAt?: boolean
   lastOnlineAt?: boolean
+  tripStatus?: boolean
+  currentHeading?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
 }
 
-export type RiderProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "displayCode" | "approvalStatus" | "city" | "serviceZoneId" | "onlineStatus" | "jobPreference" | "currentLatitude" | "currentLongitude" | "lastLocationMocked" | "lastLocationMockedAt" | "ratingAverage" | "acceptanceRate" | "cancellationRate" | "completedTrips" | "commissionPercent" | "bio" | "approvedAt" | "suspendedAt" | "suspensionReason" | "suspensionEndsAt" | "lastOnlineAt" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["riderProfile"]>
+export type RiderProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "displayCode" | "approvalStatus" | "city" | "serviceZoneId" | "onlineStatus" | "jobPreference" | "currentLatitude" | "currentLongitude" | "lastLocationMocked" | "lastLocationMockedAt" | "ratingAverage" | "acceptanceRate" | "cancellationRate" | "completedTrips" | "commissionPercent" | "bio" | "approvedAt" | "suspendedAt" | "suspensionReason" | "suspensionEndsAt" | "lastOnlineAt" | "tripStatus" | "currentHeading" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["riderProfile"]>
 export type RiderProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   serviceZone?: boolean | Prisma.RiderProfile$serviceZoneArgs<ExtArgs>
@@ -3061,6 +3460,7 @@ export type RiderProfileInclude<ExtArgs extends runtime.Types.Extensions.Interna
   payoutAccounts?: boolean | Prisma.RiderProfile$payoutAccountsArgs<ExtArgs>
   incidents?: boolean | Prisma.RiderProfile$incidentsArgs<ExtArgs>
   onlineLogs?: boolean | Prisma.RiderProfile$onlineLogsArgs<ExtArgs>
+  dispatchOffers?: boolean | Prisma.RiderProfile$dispatchOffersArgs<ExtArgs>
   _count?: boolean | Prisma.RiderProfileCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type RiderProfileIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3085,6 +3485,7 @@ export type $RiderProfilePayload<ExtArgs extends runtime.Types.Extensions.Intern
     payoutAccounts: Prisma.$RiderPayoutAccountPayload<ExtArgs>[]
     incidents: Prisma.$IncidentPayload<ExtArgs>[]
     onlineLogs: Prisma.$RiderOnlineLogPayload<ExtArgs>[]
+    dispatchOffers: Prisma.$RideDispatchOfferPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3120,6 +3521,8 @@ export type $RiderProfilePayload<ExtArgs extends runtime.Types.Extensions.Intern
      */
     suspensionEndsAt: Date | null
     lastOnlineAt: Date | null
+    tripStatus: $Enums.RiderTripStatus
+    currentHeading: number | null
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
@@ -3527,6 +3930,7 @@ export interface Prisma__RiderProfileClient<T, Null = never, ExtArgs extends run
   payoutAccounts<T extends Prisma.RiderProfile$payoutAccountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RiderProfile$payoutAccountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RiderPayoutAccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   incidents<T extends Prisma.RiderProfile$incidentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RiderProfile$incidentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$IncidentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   onlineLogs<T extends Prisma.RiderProfile$onlineLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RiderProfile$onlineLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RiderOnlineLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  dispatchOffers<T extends Prisma.RiderProfile$dispatchOffersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RiderProfile$dispatchOffersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RideDispatchOfferPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3579,6 +3983,8 @@ export interface RiderProfileFieldRefs {
   readonly suspensionReason: Prisma.FieldRef<"RiderProfile", 'String'>
   readonly suspensionEndsAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
   readonly lastOnlineAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
+  readonly tripStatus: Prisma.FieldRef<"RiderProfile", 'RiderTripStatus'>
+  readonly currentHeading: Prisma.FieldRef<"RiderProfile", 'Float'>
   readonly createdAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
   readonly deletedAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
@@ -4186,6 +4592,30 @@ export type RiderProfile$onlineLogsArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.RiderOnlineLogScalarFieldEnum | Prisma.RiderOnlineLogScalarFieldEnum[]
+}
+
+/**
+ * RiderProfile.dispatchOffers
+ */
+export type RiderProfile$dispatchOffersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the RideDispatchOffer
+   */
+  select?: Prisma.RideDispatchOfferSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the RideDispatchOffer
+   */
+  omit?: Prisma.RideDispatchOfferOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RideDispatchOfferInclude<ExtArgs> | null
+  where?: Prisma.RideDispatchOfferWhereInput
+  orderBy?: Prisma.RideDispatchOfferOrderByWithRelationInput | Prisma.RideDispatchOfferOrderByWithRelationInput[]
+  cursor?: Prisma.RideDispatchOfferWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.RideDispatchOfferScalarFieldEnum | Prisma.RideDispatchOfferScalarFieldEnum[]
 }
 
 /**

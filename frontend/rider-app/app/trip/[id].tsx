@@ -344,7 +344,23 @@ export default function TripScreen() {
           }}
           onAdvance={advance}
           onVerifyPin={async (pin: string) => {
-            return pin.length === 4;
+            if (!trip || !session?.user.riderProfileId) return false;
+            try {
+              await api(`/rides/${trip.id}/verify-pin`, {
+                method: "POST",
+                token: session.token,
+                body: {
+                  pin,
+                  riderProfileId: session.user.riderProfileId,
+                },
+              });
+              await refresh();
+              showToast("PIN verified! Wear your helmet and ride safely.", "success");
+              return true;
+            } catch (err: any) {
+              showToast(err.message || "Invalid 4-digit pickup PIN. Please ask passenger.", "error");
+              return false;
+            }
           }}
           loading={loading}
         />

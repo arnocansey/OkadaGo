@@ -8,7 +8,7 @@ import { useApp } from "@/context/AppContext";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { useResolvedLocationAddress } from "@/hooks/useResolvedLocationAddress";
 import { useTheme } from "@/context/ThemeContext";
-import { AppMap } from "@/components/AppMap";
+import { AppMap, type MapMarker } from "@/components/AppMap";
 import { DestinationSearchSheet } from "@/components/DestinationSearchSheet";
 import { ParcelDeliveryDetailsModal, type ParcelDetails } from "@/components/ParcelDeliveryDetailsModal";
 import { RideBookingSheet, type RideTier, type RideTierId } from "@/components/RideBookingSheet";
@@ -168,6 +168,7 @@ export default function BookRideScreen() {
         label: "OkadaGo",
         subtitle: "Everyday quick ride",
         fare: Math.round(stdFare * 100) / 100,
+        originalFare: Math.round(stdFare * 1.18 * 100) / 100,
         etaMinutes: Math.max(2, Math.round(durMin * 0.8)),
         capacity: "1 rider",
         recommended: true,
@@ -177,19 +178,23 @@ export default function BookRideScreen() {
         label: "OkadaX",
         subtitle: "Priority pickup • Top rider",
         fare: Math.round(expFare * 100) / 100,
+        originalFare: Math.round(expFare * 1.2 * 100) / 100,
         etaMinutes: Math.max(1, Math.round(durMin * 0.6)),
         capacity: "1 rider",
+        faster: true,
       },
       {
         id: "cargo",
         label: "Okada Send",
-        subtitle: "Package delivery courier",
+        subtitle: isDelivery ? "Package delivery courier" : "Package delivery only",
         fare: Math.round(delFare * 100) / 100,
+        originalFare: Math.round(delFare * 1.15 * 100) / 100,
         etaMinutes: Math.max(3, Math.round(durMin)),
         capacity: "Parcel",
+        busy: !isDelivery,
       },
     ];
-  }, [estimate, zones]);
+  }, [estimate, zones, isDelivery]);
 
   /* ─── Promo Code Validation ───────────────────────────────── */
   useEffect(() => {
@@ -239,26 +244,41 @@ export default function BookRideScreen() {
   }, [estimate?.route, destination, destResolved, pickupCoords, destCoords]);
 
   const markers = useMemo(() => {
-    const pts = [
+    const pickupEta = estimate?.durationMinutes
+      ? `~${Math.max(2, Math.round(estimate.durationMinutes * 0.4))} min`
+      : "~3 min";
+
+    const dropoffTime = estimate?.durationMinutes
+      ? new Date(Date.now() + estimate.durationMinutes * 60000).toLocaleTimeString([], {
+          hour: "numeric",
+          minute: "2-digit",
+        })
+      : undefined;
+
+    const pts: MapMarker[] = [
       {
         id: "pickup",
+        type: "pickup",
         latitude: pickupCoords.latitude,
         longitude: pickupCoords.longitude,
         title: "Pickup",
         pinColor: colors.primary,
+        etaLabel: pickupEta,
       },
     ];
     if (destination && destResolved) {
       pts.push({
         id: "dest",
+        type: "destination",
         latitude: destCoords.latitude,
         longitude: destCoords.longitude,
-        title: "Destination",
+        title: "Dropoff",
         pinColor: colors.danger,
+        etaLabel: dropoffTime,
       });
     }
     return pts;
-  }, [pickupCoords, destCoords, destination, destResolved, colors]);
+  }, [pickupCoords, destCoords, destination, destResolved, colors, estimate?.durationMinutes]);
 
   /* ─── Search Handlers ─────────────────────────────────────── */
   const handleSelectDestination = useCallback(
@@ -417,6 +437,7 @@ export default function BookRideScreen() {
           setSearchTarget("destination");
           setSearchOpen(true);
         }}
+        onClose={() => router.back()}
         tiers={tiers}
         selectedTier={rideType}
         onSelectTier={setRideType}

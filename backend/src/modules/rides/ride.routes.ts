@@ -13,7 +13,9 @@ import {
   rideLifecycleValidationSchema,
   rideStatusUpdateSchema
 } from "./ride.schemas.js";
+import { AppError } from "../../common/errors.js";
 import { RideService } from "./ride.service.js";
+import { dispatchService } from "../matching/dispatch.service.js";
 
 const rideService = new RideService();
 
@@ -126,5 +128,43 @@ export const rideRoutes: FastifyPluginAsync = async (server) => {
     const params = parseParams(request, rideIdParamsSchema);
     const input = parseBody(request, rideStatusUpdateSchema);
     return rideService.updateRideStatus(params.rideId, input);
+  });
+
+  server.post("/rides/offers/:offerId/accept", async (request, reply) => {
+    const params = request.params as { offerId: string };
+    const body = request.body as { riderProfileId: string };
+    if (!body?.riderProfileId) {
+      throw new AppError("riderProfileId is required", 400, "MISSING_RIDER_ID");
+    }
+    const result = await dispatchService.acceptOffer(params.offerId, body.riderProfileId);
+    return reply.send(result);
+  });
+
+  server.post("/rides/offers/:offerId/reject", async (request, reply) => {
+    const params = request.params as { offerId: string };
+    const body = request.body as { riderProfileId: string; reason?: string };
+    if (!body?.riderProfileId) {
+      throw new AppError("riderProfileId is required", 400, "MISSING_RIDER_ID");
+    }
+    const result = await dispatchService.rejectOffer(params.offerId, body.riderProfileId, body?.reason);
+    return reply.send(result);
+  });
+
+  server.post("/rides/:rideId/verify-pin", async (request, reply) => {
+    const params = parseParams(request, rideIdParamsSchema);
+    const body = request.body as { pin: string; riderProfileId: string };
+    if (!body?.pin || !body?.riderProfileId) {
+      throw new AppError("pin and riderProfileId are required", 400, "MISSING_PIN_OR_RIDER");
+    }
+    const result = await dispatchService.verifyPickupPin(params.rideId, body.pin, body.riderProfileId);
+    return reply.send(result);
+  });
+
+  server.post("/rides/:rideId/retry-dispatch", async (request, reply) => {
+    const params = parseParams(request, rideIdParamsSchema);
+    const ride = await rideService.getRide(params.rideId);
+    if (!ride) throw new AppError("Ride not found", 404, "RIDE_NOT_FOUND");
+    void dispatchService.dispatchRide(params.rideId, 1);
+    return reply.send({ success: true, message: "Dispatch restarted" });
   });
 };

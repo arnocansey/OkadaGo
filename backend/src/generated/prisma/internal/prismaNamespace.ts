@@ -430,7 +430,8 @@ export const ModelName = {
   GoPointRedemption: 'GoPointRedemption',
   MessageTemplate: 'MessageTemplate',
   AssignmentRule: 'AssignmentRule',
-  AssignmentAuditLog: 'AssignmentAuditLog'
+  AssignmentAuditLog: 'AssignmentAuditLog',
+  RideDispatchOffer: 'RideDispatchOffer'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -446,7 +447,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "riderOnlineLog" | "adminProfile" | "savedPaymentMethod" | "adminNote" | "platformSetting" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "deliveryRequest" | "deliveryStop" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "riderPayoutAccount" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog" | "escalationRule" | "scheduledBroadcast" | "opsJobHeartbeat" | "goPointRule" | "goPointBalance" | "goPointLedger" | "goPointRedemption" | "messageTemplate" | "assignmentRule" | "assignmentAuditLog"
+    modelProps: "user" | "userSession" | "userDevice" | "passengerProfile" | "riderProfile" | "riderOnlineLog" | "adminProfile" | "savedPaymentMethod" | "adminNote" | "platformSetting" | "dispatcherProfile" | "vehicle" | "riderDocument" | "serviceZone" | "pricingRule" | "ride" | "deliveryRequest" | "deliveryStop" | "rideLocation" | "rideEvent" | "payment" | "wallet" | "walletTransaction" | "payoutRequest" | "riderPayoutAccount" | "rating" | "review" | "promoCode" | "promoRedemption" | "referral" | "notification" | "supportTicket" | "supportTicketMessage" | "incident" | "emergencyContact" | "savedPlace" | "auditLog" | "escalationRule" | "scheduledBroadcast" | "opsJobHeartbeat" | "goPointRule" | "goPointBalance" | "goPointLedger" | "goPointRedemption" | "messageTemplate" | "assignmentRule" | "assignmentAuditLog" | "rideDispatchOffer"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3928,6 +3929,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    RideDispatchOffer: {
+      payload: Prisma.$RideDispatchOfferPayload<ExtArgs>
+      fields: Prisma.RideDispatchOfferFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.RideDispatchOfferFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RideDispatchOfferPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.RideDispatchOfferFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RideDispatchOfferPayload>
+        }
+        findFirst: {
+          args: Prisma.RideDispatchOfferFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RideDispatchOfferPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.RideDispatchOfferFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RideDispatchOfferPayload>
+        }
+        findMany: {
+          args: Prisma.RideDispatchOfferFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RideDispatchOfferPayload>[]
+        }
+        create: {
+          args: Prisma.RideDispatchOfferCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RideDispatchOfferPayload>
+        }
+        createMany: {
+          args: Prisma.RideDispatchOfferCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.RideDispatchOfferCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RideDispatchOfferPayload>[]
+        }
+        delete: {
+          args: Prisma.RideDispatchOfferDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RideDispatchOfferPayload>
+        }
+        update: {
+          args: Prisma.RideDispatchOfferUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RideDispatchOfferPayload>
+        }
+        deleteMany: {
+          args: Prisma.RideDispatchOfferDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.RideDispatchOfferUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.RideDispatchOfferUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RideDispatchOfferPayload>[]
+        }
+        upsert: {
+          args: Prisma.RideDispatchOfferUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RideDispatchOfferPayload>
+        }
+        aggregate: {
+          args: Prisma.RideDispatchOfferAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateRideDispatchOffer>
+        }
+        groupBy: {
+          args: Prisma.RideDispatchOfferGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RideDispatchOfferGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.RideDispatchOfferCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RideDispatchOfferCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -4060,6 +4135,8 @@ export const RiderProfileScalarFieldEnum = {
   suspensionReason: 'suspensionReason',
   suspensionEndsAt: 'suspensionEndsAt',
   lastOnlineAt: 'lastOnlineAt',
+  tripStatus: 'tripStatus',
+  currentHeading: 'currentHeading',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
@@ -4260,6 +4337,11 @@ export const RideScalarFieldEnum = {
   paymentMethod: 'paymentMethod',
   cancellationParty: 'cancellationParty',
   cancellationReason: 'cancellationReason',
+  safetyPin: 'safetyPin',
+  pinVerifiedAt: 'pinVerifiedAt',
+  dispatchRound: 'dispatchRound',
+  currentOfferRiderId: 'currentOfferRiderId',
+  offerExpiresAt: 'offerExpiresAt',
   requestedAt: 'requestedAt',
   scheduledFor: 'scheduledFor',
   assignedAt: 'assignedAt',
@@ -4850,6 +4932,22 @@ export const AssignmentAuditLogScalarFieldEnum = {
 export type AssignmentAuditLogScalarFieldEnum = (typeof AssignmentAuditLogScalarFieldEnum)[keyof typeof AssignmentAuditLogScalarFieldEnum]
 
 
+export const RideDispatchOfferScalarFieldEnum = {
+  id: 'id',
+  rideId: 'rideId',
+  riderId: 'riderId',
+  round: 'round',
+  searchRadiusKm: 'searchRadiusKm',
+  matchingScore: 'matchingScore',
+  status: 'status',
+  offeredAt: 'offeredAt',
+  respondedAt: 'respondedAt',
+  rejectionReason: 'rejectionReason'
+} as const
+
+export type RideDispatchOfferScalarFieldEnum = (typeof RideDispatchOfferScalarFieldEnum)[keyof typeof RideDispatchOfferScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -5034,6 +5132,34 @@ export type EnumJobPreferenceFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
  * Reference to a field of type 'JobPreference[]'
  */
 export type ListEnumJobPreferenceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobPreference[]'>
+    
+
+
+/**
+ * Reference to a field of type 'RiderTripStatus'
+ */
+export type EnumRiderTripStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RiderTripStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'RiderTripStatus[]'
+ */
+export type ListEnumRiderTripStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RiderTripStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+/**
+ * Reference to a field of type 'Float[]'
+ */
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 
@@ -5444,16 +5570,16 @@ export type ListEnumBroadcastStatusFieldRefInput<$PrismaModel> = FieldRefInputTy
 
 
 /**
- * Reference to a field of type 'Float'
+ * Reference to a field of type 'OfferStatus'
  */
-export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+export type EnumOfferStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OfferStatus'>
     
 
 
 /**
- * Reference to a field of type 'Float[]'
+ * Reference to a field of type 'OfferStatus[]'
  */
-export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+export type ListEnumOfferStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OfferStatus[]'>
     
 
 /**
@@ -5613,6 +5739,7 @@ export type GlobalOmitConfig = {
   messageTemplate?: Prisma.MessageTemplateOmit
   assignmentRule?: Prisma.AssignmentRuleOmit
   assignmentAuditLog?: Prisma.AssignmentAuditLogOmit
+  rideDispatchOffer?: Prisma.RideDispatchOfferOmit
 }
 
 /* Types for Logging */

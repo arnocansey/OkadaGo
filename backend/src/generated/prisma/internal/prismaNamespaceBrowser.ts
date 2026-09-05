@@ -97,7 +97,8 @@ export const ModelName = {
   GoPointRedemption: 'GoPointRedemption',
   MessageTemplate: 'MessageTemplate',
   AssignmentRule: 'AssignmentRule',
-  AssignmentAuditLog: 'AssignmentAuditLog'
+  AssignmentAuditLog: 'AssignmentAuditLog',
+  RideDispatchOffer: 'RideDispatchOffer'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -209,6 +210,8 @@ export const RiderProfileScalarFieldEnum = {
   suspensionReason: 'suspensionReason',
   suspensionEndsAt: 'suspensionEndsAt',
   lastOnlineAt: 'lastOnlineAt',
+  tripStatus: 'tripStatus',
+  currentHeading: 'currentHeading',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
@@ -409,6 +412,11 @@ export const RideScalarFieldEnum = {
   paymentMethod: 'paymentMethod',
   cancellationParty: 'cancellationParty',
   cancellationReason: 'cancellationReason',
+  safetyPin: 'safetyPin',
+  pinVerifiedAt: 'pinVerifiedAt',
+  dispatchRound: 'dispatchRound',
+  currentOfferRiderId: 'currentOfferRiderId',
+  offerExpiresAt: 'offerExpiresAt',
   requestedAt: 'requestedAt',
   scheduledFor: 'scheduledFor',
   assignedAt: 'assignedAt',
@@ -997,6 +1005,22 @@ export const AssignmentAuditLogScalarFieldEnum = {
 } as const
 
 export type AssignmentAuditLogScalarFieldEnum = (typeof AssignmentAuditLogScalarFieldEnum)[keyof typeof AssignmentAuditLogScalarFieldEnum]
+
+
+export const RideDispatchOfferScalarFieldEnum = {
+  id: 'id',
+  rideId: 'rideId',
+  riderId: 'riderId',
+  round: 'round',
+  searchRadiusKm: 'searchRadiusKm',
+  matchingScore: 'matchingScore',
+  status: 'status',
+  offeredAt: 'offeredAt',
+  respondedAt: 'respondedAt',
+  rejectionReason: 'rejectionReason'
+} as const
+
+export type RideDispatchOfferScalarFieldEnum = (typeof RideDispatchOfferScalarFieldEnum)[keyof typeof RideDispatchOfferScalarFieldEnum]
 
 
 export const SortOrder = {

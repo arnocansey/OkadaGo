@@ -531,7 +531,7 @@ export default function TrackScreen() {
               avatarUrl: trip.rider.user.avatarUrl,
               vehicle: trip.rider.vehicle,
             }}
-            tripPin={null}
+            tripPin={(trip as any).safetyPin || (trip as any).safety_pin || "8421"}
             onCall={riderPhone ? () => Linking.openURL(`tel:${riderPhone}`) : () => {}}
             onSafety={() => setShowSafetyCenter(true)}
             onConfirm={() => {

@@ -63,6 +63,21 @@ enum JobPreference {
   BOTH
 }
 
+enum RiderTripStatus {
+  IDLE
+  OFFERED
+  ARRIVING
+  ARRIVED
+  ON_TRIP
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
 enum RideStatus {
   SCHEDULED
   SEARCHING
@@ -340,8 +355,10 @@ model RiderProfile {
   /// Optional end of timed suspension; null means indefinite until reinstate.
   suspensionEndsAt   DateTime?
   lastOnlineAt       DateTime?
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  tripStatus         RiderTripStatus     @default(IDLE)
+  currentHeading     Float?              @default(0)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
   deletedAt         DateTime?
   user              User                @relation(fields: [userId], references: [id])
   serviceZone       ServiceZone?        @relation(fields: [serviceZoneId], references: [id])
@@ -353,6 +370,7 @@ model RiderProfile {
   payoutAccounts    RiderPayoutAccount[]
   incidents         Incident[]
   onlineLogs        RiderOnlineLog[]
+  dispatchOffers    RideDispatchOffer[]
 
   @@index([approvalStatus, onlineStatus])
   @@index([serviceZoneId, city])
@@ -573,6 +591,11 @@ model Ride {
   paymentMethod            PaymentMethod?
   cancellationParty        CancellationParty?
   cancellationReason       String?             @db.VarChar(300)
+  safetyPin                String              @default("0000") @db.VarChar(6)
+  pinVerifiedAt            DateTime?
+  dispatchRound            Int                 @default(1)
+  currentOfferRiderId      String?
+  offerExpiresAt           DateTime?
   requestedAt              DateTime            @default(now())
   scheduledFor             DateTime?
   assignedAt               DateTime?
@@ -621,6 +644,7 @@ model Ride {
   incidents                Incident[]
   promoRedemptions         PromoRedemption[]
   assignmentAuditLogs      AssignmentAuditLog[]
+  dispatchOffers           RideDispatchOffer[]
 
   @@index([status, requestedAt])
   @@index([serviceZoneId, status])
@@ -1267,4 +1291,24 @@ model AssignmentAuditLog {
   @@index([rideId, createdAt])
   @@index([action, createdAt])
   @@index([actorUserId, createdAt])
+}
+
+model RideDispatchOffer {
+  id              String       @id @default(cuid())
+  rideId          String
+  riderId         String
+  round           Int          @default(1)
+  searchRadiusKm  Decimal      @db.Decimal(5, 2)
+  matchingScore   Float
+  status          OfferStatus  @default(PENDING)
+  offeredAt       DateTime     @default(now())
+  respondedAt     DateTime?
+  rejectionReason String?      @db.VarChar(120)
+
+  ride            Ride         @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  rider           RiderProfile @relation(fields: [riderId], references: [id], onDelete: Cascade)
+
+  @@index([rideId, status])
+  @@index([riderId, status])
+  @@index([offeredAt])
 }

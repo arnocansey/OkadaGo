@@ -1,9 +1,11 @@
-import { useMemo } from "react";
-import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
-import { Info, MessageCircle, Phone, Shield, Star } from "lucide-react-native";
+﻿import { useMemo } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { ChevronRight, MessageCircle, Phone, Shield, Star } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/context/ThemeContext";
 import { Avatar } from "@/components/ui/Avatar";
+import { MotorcycleIcon } from "@/components/icons/MotorcycleIcon";
+import { radius } from "@/theme/tokens";
 
 type RiderData = {
   name: string;
@@ -32,26 +34,24 @@ type Props = {
 };
 
 /**
- * RiderAssignedSheet — Bottom sheet for assigned/arriving state
+ * RiderAssignedSheet â€” Bottom sheet for assigned/arriving state
  *
- * Map occupies ~65-70% of viewport. This sheet floats at the bottom.
+ * Bolt/Yango-style layout:
  *
- * ┌──────────────────────────────────────┐
- * │  ┌─────┐                             │
- * │  │     │  Kwame Asante               │  ← Avatar overlaps card top
- * │  │ IMG │  ⭐ 4.8 · 342 trips         │
- * │  └─────┘                             │
- * │  ┌──────────────────────────┐        │
- * │  │  🏍 Honda CB125 · Red    │        │  ← Vehicle info
- * │  │  ⚫  GR-1234-24           │        │  ← Plate number
- * │  └──────────────────────────┘        │
- * │                                      │
- * │  ┌─────┐  PIN                        │
- * │  │ 4 8 │  ← Compact PIN display     │
- * │  └─────┘                             │
- * │                                      │
- * │  [📞 Call]  [💬 Chat]  [🛡 Safety]   │  ← Actions
- * └──────────────────────────────────────┘
+ * â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+ * â”‚  â”â”â”â”  (handle)                         â”‚
+ * â”‚                                         â”‚
+ * â”‚  Arriving in ~6 min  >                  â”‚  â† Bold ETA headline
+ * â”‚                                         â”‚
+ * â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+ * â”‚  Ayivor  â˜…4.84        [ðŸ]  [ðŸ‘¤ photo] â”‚  â† Name+rating / moto+avatar
+ * â”‚  Red Honda CB125                        â”‚
+ * â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                â”‚
+ * â”‚  â”‚   GR-1234-24        â”‚  â† Plate chip â”‚
+ * â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                â”‚
+ * â”‚                                         â”‚
+ * â”‚  [ðŸ“ž Call]  [ðŸ’¬ Chat]  [ðŸ›¡ Safety]     â”‚  â† 3 action buttons
+ * â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
  */
 export function RiderAssignedSheet({
   rider,
@@ -67,9 +67,16 @@ export function RiderAssignedSheet({
 
   const vehicleDescription = useMemo(() => {
     if (!rider.vehicle) return null;
-    const parts = [rider.vehicle.make, rider.vehicle.model].filter(Boolean);
+    const parts = [rider.vehicle.color, rider.vehicle.make, rider.vehicle.model].filter(Boolean);
     return parts.length > 0 ? parts.join(" ") : null;
   }, [rider.vehicle]);
+
+  const ratingDisplay = useMemo(() => {
+    if (rider.rating == null) return null;
+    return typeof rider.rating === "number" && Number.isFinite(rider.rating)
+      ? rider.rating.toFixed(2)
+      : "5.00";
+  }, [rider.rating]);
 
   const s = useMemo(
     () =>
@@ -87,123 +94,112 @@ export function RiderAssignedSheet({
           shadowOpacity: isDark ? 0.5 : 0.12,
           shadowRadius: 20,
           elevation: 12,
-          paddingBottom: insets.bottom || 16,
-          paddingTop: 8,
+          paddingBottom: insets.bottom || 20,
         },
+
+        /* â”€â”€â”€ Handle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
         handle: {
           alignSelf: "center",
           width: 36,
           height: 4,
           borderRadius: 2,
           backgroundColor: isDark ? colors.borderStrong : "#D1D5DB",
-          marginTop: 8,
-          marginBottom: 4,
-        },
-        inner: {
-          paddingHorizontal: 20,
+          marginTop: 10,
+          marginBottom: 2,
         },
 
-        /* ─── Rider Profile ──────────────────────────────── */
+        /* â”€â”€â”€ ETA Headline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        etaRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 20,
+          paddingVertical: 14,
+          borderBottomWidth: 1,
+          borderBottomColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)",
+        },
+        etaText: {
+          flex: 1,
+          fontSize: 22,
+          fontWeight: "800",
+          color: colors.text,
+          letterSpacing: -0.3,
+        },
+
+        /* â”€â”€â”€ Inner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        inner: {
+          paddingHorizontal: 20,
+          paddingTop: 16,
+          gap: 14,
+        },
+
+        /* â”€â”€â”€ Rider Profile Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
         profileRow: {
           flexDirection: "row",
           alignItems: "center",
-          gap: 14,
-          marginBottom: 14,
+          gap: 12,
         },
-        avatarWrap: {
-          marginTop: -20,
-        },
-        riderInfo: {
+        profileLeft: {
           flex: 1,
         },
         riderName: {
-          fontSize: 18,
+          fontSize: 17,
           fontWeight: "700",
           color: colors.text,
+          marginBottom: 3,
         },
-        riderMeta: {
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 6,
-          marginTop: 3,
-        },
-        ratingBadge: {
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 3,
-        },
-        ratingText: {
-          fontSize: 13,
-          fontWeight: "600",
-          color: colors.primary,
-        },
-        metaDot: {
-          width: 3,
-          height: 3,
-          borderRadius: 1.5,
-          backgroundColor: colors.textMuted,
-        },
-        tripsText: {
-          fontSize: 13,
-          color: colors.textSecondary,
-        },
-        etaBadge: {
+        ratingRow: {
           flexDirection: "row",
           alignItems: "center",
           gap: 4,
-          paddingHorizontal: 10,
-          paddingVertical: 5,
-          borderRadius: 8,
-          backgroundColor: colors.successLight,
         },
-        etaText: {
-          fontSize: 12,
-          fontWeight: "700",
-          color: colors.success,
-        },
-
-        /* ─── Vehicle Card ───────────────────────────────── */
-        vehicleCard: {
-          backgroundColor: isDark ? colors.surfaceOverlay : "#F8F9FA",
-          borderRadius: 14,
-          padding: 12,
-          marginBottom: 14,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-        },
-        vehicleLeft: {
-          flex: 1,
-        },
-        vehicleDesc: {
+        ratingText: {
           fontSize: 14,
-          fontWeight: "600",
+          fontWeight: "700",
           color: colors.text,
         },
-        vehicleColor: {
-          fontSize: 12,
-          color: colors.textMuted,
-          marginTop: 2,
-        },
-        plateBadge: {
-          backgroundColor: isDark ? "rgba(250,204,21,0.1)" : "rgba(250,204,21,0.08)",
-          borderRadius: 8,
-          paddingHorizontal: 10,
-          paddingVertical: 5,
-        },
-        plateText: {
+        vehicleDesc: {
           fontSize: 13,
-          fontWeight: "700",
-          color: colors.primary,
-          letterSpacing: 0.5,
+          color: colors.textSecondary,
+          marginTop: 4,
+        },
+        profileRight: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 8,
+        },
+        motoBadge: {
+          width: 48,
+          height: 48,
+          borderRadius: radius.md,
+          backgroundColor: isDark ? "rgba(250,204,21,0.12)" : "rgba(250,204,21,0.15)",
+          alignItems: "center",
+          justifyContent: "center",
+          borderWidth: 1,
+          borderColor: isDark ? "rgba(250,204,21,0.2)" : "rgba(250,204,21,0.25)",
         },
 
-        /* ─── Trip PIN ──────────────────────────────────── */
+        /* â”€â”€â”€ Plate Chip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        plateBadge: {
+          alignSelf: "flex-start",
+          paddingHorizontal: 14,
+          paddingVertical: 8,
+          borderRadius: 10,
+          borderWidth: 2,
+          borderColor: isDark ? colors.border : "#1A1A1A",
+          backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "#FFFFFF",
+        },
+        plateText: {
+          fontSize: 17,
+          fontWeight: "800",
+          color: isDark ? colors.text : "#1A1A1A",
+          letterSpacing: 2,
+        },
+
+        /* â”€â”€â”€ Trip PIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
         pinRow: {
           flexDirection: "row",
           alignItems: "center",
-          gap: 12,
-          marginBottom: 14,
+          gap: 10,
         },
         pinLabel: {
           fontSize: 12,
@@ -217,25 +213,26 @@ export function RiderAssignedSheet({
           gap: 6,
         },
         pinDigit: {
-          width: 36,
-          height: 40,
-          borderRadius: 10,
+          width: 34,
+          height: 38,
+          borderRadius: 8,
           backgroundColor: isDark ? "rgba(250,204,21,0.08)" : "rgba(250,204,21,0.06)",
           borderWidth: 1,
-          borderColor: isDark ? "rgba(250,204,21,0.15)" : "rgba(250,204,21,0.12)",
+          borderColor: isDark ? "rgba(250,204,21,0.2)" : "rgba(250,204,21,0.15)",
           alignItems: "center",
           justifyContent: "center",
         },
         pinDigitText: {
-          fontSize: 18,
+          fontSize: 17,
           fontWeight: "700",
           color: colors.primary,
         },
 
-        /* ─── Action Buttons ─────────────────────────────── */
+        /* â”€â”€â”€ Action Buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
         actionsRow: {
           flexDirection: "row",
           gap: 10,
+          marginTop: 2,
         },
         actionBtn: {
           flex: 1,
@@ -243,28 +240,29 @@ export function RiderAssignedSheet({
           alignItems: "center",
           justifyContent: "center",
           gap: 6,
-          height: 48,
+          height: 50,
           borderRadius: 14,
           borderWidth: 1.5,
           borderColor: colors.border,
+          backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "#F7F8F9",
         },
-        actionBtnPrimary: {
-          flex: 1.5,
-          backgroundColor: colors.primaryLight,
-          borderColor: colors.primary,
+        actionBtnCall: {
+          backgroundColor: isDark ? "rgba(22,163,74,0.12)" : "rgba(22,163,74,0.08)",
+          borderColor: "#16A34A",
+        },
+        actionBtnSafety: {
+          borderColor: colors.danger,
+          backgroundColor: isDark ? "rgba(239,68,68,0.08)" : "rgba(239,68,68,0.05)",
         },
         actionText: {
           fontSize: 13,
           fontWeight: "600",
           color: colors.text,
         },
-        actionTextPrimary: {
-          color: colors.primary,
+        actionTextCall: {
+          color: "#16A34A",
         },
-        safetyBtn: {
-          borderColor: colors.danger,
-        },
-        safetyText: {
+        actionTextSafety: {
           color: colors.danger,
         },
       }),
@@ -275,66 +273,54 @@ export function RiderAssignedSheet({
     <View style={s.sheet}>
       <View style={s.handle} />
 
-      <View style={s.inner}>
-        {/* ─── Rider Profile ──────────────────────────────── */}
-        <Pressable
-          style={s.profileRow}
-          onPress={onRiderPress}
-          accessibilityRole="button"
-          accessibilityLabel="View rider profile and details"
-        >
-          <View style={s.avatarWrap}>
-            <Avatar name={rider.name} size={60} imageUri={rider.avatarUrl ?? undefined} />
-          </View>
-          <View style={s.riderInfo}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <Text style={s.riderName}>{rider.name}</Text>
-              {onRiderPress ? <Info size={16} color={colors.primary} /> : null}
-            </View>
-            <View style={s.riderMeta}>
-              {rider.rating != null ? (
-                <View style={s.ratingBadge}>
-                  <Star size={12} color={colors.primary} fill={colors.primary} />
-                  <Text style={s.ratingText}>
-                    {typeof rider?.rating === "number" && Number.isFinite(rider.rating) ? rider.rating.toFixed(1) : "5.0"}
-                  </Text>
-                </View>
-              ) : null}
-              {rider.rating != null && rider.completedTrips != null ? (
-                <View style={s.metaDot} />
-              ) : null}
-              {rider.completedTrips != null ? (
-                <Text style={s.tripsText}>{rider.completedTrips} trips</Text>
-              ) : null}
-            </View>
-          </View>
-          {eta ? (
-            <View style={s.etaBadge}>
-              <Text style={s.etaText}>{eta}</Text>
-            </View>
-          ) : null}
-        </Pressable>
+      {/* â”€â”€â”€ ETA Headline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <Pressable
+        style={s.etaRow}
+        onPress={onRiderPress}
+        accessibilityRole="button"
+        accessibilityLabel="View rider details"
+      >
+        <Text style={s.etaText}>
+          {eta ? `Arriving in ~${eta}` : "On the wayâ€¦"}
+        </Text>
+        {onRiderPress ? (
+          <ChevronRight size={20} color={colors.textSecondary} />
+        ) : null}
+      </Pressable>
 
-        {/* ─── Vehicle Card ───────────────────────────────── */}
-        {(vehicleDescription || rider.vehicle?.plateNumber) && (
-          <View style={s.vehicleCard}>
-            <View style={s.vehicleLeft}>
-              {vehicleDescription ? (
-                <Text style={s.vehicleDesc}>{vehicleDescription}</Text>
-              ) : null}
-              {rider.vehicle?.color ? (
-                <Text style={s.vehicleColor}>{rider.vehicle.color}</Text>
-              ) : null}
-            </View>
-            {rider.vehicle?.plateNumber ? (
-              <View style={s.plateBadge}>
-                <Text style={s.plateText}>{rider.vehicle.plateNumber}</Text>
+      <View style={s.inner}>
+        {/* â”€â”€â”€ Rider Profile Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        <View style={s.profileRow}>
+          <View style={s.profileLeft}>
+            <Text style={s.riderName}>{rider.name}</Text>
+            {ratingDisplay != null ? (
+              <View style={s.ratingRow}>
+                <Star size={13} color={colors.primary} fill={colors.primary} />
+                <Text style={s.ratingText}>{ratingDisplay}</Text>
               </View>
             ) : null}
+            {vehicleDescription ? (
+              <Text style={s.vehicleDesc}>{vehicleDescription}</Text>
+            ) : null}
           </View>
-        )}
 
-        {/* ─── Trip PIN ──────────────────────────────────── */}
+          {/* Right: motorcycle thumbnail + rider avatar */}
+          <View style={s.profileRight}>
+            <View style={s.motoBadge}>
+              <MotorcycleIcon size={26} color={colors.primary} strokeWidth={2} />
+            </View>
+            <Avatar name={rider.name} size={48} imageUri={rider.avatarUrl ?? undefined} />
+          </View>
+        </View>
+
+        {/* â”€â”€â”€ Plate Badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {rider.vehicle?.plateNumber ? (
+          <View style={s.plateBadge}>
+            <Text style={s.plateText}>{rider.vehicle.plateNumber}</Text>
+          </View>
+        ) : null}
+
+        {/* â”€â”€â”€ Trip PIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {tripPin && tripPin.length > 0 ? (
           <View style={s.pinRow}>
             <Text style={s.pinLabel}>Trip PIN</Text>
@@ -348,16 +334,16 @@ export function RiderAssignedSheet({
           </View>
         ) : null}
 
-        {/* ─── Actions ───────────────────────────────────── */}
+        {/* â”€â”€â”€ Actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <View style={s.actionsRow}>
           <Pressable
-            style={s.actionBtn}
+            style={[s.actionBtn, s.actionBtnCall]}
             onPress={onCall}
             accessibilityRole="button"
             accessibilityLabel="Call rider"
           >
-            <Phone size={16} color={colors.text} />
-            <Text style={s.actionText}>Call</Text>
+            <Phone size={16} color="#16A34A" />
+            <Text style={[s.actionText, s.actionTextCall]}>Call</Text>
           </Pressable>
           <Pressable
             style={s.actionBtn}
@@ -369,13 +355,13 @@ export function RiderAssignedSheet({
             <Text style={s.actionText}>Chat</Text>
           </Pressable>
           <Pressable
-            style={[s.actionBtn, s.safetyBtn]}
+            style={[s.actionBtn, s.actionBtnSafety]}
             onPress={onSafety}
             accessibilityRole="button"
             accessibilityLabel="Safety options"
           >
             <Shield size={16} color={colors.danger} />
-            <Text style={[s.actionText, s.safetyText]}>Safety</Text>
+            <Text style={[s.actionText, s.actionTextSafety]}>Safety</Text>
           </Pressable>
         </View>
       </View>

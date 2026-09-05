@@ -22,6 +22,7 @@ export type MapMarker = {
   pinColor?: string;
   type?: "rider" | "pickup" | "destination" | "dropoff" | "default";
   heading?: number;
+  etaLabel?: string;
 };
 
 type MapPressCoordinate = { latitude: number; longitude: number };
@@ -191,10 +192,38 @@ export function AppMap({
                 flat={true}
                 rotation={m.heading ?? 0}
               >
-                <View style={styles.riderMarkerOuter}>
-                  <View style={[styles.riderMarkerBadge, { backgroundColor: badgeBg }]}>
-                    <MotorcycleIcon size={18} color="#000000" strokeWidth={2.4} />
+                <View style={[styles.riderMarkerBadge, { backgroundColor: badgeBg }]}>
+                  <MotorcycleIcon size={18} color="#000000" strokeWidth={2.4} />
+                </View>
+              </Marker>
+            );
+          }
+
+          if (m.etaLabel) {
+            const isPickup = m.type === "pickup" || m.id === "pickup";
+            const pillBg = isPickup ? (m.pinColor ?? colors.primary) : (isDark ? "#1F2937" : "#111827");
+            const textColor = isPickup ? "#000000" : "#FFFFFF";
+            return (
+              <Marker
+                key={m.id}
+                coordinate={{ latitude: m.latitude, longitude: m.longitude }}
+                title={m.title}
+                anchor={{ x: 0.5, y: 1 }}
+              >
+                <View style={styles.etaPillContainer}>
+                  <View style={[styles.etaPill, { backgroundColor: pillBg }]}>
+                    <Text style={[styles.etaPillTitle, { color: textColor }]}>
+                      {m.title ?? (isPickup ? "Pickup" : "Dropoff")}
+                    </Text>
+                    <View
+                      style={[
+                        styles.etaPillDot,
+                        { backgroundColor: isPickup ? "rgba(0,0,0,0.3)" : "rgba(255,255,255,0.4)" },
+                      ]}
+                    />
+                    <Text style={[styles.etaPillTime, { color: textColor }]}>{m.etaLabel}</Text>
                   </View>
+                  <View style={[styles.etaPillPointer, { borderTopColor: pillBg }]} />
                 </View>
               </Marker>
             );
@@ -290,11 +319,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     flex: 1,
   },
-  riderMarkerOuter: {
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 3,
-  },
   riderMarkerBadge: {
     width: 34,
     height: 34,
@@ -309,5 +333,44 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.35,
     shadowRadius: 4,
     elevation: 6,
+  },
+  etaPillContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  etaPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 14,
+    gap: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  etaPillTitle: {
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  etaPillDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+  },
+  etaPillTime: {
+    fontSize: 11,
+    fontWeight: "600",
+  },
+  etaPillPointer: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 5,
+    borderRightWidth: 5,
+    borderTopWidth: 6,
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
   },
 });
