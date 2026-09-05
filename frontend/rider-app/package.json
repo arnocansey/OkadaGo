@@ -11,8 +11,8 @@
     "ios": "expo run:ios",
     "typecheck": "tsc --noEmit",
     "eas-build-pre-install": "corepack enable && corepack prepare pnpm@9.15.9 --activate",
-    "eas:build:android": "cross-env EAS_NO_VCS=1 eas build --platform android --profile production-apk",
-    "eas:build:android:ci": "cross-env EAS_NO_VCS=1 eas build --platform android --profile production-apk --non-interactive",
+    "eas:build:android": "cross-env EAS_NO_VCS=1 npx eas-cli build --platform android --profile production-apk",
+    "eas:build:android:ci": "cross-env EAS_NO_VCS=1 npx eas-cli build --platform android --profile production-apk --non-interactive",
     "eas:update:production": "npx eas-cli update --channel production",
     "eas:update:preview": "npx eas-cli update --channel preview"
   },
