@@ -12,8 +12,33 @@ const SUBSETS: Record<string, AdminConsoleScreen> = {
   payouts: "riderPayouts",
   complaints: "riderComplaints",
   "activity-tracking": "riderActivity",
-  suspensions: "riderSuspensions"
+  activity: "riderActivity",
+  tracking: "riderActivity",
+  "live-map": "riderActivity",
+  suspensions: "riderSuspensions",
+  assignment: "riderAssignment",
+  assignments: "riderAssignment",
+  "rider-assignment": "riderAssignment",
+  dispatch: "riderAssignment"
 };
+
+const NON_ID_KEYWORDS = new Set([
+  "assignment",
+  "assignments",
+  "rider-assignment",
+  "verification",
+  "documents",
+  "performance",
+  "earnings",
+  "wallet",
+  "payouts",
+  "complaints",
+  "activity",
+  "tracking",
+  "activity-tracking",
+  "suspensions",
+  "dispatch"
+]);
 
 export default async function AdminRiderPage({
   params
@@ -27,7 +52,7 @@ export default async function AdminRiderPage({
     return <AdminScreenClient screen={screen} />;
   }
 
-  if (subset && subset.length >= 10) {
+  if (subset && subset.length >= 10 && !NON_ID_KEYWORDS.has(subset.toLowerCase())) {
     return <RiderProfileClient riderId={subset} />;
   }
 

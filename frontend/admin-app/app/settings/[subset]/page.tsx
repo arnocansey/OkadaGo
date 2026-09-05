@@ -10,8 +10,21 @@ export default async function AdminSettingsSubsetPage({
   const { subset } = await params;
   const subsets: Record<string, AdminConsoleScreen> = {
     company: "companyProfile",
+    "company-profile": "companyProfile",
     security: "accountSecurity",
-    notifications: "notificationSettings"
+    "account-security": "accountSecurity",
+    notifications: "notificationSettings",
+    "notification-settings": "notificationSettings",
+    "payment-methods": "paymentMethods",
+    payments: "paymentMethods",
+    taxes: "taxesCompliance",
+    "taxes-compliance": "taxesCompliance",
+    tax: "taxesCompliance",
+    integrations: "integrations",
+    admins: "admins",
+    "roles-permissions": "rolesPermissions",
+    roles: "rolesPermissions",
+    permissions: "rolesPermissions"
   };
   const screen = subsets[subset];
 
