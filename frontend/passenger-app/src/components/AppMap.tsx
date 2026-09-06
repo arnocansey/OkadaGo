@@ -11,7 +11,7 @@ import {
   isGoogleMapsApiKeyConfigured,
 } from "@/lib/googleMapsConfig";
 import { mapDarkStyle } from "@/theme/mapStyle";
-import { ACCRA_REGION, radius, shadows, spacing } from "@/theme/tokens";
+import { ACCRA_REGION, brand, radius, shadows, spacing } from "@/theme/tokens";
 
 const MAP_LOAD_TIMEOUT_MS = 8000;
 
@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: "#FACC15",
+    backgroundColor: brand.yellow,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 2,

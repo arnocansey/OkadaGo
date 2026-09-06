@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, View, Text, Image } from "react-native";
 import { MOTORCYCLE_MARKER_BASE64 } from "./motorcycleMarkerAsset";
+import { brand } from "@/theme/tokens";
 
 export interface MotorcycleMarkerProps {
   heading?: number;
@@ -23,7 +24,7 @@ export function MotorcycleMarker({
   heading = 0,
   isSelected = false,
   isMoving = false,
-  pinColor = "#FF6A00",
+  pinColor = brand.orange,
   title,
   speed,
   etaLabel,
@@ -97,7 +98,7 @@ export function createMotorcycleMarkerHtml(options: {
   const heading = options.heading ?? 0;
   const isSelected = Boolean(options.isSelected);
   const size = isSelected ? 54 : 44;
-  const pinColor = options.pinColor || "#FF6A00";
+  const pinColor = options.pinColor || brand.orange;
 
   return `
     <div class="okada-moto-marker-wrap ${isSelected ? "selected-rider" : ""}" style="position: relative; width: ${size}px; height: ${size}px; display: flex; align-items: center; justify-content: center; pointer-events: auto; background: transparent !important; border: none !important;">
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   infoBubbleSelected: {
-    borderColor: "#FF6A00",
+    borderColor: brand.orange,
     borderWidth: 1.5,
   },
   infoTitle: {
@@ -162,7 +163,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   infoSpeed: {
-    color: "#FF6A00",
+    color: brand.orange,
     fontSize: 10,
     fontWeight: "600",
     marginLeft: 4,

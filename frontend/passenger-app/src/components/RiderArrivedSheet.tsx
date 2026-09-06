@@ -3,6 +3,7 @@ import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { CheckCircle, Info, Phone, Shield } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/context/ThemeContext";
+import { brand } from "@/theme/tokens";
 import { Avatar } from "@/components/ui/Avatar";
 import { StandardBike } from "@/components/vehicles/StandardBike";
 import { ExpressBike } from "@/components/vehicles/ExpressBike";
@@ -36,12 +37,12 @@ function getVehicleComponent(
 ) {
   const key = `${make ?? ""} ${model ?? ""}`.toLowerCase();
   if (key.includes("cargo") || key.includes("trike")) {
-    return <CargoTrike width={220} height={160} color={color ?? "#facc15"} />;
+    return <CargoTrike width={220} height={160} color={color ?? brand.yellow} />;
   }
   if (key.includes("express") || key.includes("x")) {
-    return <ExpressBike width={220} height={160} color={color ?? "#facc15"} />;
+    return <ExpressBike width={220} height={160} color={color ?? brand.yellow} />;
   }
-  return <StandardBike width={220} height={160} color={color ?? "#facc15"} />;
+  return <StandardBike width={220} height={160} color={color ?? brand.yellow} />;
 }
 
 /**

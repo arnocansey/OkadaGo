@@ -203,6 +203,19 @@ export function getShadows(isDark: boolean) {
 /** @deprecated Prefer getShadows(isDark) from theme. */
 export const shadows = getShadows(true);
 
+/**
+ * OkadaGo Brand Palette
+ * Primary Blue: #153252
+ * Primary Orange: #FF6A00
+ * Use these for brand-specific elements (logos, splash, CTAs).
+ * For semantic colors (text, borders, surfaces), use useTheme().colors instead.
+ */
+export const brand = {
+  blue: "#153252",
+  orange: "#FF6A00",
+  yellow: "#FACC15",
+} as const;
+
 export const ACCRA_REGION = {
   latitude: 5.6037,
   longitude: -0.187,

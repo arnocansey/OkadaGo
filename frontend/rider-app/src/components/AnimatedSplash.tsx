@@ -10,7 +10,7 @@ import {
 import Svg, { Circle, Path } from "react-native-svg";
 import { BrandLogo } from "@/components/BrandLogo";
 import { useTheme } from "@/context/ThemeContext";
-import { radius, spacing } from "@/theme/tokens";
+import { brand as brandTokens, radius, spacing } from "@/theme/tokens";
 
 type Props = {
   /** Called once the animation has fully played and the overlay has faded out. */
@@ -130,13 +130,13 @@ export function AnimatedSplash({ onFinish }: Props) {
   });
 
   const wheelColor = "#FFFFFF";
-  const bodyColor = "#FF6A00";
+  const bodyColor = brandTokens.orange;
   const riderColor = "#FFFFFF";
 
   return (
     <Animated.View
       pointerEvents="none"
-      style={[styles.container, { backgroundColor: "#153252", opacity: fade }]}
+      style={[styles.container, { backgroundColor: brandTokens.blue, opacity: fade }]}
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
@@ -148,7 +148,7 @@ export function AnimatedSplash({ onFinish }: Props) {
       >
         <BrandLogo variant="wordmark" size={56} />
         <View style={[styles.tagPill, { backgroundColor: "rgba(255,255,255,0.15)" }]}>
-          <Text style={[styles.tagline, { color: "#facc15" }]}>Your ride, on demand</Text>
+          <Text style={[styles.tagline, { color: brandTokens.yellow }]}>Your ride, on demand</Text>
         </View>
       </Animated.View>
 
@@ -165,9 +165,9 @@ export function AnimatedSplash({ onFinish }: Props) {
               { opacity: speedLineOpacity, transform: [{ scaleX: speedLineScaleX }] },
             ]}
           >
-            <View style={[styles.speedLine, styles.speedLineLong, { backgroundColor: "#FF6A00" }]} />
-            <View style={[styles.speedLine, styles.speedLineShort, { backgroundColor: "#FF6A00" }]} />
-            <View style={[styles.speedLine, styles.speedLineLong, { backgroundColor: "#FF6A00" }]} />
+            <View style={[styles.speedLine, styles.speedLineLong, { backgroundColor: brandTokens.orange }]} />
+            <View style={[styles.speedLine, styles.speedLineShort, { backgroundColor: brandTokens.orange }]} />
+            <View style={[styles.speedLine, styles.speedLineLong, { backgroundColor: brandTokens.orange }]} />
           </Animated.View>
 
           <Svg width={BIKE_WIDTH} height={BIKE_HEIGHT} viewBox="0 0 160 90">

@@ -1,5 +1,6 @@
 import React from "react";
 import { StyleSheet, View, Text, Image } from "react-native";
+import { brand } from "@/theme/tokens";
 import { MOTORCYCLE_MARKER_BASE64 } from "./motorcycleMarkerAsset";
 
 export interface MotorcycleMarkerProps {
@@ -24,7 +25,7 @@ export function MotorcycleMarker({
   heading = 0,
   isSelected = false,
   isMoving = false,
-  pinColor = "#FF6A00",
+  pinColor = brand.orange,
   title,
   speed,
   etaLabel,
@@ -99,7 +100,7 @@ export function getMotorcycleSvgString(options: {
 }): string {
   const isSelected = Boolean(options.isSelected);
   const size = options.size ? options.size : isSelected ? 54 : 44;
-  const color = options.pinColor || "#FF6A00";
+  const color = options.pinColor || brand.orange;
 
   return `
     <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block; overflow: visible;">
@@ -129,7 +130,7 @@ export function createMotorcycleMarkerHtml(options: {
   const heading = options.heading ?? 0;
   const isSelected = Boolean(options.isSelected);
   const size = isSelected ? 54 : 44;
-  const pinColor = options.pinColor || "#FF6A00";
+  const pinColor = options.pinColor || brand.orange;
 
   const badgeHtml = options.etaMinutes
     ? `<div style="position: absolute; top: -28px; white-space: nowrap; background: #0F172A; color: #FFFFFF; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1.5px solid ${pinColor}; box-shadow: 0 4px 12px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 4px; pointer-events: none; z-index: 10;">
@@ -197,7 +198,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   infoBubbleSelected: {
-    borderColor: "#FF6A00",
+    borderColor: brand.orange,
     borderWidth: 1.5,
   },
   infoTitle: {
@@ -206,7 +207,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   infoSpeed: {
-    color: "#FF6A00",
+    color: brand.orange,
     fontSize: 10,
     fontWeight: "600",
     marginLeft: 4,

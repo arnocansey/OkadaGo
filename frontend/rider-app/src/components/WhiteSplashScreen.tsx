@@ -6,6 +6,7 @@ import {
   StyleSheet,
   useWindowDimensions,
 } from "react-native";
+import { brand } from "@/theme/tokens";
 
 type Props = {
   /** Called once the white splash display sequence finishes. */
@@ -109,7 +110,7 @@ export function WhiteSplashScreen({ onFinish }: Props) {
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "#153252",
+    backgroundColor: brand.blue,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 9999,

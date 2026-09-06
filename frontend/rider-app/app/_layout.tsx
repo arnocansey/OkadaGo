@@ -11,6 +11,7 @@ import { AppProvider } from "@/context/AppContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 import { ToastProvider } from "@/context/ToastContext";
+import { brand } from "@/theme/tokens";
 import "@/i18n";
 
 import { AudioBridge } from "@/components/AudioBridge";
@@ -93,7 +94,7 @@ declare const __DEV__: boolean;
 const layoutStyles = StyleSheet.create({
   splashFallback: {
     flex: 1,
-    backgroundColor: "#153252",
+    backgroundColor: brand.blue,
     alignItems: "center",
     justifyContent: "center",
   },
