@@ -138,11 +138,11 @@ export function PickupSelectSheet({
           justifyContent: "center",
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: isDark ? 0.4 : 0.15,
+          shadowOpacity: isDark ? 0.4 : 0.1,
           shadowRadius: 8,
           elevation: 6,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
+          borderColor: colors.border,
         },
 
         /* ─── Hint Banner (on map) ─────────────────────────────── */
@@ -164,7 +164,7 @@ export function PickupSelectSheet({
           shadowRadius: 8,
           elevation: 4,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
+          borderColor: colors.border,
         },
         hintIcon: {
           width: 26,
@@ -199,7 +199,7 @@ export function PickupSelectSheet({
           shadowRadius: 6,
           elevation: 3,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
+          borderColor: colors.border,
           maxWidth: "70%",
         },
         destBadgeDot: {
@@ -228,7 +228,7 @@ export function PickupSelectSheet({
           elevation: 16,
           borderWidth: 1,
           borderBottomWidth: 0,
-          borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
+          borderColor: colors.border,
         },
         cardHandle: {
           width: 36,
@@ -367,7 +367,7 @@ export function PickupSelectSheet({
           borderRadius: 8,
           backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)",
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          borderColor: colors.border,
         },
         chipText: {
           fontSize: 11,
@@ -430,7 +430,7 @@ export function PickupSelectSheet({
           paddingVertical: 18,
           shadowColor: colors.primary,
           shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.35,
+          shadowOpacity: isDark ? 0.35 : 0.1,
           shadowRadius: 12,
           elevation: 8,
         },

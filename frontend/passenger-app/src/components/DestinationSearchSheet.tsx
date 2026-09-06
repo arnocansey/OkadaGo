@@ -223,11 +223,11 @@ export function DestinationSearchSheet({
           padding: 14,
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: isDark ? 0.4 : 0.12,
+          shadowOpacity: isDark ? 0.4 : 0.1,
           shadowRadius: 12,
           elevation: 6,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
+          borderColor: colors.border,
         },
         fieldRow: {
           flexDirection: "row",

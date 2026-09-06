@@ -70,7 +70,7 @@ export default function TripsScreen() {
           marginHorizontal: 20,
           marginTop: 4,
           marginBottom: 12,
-          backgroundColor: isDark ? colors.surfaceOverlay : "#F3F4F6",
+          backgroundColor: colors.surfaceOverlay,
           borderRadius: 12,
           padding: 3,
         },
@@ -131,7 +131,7 @@ export default function TripsScreen() {
           padding: 16,
           marginBottom: 10,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          borderColor: colors.border,
         },
         cardTop: {
           flexDirection: "row",

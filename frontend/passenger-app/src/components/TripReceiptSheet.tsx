@@ -192,7 +192,7 @@ export function TripReceiptSheet({
           width: 36,
           height: 4,
           borderRadius: 2,
-          backgroundColor: isDark ? colors.borderStrong : "#D1D5DB",
+          backgroundColor: colors.borderStrong,
           marginTop: 10,
           marginBottom: 6,
         },

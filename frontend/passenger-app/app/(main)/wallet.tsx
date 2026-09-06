@@ -120,7 +120,7 @@ export default function WalletScreen() {
           borderRadius: 20,
           padding: 24,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          borderColor: colors.border,
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: isDark ? 0.3 : 0.06,
@@ -161,7 +161,7 @@ export default function WalletScreen() {
           alignItems: "center",
           gap: 8,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          borderColor: colors.border,
         },
         actionIcon: {
           width: 40,
@@ -202,7 +202,7 @@ export default function WalletScreen() {
           backgroundColor: isDark ? colors.surface : "#FFFFFF",
           borderRadius: 14,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          borderColor: colors.border,
           overflow: "hidden",
         },
         txRow: {

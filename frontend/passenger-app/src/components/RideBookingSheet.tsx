@@ -166,12 +166,12 @@ export function RideBookingSheet({
           borderTopRightRadius: 24,
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -6 },
-          shadowOpacity: isDark ? 0.5 : 0.12,
+          shadowOpacity: isDark ? 0.5 : 0.1,
           shadowRadius: 20,
           elevation: 14,
           borderWidth: 1,
           borderBottomWidth: 0,
-          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          borderColor: colors.border,
           maxHeight: isDelivery ? "72%" : "62%",
         },
         scrollContent: {
@@ -262,7 +262,7 @@ export function RideBookingSheet({
           width: 34,
           height: 34,
           borderRadius: 17,
-          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          backgroundColor: colors.surfaceOverlay,
           alignItems: "center",
           justifyContent: "center",
         },
@@ -300,7 +300,7 @@ export function RideBookingSheet({
           borderRadius: 16,
           padding: 12,
           borderWidth: 1.5,
-          borderColor: isDark ? "rgba(255,255,255,0.06)" : "#E9ECEF",
+          borderColor: colors.border,
           gap: 12,
         },
         tierCardActive: {
@@ -360,7 +360,7 @@ export function RideBookingSheet({
         },
         /* BUSY chip */
         busyBadge: {
-          backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "#E9ECEF",
+          backgroundColor: colors.surfaceOverlay,
           paddingHorizontal: 7,
           paddingVertical: 2,
           borderRadius: 6,
@@ -394,12 +394,12 @@ export function RideBookingSheet({
 
         /* ─── Delivery Recipient Section ────────────────────── */
         deliverySection: {
-          backgroundColor: isDark ? "rgba(255,255,255,0.03)" : "#F9FAFB",
+          backgroundColor: colors.surface,
           borderRadius: 14,
           padding: 12,
           gap: 10,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.05)" : "#E9ECEF",
+          borderColor: colors.border,
         },
         deliveryTitle: {
           fontSize: 12,
@@ -422,7 +422,7 @@ export function RideBookingSheet({
           paddingVertical: 8,
           gap: 6,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.06)" : "#E9ECEF",
+          borderColor: colors.border,
         },
         textInput: {
           flex: 1,
@@ -439,7 +439,7 @@ export function RideBookingSheet({
           paddingHorizontal: 10,
           paddingVertical: 6,
           borderRadius: 10,
-          backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#F3F4F6",
+          backgroundColor: colors.surfaceOverlay,
           borderWidth: 1,
           borderColor: "transparent",
         },
@@ -468,12 +468,12 @@ export function RideBookingSheet({
           alignItems: "center",
           justifyContent: "center",
           gap: 6,
-          backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#F3F4F6",
+          backgroundColor: colors.surfaceOverlay,
           paddingVertical: 9,
           paddingHorizontal: 10,
           borderRadius: 10,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.06)" : "#E9ECEF",
+          borderColor: colors.border,
         },
         quickChipHighlight: {
           borderColor: colors.primary,
@@ -495,7 +495,7 @@ export function RideBookingSheet({
           paddingVertical: 8,
           gap: 8,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.06)" : "#E9ECEF",
+          borderColor: colors.border,
         },
 
         /* ─── Primary CTA Button ────────────────────────────── */

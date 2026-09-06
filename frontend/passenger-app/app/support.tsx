@@ -176,7 +176,7 @@ export default function SupportScreen() {
           borderRadius: 14,
           padding: 16,
           borderWidth: 1.5,
-          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          borderColor: colors.border,
           alignItems: "center",
           gap: 8,
         },
@@ -207,7 +207,7 @@ export default function SupportScreen() {
           borderRadius: 14,
           padding: 14,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          borderColor: colors.border,
           marginBottom: 16,
         },
         tripPickerText: {
@@ -243,7 +243,7 @@ export default function SupportScreen() {
           width: 36,
           height: 4,
           borderRadius: 2,
-          backgroundColor: isDark ? colors.borderStrong : "#D1D5DB",
+          backgroundColor: colors.borderStrong,
           marginBottom: 12,
         },
         modalHeader: {

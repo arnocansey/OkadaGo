@@ -67,7 +67,7 @@ export function RiderInfoCard({ rider, onRequestRide, onDismiss }: Props) {
         styles.card,
         {
           backgroundColor: isDark ? "rgba(17, 24, 39, 0.97)" : "rgba(255, 255, 255, 0.97)",
-          borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)",
+          borderColor: colors.borderStrong,
           transform: [{ translateY: slideAnim }],
           opacity: opacityAnim,
         },

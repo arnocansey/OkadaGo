@@ -140,7 +140,7 @@ export default function GoPointsScreen() {
           padding: 24,
           alignItems: "center",
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          borderColor: colors.border,
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: isDark ? 0.3 : 0.06,
@@ -245,7 +245,7 @@ export default function GoPointsScreen() {
           padding: 14,
           gap: 12,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          borderColor: colors.border,
         },
         earnIconWrap: {
           width: 40,
@@ -274,7 +274,7 @@ export default function GoPointsScreen() {
           backgroundColor: isDark ? colors.surface : "#FFFFFF",
           borderRadius: 14,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          borderColor: colors.border,
           overflow: "hidden",
         },
         activityRow: {

@@ -105,7 +105,7 @@ export default function NotificationsScreen() {
           paddingHorizontal: 12,
           paddingVertical: 8,
           borderRadius: 10,
-          backgroundColor: isDark ? colors.surfaceOverlay : "#F3F4F6",
+          backgroundColor: colors.surfaceOverlay,
         },
         filterTabActive: {
           backgroundColor: isDark ? "rgba(250,204,21,0.12)" : "rgba(250,204,21,0.1)",
@@ -133,7 +133,7 @@ export default function NotificationsScreen() {
           padding: 14,
           gap: 12,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          borderColor: colors.border,
         },
         notifUnread: {
           borderColor: isDark ? "rgba(250,204,21,0.2)" : "rgba(250,204,21,0.3)",

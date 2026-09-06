@@ -37,7 +37,7 @@ export function OkadaSheet({ children, padding, flush, style, contentStyle }: Pr
           paddingBottom: space[8],
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -6 },
-          shadowOpacity: isDark ? 0.5 : 0.12,
+          shadowOpacity: isDark ? 0.5 : 0.1,
           shadowRadius: 20,
           elevation: 12,
         },
@@ -46,7 +46,7 @@ export function OkadaSheet({ children, padding, flush, style, contentStyle }: Pr
           width: 36,
           height: 4,
           borderRadius: 2,
-          backgroundColor: isDark ? colors.borderStrong : "#D1D5DB",
+          backgroundColor: colors.borderStrong,
           marginBottom: space[4],
         },
         content: {
