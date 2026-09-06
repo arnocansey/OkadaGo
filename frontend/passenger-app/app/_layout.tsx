@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import * as Updates from "expo-updates";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { WhiteSplashScreen } from "@/components/WhiteSplashScreen";
 import { AnimatedSplash } from "@/components/AnimatedSplash";
 import { AppProvider } from "@/context/AppContext";
 import { LanguageProvider } from "@/context/LanguageContext";
@@ -19,9 +20,11 @@ SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 const splashLogo = require("../assets/branding/okadago-logo-splash.png");
 
+type SplashStage = "white" | "motorcycle" | "done";
+
 function RootNavigator() {
   const { isDark, stackHeaderOptions, ready } = useTheme();
-  const [splashDone, setSplashDone] = useState(false);
+  const [splashStage, setSplashStage] = useState<SplashStage>("white");
 
   if (!ready) {
     return (
@@ -47,7 +50,11 @@ function RootNavigator() {
         <Stack.Screen name="notifications" />
         <Stack.Screen name="support" />
       </Stack>
-      {!splashDone ? <AnimatedSplash onFinish={() => setSplashDone(true)} /> : null}
+      {splashStage === "white" ? (
+        <WhiteSplashScreen onFinish={() => setSplashStage("motorcycle")} />
+      ) : splashStage === "motorcycle" ? (
+        <AnimatedSplash onFinish={() => setSplashStage("done")} />
+      ) : null}
     </WebContainer>
   );
 }
@@ -55,8 +62,6 @@ function RootNavigator() {
 export default function RootLayout() {
   useEffect(() => {
     async function prepare() {
-      // Hold the clean white first splash screen gracefully before transitioning
-      const minDisplay = new Promise((resolve) => setTimeout(resolve, 1400));
       try {
         if (!__DEV__ && Updates.isEnabled) {
           const update = await Updates.checkForUpdateAsync();
@@ -69,7 +74,6 @@ export default function RootLayout() {
       } catch {
         // OTA check failures should not block launch
       } finally {
-        await minDisplay;
         await SplashScreen.hideAsync();
       }
     }

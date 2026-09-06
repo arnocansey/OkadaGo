@@ -1,9 +1,11 @@
+import { Image, StyleSheet, View } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import * as Updates from "expo-updates";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { WhiteSplashScreen } from "@/components/WhiteSplashScreen";
 import { AnimatedSplash } from "@/components/AnimatedSplash";
 import { AppProvider } from "@/context/AppContext";
 import { LanguageProvider } from "@/context/LanguageContext";
@@ -15,19 +17,35 @@ import { WebContainer } from "@/components/WebContainer";
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
+const splashLogo = require("../assets/branding/okadago-logo-splash.png");
+
+type SplashStage = "white" | "motorcycle" | "done";
+
 function RootNavigator() {
   const { isDark, stackHeaderOptions, ready } = useTheme();
-  const [splashDone, setSplashDone] = useState(false);
+  const [splashStage, setSplashStage] = useState<SplashStage>("white");
 
   if (!ready) {
-    return null;
+    return (
+      <View style={layoutStyles.splashFallback}>
+        <Image
+          source={splashLogo}
+          style={layoutStyles.splashLogo}
+          accessibilityLabel="OkadaGo"
+        />
+      </View>
+    );
   }
 
   return (
     <WebContainer>
       <StatusBar style={isDark ? "light" : "dark"} />
       <Stack screenOptions={{ headerShown: false, ...stackHeaderOptions }} />
-      {!splashDone ? <AnimatedSplash onFinish={() => setSplashDone(true)} /> : null}
+      {splashStage === "white" ? (
+        <WhiteSplashScreen onFinish={() => setSplashStage("motorcycle")} />
+      ) : splashStage === "motorcycle" ? (
+        <AnimatedSplash onFinish={() => setSplashStage("done")} />
+      ) : null}
     </WebContainer>
   );
 }
@@ -41,6 +59,7 @@ export default function RootLayout() {
           if (update.isAvailable) {
             await Updates.fetchUpdateAsync();
             await Updates.reloadAsync();
+            return;
           }
         }
       } catch {
@@ -68,3 +87,17 @@ export default function RootLayout() {
 }
 
 declare const __DEV__: boolean;
+
+const layoutStyles = StyleSheet.create({
+  splashFallback: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  splashLogo: {
+    width: 220,
+    height: 160,
+    resizeMode: "contain",
+  },
+});
