@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     bottom: 100,
     left: 16,
     right: 16,
-    borderRadius: 20,
+    borderRadius: 18,
     padding: 16,
     zIndex: 100,
   },
@@ -140,14 +140,14 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     alignItems: "center",
     justifyContent: "center",
   },
   avatarText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "800",
     color: "#000",
   },
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   name: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "700",
   },
   vehicle: {
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 12,
+    borderRadius: 10,
   },
   etaText: {
     fontSize: 13,
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 14,
-    borderRadius: 14,
+    borderRadius: 12,
   },
   requestBtnText: {
     fontSize: 15,

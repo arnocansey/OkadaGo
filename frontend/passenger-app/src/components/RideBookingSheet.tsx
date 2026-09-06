@@ -161,43 +161,43 @@ export function RideBookingSheet({
           bottom: 0,
           left: 0,
           right: 0,
-          backgroundColor: isDark ? "rgba(17, 24, 39, 0.98)" : "rgba(255, 255, 255, 0.98)",
-          borderTopLeftRadius: 28,
-          borderTopRightRadius: 28,
+          backgroundColor: isDark ? "rgba(17, 24, 39, 0.98)" : "rgba(255, 255, 255, 0.99)",
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: -8 },
-          shadowOpacity: isDark ? 0.6 : 0.16,
-          shadowRadius: 24,
-          elevation: 16,
+          shadowOffset: { width: 0, height: -6 },
+          shadowOpacity: isDark ? 0.5 : 0.12,
+          shadowRadius: 20,
+          elevation: 14,
           borderWidth: 1,
           borderBottomWidth: 0,
-          borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
+          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
           maxHeight: isDelivery ? "72%" : "62%",
         },
         scrollContent: {
           paddingHorizontal: 16,
-          paddingTop: 10,
+          paddingTop: 8,
           paddingBottom: insets.bottom + 16,
-          gap: 12,
+          gap: 10,
         },
         handleBar: {
           width: 36,
           height: 4,
           borderRadius: 2,
-          backgroundColor: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.15)",
+          backgroundColor: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.12)",
           alignSelf: "center",
           marginBottom: 6,
         },
 
         /* ─── Route Capsule (Pickup -> Dropoff) ─────────────── */
         routeCapsule: {
-          backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)",
-          borderRadius: 16,
+          backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)",
+          borderRadius: 14,
           paddingHorizontal: 14,
           paddingVertical: 10,
           gap: 6,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          borderColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)",
         },
         routeRow: {
           flexDirection: "row",
@@ -224,23 +224,23 @@ export function RideBookingSheet({
         },
         routeDivider: {
           height: 1,
-          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+          backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)",
           marginLeft: 18,
         },
 
-        /* ─── Promo Banner Strip (Bolt style) ─────────────────── */
+        /* ─── Promo Banner Strip ──────────────────────────── */
         promoBannerStrip: {
-          backgroundColor: isDark ? "rgba(22, 163, 74, 0.2)" : "#DCFCE7",
+          backgroundColor: isDark ? "rgba(22, 163, 74, 0.15)" : "#F0FDF4",
           paddingVertical: 8,
           paddingHorizontal: 16,
-          borderTopLeftRadius: 28,
-          borderTopRightRadius: 28,
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
           gap: 6,
           borderBottomWidth: 1,
-          borderBottomColor: isDark ? "rgba(34, 197, 94, 0.25)" : "#BBF7D0",
+          borderBottomColor: isDark ? "rgba(34, 197, 94, 0.2)" : "#BBF7D0",
         },
         promoBannerText: {
           fontSize: 12,
@@ -248,7 +248,7 @@ export function RideBookingSheet({
           color: isDark ? "#4ADE80" : "#15803D",
         },
 
-        /* ─── Route Header Bar ───────────────────────────────── */
+        /* ─── Route Header Bar ───────────────────────────── */
         routeHeader: {
           flexDirection: "row",
           alignItems: "center",
@@ -256,13 +256,13 @@ export function RideBookingSheet({
           paddingVertical: 10,
           gap: 8,
           borderBottomWidth: 1,
-          borderBottomColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
+          borderBottomColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)",
         },
         routeHeaderBtn: {
           width: 34,
           height: 34,
           borderRadius: 17,
-          backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
+          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
           alignItems: "center",
           justifyContent: "center",
         },
@@ -289,7 +289,7 @@ export function RideBookingSheet({
           flex: 1,
         },
 
-        /* ─── Tiers List (Bolt / Uber style) ────────────────── */
+        /* ─── Tiers List ────────────────────────────────── */
         tiersList: {
           gap: 8,
         },
@@ -297,18 +297,18 @@ export function RideBookingSheet({
           flexDirection: "row",
           alignItems: "center",
           backgroundColor: isDark ? "rgba(255,255,255,0.03)" : "#FFFFFF",
-          borderRadius: 18,
+          borderRadius: 16,
           padding: 12,
           borderWidth: 1.5,
-          borderColor: isDark ? "rgba(255,255,255,0.08)" : "#E5E7EB",
+          borderColor: isDark ? "rgba(255,255,255,0.06)" : "#E9ECEF",
           gap: 12,
         },
         tierCardActive: {
           borderColor: colors.primary,
-          backgroundColor: isDark ? "rgba(250, 204, 21, 0.08)" : "rgba(250, 204, 21, 0.06)",
+          backgroundColor: isDark ? "rgba(250, 204, 21, 0.06)" : "rgba(250, 204, 21, 0.04)",
         },
         tierCardBusy: {
-          opacity: 0.42,
+          opacity: 0.4,
         },
         tierVehicleBox: {
           width: 68,
@@ -330,10 +330,10 @@ export function RideBookingSheet({
           fontWeight: "700",
           color: colors.text,
         },
-        /* RECOMMENDED chip — yellow */
+        /* RECOMMENDED chip */
         recBadge: {
           backgroundColor: colors.primary,
-          paddingHorizontal: 6,
+          paddingHorizontal: 7,
           paddingVertical: 2,
           borderRadius: 6,
         },
@@ -344,10 +344,10 @@ export function RideBookingSheet({
           textTransform: "uppercase",
           letterSpacing: 0.3,
         },
-        /* FASTER chip — green */
+        /* FASTER chip */
         fasterBadge: {
-          backgroundColor: "#16A34A",
-          paddingHorizontal: 6,
+          backgroundColor: "#22C55E",
+          paddingHorizontal: 7,
           paddingVertical: 2,
           borderRadius: 6,
         },
@@ -358,10 +358,10 @@ export function RideBookingSheet({
           textTransform: "uppercase",
           letterSpacing: 0.3,
         },
-        /* BUSY chip — grey */
+        /* BUSY chip */
         busyBadge: {
-          backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "#E5E7EB",
-          paddingHorizontal: 6,
+          backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "#E9ECEF",
+          paddingHorizontal: 7,
           paddingVertical: 2,
           borderRadius: 6,
         },
@@ -394,12 +394,12 @@ export function RideBookingSheet({
 
         /* ─── Delivery Recipient Section ────────────────────── */
         deliverySection: {
-          backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "#F9FAFB",
-          borderRadius: 16,
+          backgroundColor: isDark ? "rgba(255,255,255,0.03)" : "#F9FAFB",
+          borderRadius: 14,
           padding: 12,
           gap: 10,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.06)" : "#E5E7EB",
+          borderColor: isDark ? "rgba(255,255,255,0.05)" : "#E9ECEF",
         },
         deliveryTitle: {
           fontSize: 12,
@@ -416,13 +416,13 @@ export function RideBookingSheet({
           flex: 1,
           flexDirection: "row",
           alignItems: "center",
-          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "#FFFFFF",
-          borderRadius: 12,
+          backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#FFFFFF",
+          borderRadius: 10,
           paddingHorizontal: 10,
           paddingVertical: 8,
           gap: 6,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.08)" : "#E5E7EB",
+          borderColor: isDark ? "rgba(255,255,255,0.06)" : "#E9ECEF",
         },
         textInput: {
           flex: 1,
@@ -439,12 +439,12 @@ export function RideBookingSheet({
           paddingHorizontal: 10,
           paddingVertical: 6,
           borderRadius: 10,
-          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "#F3F4F6",
+          backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#F3F4F6",
           borderWidth: 1,
           borderColor: "transparent",
         },
         packageChipActive: {
-          backgroundColor: isDark ? "rgba(250, 204, 21, 0.15)" : "rgba(250, 204, 21, 0.12)",
+          backgroundColor: isDark ? "rgba(250, 204, 21, 0.12)" : "rgba(250, 204, 21, 0.1)",
           borderColor: colors.primary,
         },
         packageChipText: {
@@ -456,7 +456,7 @@ export function RideBookingSheet({
           color: colors.primary,
         },
 
-        /* ─── Yango-Style Quick-Bar (Payment / Promo / Note) ── */
+        /* ─── Quick Bar (Payment / Promo / Note) ──────────── */
         quickBar: {
           flexDirection: "row",
           gap: 8,
@@ -468,16 +468,16 @@ export function RideBookingSheet({
           alignItems: "center",
           justifyContent: "center",
           gap: 6,
-          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "#F3F4F6",
+          backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#F3F4F6",
           paddingVertical: 9,
           paddingHorizontal: 10,
-          borderRadius: 12,
+          borderRadius: 10,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.08)" : "#E5E7EB",
+          borderColor: isDark ? "rgba(255,255,255,0.06)" : "#E9ECEF",
         },
         quickChipHighlight: {
           borderColor: colors.primary,
-          backgroundColor: isDark ? "rgba(250, 204, 21, 0.1)" : "rgba(250, 204, 21, 0.08)",
+          backgroundColor: isDark ? "rgba(250, 204, 21, 0.08)" : "rgba(250, 204, 21, 0.06)",
         },
         quickChipText: {
           fontSize: 12,
@@ -489,27 +489,27 @@ export function RideBookingSheet({
         landmarkInputBox: {
           flexDirection: "row",
           alignItems: "center",
-          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "#FFFFFF",
-          borderRadius: 12,
+          backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#FFFFFF",
+          borderRadius: 10,
           paddingHorizontal: 12,
           paddingVertical: 8,
           gap: 8,
           borderWidth: 1,
-          borderColor: isDark ? "rgba(255,255,255,0.08)" : "#E5E7EB",
+          borderColor: isDark ? "rgba(255,255,255,0.06)" : "#E9ECEF",
         },
 
         /* ─── Primary CTA Button ────────────────────────────── */
         confirmBtn: {
-          height: 54,
-          borderRadius: 16,
+          height: 56,
+          borderRadius: 14,
           backgroundColor: colors.primary,
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
           gap: 8,
           shadowColor: colors.primary,
-          shadowOffset: { width: 0, height: 6 },
-          shadowOpacity: 0.35,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
           shadowRadius: 12,
           elevation: 8,
           marginTop: 4,

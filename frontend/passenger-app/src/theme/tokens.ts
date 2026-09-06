@@ -74,39 +74,39 @@ export const darkColors: ThemeColors = {
 };
 
 export const lightColors: ThemeColors = {
-  primary: "#facc15",
-  primaryDark: "#f7c600",
-  primaryLight: "#FFF8E1",
-  accent: "#ff6b00",
-  accentDark: "#e05e00",
-  accentLight: "#FFF8E1",
+  primary: "#FACC15",
+  primaryDark: "#E5B800",
+  primaryLight: "#FEF9C3",
+  accent: "#FF6A00",
+  accentDark: "#E05E00",
+  accentLight: "#FFF4E6",
   background: "#FFFFFF",
-  surface: "#F2F2F7",
+  surface: "#F8F9FA",
   surfaceElevated: "#FFFFFF",
   surfaceRaised: "#FFFFFF",
-  surfaceOverlay: "rgba(0,0,0,0.03)",
+  surfaceOverlay: "rgba(0,0,0,0.02)",
   bg: "#FFFFFF",
-  border: "#E5E5EA",
-  borderStrong: "#C7C7CC",
-  text: "#000000",
-  textSecondary: "#636366",
-  textMuted: "#8E8E93",
+  border: "#E9ECEF",
+  borderStrong: "#DEE2E6",
+  text: "#1A1D26",
+  textSecondary: "#5F6577",
+  textMuted: "#9CA3AF",
   textOnPrimary: "#000000",
   textOnDanger: "#FFFFFF",
-  danger: "#FF3B30",
-  dangerLight: "#FFE5E3",
-  warning: "#facc15",
-  warningLight: "#FFF8E1",
-  info: "#007AFF",
-  infoLight: "#E5F1FF",
-  success: "#34C759",
-  successLight: "#E8F8EC",
+  danger: "#EF4444",
+  dangerLight: "#FEF2F2",
+  warning: "#F59E0B",
+  warningLight: "#FFFBEB",
+  info: "#3B82F6",
+  infoLight: "#EFF6FF",
+  success: "#22C55E",
+  successLight: "#F0FDF4",
   overlay: "rgba(0, 0, 0, 0.4)",
-  mapTint: "#facc15",
-  mapRoute: "#ff6b00",
-  mapMarkerPickup: "#facc15",
-  mapMarkerDestination: "#FF3B30",
-  mapMarkerRider: "#ff6b00",
+  mapTint: "#FACC15",
+  mapRoute: "#FF6A00",
+  mapMarkerPickup: "#FACC15",
+  mapMarkerDestination: "#EF4444",
+  mapMarkerRider: "#FF6A00",
 };
 
 /** Default static palette (dark). Prefer `useTheme().colors` in components. */
@@ -129,6 +129,9 @@ export const radius = {
   lg: 16,
   xl: 20,
   xxl: 24,
+  card: 16,
+  sheet: 24,
+  pill: 999,
   full: 999,
 } as const;
 
@@ -163,8 +166,8 @@ export const stackHeaderOptions = getStackHeaderOptions(darkColors);
 
 export function getShadows(isDark: boolean) {
   const opacity = isDark
-    ? { sm: 0.3, md: 0.35, lg: 0.4, sheet: 0.35 }
-    : { sm: 0.08, md: 0.12, lg: 0.16, sheet: 0.14 };
+    ? { sm: 0.25, md: 0.3, lg: 0.4, sheet: 0.35 }
+    : { sm: 0.06, md: 0.1, lg: 0.14, sheet: 0.12 };
   return {
     sm: {
       shadowColor: "#000000",
@@ -175,16 +178,16 @@ export function getShadows(isDark: boolean) {
     },
     md: {
       shadowColor: "#000000",
-      shadowOffset: { width: 0, height: 4 },
+      shadowOffset: { width: 0, height: 3 },
       shadowOpacity: opacity.md,
-      shadowRadius: 12,
+      shadowRadius: 10,
       elevation: 4,
     },
     lg: {
       shadowColor: "#000000",
-      shadowOffset: { width: 0, height: 8 },
+      shadowOffset: { width: 0, height: 6 },
       shadowOpacity: opacity.lg,
-      shadowRadius: 24,
+      shadowRadius: 20,
       elevation: 8,
     },
     sheet: {
