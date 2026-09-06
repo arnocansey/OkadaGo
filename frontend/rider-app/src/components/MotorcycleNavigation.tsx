@@ -716,6 +716,19 @@ export function MotorcycleNavigation({
               <Text style={s.passengerText}>Call {passengerName}</Text>
             </Pressable>
           )}
+
+          {/* Open in Google Maps */}
+          {destinationLatitude && destinationLongitude && (
+            <Pressable
+              style={s.passengerBtn}
+              onPress={() => openGoogleMapsNavigation(destinationLatitude, destinationLongitude, destinationAddress)}
+              accessibilityRole="button"
+              accessibilityLabel="Open in Google Maps"
+            >
+              <Navigation size={16} color="#34A853" />
+              <Text style={[s.passengerText, { color: "#34A853" }]}>Open in Google Maps</Text>
+            </Pressable>
+          )}
         </View>
       </View>
 
