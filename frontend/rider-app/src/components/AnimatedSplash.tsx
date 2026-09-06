@@ -129,9 +129,9 @@ export function AnimatedSplash({ onFinish }: Props) {
     outputRange: [16, 0],
   });
 
-  const wheelColor = colors.text;
-  const bodyColor = colors.primary;
-  const riderColor = colors.text;
+  const wheelColor = "#FFFFFF";
+  const bodyColor = "#FF6A00";
+  const riderColor = "#FFFFFF";
 
   return (
     <Animated.View
@@ -147,8 +147,8 @@ export function AnimatedSplash({ onFinish }: Props) {
         ]}
       >
         <BrandLogo variant="wordmark" size={56} />
-        <View style={[styles.tagPill, { backgroundColor: colors.primaryLight }]}>
-          <Text style={[styles.tagline, { color: colors.primary }]}>Your ride, on demand</Text>
+        <View style={[styles.tagPill, { backgroundColor: "rgba(255,255,255,0.15)" }]}>
+          <Text style={[styles.tagline, { color: "#facc15" }]}>Your ride, on demand</Text>
         </View>
       </Animated.View>
 
@@ -165,9 +165,9 @@ export function AnimatedSplash({ onFinish }: Props) {
               { opacity: speedLineOpacity, transform: [{ scaleX: speedLineScaleX }] },
             ]}
           >
-            <View style={[styles.speedLine, styles.speedLineLong, { backgroundColor: colors.primary }]} />
-            <View style={[styles.speedLine, styles.speedLineShort, { backgroundColor: colors.primary }]} />
-            <View style={[styles.speedLine, styles.speedLineLong, { backgroundColor: colors.primary }]} />
+            <View style={[styles.speedLine, styles.speedLineLong, { backgroundColor: "#FF6A00" }]} />
+            <View style={[styles.speedLine, styles.speedLineShort, { backgroundColor: "#FF6A00" }]} />
+            <View style={[styles.speedLine, styles.speedLineLong, { backgroundColor: "#FF6A00" }]} />
           </Animated.View>
 
           <Svg width={BIKE_WIDTH} height={BIKE_HEIGHT} viewBox="0 0 160 90">

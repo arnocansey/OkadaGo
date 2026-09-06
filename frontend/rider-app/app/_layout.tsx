@@ -19,7 +19,7 @@ import { WebContainer } from "@/components/WebContainer";
 // Dismiss any native window splash screen immediately so in-app WhiteSplashScreen takes over
 SplashScreen.hideAsync().catch(() => undefined);
 
-const splashLogo = require("../assets/branding/okadago-logo-splash.png");
+const splashLogo = require("../assets/branding/okadago-icon-yellow.png");
 
 type SplashStage = "white" | "motorcycle" | "done";
 
@@ -64,8 +64,6 @@ export default function RootLayout() {
           const update = await Updates.checkForUpdateAsync();
           if (update.isAvailable) {
             await Updates.fetchUpdateAsync();
-            await Updates.reloadAsync();
-            return;
           }
         }
       } catch {
@@ -95,13 +93,13 @@ declare const __DEV__: boolean;
 const layoutStyles = StyleSheet.create({
   splashFallback: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#153252",
     alignItems: "center",
     justifyContent: "center",
   },
   splashLogo: {
-    width: 220,
-    height: 160,
+    width: 140,
+    height: 140,
     resizeMode: "contain",
   },
 });

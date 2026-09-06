@@ -12,19 +12,19 @@ type Props = {
   onFinish: () => void;
 };
 
-const splashLogo = require("../../assets/branding/okadago-logo-splash.png");
+const splashLogo = require("../../assets/branding/okadago-icon-yellow.png");
 
 const FADE_IN_MS = 450;
 const HOLD_MS = 600;
 const FADE_OUT_MS = 300;
 
 /**
- * OkadaGo Clean White Initial Splash Screen.
+ * OkadaGo Blue Initial Splash Screen.
  *
  * Screen 1 of launch sequence:
- * - Pure White background (#FFFFFF)
- * - Prominent centered OkadaGo logo/initials (#153252 Blue and #FF6A00 Orange)
- * - Subtle smooth entry, hold, and transition into the motorcycle animation
+ * - Brand blue background (#153252)
+ * - Centered OkadaGo icon/initials
+ * - Smooth entry, hold, and transition into the motorcycle animation
  */
 export function WhiteSplashScreen({ onFinish }: Props) {
   const { width } = useWindowDimensions();
@@ -77,8 +77,8 @@ export function WhiteSplashScreen({ onFinish }: Props) {
     };
   }, [containerOpacity, logoOpacity, logoScale, onFinish]);
 
-  const logoWidth = Math.min(Math.round(width * 0.58), 240);
-  const logoHeight = Math.round(logoWidth * 0.7);
+  const logoWidth = Math.min(Math.round(width * 0.38), 140);
+  const logoHeight = logoWidth;
 
   return (
     <Animated.View
@@ -109,7 +109,7 @@ export function WhiteSplashScreen({ onFinish }: Props) {
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#153252",
     alignItems: "center",
     justifyContent: "center",
     zIndex: 9999,
