@@ -54,13 +54,37 @@ export function configureNotificationHandler() {
       Notifications.setNotificationChannelAsync("ride-alerts", {
         name: "Ride & Delivery Alerts",
         importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 500, 200, 500, 200, 500],
-        lightColor: "#EAB308",
-        sound: "default",
+        vibrationPattern: [0, 800, 300, 800],
+        lightColor: "#FF6A00",
+        sound: "ride_request.wav",
         enableVibrate: true,
         enableLights: true,
         lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
         bypassDnd: true,
+      }).catch(() => undefined);
+
+      Notifications.setNotificationChannelAsync("ride-requests", {
+        name: "Incoming Ride Requests",
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 800, 300, 800],
+        lightColor: "#FF6A00",
+        sound: "ride_request.wav",
+        enableVibrate: true,
+        enableLights: true,
+        lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+        bypassDnd: true,
+      }).catch(() => undefined);
+
+      Notifications.setNotificationChannelAsync("general", {
+        name: "General Notifications",
+        importance: Notifications.AndroidImportance.DEFAULT,
+        vibrationPattern: [0, 250],
+        lightColor: "#FF6A00",
+        sound: "default",
+        enableVibrate: true,
+        enableLights: false,
+        lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+        bypassDnd: false,
       }).catch(() => undefined);
     }
   } catch {
@@ -117,12 +141,16 @@ export async function registerPushToken(authToken: string) {
 export function riderPathForNotificationData(data?: NotificationData | null) {
   if (!data) return "/notifications";
   if (typeof data.rideId === "string" && data.rideId) {
-    if (data.type === "ride_assigned") return `/request/${data.rideId}`;
+    if (data.type === "ride_assigned" || data.type === "ride_offer" || data.offerId) {
+      const offerParam = data.offerId ? `&offerId=${data.offerId}` : "";
+      const expiresParam = data.expiresIn ? `&expiresIn=${data.expiresIn}` : "";
+      return `/request/${data.rideId}?kind=ride${offerParam}${expiresParam}`;
+    }
     return `/trip/${data.rideId}`;
   }
   if (typeof data.deliveryId === "string" && data.deliveryId) {
     if (data.type === "delivery_status" && data.status === "SEARCHING") {
-      return `/request/${data.deliveryId}`;
+      return `/request/${data.deliveryId}?kind=delivery`;
     }
     return `/trip/${data.deliveryId}`;
   }

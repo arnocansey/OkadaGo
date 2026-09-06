@@ -29,6 +29,7 @@ import { useTranslation } from "react-i18next";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppMap } from "@/components/AppMap";
 import { DailyGoalModal, DAILY_GOAL_STORAGE_KEY, DEFAULT_DAILY_GOAL } from "@/components/DailyGoalModal";
+import { GpsPermissionBanner } from "@/components/GpsPermissionBanner";
 import { OnlineStatusControl } from "@/components/OnlineStatusControl";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -59,7 +60,7 @@ export default function RiderHome() {
     refresh,
   } = useApp();
   const { colors, isDark } = useTheme();
-  const { latitude, longitude, heading, speed, accuracy, hasFix, isMocked } = useUserLocation();
+  const { latitude, longitude, heading, speed, accuracy, hasFix, isMocked, permissionGranted, error } = useUserLocation();
   const [sosLoading, setSosLoading] = useState(false);
   const [onlineSince, setOnlineSince] = useState<Date | null>(null);
   const [jobPreference, setJobPreference] = useState<"both" | "rides" | "deliveries">("both");
@@ -676,6 +677,12 @@ export default function RiderHome() {
           </Pressable>
         </View>
       </View>
+
+      {/* ─── GPS Permission Banner ─────────────────────────────── */}
+      <GpsPermissionBanner
+        visible={!hasFix && online}
+        type={permissionGranted ? "disabled" : "denied"}
+      />
 
       {/* ─── Top Floating Daily Goal Progress Widget ────────────── */}
       <Pressable

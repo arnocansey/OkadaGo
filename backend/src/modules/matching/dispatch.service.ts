@@ -20,6 +20,7 @@ import {
   getRealtimeServer,
 } from "../realtime/realtime.service.js";
 import { pushService } from "../notifications/push.service.js";
+import { getRiderNotificationConfig } from "../admin/rider-notification-config.js";
 
 const matchingService = new MatchingService();
 
@@ -51,6 +52,9 @@ export class DispatchService {
       activeDispatchTimers.delete(rideId);
     }
 
+    // Fetch admin-configurable notification settings
+    const notifConfig = await getRiderNotificationConfig();
+
     const ride = await prisma.ride.findUnique({
       where: { id: rideId },
       include: {
@@ -68,6 +72,9 @@ export class DispatchService {
 
     const roundConfig =
       DISPATCH_ROUNDS.find((r) => r.round === targetRound) ?? DISPATCH_ROUNDS[0]!;
+
+    // Use admin-configurable timeout if set, otherwise use round default
+    const timeoutSec = notifConfig.timeoutSeconds || roundConfig.timeoutSec;
 
     // Exclude riders who already rejected this ride in prior rounds
     const rejectedRiderIds = new Set(
@@ -188,7 +195,7 @@ export class DispatchService {
     }
 
     const selectedRider = riders.find((r) => r.id === bestCandidate.riderId)!;
-    const expiresAt = new Date(Date.now() + roundConfig.timeoutSec * 1000);
+    const expiresAt = new Date(Date.now() + timeoutSec * 1000);
 
     // Create formal offer and lock rider to OFFERED state
     const offer = await prisma.$transaction(async (tx) => {
@@ -224,11 +231,11 @@ export class DispatchService {
     const io = getRealtimeServer();
 
     // 1. Emit live offer to rider socket
-    io?.to(`user:${selectedRider.userId}`).emit("ride.offered", {
+    const offerPayload = {
       offerId: offer.id,
       rideId: ride.id,
       round: roundConfig.round,
-      expiresInSeconds: roundConfig.timeoutSec,
+      expiresInSeconds: timeoutSec,
       pickupAddress: ride.pickupAddress,
       destinationAddress: ride.destinationAddress,
       pickupCoordinates: { latitude: pickupLat, longitude: pickupLng },
@@ -242,6 +249,31 @@ export class DispatchService {
       currency: ride.currency,
       passengerName: ride.passenger.user.fullName,
       passengerRating: Number(ride.passenger.ratingAverage ?? 5.0),
+    };
+
+    io?.to(`user:${selectedRider.userId}`).emit("ride.offered", offerPayload);
+
+    // Also emit ride:request with standard structure for compatibility
+    io?.to(`user:${selectedRider.userId}`).emit("ride:request", {
+      id: ride.id,
+      offerId: offer.id,
+      status: "assigned",
+      pickupAddress: ride.pickupAddress,
+      destinationAddress: ride.destinationAddress,
+      pickupLatitude: pickupLat,
+      pickupLongitude: pickupLng,
+      destinationLatitude: Number(ride.destinationLatitude),
+      destinationLongitude: Number(ride.destinationLongitude),
+      estimatedFare: Number(ride.estimatedFare ?? 0),
+      riderEarnings: Number(ride.riderEarnings ?? ride.estimatedFare ?? 0),
+      currency: ride.currency,
+      expiresInSeconds: timeoutSec,
+      passenger: {
+        id: ride.passenger.id,
+        user: { fullName: ride.passenger.user.fullName },
+        ratingAverage: Number(ride.passenger.ratingAverage ?? 5.0),
+      },
+      createdAt: new Date().toISOString(),
     });
 
     // 2. Emit search progress to passenger
@@ -268,14 +300,23 @@ export class DispatchService {
     void pushService.sendToUser(selectedRider.userId, {
       title: "New Ride Request Nearby!",
       body: `Pickup: ${ride.pickupAddress} (${bestCandidate.distanceToPickupKm.toFixed(1)} km)`,
-      data: { rideId: ride.id, offerId: offer.id, type: "ride_offer" },
+      data: {
+        rideId: ride.id,
+        offerId: offer.id,
+        type: "ride_offer",
+        expiresIn: timeoutSec,
+      },
+      priority: "high",
+      channelId: "ride-requests",
+      sound: notifConfig.soundName || "ride_request",
+      interruptionLevel: notifConfig.criticalPriority ? "critical" : "active",
     });
 
-    // Schedule automatic timeout escalation after 10.5 seconds
+    // Schedule automatic timeout escalation after configured timeout + 0.5s buffer
     const timer = setTimeout(async () => {
       activeDispatchTimers.delete(ride.id);
       await this.handleOfferTimeout(offer.id);
-    }, (roundConfig.timeoutSec + 0.5) * 1000);
+    }, (timeoutSec + 0.5) * 1000);
 
     activeDispatchTimers.set(ride.id, timer);
     return true;
@@ -473,6 +514,19 @@ export class DispatchService {
       });
     });
 
+    // Notify rider socket that offer expired so sound & vibration stop immediately
+    const rider = await prisma.riderProfile.findUnique({
+      where: { id: offer.riderId },
+      select: { userId: true },
+    });
+    if (rider?.userId) {
+      const io = getRealtimeServer();
+      io?.to(`user:${rider.userId}`).emit("ride.expired", {
+        offerId: offer.id,
+        rideId: offer.rideId,
+      });
+    }
+
     // Escalate to next round
     if (offer.ride.status === RideStatus.SEARCHING) {
       void this.dispatchRide(offer.rideId, offer.round + 1);
@@ -601,6 +655,24 @@ export class DispatchService {
         where: { id: { in: riderIds }, tripStatus: RiderTripStatus.OFFERED },
         data: { tripStatus: RiderTripStatus.IDLE },
       });
+
+      // Immediately notify all offered riders so their alarms stop
+      const riders = await prisma.riderProfile.findMany({
+        where: { id: { in: riderIds } },
+        select: { userId: true },
+      });
+      const io = getRealtimeServer();
+      for (const r of riders) {
+        io?.to(`user:${r.userId}`).emit("ride.cancelled", {
+          rideId,
+          reason: "PASSENGER_CANCELLED",
+          message: "The passenger has cancelled this request.",
+        });
+        io?.to(`user:${r.userId}`).emit("ride:status-update", {
+          id: rideId,
+          status: "cancelled",
+        });
+      }
     }
   }
 }

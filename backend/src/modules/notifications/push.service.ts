@@ -10,6 +10,8 @@ type PushPayload = {
   channelId?: string;
   priority?: "high" | "normal" | "default";
   ttl?: number;
+  /** iOS 15+ interruption level for critical notifications */
+  interruptionLevel?: "critical" | "active" | "passive" | "time-sensitive";
   data?: Record<string, unknown>;
 };
 
@@ -52,6 +54,7 @@ export class PushService {
       channelId: payload.channelId ?? "ride-alerts",
       priority: payload.priority ?? "high",
       ttl: payload.ttl ?? 60,
+      ...(payload.interruptionLevel ? { interruptionLevel: payload.interruptionLevel } : {}),
       _displayInForeground: true,
     }));
 

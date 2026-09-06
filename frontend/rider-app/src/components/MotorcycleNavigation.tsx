@@ -36,6 +36,7 @@ import { useLiveRoutePreview } from "@/hooks/useLiveRoutePreview";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { api } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
+import { isOffRoute } from "@/lib/geo";
 import { openGoogleMapsNavigation, openWazeNavigation } from "@/lib/navigation";
 import { brand, layers } from "@/theme/design-system";
 
@@ -122,6 +123,7 @@ export function MotorcycleNavigation({
   const [showChatModal, setShowChatModal] = useState(false);
 
   const [currentStep, setCurrentStep] = useState(0);
+  const [offRoute, setOffRoute] = useState(false);
 
   // Route steps — from live preview or empty until API provides them
   const steps: NavigationStep[] = useMemo(
@@ -157,7 +159,7 @@ export function MotorcycleNavigation({
 
   const { latitude: riderLat, longitude: riderLng } = useUserLocation();
 
-  // Live route preview
+  // Live route preview — refresh every 15s during active navigation
   const livePreview = useLiveRoutePreview(
     session?.token,
     riderLat && riderLng ? { latitude: riderLat, longitude: riderLng } : null,
@@ -165,6 +167,7 @@ export function MotorcycleNavigation({
       ? { latitude: destinationLatitude, longitude: destinationLongitude }
       : null,
     true,
+    15000,
   );
 
   // Advance step when route data updates
@@ -173,6 +176,35 @@ export function MotorcycleNavigation({
       setCurrentStep(0);
     }
   }, [livePreview?.distanceKm]);
+
+  // Off-route detection
+  useEffect(() => {
+    if (!routeCoordinates || routeCoordinates.length < 2 || !riderLat || !riderLng) return;
+
+    const checkOffRoute = () => {
+      const routeCoords = routeCoordinates.map((c) => ({
+        latitude: c.latitude,
+        longitude: c.longitude,
+      }));
+      const isCurrentlyOffRoute = isOffRoute(
+        { latitude: riderLat, longitude: riderLng },
+        routeCoords,
+        50, // 50m threshold
+      );
+
+      if (isCurrentlyOffRoute && !offRoute) {
+        setOffRoute(true);
+        // Trigger immediate route refresh
+        setCurrentStep(0);
+      } else if (!isCurrentlyOffRoute && offRoute) {
+        setOffRoute(false);
+      }
+    };
+
+    checkOffRoute();
+    const timer = setInterval(checkOffRoute, 5000);
+    return () => clearInterval(timer);
+  }, [riderLat, riderLng, routeCoordinates, offRoute]);
 
   const step = steps[currentStep];
   const nextStep = steps[currentStep + 1];
@@ -574,6 +606,31 @@ export function MotorcycleNavigation({
       {/* ─── Bottom Panel ───────────────────────────────────── */}
       <View style={s.bottomPanel}>
         <View style={s.panelContent}>
+          {/* Off-route Warning Banner */}
+          {offRoute && (
+            <View style={{
+              backgroundColor: "#FEF3C7",
+              borderRadius: 12,
+              padding: 12,
+              marginBottom: 12,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 10,
+              borderWidth: 1,
+              borderColor: "#F59E0B",
+            }}>
+              <AlertTriangle size={18} color="#D97706" />
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 13, fontWeight: "700", color: "#92400E" }}>
+                  Off Route — Recalculating
+                </Text>
+                <Text style={{ fontSize: 11, color: "#B45309", marginTop: 1 }}>
+                  Follow the updated route below
+                </Text>
+              </View>
+            </View>
+          )}
+
           {/* Current Instruction (LARGE for glanceability) */}
           <View style={s.instructionCard}>
             <View style={s.maneuverIcon}>

@@ -13,6 +13,7 @@ import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 import { ToastProvider } from "@/context/ToastContext";
 import "@/i18n";
 
+import { AudioBridge } from "@/components/AudioBridge";
 import { WebContainer } from "@/components/WebContainer";
 
 // Dismiss any native window splash screen immediately so in-app WhiteSplashScreen takes over
@@ -41,6 +42,7 @@ function RootNavigator() {
   return (
     <WebContainer>
       <StatusBar style={isDark ? "light" : "dark"} />
+      <AudioBridge />
       <Stack screenOptions={{ headerShown: false, ...stackHeaderOptions }} />
       {splashStage === "white" ? (
         <WhiteSplashScreen onFinish={() => setSplashStage("motorcycle")} />

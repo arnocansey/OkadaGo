@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import MapViewBase, { Marker, Polyline, PROVIDER_GOOGLE, type Region } from "react-native-maps";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Crosshair, MapPin } from "lucide-react-native";
+import { AnimatedRiderMarker } from "./AnimatedRiderMarker";
 import { MotorcycleMarker } from "./MotorcycleMarker";
 import { useTheme } from "@/context/ThemeContext";
 import {
@@ -163,21 +164,14 @@ export function AppMap({
           if (isRider) {
             const badgeBg = m.pinColor ?? colors.primary;
             return (
-              <Marker
+              <AnimatedRiderMarker
                 key={m.id}
-                coordinate={{ latitude: m.latitude, longitude: m.longitude }}
-                title={m.title ?? "Okada Rider"}
-                anchor={{ x: 0.5, y: 0.5 }}
-                flat={true}
-                rotation={m.heading ?? 0}
-              >
-                <MotorcycleMarker
-                  heading={m.heading}
-                  disableRotation={true}
-                  pinColor={badgeBg}
-                  title={m.title}
-                />
-              </Marker>
+                latitude={m.latitude}
+                longitude={m.longitude}
+                heading={m.heading}
+                pinColor={badgeBg}
+                title={m.title}
+              />
             );
           }
 
@@ -187,6 +181,7 @@ export function AppMap({
               coordinate={{ latitude: m.latitude, longitude: m.longitude }}
               title={m.title}
               pinColor={m.pinColor ?? colors.mapTint}
+              tracksViewChanges={false}
             />
           );
         })}

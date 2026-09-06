@@ -3,13 +3,20 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Bell, Globe, Moon, Sun, Volume2 } from "lucide-react-native";
+import { Bell, Globe, Moon, Sun, Volume2, Vibrate, Play } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/Card";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/lib/api";
+import { requestAlarm } from "@/lib/alarm";
+import {
+  loadRequestSettings,
+  saveRequestSettings,
+  type VolumeLevel,
+  type RiderRequestSettings,
+} from "@/lib/request-settings";
 import { radius, spacing } from "@/theme/tokens";
 
 const SETTINGS_KEY = "@okadago_rider_settings";
@@ -68,6 +75,15 @@ function createStyles(colors: ReturnType<typeof useTheme>["colors"], typography:
     screen: { flex: 1, backgroundColor: colors.background },
     content: { padding: spacing.xl, gap: spacing.lg, paddingBottom: spacing.xxxl },
     card: { padding: 0, overflow: "hidden" },
+    sectionHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.lg,
+      paddingBottom: spacing.sm,
+    },
+    sectionTitle: { ...typography.captionMedium, color: colors.textMuted, textTransform: "uppercase", letterSpacing: 0.5 },
     row: {
       flexDirection: "row",
       alignItems: "center",
@@ -101,6 +117,47 @@ function createStyles(colors: ReturnType<typeof useTheme>["colors"], typography:
       paddingBottom: spacing.sm,
     },
     languageCard: { padding: 0, overflow: "hidden" },
+    volumeRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.lg,
+      gap: spacing.md,
+    },
+    volumeOptions: {
+      flexDirection: "row",
+      gap: spacing.sm,
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.lg,
+    },
+    volumeChip: {
+      flex: 1,
+      paddingVertical: spacing.sm,
+      borderRadius: radius.md,
+      borderWidth: 1.5,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    volumeChipText: {
+      fontSize: 13,
+      fontWeight: "700",
+    },
+    testBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: spacing.sm,
+      marginHorizontal: spacing.lg,
+      marginBottom: spacing.lg,
+      paddingVertical: spacing.md,
+      borderRadius: radius.md,
+      borderWidth: 1.5,
+      borderStyle: "dashed",
+    },
+    testBtnText: {
+      fontSize: 14,
+      fontWeight: "600",
+    },
   });
 }
 
@@ -113,11 +170,23 @@ export default function SettingsScreen() {
   const { t } = useTranslation();
   const styles = useMemo(() => createStyles(colors, typography), [colors, typography]);
 
+  // Ride request notification settings
+  const [requestSettings, setRequestSettings] = useState<RiderRequestSettings>({
+    soundEnabled: true,
+    vibrationEnabled: true,
+    volume: "high",
+  });
+  const [testingSound, setTestingSound] = useState(false);
+
   // Load persisted settings on mount
   useEffect(() => {
-    loadSettings().then((settings) => {
-      setNotifications(settings.pushNotifications);
-      setSound(settings.soundAlerts);
+    Promise.all([
+      loadSettings(),
+      loadRequestSettings(),
+    ]).then(([generalSettings, reqSettings]) => {
+      setNotifications(generalSettings.pushNotifications);
+      setSound(generalSettings.soundAlerts);
+      setRequestSettings(reqSettings);
       setLoaded(true);
     });
   }, []);
@@ -127,7 +196,6 @@ export default function SettingsScreen() {
     const current = await loadSettings();
     const next = { ...current, pushNotifications: value };
     await saveSettings(next);
-    // Persist to backend
     if (session?.token) {
       api("/rider/settings", {
         method: "PATCH",
@@ -142,7 +210,6 @@ export default function SettingsScreen() {
     const current = await loadSettings();
     const next = { ...current, soundAlerts: value };
     await saveSettings(next);
-    // Persist to backend
     if (session?.token) {
       api("/rider/settings", {
         method: "PATCH",
@@ -152,6 +219,18 @@ export default function SettingsScreen() {
     }
   }, [session?.token]);
 
+  const updateRequestSetting = useCallback(async (patch: Partial<RiderRequestSettings>) => {
+    const next = await saveRequestSettings(patch);
+    setRequestSettings(next);
+  }, []);
+
+  const handleTestSound = useCallback(async () => {
+    if (testingSound) return;
+    setTestingSound(true);
+    await requestAlarm.testSound(requestSettings.volume);
+    setTimeout(() => setTestingSound(false), 3500);
+  }, [testingSound, requestSettings.volume]);
+
   if (!loaded) return null;
 
   return (
@@ -159,7 +238,12 @@ export default function SettingsScreen() {
       <Stack.Screen options={{ headerShown: true, title: t("settings.title"), ...stackHeaderOptions }} />
       <SafeAreaView style={styles.screen} edges={["bottom"]}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          {/* ─── General Settings ────────────────────────────── */}
           <Card style={styles.card}>
+            <View style={styles.sectionHeader}>
+              <Bell size={14} color={colors.textMuted} />
+              <Text style={styles.sectionTitle}>General</Text>
+            </View>
             <SettingRow
               icon={<Bell size={18} color={colors.text} />}
               label={t("settings.pushNotifications")}
@@ -186,6 +270,94 @@ export default function SettingsScreen() {
               onChange={(enabled) => setTheme(enabled ? "dark" : "light")}
               styles={styles}
             />
+          </Card>
+
+          {/* ─── Ride Request Notifications ─────────────────── */}
+          <Card style={styles.card}>
+            <View style={styles.sectionHeader}>
+              <Bell size={14} color="#FF6A00" />
+              <Text style={[styles.sectionTitle, { color: "#FF6A00" }]}>Ride Requests</Text>
+            </View>
+
+            <SettingRow
+              icon={<Volume2 size={18} color={colors.text} />}
+              label="Ride Request Sound"
+              hint="Play a distinctive sound for new ride requests"
+              value={requestSettings.soundEnabled}
+              onChange={(v) => updateRequestSetting({ soundEnabled: v })}
+              styles={styles}
+            />
+
+            <View style={styles.divider} />
+
+            <SettingRow
+              icon={<Vibrate size={18} color={colors.text} />}
+              label="Vibration"
+              hint="Vibrate device when a new ride request arrives"
+              value={requestSettings.vibrationEnabled}
+              onChange={(v) => updateRequestSetting({ vibrationEnabled: v })}
+              styles={styles}
+            />
+
+            <View style={styles.divider} />
+
+            {/* Volume selector */}
+            <View style={styles.volumeRow}>
+              <View style={styles.rowIcon}>
+                <Volume2 size={18} color={colors.text} />
+              </View>
+              <View style={styles.rowBody}>
+                <Text style={styles.label}>Sound Volume</Text>
+                <Text style={styles.hint}>Adjust the incoming request sound level</Text>
+              </View>
+            </View>
+
+            <View style={styles.volumeOptions}>
+              {(["low", "medium", "high"] as VolumeLevel[]).map((level) => {
+                const active = requestSettings.volume === level;
+                return (
+                  <View
+                    key={level}
+                    style={[
+                      styles.volumeChip,
+                      {
+                        backgroundColor: active ? colors.primary + "15" : colors.surface,
+                        borderColor: active ? colors.primary : colors.border,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.volumeChipText,
+                        { color: active ? colors.primary : colors.textMuted },
+                      ]}
+                      onPress={() => updateRequestSetting({ volume: level })}
+                    >
+                      {level === "low" ? "Low" : level === "medium" ? "Medium" : "High"}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+
+            {/* Test Sound */}
+            <View
+              style={[
+                styles.testBtn,
+                { borderColor: testingSound ? colors.primary : colors.border },
+              ]}
+            >
+              <Play size={16} color={testingSound ? colors.primary : colors.textMuted} />
+              <Text
+                style={[
+                  styles.testBtnText,
+                  { color: testingSound ? colors.primary : colors.textMuted },
+                ]}
+                onPress={handleTestSound}
+              >
+                {testingSound ? "Playing..." : "Test Sound"}
+              </Text>
+            </View>
           </Card>
 
           <Card style={styles.languageCard}>

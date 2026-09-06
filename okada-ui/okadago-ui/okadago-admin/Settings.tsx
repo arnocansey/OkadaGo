@@ -70,6 +70,8 @@ export default function Settings() {
     gstNumber: '',
     panNumber: '',
     newModule: '',
+    requestTimeout: '10',
+    requestSound: 'ride_request',
   });
 
   const [toggles, setToggles] = useState<Record<string, boolean>>({
@@ -96,6 +98,9 @@ export default function Settings() {
     kycRequired: true,
     dataRetention: true,
     analyticsTracking: false,
+    riderRequestSounds: true,
+    riderRequestVibration: true,
+    riderCriticalNotifications: true,
   });
 
   const [modules, setModules] = useState<string[]>([
@@ -136,6 +141,37 @@ export default function Settings() {
 
   const updateField = (key: string, value: string) => {
     setFormValues(prev => ({ ...prev, [key]: value }));
+  };
+
+  const saveNotificationSettings = async () => {
+    try {
+      const settings: Record<string, unknown> = {
+        rider_request_sounds_enabled: toggles.riderRequestSounds,
+        rider_request_vibration_enabled: toggles.riderRequestVibration,
+        rider_critical_notifications: toggles.riderCriticalNotifications,
+        rider_request_timeout_seconds: parseInt(formValues.requestTimeout || '10', 10),
+        rider_request_sound: formValues.requestSound || 'ride_request',
+      };
+
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') || '';
+      const res = await fetch(`${baseUrl}/v1/admin/console/settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(typeof window !== 'undefined' ? {} : {}),
+        },
+        body: JSON.stringify({ settings }),
+      });
+
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(payload.message || `Failed to save (${res.status})`);
+      }
+
+      addToast('Notification settings saved to server', 'success');
+    } catch (err: any) {
+      addToast(err?.message || 'Failed to save settings', 'error');
+    }
   };
 
   const sidebarItems: { label: Section; icon: typeof Globe }[] = [
@@ -583,7 +619,7 @@ export default function Settings() {
           <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>Configure how and when you receive notifications.</p>
         </div>
         <button
-          onClick={() => addToast('Settings saved successfully', 'success')}
+          onClick={() => saveNotificationSettings()}
           style={{ background: 'var(--brand-yellow)', color: '#111', border: 'none', borderRadius: 8, padding: '10px 24px', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s' }}
           onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
           onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'translateY(0)'; }}
@@ -655,6 +691,129 @@ export default function Settings() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* ─── Rider Request Notifications (Admin Control) ──────── */}
+        <div style={{ borderTop: '1px solid var(--border)', paddingTop: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+            <Zap size={16} style={{ color: '#FF6A00' }} />
+            <h4 style={{ fontSize: 14, fontWeight: 600, color: '#FF6A00', margin: 0 }}>Rider Request Notifications</h4>
+          </div>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 16px 0' }}>
+            Configure how incoming ride requests are delivered to riders. These settings affect all rider devices.
+          </p>
+
+          {[
+            { key: 'riderRequestSounds', label: 'Enable Rider Request Sounds', desc: 'Allow riders to hear incoming request notification sounds.' },
+            { key: 'riderRequestVibration', label: 'Enable Rider Request Vibration', desc: 'Allow devices to vibrate for incoming requests.' },
+            { key: 'riderCriticalNotifications', label: 'Critical Notification Priority', desc: 'Send ride requests as critical notifications (bypasses Do Not Disturb).' },
+          ].map((pref, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: i < 2 ? '1px solid var(--border)' : 'none' }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{pref.label}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{pref.desc}</div>
+              </div>
+              <div onClick={() => toggleSwitch(pref.key, pref.label)}
+                style={{
+                  width: 44, height: 24, background: toggles[pref.key] ? 'var(--brand-yellow)' : 'var(--bg-primary)',
+                  border: `1px solid ${toggles[pref.key] ? 'var(--brand-yellow)' : 'var(--border)'}`,
+                  borderRadius: 12, position: 'relative', cursor: 'pointer', transition: 'all 0.2s',
+                }}
+              >
+                <div style={{
+                  position: 'absolute', top: 2,
+                  [toggles[pref.key] ? 'right' : 'left']: 2,
+                  width: 18, height: 18, background: toggles[pref.key] ? '#111' : 'var(--text-muted)',
+                  borderRadius: '50%', transition: 'all 0.2s',
+                }} />
+              </div>
+            </div>
+          ))}
+
+          {/* Request Timeout Configuration */}
+          <div style={{ marginTop: 16 }}>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
+              Request Timeout (seconds)
+            </label>
+            <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '0 0 6px 0' }}>
+              How long a rider has to respond before the request expires and cascades to the next rider.
+            </p>
+            <select
+              value={formValues.requestTimeout || '10'}
+              onChange={(e) => updateField('requestTimeout', e.target.value)}
+              style={{
+                width: '200px',
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--border)',
+                borderRadius: 8,
+                padding: '10px 12px',
+                fontSize: 14,
+                color: 'var(--text-primary)',
+                outline: 'none',
+                transition: 'border-color 0.2s',
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--brand-yellow)'; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
+            >
+              <option value="5">5 seconds</option>
+              <option value="10">10 seconds</option>
+              <option value="15">15 seconds</option>
+              <option value="20">20 seconds</option>
+              <option value="30">30 seconds</option>
+            </select>
+          </div>
+
+          {/* Default Request Sound */}
+          <div style={{ marginTop: 16 }}>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
+              Default Request Sound
+            </label>
+            <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '0 0 6px 0' }}>
+              The notification sound played when a rider receives an incoming ride request.
+            </p>
+            <select
+              value={formValues.requestSound || 'ride_request'}
+              onChange={(e) => updateField('requestSound', e.target.value)}
+              style={{
+                width: '200px',
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--border)',
+                borderRadius: 8,
+                padding: '10px 12px',
+                fontSize: 14,
+                color: 'var(--text-primary)',
+                outline: 'none',
+                transition: 'border-color 0.2s',
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--brand-yellow)'; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
+            >
+              <option value="ride_request">OkadaGo Alert (Default)</option>
+              <option value="default">System Default</option>
+              <option value="bell">Bell</option>
+              <option value="chime">Chime</option>
+            </select>
+          </div>
+
+          {/* Safety Notice */}
+          <div style={{
+            marginTop: 16,
+            padding: '12px 16px',
+            background: 'rgba(239, 68, 68, 0.08)',
+            border: '1px solid rgba(239, 68, 68, 0.2)',
+            borderRadius: 8,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+          }}>
+            <AlertTriangle size={16} style={{ color: '#EF4444', flexShrink: 0 }} />
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#EF4444' }}>Safety Notice</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                Ride request notifications are critical safety features. Disabling sounds or vibration may cause riders to miss trip requests. Only disable if necessary for compliance.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

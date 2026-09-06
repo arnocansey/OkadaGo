@@ -2,8 +2,10 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { api } from "@/lib/api";
 import { clearSavedSession, loadSavedSession, saveSession } from "@/lib/session-storage";
 import { riderWs } from "@/lib/websocket";
+import { requestAlarm } from "@/lib/alarm";
 import { usePushRegistration } from "@/hooks/usePushRegistration";
 import { useNotificationDeepLinks } from "@/hooks/useNotificationDeepLinks";
+import { startBackgroundLocation, stopBackgroundLocation } from "@/lib/backgroundLocation";
 import type { Delivery, PayoutRequest, Ride, ServiceZone, Session, Wallet, WalletTransaction } from "@/types";
 
 type AppState = {
@@ -51,6 +53,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const dismissRequest = useCallback((id: string) => {
     if (!id) return;
+    requestAlarm.updateOfferState(id, "DECLINED");
     setDismissedRequestIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
   }, []);
 
@@ -125,15 +128,83 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     riderWs.connect(session.token).catch(() => undefined);
 
+    const onRideOffered = (data: unknown) => {
+      const payload = data as {
+        offerId?: string;
+        rideId?: string;
+        id?: string;
+        round?: number;
+        expiresInSeconds?: number;
+        pickupAddress?: string;
+        destinationAddress?: string;
+        pickupCoordinates?: { latitude: number; longitude: number };
+        destinationCoordinates?: { latitude: number; longitude: number };
+        estimatedEarnings?: number;
+        currency?: string;
+        passengerName?: string;
+        passengerRating?: number;
+      };
+      if (!payload) return;
+
+      const rideId = payload.rideId || payload.id;
+      const offerId = payload.offerId || rideId;
+      if (!rideId || !offerId) return;
+
+      // Deduplicate: If already seen/handled, ignore retry
+      const isNew = requestAlarm.registerOffer(offerId);
+      if (!isNew) return;
+
+      const rideEntry: Ride = {
+        id: rideId,
+        status: "assigned",
+        pickupAddress: payload.pickupAddress || "Pickup Location",
+        destinationAddress: payload.destinationAddress || "Destination Location",
+        pickupLatitude: payload.pickupCoordinates?.latitude,
+        pickupLongitude: payload.pickupCoordinates?.longitude,
+        destinationLatitude: payload.destinationCoordinates?.latitude,
+        destinationLongitude: payload.destinationCoordinates?.longitude,
+        estimatedFare: payload.estimatedEarnings,
+        riderEarnings: payload.estimatedEarnings,
+        currency: payload.currency || "GHS",
+        passenger: {
+          id: `p-${rideId}`,
+          user: { fullName: payload.passengerName || "Passenger" },
+          ratingAverage: payload.passengerRating ?? 5.0,
+        },
+        createdAt: new Date().toISOString(),
+      };
+
+      setRides((prev) => {
+        if (prev.some((r) => r.id === rideId)) {
+          return prev.map((r) => (r.id === rideId ? { ...r, ...rideEntry } : r));
+        }
+        return [rideEntry, ...prev];
+      });
+
+      if (online) {
+        void requestAlarm.start();
+      }
+      refresh();
+    };
+
     const onRideRequest = (data: unknown) => {
-      const patch = data as Ride;
+      const patch = data as Ride & { offerId?: string; expiresInSeconds?: number };
       if (!patch || !patch.id) return;
+
+      const offerId = patch.offerId || patch.id;
+      const isNew = requestAlarm.registerOffer(offerId);
+      if (!isNew) return;
+
       setRides((prev) => {
         if (prev.some((r) => r.id === patch.id)) {
           return prev.map((r) => (r.id === patch.id ? { ...r, ...patch } : r));
         }
         return [patch, ...prev];
       });
+
+      if (online) {
+        void requestAlarm.start();
+      }
       refresh();
     };
 
@@ -146,12 +217,48 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
         return [patch, ...prev];
       });
+      if (online) {
+        void requestAlarm.start();
+      }
       refresh();
     };
 
     const onRideUpdate = (data: unknown) => {
       const patch = data as Ride;
-      setRides((prev) => prev.map((r) => (r.id === patch.id ? { ...r, ...patch } : r)));
+      if (patch?.id) {
+        const s = (patch.status ?? "").toLowerCase();
+        if (s === "cancelled") {
+          requestAlarm.updateOfferState(patch.id, "CANCELLED");
+        } else if (["arriving", "arrived", "started", "completed"].includes(s)) {
+          requestAlarm.updateOfferState(patch.id, "ACCEPTED");
+        }
+        setRides((prev) => prev.map((r) => (r.id === patch.id ? { ...r, ...patch } : r)));
+      }
+      refresh();
+    };
+
+    const onRideCancelled = (data: unknown) => {
+      const payload = data as { rideId?: string; id?: string };
+      const rideId = payload?.rideId || payload?.id;
+      if (rideId) {
+        requestAlarm.updateOfferState(rideId, "CANCELLED");
+        setRides((prev) =>
+          prev.map((r) => (r.id === rideId ? { ...r, status: "cancelled" } : r)),
+        );
+      } else {
+        requestAlarm.stop();
+      }
+      refresh();
+    };
+
+    const onRideExpired = (data: unknown) => {
+      const payload = data as { offerId?: string; rideId?: string };
+      const id = payload?.offerId || payload?.rideId;
+      if (id) {
+        requestAlarm.updateOfferState(id, "EXPIRED");
+      } else {
+        requestAlarm.stop();
+      }
       refresh();
     };
 
@@ -161,14 +268,35 @@ export function AppProvider({ children }: { children: ReactNode }) {
       refresh();
     };
 
+    riderWs.on("ride.offered", onRideOffered);
     riderWs.on("ride:request", onRideRequest);
     riderWs.on("ride:status-update", onRideUpdate);
+    riderWs.on("ride.cancelled", onRideCancelled);
+    riderWs.on("ride.expired", onRideExpired);
     riderWs.on("delivery:request", onDeliveryRequest);
     riderWs.on("delivery:status-update", onDeliveryUpdate);
     riderWs.on("ride:assigned", () => refresh());
 
-    return () => riderWs.disconnect();
-  }, [session?.token, refresh]);
+    return () => {
+      riderWs.disconnect();
+      requestAlarm.stop();
+    };
+  }, [session?.token, online, refresh]);
+
+  useEffect(() => {
+    if (!online) {
+      requestAlarm.stop();
+    }
+  }, [online]);
+
+  // Start/stop background location based on active trip status
+  useEffect(() => {
+    if (activeRide && ["arriving", "arrived", "started"].includes((activeRide.status ?? "").toLowerCase())) {
+      void startBackgroundLocation();
+    } else {
+      void stopBackgroundLocation();
+    }
+  }, [activeRide?.id, activeRide?.status]);
 
   usePushRegistration(session?.token);
   useNotificationDeepLinks(Boolean(session?.token));

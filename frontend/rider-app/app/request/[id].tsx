@@ -24,12 +24,20 @@ import {
   User,
   X,
   Zap,
+  Zap as ZapIcon,
 } from "lucide-react-native";
 import { AppMap } from "@/components/AppMap";
 import { api, money } from "@/lib/api";
 import { requestAlarm } from "@/lib/alarm";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useUserLocation } from "@/hooks/useUserLocation";
+import {
+  haversineDistance,
+  estimateTravelTimeMinutes,
+  formatDistance,
+  formatDuration,
+} from "@/lib/geo";
 import { markersForDelivery, markersForRide } from "@/lib/tripMap";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CancellationReasonModal } from "@/components/ui/CancellationReasonModal";
@@ -44,6 +52,7 @@ export default function RequestScreen() {
   }>();
   const { session, rides, deliveries, refresh, dismissRequest } = useApp();
   const { colors, isDark } = useTheme();
+  const { latitude: riderLat, longitude: riderLng } = useUserLocation();
   const [acting, setActing] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
 
@@ -98,6 +107,27 @@ export default function RequestScreen() {
       ? markersForRide(trip as (typeof rides)[0], colors)
       : markersForDelivery(trip as (typeof deliveries)[0], colors);
   }, [trip, isRide, colors, rides, deliveries]);
+
+  // Calculate distance and ETA from rider to pickup
+  const pickupDistance = useMemo(() => {
+    if (!trip || !riderLat || !riderLng) return null;
+    const pickupLat = isRide
+      ? (trip as (typeof rides)[0]).pickupLatitude
+      : (trip as (typeof deliveries)[0]).pickupLatitude;
+    const pickupLng = isRide
+      ? (trip as (typeof rides)[0]).pickupLongitude
+      : (trip as (typeof deliveries)[0]).pickupLongitude;
+    if (!pickupLat || !pickupLng) return null;
+
+    const dist = haversineDistance(
+      { latitude: riderLat, longitude: riderLng },
+      { latitude: Number(pickupLat), longitude: Number(pickupLng) },
+    );
+    return {
+      km: dist,
+      eta: estimateTravelTimeMinutes(dist),
+    };
+  }, [trip, riderLat, riderLng, isRide]);
 
   async function accept() {
     if (!trip || !session || acting) return;
@@ -247,6 +277,40 @@ export default function RequestScreen() {
       gap: 12,
     },
 
+    /* ─── New Ride Request Header ────────────────────────────── */
+    requestHeader: {
+      backgroundColor: isDark ? "#1A1200" : "#FFF8E1",
+      borderRadius: 16,
+      padding: 16,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      borderWidth: 1.5,
+      borderColor: brand.primary,
+    },
+    requestHeaderPulse: {
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+      backgroundColor: brand.accent,
+    },
+    requestHeaderText: {
+      flex: 1,
+    },
+    requestHeaderTitle: {
+      fontSize: 15,
+      fontWeight: "800",
+      color: brand.accent,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+    },
+    requestHeaderSub: {
+      fontSize: 12,
+      fontWeight: "600",
+      color: isDark ? "#9CA3AF" : "#6B7280",
+      marginTop: 2,
+    },
+
     /* ─── Hero Earnings Card (Uber Driver Style) ─────────────── */
     earningsHero: {
       backgroundColor: isDark ? "#161D2F" : "#FFFFFF",
@@ -302,6 +366,42 @@ export default function RequestScreen() {
       fontSize: 12,
       fontWeight: "700",
       color: colors.text,
+    },
+
+    /* ─── Pickup Distance Card ─────────────────────────────── */
+    pickupDistCard: {
+      backgroundColor: isDark ? "#161D2F" : "#FFFFFF",
+      borderRadius: 16,
+      padding: 14,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      borderWidth: 1,
+      borderColor: brand.accent + "40",
+    },
+    pickupDistIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 12,
+      backgroundColor: brand.accent + "15",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    pickupDistInfo: {
+      flex: 1,
+    },
+    pickupDistLabel: {
+      fontSize: 11,
+      fontWeight: "700",
+      color: isDark ? "#9CA3AF" : "#6B7280",
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+    },
+    pickupDistValue: {
+      fontSize: 16,
+      fontWeight: "800",
+      color: brand.accent,
+      marginTop: 1,
     },
 
     /* ─── Route Card ─────────────────────────────────────────── */
@@ -421,6 +521,36 @@ export default function RequestScreen() {
         <AppMap style={{ height: 160 }} markers={markers} fitToMarkers />
 
         <ScrollView contentContainerStyle={s.contentScroll} showsVerticalScrollIndicator={false}>
+          {/* ─── New Ride Request Header ────────────────────── */}
+          <View style={s.requestHeader}>
+            <View style={s.requestHeaderPulse} />
+            <View style={s.requestHeaderText}>
+              <Text style={s.requestHeaderTitle}>New Ride Request</Text>
+              <Text style={s.requestHeaderSub}>
+                {isRide ? "Passenger needs a ride" : "Package delivery request"} — Tap to accept
+              </Text>
+            </View>
+            <View style={s.timerCapsule}>
+              <Clock size={12} color="#000000" />
+              <Text style={[s.timerText, { fontSize: 12 }]}>{countdown}s</Text>
+            </View>
+          </View>
+
+          {/* ─── Pickup Distance Card ──────────────────────── */}
+          {pickupDistance && (
+            <View style={s.pickupDistCard}>
+              <View style={s.pickupDistIcon}>
+                <Navigation size={18} color={brand.accent} />
+              </View>
+              <View style={s.pickupDistInfo}>
+                <Text style={s.pickupDistLabel}>Distance to Pickup</Text>
+                <Text style={s.pickupDistValue}>
+                  {formatDistance(pickupDistance.km)} away · ~{formatDuration(pickupDistance.eta)} ride
+                </Text>
+              </View>
+            </View>
+          )}
+
           {/* ─── Hero Guaranteed Net Earnings ───────────────── */}
           <View style={s.earningsHero}>
             <Text style={s.earningsLabel}>Guaranteed Net Earnings</Text>
