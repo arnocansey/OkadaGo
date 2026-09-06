@@ -16,6 +16,8 @@ import {
   WalletType
 } from "../../generated/prisma/enums.js";
 import { FareService } from "../pricing/fare.service.js";
+import { surgeService } from "../pricing/surge.service.js";
+import { pricingRuleService } from "../pricing/pricing-rule.service.js";
 import { commissionService } from "../finance/commission.service.js";
 import { financeLedgerService } from "../finance/finance-ledger.service.js";
 import { FinanceLedgerType, LedgerDirection } from "../../generated/prisma/client.js";
@@ -634,18 +636,46 @@ export class RideService {
       promoCodeId = applied.promoCodeId;
     }
 
+    const surgeResult = await surgeService.calculateSurge(
+      input.pickup.latitude,
+      input.pickup.longitude,
+      serviceZone.id,
+      input.rideType,
+    );
+
+    const resolvedPricing = await pricingRuleService.resolvePricing(
+      {
+        serviceZoneId: serviceZone.id,
+        rideType: input.rideType,
+        countryCode: serviceZone.countryCode,
+        isScheduled: Boolean(scheduledForDate),
+      },
+      {
+        baseFare: Number(serviceZone.baseFare),
+        perKmFee: Number(serviceZone.perKmFee),
+        perMinuteFee: Number(serviceZone.perMinuteFee),
+        minimumFare: Number(serviceZone.minimumFare),
+      },
+    );
+
+    const finalSurge = Math.max(
+      input.surgeMultiplier,
+      surgeResult.surgeMultiplier,
+      resolvedPricing.surgeMultiplier,
+    );
+
     const pricing = this.fareService.compute({
       countryCode: serviceZone.countryCode as "GH" | "NG",
       currency: serviceZone.currency as "GHS" | "NGN",
       rideType: input.rideType,
-      baseFare: Number(serviceZone.baseFare),
-      perKmFee: Number(serviceZone.perKmFee),
-      perMinuteFee: Number(serviceZone.perMinuteFee),
-      minimumFare: Number(serviceZone.minimumFare),
+      baseFare: resolvedPricing.baseFare,
+      perKmFee: resolvedPricing.perKmFee,
+      perMinuteFee: resolvedPricing.perMinuteFee,
+      minimumFare: resolvedPricing.minimumFare,
       cancellationFee: Number(serviceZone.cancellationFee),
       waitingFeePerMinute: Number(serviceZone.waitingFeePerMin),
       commissionPercent,
-      surgeMultiplier: input.surgeMultiplier,
+      surgeMultiplier: finalSurge,
       zoneFee: 0,
       promoDiscount,
       referralDiscount: input.referralDiscount,
@@ -680,6 +710,7 @@ export class RideService {
           destinationLongitude: roundCoordinate(input.destination.longitude),
           destinationLandmark: input.destination.landmark,
           pickupLocationMocked: Boolean(input.pickup.isMocked),
+          routePolyline: (input as any).routePolyline ?? null,
           estimatedDistanceKm: input.estimatedDistanceKm,
           estimatedDurationMinutes: input.estimatedDurationMinutes,
           estimatedFare: pricing.totalFare,
@@ -694,7 +725,16 @@ export class RideService {
           currency: serviceZone.currency,
           notes: input.notes,
           scheduledFor: scheduledForDate,
-          assignedAt: selectedRider ? new Date() : undefined
+          assignedAt: selectedRider ? new Date() : undefined,
+          fareBreakdown: {
+            dynamicSurge: surgeResult.surgeMultiplier,
+            surgeDemandCount: surgeResult.demandCount,
+            surgeSupplyCount: surgeResult.supplyCount,
+            surgeRatio: surgeResult.demandSupplyRatio,
+            surgeAppliedRule: surgeResult.appliedRule,
+            pricingRuleApplied: resolvedPricing.appliedRules,
+            finalSurgeMultiplier: finalSurge,
+          }
         },
         include: rideDetailsInclude
       });
@@ -707,7 +747,10 @@ export class RideService {
             eventType: "ride_requested",
             payload: {
               paymentMethod: input.paymentMethod,
-              rideType: input.rideType
+              rideType: input.rideType,
+              surgeMultiplier: finalSurge,
+              surgeDemandCount: surgeResult.demandCount,
+              surgeSupplyCount: surgeResult.supplyCount,
             }
           },
           ...(selectedRider

@@ -958,4 +958,92 @@ export const adminRoutes: FastifyPluginAsync = async (server) => {
       limit: query.limit ? parseInt(query.limit) : undefined
     });
   });
+
+  // ── Live Ops Map ──
+  server.get("/admin/map/riders", async (request) => {
+    extractBearerToken(request.headers.authorization);
+    const query = request.query as { status?: string; type?: string; sos?: string; zoneId?: string };
+    const where: any = { approvalStatus: "APPROVED" };
+    if (query.zoneId) where.serviceZoneId = query.zoneId;
+    if (query.status === "online") where.onlineStatus = true;
+    if (query.status === "offline") where.onlineStatus = false;
+    if (query.type) where.tripStatus = query.type;
+
+    const riders = await prisma.riderProfile.findMany({
+      where,
+      select: {
+        id: true,
+        currentLatitude: true,
+        currentLongitude: true,
+        onlineStatus: true,
+        tripStatus: true,
+        serviceZoneId: true,
+        user: { select: { fullName: true, phoneE164: true } },
+      },
+      take: 500,
+    });
+    return { riders };
+  });
+
+  server.get("/admin/map/rides", async (request) => {
+    extractBearerToken(request.headers.authorization);
+    const query = request.query as { status?: string; zoneId?: string };
+    const where: any = {};
+    if (query.status) where.status = query.status.toUpperCase();
+    if (query.zoneId) where.serviceZoneId = query.zoneId;
+
+    const rides = await prisma.ride.findMany({
+      where,
+      select: {
+        id: true,
+        status: true,
+        pickupLatitude: true,
+        pickupLongitude: true,
+        destinationLatitude: true,
+        destinationLongitude: true,
+        pickupAddress: true,
+        destinationAddress: true,
+        routePolyline: true,
+        serviceZoneId: true,
+        rider: { select: { id: true, user: { select: { fullName: true } } } },
+        passenger: { select: { id: true, user: { select: { fullName: true } } } },
+      },
+      orderBy: { requestedAt: "desc" },
+      take: 200,
+    });
+    return { rides };
+  });
+
+  server.get("/admin/map/geofences", async (request) => {
+    extractBearerToken(request.headers.authorization);
+    const { geofenceService } = await import("../geofencing/geofence.service.js");
+    return geofenceService.getGeofenceGeoJSON();
+  });
+
+  server.get("/admin/map/demand", async (request) => {
+    extractBearerToken(request.headers.authorization);
+    const { demandHeatMapService } = await import("../pricing/demand-heatmap.service.js");
+    return demandHeatMapService.getDemandGeoJSON();
+  });
+
+  // ── Pricing Rules ──
+  server.get("/admin/pricing-rules", async (request) => {
+    extractBearerToken(request.headers.authorization);
+    const { pricingRuleService } = await import("../pricing/pricing-rule.service.js");
+    return pricingRuleService.listActiveRules();
+  });
+
+  server.post("/admin/pricing-rules", async (request) => {
+    extractBearerToken(request.headers.authorization);
+    const { pricingRuleService } = await import("../pricing/pricing-rule.service.js");
+    return pricingRuleService.upsertRule(request.body as any);
+  });
+
+  server.patch("/admin/pricing-rules/:ruleId/deactivate", async (request) => {
+    extractBearerToken(request.headers.authorization);
+    const params = parseParams(request, z.object({ ruleId: z.string().cuid() }));
+    const { pricingRuleService } = await import("../pricing/pricing-rule.service.js");
+    await pricingRuleService.deactivateRule(params.ruleId);
+    return { success: true };
+  });
 };
