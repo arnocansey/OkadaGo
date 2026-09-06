@@ -162,8 +162,8 @@ export function AppMap({
               pinColor,
               title: m.title,
             }),
-            iconSize: [34, 82],
-            iconAnchor: [17, 41],
+            iconSize: [44, 44],
+            iconAnchor: [22, 22],
           })
         : L.divIcon({
             className: "okada-custom-marker",

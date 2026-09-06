@@ -29,8 +29,7 @@ export function MotorcycleMarker({
   etaLabel,
   disableRotation = false,
 }: MotorcycleMarkerProps) {
-  const width = isSelected ? 42 : 34;
-  const height = isSelected ? 101 : 82;
+  const size = isSelected ? 54 : 44;
   const showBadge = Boolean(title || etaLabel);
   const rotation = disableRotation ? 0 : heading;
 
@@ -49,8 +48,8 @@ export function MotorcycleMarker({
         style={[
           styles.bikeWrapper,
           {
-            width,
-            height,
+            width: size,
+            height: size,
             transform: rotation ? [{ rotate: `${rotation}deg` }] : undefined,
           },
         ]}
@@ -60,33 +59,23 @@ export function MotorcycleMarker({
             style={[
               styles.selectionGlow,
               {
-                width: width * 1.5,
-                height: height * 0.9,
+                width: size * 0.9,
+                height: size * 0.9,
                 backgroundColor: pinColor,
               },
             ]}
           />
         )}
 
-        <View
-          style={[
-            styles.groundShadow,
-            {
-              width: width * 0.72,
-              height: height * 0.9,
-            },
-          ]}
-        />
-
         <Image
           source={motorcycleImage}
-          style={{ width, height }}
+          style={{ width: size, height: size }}
           resizeMode="contain"
           accessibilityLabel="OkadaGo Motorcycle"
         />
 
         {isMoving && (
-          <View style={[styles.exhaustTrail, { right: width * 0.12, bottom: -2 }]} />
+          <View style={[styles.exhaustTrail, { right: size * 0.38, bottom: size * 0.08 }]} />
         )}
       </View>
     </View>
@@ -107,16 +96,14 @@ export function createMotorcycleMarkerHtml(options: {
 }): string {
   const heading = options.heading ?? 0;
   const isSelected = Boolean(options.isSelected);
-  const width = isSelected ? 42 : 34;
-  const height = isSelected ? 101 : 82;
+  const size = isSelected ? 54 : 44;
   const pinColor = options.pinColor || "#FF6A00";
 
   return `
-    <div class="okada-moto-marker-wrap ${isSelected ? "selected-rider" : ""}" style="position: relative; width: ${width}px; height: ${height}px; display: flex; align-items: center; justify-content: center; pointer-events: auto; background: transparent !important; border: none !important;">
-      <div class="okada-moto-rotator" style="width: ${width}px; height: ${height}px; background: transparent; border: none; outline: none; box-shadow: none; display: flex; align-items: center; justify-content: center; transform: rotate(${heading}deg); transform-origin: 50% 50%; will-change: transform; transition: transform 0.2s linear;">
-        ${isSelected ? `<div style="position: absolute; width: ${width * 1.5}px; height: ${height * 0.9}px; border-radius: 50%; background: ${pinColor}; opacity: 0.35; filter: blur(4px); pointer-events: none;"></div>` : ""}
-        <div style="position: absolute; width: ${width * 0.72}px; height: ${height * 0.9}px; border-radius: 50%; background: rgba(0,0,0,0.35); filter: blur(3px); pointer-events: none;"></div>
-        <img src="${MOTORCYCLE_MARKER_BASE64}" width="${width}" height="${height}" alt="OkadaGo" style="display: block; width: ${width}px; height: ${height}px; object-fit: contain; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.4));" />
+    <div class="okada-moto-marker-wrap ${isSelected ? "selected-rider" : ""}" style="position: relative; width: ${size}px; height: ${size}px; display: flex; align-items: center; justify-content: center; pointer-events: auto; background: transparent !important; border: none !important;">
+      <div class="okada-moto-rotator" style="width: ${size}px; height: ${size}px; background: transparent; border: none; outline: none; box-shadow: none; display: flex; align-items: center; justify-content: center; transform: rotate(${heading}deg); transform-origin: 50% 50%; will-change: transform; transition: transform 0.2s linear;">
+        ${isSelected ? `<div style="position: absolute; width: ${size * 0.9}px; height: ${size * 0.9}px; border-radius: 50%; background: ${pinColor}; opacity: 0.35; filter: blur(4px); pointer-events: none;"></div>` : ""}
+        <img src="${MOTORCYCLE_MARKER_BASE64}" width="${size}" height="${size}" alt="OkadaGo" style="display: block; width: ${size}px; height: ${size}px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.45));" />
       </div>
     </div>
   `;
@@ -140,11 +127,6 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     opacity: 0.35,
   },
-  groundShadow: {
-    position: "absolute",
-    backgroundColor: "rgba(0, 0, 0, 0.35)",
-    borderRadius: 999,
-  },
   exhaustTrail: {
     position: "absolute",
     width: 6,
@@ -154,7 +136,7 @@ const styles = StyleSheet.create({
   },
   infoBubble: {
     position: "absolute",
-    top: -32,
+    top: -28,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#0F172A",

@@ -30,8 +30,7 @@ export function MotorcycleMarker({
   etaLabel,
   disableRotation = false,
 }: MotorcycleMarkerProps) {
-  const width = isSelected ? 42 : 34;
-  const height = isSelected ? 101 : 82;
+  const size = isSelected ? 54 : 44;
   const showBadge = Boolean(title || etaLabel);
   const rotation = disableRotation ? 0 : heading;
 
@@ -52,8 +51,8 @@ export function MotorcycleMarker({
         style={[
           styles.bikeWrapper,
           {
-            width,
-            height,
+            width: size,
+            height: size,
             transform: rotation ? [{ rotate: `${rotation}deg` }] : undefined,
           },
         ]}
@@ -64,36 +63,25 @@ export function MotorcycleMarker({
             style={[
               styles.selectionGlow,
               {
-                width: width * 1.5,
-                height: height * 0.9,
+                width: size * 0.9,
+                height: size * 0.9,
                 backgroundColor: pinColor,
               },
             ]}
           />
         )}
 
-        {/* Realistic Ground Drop Shadow */}
-        <View
-          style={[
-            styles.groundShadow,
-            {
-              width: width * 0.72,
-              height: height * 0.9,
-            },
-          ]}
-        />
-
-        {/* High-Res Top-Down OkadaGo Motorcycle */}
+        {/* High-Res Top-Down OkadaGo Motorcycle - Full unclipped original picture */}
         <Image
           source={motorcycleImage}
-          style={{ width, height }}
+          style={{ width: size, height: size }}
           resizeMode="contain"
           accessibilityLabel="OkadaGo Motorcycle"
         />
 
         {/* Moving Exhaust Distortion */}
         {isMoving && (
-          <View style={[styles.exhaustTrail, { right: width * 0.12, bottom: -2 }]} />
+          <View style={[styles.exhaustTrail, { right: size * 0.38, bottom: size * 0.08 }]} />
         )}
       </View>
     </View>
@@ -110,20 +98,18 @@ export function getMotorcycleSvgString(options: {
   isMoving?: boolean;
 }): string {
   const isSelected = Boolean(options.isSelected);
-  const width = options.size ? Math.round(options.size / 2.4167) : isSelected ? 42 : 34;
-  const height = options.size ? options.size : isSelected ? 101 : 82;
+  const size = options.size ? options.size : isSelected ? 54 : 44;
   const color = options.pinColor || "#FF6A00";
 
   return `
-    <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block; overflow: visible;">
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block; overflow: visible;">
       <defs>
         <filter id="bikeGlow" x="-50%" y="-50%" width="200%" height="200%">
-          <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.45"/>
+          <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.4"/>
         </filter>
       </defs>
-      ${isSelected ? `<ellipse cx="${width / 2}" cy="${height / 2}" rx="${width * 0.7}" ry="${height * 0.45}" fill="${color}" fill-opacity="0.35"/>` : ""}
-      <ellipse cx="${width / 2}" cy="${height / 2 + 2}" rx="${width * 0.35}" ry="${height * 0.45}" fill="#000000" fill-opacity="0.3"/>
-      <image href="${MOTORCYCLE_MARKER_BASE64}" width="${width}" height="${height}" x="0" y="0" preserveAspectRatio="xMidYMid meet" filter="url(#bikeGlow)" />
+      ${isSelected ? `<circle cx="${size / 2}" cy="${size / 2}" r="${size * 0.45}" fill="${color}" fill-opacity="0.3"/>` : ""}
+      <image href="${MOTORCYCLE_MARKER_BASE64}" width="${size}" height="${size}" x="0" y="0" preserveAspectRatio="xMidYMid meet" filter="url(#bikeGlow)" />
     </svg>
   `;
 }
@@ -142,28 +128,26 @@ export function createMotorcycleMarkerHtml(options: {
 }): string {
   const heading = options.heading ?? 0;
   const isSelected = Boolean(options.isSelected);
-  const width = isSelected ? 42 : 34;
-  const height = isSelected ? 101 : 82;
+  const size = isSelected ? 54 : 44;
   const pinColor = options.pinColor || "#FF6A00";
 
   const badgeHtml = options.etaMinutes
-    ? `<div style="position: absolute; top: -32px; white-space: nowrap; background: #0F172A; color: #FFFFFF; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1.5px solid ${pinColor}; box-shadow: 0 4px 12px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 4px; pointer-events: none; z-index: 10;">
+    ? `<div style="position: absolute; top: -28px; white-space: nowrap; background: #0F172A; color: #FFFFFF; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1.5px solid ${pinColor}; box-shadow: 0 4px 12px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 4px; pointer-events: none; z-index: 10;">
         <span>~${Math.round(options.etaMinutes)} min</span>
         ${options.speed ? `<span style="color: ${pinColor}; font-weight: 600;">· ${Math.round(options.speed)} km/h</span>` : ""}
       </div>`
     : options.title && options.title !== "Okada" && options.title !== "Rider"
-    ? `<div style="position: absolute; top: -28px; white-space: nowrap; background: rgba(15,23,42,0.92); color: #FFFFFF; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.25); box-shadow: 0 4px 10px rgba(0,0,0,0.5); pointer-events: none; z-index: 10;">
+    ? `<div style="position: absolute; top: -24px; white-space: nowrap; background: rgba(15,23,42,0.92); color: #FFFFFF; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.25); box-shadow: 0 4px 10px rgba(0,0,0,0.5); pointer-events: none; z-index: 10;">
         ${options.title}
       </div>`
     : "";
 
   return `
-    <div class="okada-moto-marker-wrap ${isSelected ? "selected-rider" : ""}" style="position: relative; width: ${width}px; height: ${height}px; display: flex; align-items: center; justify-content: center; pointer-events: auto; background: transparent !important; border: none !important;">
+    <div class="okada-moto-marker-wrap ${isSelected ? "selected-rider" : ""}" style="position: relative; width: ${size}px; height: ${size}px; display: flex; align-items: center; justify-content: center; pointer-events: auto; background: transparent !important; border: none !important;">
       ${badgeHtml}
-      <div class="okada-moto-rotator" style="width: ${width}px; height: ${height}px; background: transparent; border: none; outline: none; box-shadow: none; display: flex; align-items: center; justify-content: center; transform: rotate(${heading}deg); transform-origin: 50% 50%; will-change: transform; transition: transform 0.2s linear;">
-        ${isSelected ? `<div style="position: absolute; width: ${width * 1.5}px; height: ${height * 0.9}px; border-radius: 50%; background: ${pinColor}; opacity: 0.35; filter: blur(4px); pointer-events: none;"></div>` : ""}
-        <div style="position: absolute; width: ${width * 0.72}px; height: ${height * 0.9}px; border-radius: 50%; background: rgba(0,0,0,0.35); filter: blur(3px); pointer-events: none;"></div>
-        <img src="${MOTORCYCLE_MARKER_BASE64}" width="${width}" height="${height}" alt="OkadaGo" style="display: block; width: ${width}px; height: ${height}px; object-fit: contain; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.4));" />
+      <div class="okada-moto-rotator" style="width: ${size}px; height: ${size}px; background: transparent; border: none; outline: none; box-shadow: none; display: flex; align-items: center; justify-content: center; transform: rotate(${heading}deg); transform-origin: 50% 50%; will-change: transform; transition: transform 0.2s linear;">
+        ${isSelected ? `<div style="position: absolute; width: ${size * 0.9}px; height: ${size * 0.9}px; border-radius: 50%; background: ${pinColor}; opacity: 0.35; filter: blur(4px); pointer-events: none;"></div>` : ""}
+        <img src="${MOTORCYCLE_MARKER_BASE64}" width="${size}" height="${size}" alt="OkadaGo" style="display: block; width: ${size}px; height: ${size}px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.45));" />
       </div>
     </div>
   `;
@@ -187,11 +171,6 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     opacity: 0.35,
   },
-  groundShadow: {
-    position: "absolute",
-    backgroundColor: "rgba(0, 0, 0, 0.35)",
-    borderRadius: 999,
-  },
   exhaustTrail: {
     position: "absolute",
     width: 6,
@@ -201,7 +180,7 @@ const styles = StyleSheet.create({
   },
   infoBubble: {
     position: "absolute",
-    top: -32,
+    top: -28,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#0F172A",

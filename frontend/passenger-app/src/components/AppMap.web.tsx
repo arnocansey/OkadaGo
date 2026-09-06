@@ -252,8 +252,8 @@ export function AppMap({
               etaMinutes: m.etaMinutes,
               isMoving: (m.speed ?? 0) > 1,
             }),
-            iconSize: [isSelected ? 42 : 34, isSelected ? 101 : 82],
-            iconAnchor: [isSelected ? 21 : 17, isSelected ? 50 : 41],
+            iconSize: [isSelected ? 54 : 44, isSelected ? 54 : 44],
+            iconAnchor: [isSelected ? 27 : 22, isSelected ? 27 : 22],
           });
 
           const marker = L.marker([m.latitude, m.longitude], { icon, zIndexOffset: isSelected ? 1000 : 100 }).addTo(

@@ -95,10 +95,10 @@ export interface LeafletMapProps {
 
 function createDriverMarkerHtml(className: string, heading: number = 0) {
   return `
-    <div class="okada-admin-moto-wrap ${className}" style="position: relative; width: 30px; height: 72px; display: flex; align-items: center; justify-content: center; pointer-events: auto;">
-      <div class="moto-status-glow ${className}" style="position: absolute; width: 26px; height: 60px; border-radius: 50%; filter: blur(3px); opacity: 0.4; pointer-events: none;"></div>
-      <div style="width: 30px; height: 72px; transform: rotate(${heading}deg); transform-origin: 50% 50%; will-change: transform; transition: transform 0.25s linear; display: flex; align-items: center; justify-content: center;">
-        <img src="${MOTORCYCLE_MARKER_BASE64}" width="30" height="72" alt="Okada" style="display: block; width: 30px; height: 72px; object-fit: contain; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5));" />
+    <div class="okada-admin-moto-wrap ${className}" style="position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; pointer-events: auto;">
+      <div class="moto-status-glow ${className}" style="position: absolute; width: 38px; height: 38px; border-radius: 50%; filter: blur(3px); opacity: 0.35; pointer-events: none;"></div>
+      <div style="width: 44px; height: 44px; transform: rotate(${heading}deg); transform-origin: 50% 50%; will-change: transform; transition: transform 0.25s linear; display: flex; align-items: center; justify-content: center;">
+        <img src="${MOTORCYCLE_MARKER_BASE64}" width="44" height="44" alt="Okada" style="display: block; width: 44px; height: 44px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" />
       </div>
     </div>
   `;
@@ -120,26 +120,26 @@ const ICONS: Record<string, L.DivIcon> = {
   driver: L.divIcon({
     className: "leaflet-custom-icon",
     html: createDriverMarkerHtml("driver", 0),
-    iconSize: [30, 72],
-    iconAnchor: [15, 36]
+    iconSize: [44, 44],
+    iconAnchor: [22, 22]
   }),
   driverOnline: L.divIcon({
     className: "leaflet-custom-icon",
     html: createDriverMarkerHtml("driver-online", 0),
-    iconSize: [30, 72],
-    iconAnchor: [15, 36]
+    iconSize: [44, 44],
+    iconAnchor: [22, 22]
   }),
   driverTrip: L.divIcon({
     className: "leaflet-custom-icon",
     html: createDriverMarkerHtml("driver-trip", 0),
-    iconSize: [30, 72],
-    iconAnchor: [15, 36]
+    iconSize: [44, 44],
+    iconAnchor: [22, 22]
   }),
   driverIdle: L.divIcon({
     className: "leaflet-custom-icon",
     html: createDriverMarkerHtml("driver-idle", 0),
-    iconSize: [30, 72],
-    iconAnchor: [15, 36]
+    iconSize: [44, 44],
+    iconAnchor: [22, 22]
   }),
   passenger: L.divIcon({
     className: "leaflet-custom-icon",
@@ -169,8 +169,8 @@ function pickIcon(variant: MapMarkerVariant | undefined, heading?: number): L.Di
     return L.divIcon({
       className: "leaflet-custom-icon",
       html: createDriverMarkerHtml(className, heading ?? 0),
-      iconSize: [30, 72],
-      iconAnchor: [15, 36]
+      iconSize: [44, 44],
+      iconAnchor: [22, 22]
     });
   }
   return ICONS[variant];
