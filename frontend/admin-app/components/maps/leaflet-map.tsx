@@ -14,6 +14,7 @@ import {
   useMap
 } from "react-leaflet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { MOTORCYCLE_MARKER_BASE64 } from "./motorcycleMarkerAsset";
 
 export interface DemandHotspot {
   id: string;
@@ -92,7 +93,16 @@ export interface LeafletMapProps {
   } | null;
 }
 
-const MOTORCYCLE_PIN_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="16" r="3.5"/><circle cx="19" cy="16" r="3.5"/><path d="M19 16L15.5 8.5H13M16.5 7H14.5"/><path d="M15.5 8.5C14.5 7.5 12 7.5 10.5 8.5L8 9.5"/><path d="M6 10.5C7.5 9.5 9.5 9.5 10.5 10.5"/><path d="M5 16L9 11L12.5 11L11.5 16H8.5"/><path d="M10 15H3.5"/></svg>`;
+function createDriverMarkerHtml(className: string, heading: number = 0) {
+  return `
+    <div class="okada-admin-moto-wrap ${className}" style="position: relative; width: 30px; height: 72px; display: flex; align-items: center; justify-content: center; pointer-events: auto;">
+      <div class="moto-status-glow ${className}" style="position: absolute; width: 26px; height: 60px; border-radius: 50%; filter: blur(3px); opacity: 0.4; pointer-events: none;"></div>
+      <div style="width: 30px; height: 72px; transform: rotate(${heading}deg); transform-origin: 50% 50%; will-change: transform; transition: transform 0.25s linear; display: flex; align-items: center; justify-content: center;">
+        <img src="${MOTORCYCLE_MARKER_BASE64}" width="30" height="72" alt="Okada" style="display: block; width: 30px; height: 72px; object-fit: contain; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5));" />
+      </div>
+    </div>
+  `;
+}
 
 const ICONS: Record<string, L.DivIcon> = {
   pickup: L.divIcon({
@@ -109,27 +119,27 @@ const ICONS: Record<string, L.DivIcon> = {
   }),
   driver: L.divIcon({
     className: "leaflet-custom-icon",
-    html: `<div class="leaflet-marker driver">${MOTORCYCLE_PIN_SVG}</div>`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12]
+    html: createDriverMarkerHtml("driver", 0),
+    iconSize: [30, 72],
+    iconAnchor: [15, 36]
   }),
   driverOnline: L.divIcon({
     className: "leaflet-custom-icon",
-    html: `<div class="leaflet-marker driver-online">${MOTORCYCLE_PIN_SVG}</div>`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12]
+    html: createDriverMarkerHtml("driver-online", 0),
+    iconSize: [30, 72],
+    iconAnchor: [15, 36]
   }),
   driverTrip: L.divIcon({
     className: "leaflet-custom-icon",
-    html: `<div class="leaflet-marker driver-trip">${MOTORCYCLE_PIN_SVG}</div>`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12]
+    html: createDriverMarkerHtml("driver-trip", 0),
+    iconSize: [30, 72],
+    iconAnchor: [15, 36]
   }),
   driverIdle: L.divIcon({
     className: "leaflet-custom-icon",
-    html: `<div class="leaflet-marker driver-idle">${MOTORCYCLE_PIN_SVG}</div>`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12]
+    html: createDriverMarkerHtml("driver-idle", 0),
+    iconSize: [30, 72],
+    iconAnchor: [15, 36]
   }),
   passenger: L.divIcon({
     className: "leaflet-custom-icon",
@@ -148,7 +158,6 @@ const ICONS: Record<string, L.DivIcon> = {
 function pickIcon(variant: MapMarkerVariant | undefined, heading?: number): L.DivIcon | undefined {
   if (!variant || variant === "default") return undefined;
   if (isDriverVariant(variant)) {
-    const rotation = heading ? `transform: rotate(${heading}deg);` : "";
     const className =
       variant === "driverOnline"
         ? "driver-online"
@@ -159,9 +168,9 @@ function pickIcon(variant: MapMarkerVariant | undefined, heading?: number): L.Di
         : "driver";
     return L.divIcon({
       className: "leaflet-custom-icon",
-      html: `<div class="leaflet-marker ${className}" style="${rotation} will-change: transform; transition: transform 0.25s linear; display: flex; align-items: center; justify-content: center;">${MOTORCYCLE_PIN_SVG}</div>`,
-      iconSize: [26, 26],
-      iconAnchor: [13, 13]
+      html: createDriverMarkerHtml(className, heading ?? 0),
+      iconSize: [30, 72],
+      iconAnchor: [15, 36]
     });
   }
   return ICONS[variant];

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import MapViewBase, { Marker, Polyline, PROVIDER_GOOGLE, type Region } from "react-native-maps";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Crosshair, MapPin } from "lucide-react-native";
-import { MotorcycleIcon } from "./icons/MotorcycleIcon";
+import { MotorcycleMarker } from "./MotorcycleMarker";
 import { useTheme } from "@/context/ThemeContext";
 import {
   getGoogleMapsApiKey,
@@ -171,11 +171,12 @@ export function AppMap({
                 flat={true}
                 rotation={m.heading ?? 0}
               >
-                <View style={styles.riderMarkerOuter}>
-                  <View style={[styles.riderMarkerBadge, { backgroundColor: badgeBg }]}>
-                    <MotorcycleIcon size={18} color="#000000" strokeWidth={2.4} />
-                  </View>
-                </View>
+                <MotorcycleMarker
+                  heading={m.heading}
+                  disableRotation={true}
+                  pinColor={badgeBg}
+                  title={m.title}
+                />
               </Marker>
             );
           }

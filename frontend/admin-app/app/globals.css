@@ -823,6 +823,31 @@ main {
   background: #ef4444;
 }
 
+.okada-admin-moto-wrap {
+  pointer-events: auto;
+  user-select: none;
+}
+
+.moto-status-glow.driver {
+  background: #3b82f6;
+  box-shadow: 0 0 12px #3b82f6;
+}
+
+.moto-status-glow.driver-online {
+  background: #16a34a;
+  box-shadow: 0 0 12px #16a34a;
+}
+
+.moto-status-glow.driver-trip {
+  background: var(--accent-yellow, #f5c518);
+  box-shadow: 0 0 12px var(--accent-yellow, #f5c518);
+}
+
+.moto-status-glow.driver-idle {
+  background: #94a3b8;
+  box-shadow: 0 0 10px #94a3b8;
+}
+
 .leaflet-marker.driver,
 .leaflet-marker.driver-online,
 .leaflet-marker.driver-trip,

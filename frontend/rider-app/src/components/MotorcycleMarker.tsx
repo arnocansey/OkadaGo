@@ -16,9 +16,8 @@ export interface MotorcycleMarkerProps {
 const motorcycleImage = require("../../assets/map/motorcycle-marker.png");
 
 /**
- * Top-Down 3D Sports Motorcycle Marker for React Native Maps.
- * Uses high-resolution bird's-eye motorcycle asset.
- * Oriented North (0°) by default so rotation directly matches GPS heading.
+ * Top-Down 3D Sports Motorcycle Marker for React Native Maps in Rider App.
+ * High-resolution bird's-eye motorcycle asset oriented North (0°).
  */
 export function MotorcycleMarker({
   heading = 0,
@@ -37,7 +36,6 @@ export function MotorcycleMarker({
 
   return (
     <View style={styles.container}>
-      {/* Floating Info Tag for Selected Rider */}
       {showBadge && (
         <View style={[styles.infoBubble, isSelected && styles.infoBubbleSelected]}>
           <Text style={styles.infoTitle}>{etaLabel || title}</Text>
@@ -47,7 +45,6 @@ export function MotorcycleMarker({
         </View>
       )}
 
-      {/* Rotating 3D Motorcycle Chassis directly on the map */}
       <View
         style={[
           styles.bikeWrapper,
@@ -58,7 +55,6 @@ export function MotorcycleMarker({
           },
         ]}
       >
-        {/* Selection Road Glow */}
         {isSelected && (
           <View
             style={[
@@ -72,7 +68,6 @@ export function MotorcycleMarker({
           />
         )}
 
-        {/* Realistic Ground Drop Shadow */}
         <View
           style={[
             styles.groundShadow,
@@ -83,7 +78,6 @@ export function MotorcycleMarker({
           ]}
         />
 
-        {/* High-Res Top-Down OkadaGo Motorcycle */}
         <Image
           source={motorcycleImage}
           style={{ width, height }}
@@ -91,7 +85,6 @@ export function MotorcycleMarker({
           accessibilityLabel="OkadaGo Motorcycle"
         />
 
-        {/* Moving Exhaust Distortion */}
         {isMoving && (
           <View style={[styles.exhaustTrail, { right: width * 0.12, bottom: -2 }]} />
         )}
@@ -101,35 +94,7 @@ export function MotorcycleMarker({
 }
 
 /**
- * Generates an SVG string representation of the true top-down Okada motorcycle for Leaflet Web.
- */
-export function getMotorcycleSvgString(options: {
-  size?: number;
-  isSelected?: boolean;
-  pinColor?: string;
-  isMoving?: boolean;
-}): string {
-  const isSelected = Boolean(options.isSelected);
-  const width = options.size ? Math.round(options.size / 2.4167) : isSelected ? 42 : 34;
-  const height = options.size ? options.size : isSelected ? 101 : 82;
-  const color = options.pinColor || "#FF6A00";
-
-  return `
-    <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block; overflow: visible;">
-      <defs>
-        <filter id="bikeGlow" x="-50%" y="-50%" width="200%" height="200%">
-          <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.45"/>
-        </filter>
-      </defs>
-      ${isSelected ? `<ellipse cx="${width / 2}" cy="${height / 2}" rx="${width * 0.7}" ry="${height * 0.45}" fill="${color}" fill-opacity="0.35"/>` : ""}
-      <ellipse cx="${width / 2}" cy="${height / 2 + 2}" rx="${width * 0.35}" ry="${height * 0.45}" fill="#000000" fill-opacity="0.3"/>
-      <image href="${MOTORCYCLE_MARKER_BASE64}" width="${width}" height="${height}" x="0" y="0" preserveAspectRatio="xMidYMid meet" filter="url(#bikeGlow)" />
-    </svg>
-  `;
-}
-
-/**
- * Creates Leaflet HTML string with rotation and floating badges.
+ * Generates Leaflet HTML string for Rider App Web.
  */
 export function createMotorcycleMarkerHtml(options: {
   heading?: number;
@@ -146,20 +111,8 @@ export function createMotorcycleMarkerHtml(options: {
   const height = isSelected ? 101 : 82;
   const pinColor = options.pinColor || "#FF6A00";
 
-  const badgeHtml = options.etaMinutes
-    ? `<div style="position: absolute; top: -32px; white-space: nowrap; background: #0F172A; color: #FFFFFF; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1.5px solid ${pinColor}; box-shadow: 0 4px 12px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 4px; pointer-events: none; z-index: 10;">
-        <span>~${Math.round(options.etaMinutes)} min</span>
-        ${options.speed ? `<span style="color: ${pinColor}; font-weight: 600;">· ${Math.round(options.speed)} km/h</span>` : ""}
-      </div>`
-    : options.title && options.title !== "Okada" && options.title !== "Rider"
-    ? `<div style="position: absolute; top: -28px; white-space: nowrap; background: rgba(15,23,42,0.92); color: #FFFFFF; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.25); box-shadow: 0 4px 10px rgba(0,0,0,0.5); pointer-events: none; z-index: 10;">
-        ${options.title}
-      </div>`
-    : "";
-
   return `
     <div class="okada-moto-marker-wrap ${isSelected ? "selected-rider" : ""}" style="position: relative; width: ${width}px; height: ${height}px; display: flex; align-items: center; justify-content: center; pointer-events: auto; background: transparent !important; border: none !important;">
-      ${badgeHtml}
       <div class="okada-moto-rotator" style="width: ${width}px; height: ${height}px; background: transparent; border: none; outline: none; box-shadow: none; display: flex; align-items: center; justify-content: center; transform: rotate(${heading}deg); transform-origin: 50% 50%; will-change: transform; transition: transform 0.2s linear;">
         ${isSelected ? `<div style="position: absolute; width: ${width * 1.5}px; height: ${height * 0.9}px; border-radius: 50%; background: ${pinColor}; opacity: 0.35; filter: blur(4px); pointer-events: none;"></div>` : ""}
         <div style="position: absolute; width: ${width * 0.72}px; height: ${height * 0.9}px; border-radius: 50%; background: rgba(0,0,0,0.35); filter: blur(3px); pointer-events: none;"></div>

@@ -5,12 +5,16 @@ import { useTheme } from "@/context/ThemeContext";
 import { getGoogleMapsApiKey } from "@/lib/googleMapsConfig";
 import { ACCRA_REGION, radius, shadows, spacing } from "@/theme/tokens";
 
+import { createMotorcycleMarkerHtml } from "./MotorcycleMarker";
+
 type MapMarker = {
   id: string;
   latitude: number;
   longitude: number;
   title?: string;
   pinColor?: string;
+  type?: "rider" | "pickup" | "destination" | "dropoff" | "default";
+  heading?: number;
 };
 
 type MapPressCoordinate = { latitude: number; longitude: number };
@@ -142,23 +146,42 @@ export function AppMap({
 
     markers.forEach((m) => {
       const pinColor = m.pinColor || colors.primary;
-      const pin = L.divIcon({
-        className: "okada-custom-marker",
-        html: `
-          <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
-            <div style="width: 28px; height: 28px; border-radius: 14px; background: ${pinColor}; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.4); border: 2px solid #FFFFFF;">
-              <div style="width: 10px; height: 10px; border-radius: 5px; background: #FFFFFF;"></div>
-            </div>
-            ${
-              m.title
-                ? `<div style="margin-top: 4px; background: rgba(15,23,42,0.9); color: #FFFFFF; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); white-space: nowrap;">${m.title}</div>`
-                : ""
-            }
-          </div>
-        `,
-        iconSize: [28, 28],
-        iconAnchor: [14, 14],
-      });
+      const isRider =
+        m.type === "rider" ||
+        m.title === "Okada" ||
+        m.title === "Rider" ||
+        m.id === "rider" ||
+        m.id.startsWith("rider");
+
+      const pin = isRider
+        ? L.divIcon({
+            className: "okada-rider-marker-wrapper",
+            html: createMotorcycleMarkerHtml({
+              heading: m.heading,
+              isSelected: false,
+              pinColor,
+              title: m.title,
+            }),
+            iconSize: [34, 82],
+            iconAnchor: [17, 41],
+          })
+        : L.divIcon({
+            className: "okada-custom-marker",
+            html: `
+              <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
+                <div style="width: 28px; height: 28px; border-radius: 14px; background: ${pinColor}; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.4); border: 2px solid #FFFFFF;">
+                  <div style="width: 10px; height: 10px; border-radius: 5px; background: #FFFFFF;"></div>
+                </div>
+                ${
+                  m.title
+                    ? `<div style="margin-top: 4px; background: rgba(15,23,42,0.9); color: #FFFFFF; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); white-space: nowrap;">${m.title}</div>`
+                    : ""
+                }
+              </div>
+            `,
+            iconSize: [28, 28],
+            iconAnchor: [14, 14],
+          });
 
       const marker = L.marker([m.latitude, m.longitude], { icon: pin }).addTo(map);
       leafletMarkersRef.current.push(marker);

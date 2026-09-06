@@ -237,6 +237,7 @@ export function AppMap({
               >
                 <MotorcycleMarker
                   heading={m.heading}
+                  disableRotation={true}
                   isSelected={isSelected}
                   isMoving={(m.speed ?? 0) > 1}
                   pinColor={badgeBg}
