@@ -35,6 +35,7 @@
     "expo-router": "~6.0.24",
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
+    "expo-task-manager": "^57.0.16",
     "expo-updates": "~29.0.18",
     "i18next": "^26.3.6",
     "leaflet": "^1.9.4",

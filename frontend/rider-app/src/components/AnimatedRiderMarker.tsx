@@ -27,7 +27,7 @@ export function AnimatedRiderMarker({
   const animLng = useRef(new Animated.Value(longitude)).current;
   const animHeading = useRef(new Animated.Value(heading)).current;
   const prevHeading = useRef(heading);
-  const markerRef = useRef<Marker>(null);
+  const markerRef = useRef<React.ComponentRef<typeof Marker>>(null);
 
   useEffect(() => {
     // Smoothly interpolate position over 2 seconds (matches GPS interval)

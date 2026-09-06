@@ -289,15 +289,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [online]);
 
-  // Start/stop background location based on active trip status
-  useEffect(() => {
-    if (activeRide && ["arriving", "arrived", "started"].includes((activeRide.status ?? "").toLowerCase())) {
-      void startBackgroundLocation();
-    } else {
-      void stopBackgroundLocation();
-    }
-  }, [activeRide?.id, activeRide?.status]);
-
   usePushRegistration(session?.token);
   useNotificationDeepLinks(Boolean(session?.token));
 
@@ -367,6 +358,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       d.rider?.id === session?.user.riderProfileId &&
       !["delivered", "cancelled"].includes((d.status ?? "").toLowerCase()),
   );
+
+  // Start/stop background location based on active trip status
+  useEffect(() => {
+    if (activeRide && ["arriving", "arrived", "started"].includes((activeRide.status ?? "").toLowerCase())) {
+      void startBackgroundLocation();
+    } else {
+      void stopBackgroundLocation();
+    }
+  }, [activeRide?.id, activeRide?.status]);
 
   // Incoming requests are only valid if:
   // 1. Not dismissed by this rider

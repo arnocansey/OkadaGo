@@ -2,7 +2,8 @@ import React from 'react';
 import {
   LayoutDashboard, ClipboardList, Users, Bike, ShieldCheck, FileText,
   TrendingUp, DollarSign, Wallet, CreditCard, MessageSquare, Activity,
-  Ban, PiggyBank, BarChart2, Tag, PieChart, Settings, Eye, EyeOff, Plus
+  Ban, PiggyBank, BarChart2, Tag, PieChart, Settings, Eye, EyeOff, Plus,
+  Map
 } from 'lucide-react';
 import './tokens.css';
 
@@ -29,6 +30,7 @@ const nav = [
   { label: 'Earnings & Payouts', icon: BarChart2, hasArrow: true },
   { label: 'Promotions', icon: Tag },
   { label: 'Reports & Analytics', icon: PieChart },
+  { label: 'Fleet Map', icon: Map },
   { label: 'Settings', icon: Settings },
 ];
 

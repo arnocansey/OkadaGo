@@ -27,4 +27,5 @@ npm-debug.log*
 yarn-error.log*
 *.tsbuildinfo
 .open-next
-frontend/admin-app/stitch-import/
+.okada-ui/stitch-import/
+**/.wrangler/

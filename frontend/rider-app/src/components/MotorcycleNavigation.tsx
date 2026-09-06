@@ -177,6 +177,19 @@ export function MotorcycleNavigation({
     }
   }, [livePreview?.distanceKm]);
 
+  const routeCoordinates = useMemo(() => {
+    if (livePreview?.route && livePreview.route.length > 0) {
+      return livePreview.route.map(([lat, lon]) => ({ latitude: lat, longitude: lon }));
+    }
+    if (riderLat && riderLng && destinationLatitude && destinationLongitude) {
+      return [
+        { latitude: riderLat, longitude: riderLng },
+        { latitude: destinationLatitude, longitude: destinationLongitude },
+      ];
+    }
+    return undefined;
+  }, [livePreview, riderLat, riderLng, destinationLatitude, destinationLongitude]);
+
   // Off-route detection
   useEffect(() => {
     if (!routeCoordinates || routeCoordinates.length < 2 || !riderLat || !riderLng) return;
@@ -208,19 +221,6 @@ export function MotorcycleNavigation({
 
   const step = steps[currentStep];
   const nextStep = steps[currentStep + 1];
-
-  const routeCoordinates = useMemo(() => {
-    if (livePreview?.route && livePreview.route.length > 0) {
-      return livePreview.route.map(([lat, lon]) => ({ latitude: lat, longitude: lon }));
-    }
-    if (riderLat && riderLng && destinationLatitude && destinationLongitude) {
-      return [
-        { latitude: riderLat, longitude: riderLng },
-        { latitude: destinationLatitude, longitude: destinationLongitude },
-      ];
-    }
-    return undefined;
-  }, [livePreview, riderLat, riderLng, destinationLatitude, destinationLongitude]);
 
   const markers = useMemo(() => {
     const m = [];

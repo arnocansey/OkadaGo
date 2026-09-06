@@ -96,7 +96,7 @@ export type Ride = {
     currentLatitude?: number | string | null;
     currentLongitude?: number | string | null;
   } | null;
-  passenger?: { user?: { fullName: string; phoneE164?: string } };
+  passenger?: { id?: string; user?: { fullName: string; phoneE164?: string }; ratingAverage?: number };
 };
 
 export type Delivery = {
