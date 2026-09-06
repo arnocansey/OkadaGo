@@ -5,7 +5,7 @@ const projectId =
   process.env.EAS_PROJECT_ID ||
   "ae3d1d1a-2ce9-40ec-b4a4-97510377682e";
 const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || "https://okadago-backend.onrender.com/v1";
-const updatesEnabled = process.env.EXPO_USE_UPDATES === "1";
+const updatesEnabled = process.env.EXPO_NO_UPDATES !== "1";
 
 const PLACEHOLDER_PATTERNS = [/^your-/i, /^<.*>$/, /will-be-overridden/i, /set in \.env/i];
 

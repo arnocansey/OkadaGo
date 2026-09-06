@@ -15,7 +15,8 @@ import "@/i18n";
 
 import { WebContainer } from "@/components/WebContainer";
 
-SplashScreen.preventAutoHideAsync().catch(() => undefined);
+// Dismiss any native window splash screen immediately so in-app WhiteSplashScreen takes over
+SplashScreen.hideAsync().catch(() => undefined);
 
 const splashLogo = require("../assets/branding/okadago-logo-splash.png");
 
@@ -52,6 +53,9 @@ function RootNavigator() {
 
 export default function RootLayout() {
   useEffect(() => {
+    // Immediately dismiss any pre-compiled native window splash
+    SplashScreen.hideAsync().catch(() => undefined);
+
     async function prepare() {
       try {
         if (!__DEV__ && Updates.isEnabled) {
@@ -64,8 +68,6 @@ export default function RootLayout() {
         }
       } catch {
         // OTA check failures should not block launch
-      } finally {
-        await SplashScreen.hideAsync();
       }
     }
     prepare();
