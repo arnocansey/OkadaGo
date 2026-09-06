@@ -93,11 +93,23 @@ type MapboxForwardResponse = Partial<{
   features: MapboxForwardFeature[];
 }>;
 
+type RouteStep = {
+  instruction: string;
+  distanceMeters: number;
+  durationSeconds: number;
+  maneuver: "left" | "right" | "straight" | "uturn" | "arrive";
+  startLat: number;
+  startLon: number;
+  endLat: number;
+  endLon: number;
+};
+
 type RoutePreviewResult = {
   provider: "google" | "mapbox" | "osrm" | "direct";
   distanceKm: number;
   durationMinutes: number;
   route: Array<[number, number]>;
+  steps?: RouteStep[];
 };
 
 type RoutePreviewInput = {
@@ -126,6 +138,19 @@ type OsrmRouteResponse = Partial<{
       duration: number;
       geometry: Partial<{
         coordinates: Array<[number, number]>;
+      }>;
+      legs: Array<{
+        steps: Array<{
+          name: string;
+          ref?: string;
+          distance: number;
+          duration: number;
+          maneuver: {
+            type: string;
+            modifier?: string;
+            location?: [number, number];
+          };
+        }>;
       }>;
     }>
   >;
@@ -195,6 +220,18 @@ function decodePolyline(encoded: string): Array<[number, number]> {
   }
 
   return points;
+}
+
+function mapGoogleManeuver(maneuver?: string): "left" | "right" | "straight" | "uturn" | "arrive" {
+  if (!maneuver) return "straight";
+  if (maneuver.includes("uturn")) return "uturn";
+  if (maneuver.includes("left")) return "left";
+  if (maneuver.includes("right")) return "right";
+  return "straight";
+}
+
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
 }
 
 function haversineDistanceKm(
@@ -1878,11 +1915,30 @@ export class BootstrapService {
             if (encoded && leg) {
               const decodedCoords = decodePolyline(encoded);
               if (decodedCoords.length > 1) {
+                // Extract turn-by-turn steps from Google response
+                const navSteps: RouteStep[] = (leg.steps ?? []).map((s: any, idx: number) => {
+                  const allSteps = leg.steps ?? [];
+                  const isLast = idx === allSteps.length - 1;
+                  const maneuver = isLast
+                    ? "arrive" as const
+                    : mapGoogleManeuver(s.maneuver);
+                  return {
+                    instruction: stripHtml(s.html_instructions ?? ""),
+                    distanceMeters: s.distance?.value ?? 0,
+                    durationSeconds: s.duration?.value ?? 0,
+                    maneuver,
+                    startLat: s.start_location?.lat ?? 0,
+                    startLon: s.start_location?.lng ?? 0,
+                    endLat: s.end_location?.lat ?? 0,
+                    endLon: s.end_location?.lng ?? 0,
+                  };
+                });
                 result = {
                   provider: "google",
                   distanceKm: round((leg.distance?.value ?? 0) / 1000),
                   durationMinutes: Math.max(1, Math.round((leg.duration?.value ?? 60) / 60)),
-                  route: decodedCoords
+                  route: decodedCoords,
+                  steps: navSteps.length > 0 ? navSteps : undefined,
                 };
               }
             }
@@ -1938,6 +1994,7 @@ export class BootstrapService {
         );
         osrmUrl.searchParams.set("overview", "full");
         osrmUrl.searchParams.set("geometries", "geojson");
+        osrmUrl.searchParams.set("steps", "true");
 
         const osrmResponse = await fetch(osrmUrl);
 
@@ -1947,11 +2004,39 @@ export class BootstrapService {
           const geometry = route?.geometry?.coordinates;
 
           if (geometry && geometry.length > 1 && typeof route.distance === "number" && typeof route.duration === "number") {
+            // Extract steps from OSRM response
+            const osrmSteps: RouteStep[] = [];
+            for (const leg of route.legs ?? []) {
+              for (const step of leg.steps ?? []) {
+                const maneuverType = step.maneuver?.type ?? "";
+                const modifier = step.maneuver?.modifier ?? "";
+                let navManeuver: RouteStep["maneuver"] = "straight";
+                if (maneuverType === "arrive") navManeuver = "arrive";
+                else if (maneuverType === "turn" || maneuverType === "new name" || maneuverType === "merge" || maneuverType === "fork" || maneuverType === "off ramp" || maneuverType === "on ramp") {
+                  if (modifier.includes("left")) navManeuver = "left";
+                  else if (modifier.includes("right")) navManeuver = "right";
+                  else if (modifier.includes("uturn")) navManeuver = "uturn";
+                } else if (maneuverType === "continue" || maneuverType === "roundabout") {
+                  navManeuver = "straight";
+                }
+                osrmSteps.push({
+                  instruction: step.name || step.ref || "Continue",
+                  distanceMeters: step.distance ?? 0,
+                  durationSeconds: step.duration ?? 0,
+                  maneuver: navManeuver,
+                  startLat: step.maneuver?.location?.[1] ?? 0,
+                  startLon: step.maneuver?.location?.[0] ?? 0,
+                  endLat: step.maneuver?.location?.[1] ?? 0,
+                  endLon: step.maneuver?.location?.[0] ?? 0,
+                });
+              }
+            }
             result = {
               provider: "osrm",
               distanceKm: round(route.distance / 1000),
               durationMinutes: Math.max(1, Math.round(route.duration / 60)),
-              route: geometry.map(([longitude, latitude]) => [latitude, longitude] as [number, number])
+              route: geometry.map(([longitude, latitude]) => [latitude, longitude] as [number, number]),
+              steps: osrmSteps.length > 0 ? osrmSteps : undefined,
             };
           }
         }

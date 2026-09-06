@@ -125,38 +125,6 @@ export function MotorcycleNavigation({
   const [currentStep, setCurrentStep] = useState(0);
   const [offRoute, setOffRoute] = useState(false);
 
-  // Route steps — from live preview or empty until API provides them
-  const steps: NavigationStep[] = useMemo(
-    () => [
-      {
-        instruction: "Head east on Nima Road",
-        distance: 450,
-        maneuver: "straight",
-      },
-      {
-        instruction: "Turn left onto Oxford Street",
-        distance: 200,
-        maneuver: "left",
-      },
-      {
-        instruction: "Continue onto Cantonments Road",
-        distance: 800,
-        maneuver: "straight",
-      },
-      {
-        instruction: "Turn right at traffic light",
-        distance: 150,
-        maneuver: "right",
-      },
-      {
-        instruction: "Arrive at destination",
-        distance: 0,
-        maneuver: "arrive",
-      },
-    ],
-    [],
-  );
-
   const { latitude: riderLat, longitude: riderLng } = useUserLocation();
 
   // Live route preview — refresh every 15s during active navigation
@@ -170,12 +138,30 @@ export function MotorcycleNavigation({
     15000,
   );
 
+  // Route steps — from live preview API data
+  const steps: NavigationStep[] = useMemo(() => {
+    if (livePreview?.steps && livePreview.steps.length > 0) {
+      return livePreview.steps.map((s) => ({
+        instruction: s.instruction,
+        distance: s.distanceMeters,
+        maneuver: s.maneuver,
+      }));
+    }
+    // Fallback: single "Continue" step if no route data yet
+    if (livePreview?.distanceKm) {
+      return [
+        { instruction: "Continue to destination", distance: Math.round(livePreview.distanceKm * 1000), maneuver: "straight" },
+      ];
+    }
+    return [];
+  }, [livePreview?.steps, livePreview?.distanceKm]);
+
   // Advance step when route data updates
   useEffect(() => {
-    if (livePreview?.distanceKm) {
+    if (livePreview?.steps && livePreview.steps.length > 0) {
       setCurrentStep(0);
     }
-  }, [livePreview?.distanceKm]);
+  }, [livePreview?.steps?.length, livePreview?.distanceKm]);
 
   const routeCoordinates = useMemo(() => {
     if (livePreview?.route && livePreview.route.length > 0) {
@@ -218,6 +204,34 @@ export function MotorcycleNavigation({
     const timer = setInterval(checkOffRoute, 5000);
     return () => clearInterval(timer);
   }, [riderLat, riderLng, routeCoordinates, offRoute]);
+
+  // Auto-advance step when rider is close to the current step's end point
+  useEffect(() => {
+    if (!livePreview?.steps || livePreview.steps.length === 0 || !riderLat || !riderLng) return;
+
+    const checkAdvance = () => {
+      const rawSteps = livePreview.steps!;
+      if (currentStep >= rawSteps.length - 1) return;
+
+      const target = rawSteps[currentStep];
+      if (!target) return;
+
+      const R = 6371e3;
+      const toRad = (d: number) => (d * Math.PI) / 180;
+      const dLat = toRad(target.endLat - riderLat);
+      const dLon = toRad(target.endLon - riderLng);
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(riderLat)) * Math.cos(toRad(target.endLat)) * Math.sin(dLon / 2) ** 2;
+      const distM = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+      if (distM < 40) {
+        setCurrentStep((prev) => Math.min(prev + 1, rawSteps.length - 1));
+      }
+    };
+
+    checkAdvance();
+    const timer = setInterval(checkAdvance, 3000);
+    return () => clearInterval(timer);
+  }, [riderLat, riderLng, livePreview?.steps, currentStep]);
 
   const step = steps[currentStep];
   const nextStep = steps[currentStep + 1];

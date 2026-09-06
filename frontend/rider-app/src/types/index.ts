@@ -61,11 +61,23 @@ export type PayoutAccount = {
   updatedAt?: string;
 };
 
+export type RouteStep = {
+  instruction: string;
+  distanceMeters: number;
+  durationSeconds: number;
+  maneuver: "left" | "right" | "straight" | "uturn" | "arrive";
+  startLat: number;
+  startLon: number;
+  endLat: number;
+  endLon: number;
+};
+
 export type RoutePreview = {
   distanceKm: number;
   durationMinutes: number;
   provider?: string;
   route?: Array<[number, number]>;
+  steps?: RouteStep[];
 };
 
 export type Ride = {
