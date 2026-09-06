@@ -3,6 +3,7 @@ import MapViewBase, { Marker, Polyline, PROVIDER_GOOGLE, type Region } from "rea
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Crosshair, MapPin, Navigation } from "lucide-react-native";
 import { MotorcycleMarker } from "./MotorcycleMarker";
+import { AnimatedMotorcycleMarker } from "./AnimatedMotorcycleMarker";
 import { useTheme } from "@/context/ThemeContext";
 import {
   getGoogleMapsApiKey,
@@ -44,6 +45,8 @@ type Props = {
   onMapPress?: (coordinate: MapPressCoordinate) => void;
   pinDropHint?: string;
   selectedRiderId?: string;
+  /** Callback when a motorcycle marker is tapped */
+  onMarkerPress?: (markerId: string) => void;
 };
 
 function MapUnavailable({ title, detail }: { title: string; detail: string }) {
@@ -71,6 +74,7 @@ export function AppMap({
   onMapPress,
   pinDropHint,
   selectedRiderId,
+  onMarkerPress,
 }: Props) {
   const mapRef = useRef<MapViewBase>(null);
   const didAutoCenter = useRef(false);
@@ -227,25 +231,19 @@ export function AppMap({
             );
 
             return (
-              <Marker
+              <AnimatedMotorcycleMarker
                 key={m.id}
-                coordinate={{ latitude: m.latitude, longitude: m.longitude }}
-                title={m.title ?? "Okada Rider"}
-                anchor={{ x: 0.5, y: 0.5 }}
-                flat={true}
-                rotation={m.heading ?? 0}
-              >
-                <MotorcycleMarker
-                  heading={m.heading}
-                  disableRotation={true}
-                  isSelected={isSelected}
-                  isMoving={(m.speed ?? 0) > 1}
-                  pinColor={badgeBg}
-                  title={m.title}
-                  speed={m.speed}
-                  etaLabel={m.etaLabel}
-                />
-              </Marker>
+                id={m.id}
+                latitude={m.latitude}
+                longitude={m.longitude}
+                heading={m.heading}
+                speed={m.speed}
+                pinColor={badgeBg}
+                title={m.title}
+                etaLabel={m.etaLabel}
+                isSelected={isSelected}
+                onPress={onMarkerPress}
+              />
             );
           }
 

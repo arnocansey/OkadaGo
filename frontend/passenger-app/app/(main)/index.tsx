@@ -22,13 +22,16 @@ import {
 import { useTranslation } from "react-i18next";
 import { AppMap } from "@/components/AppMap";
 import { DestinationSearchSheet } from "@/components/DestinationSearchSheet";
+import { RiderInfoCard } from "@/components/RiderInfoCard";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { useLiveNearbyRiders } from "@/hooks/useLiveNearbyRiders";
+import { useDemoRiders } from "@/hooks/useDemoRiders";
 import { api } from "@/lib/api";
 import { MAP_SHEET_CENTER_INSET } from "@/components/ui/MapBottomSheet";
 import type { HomeService, SavedPlace } from "@/types";
+import type { LiveMapRider } from "@/hooks/useLiveNearbyRiders";
 
 export default function HomeScreen() {
   const { t } = useTranslation();
@@ -42,15 +45,22 @@ export default function HomeScreen() {
     radiusKm: 3.5,
     enabled: !activeRide && !activeDelivery,
   });
+  const [nearbyRiders, setNearbyRiders] = useState<
+    Array<{ id: string; latitude: number; longitude: number; distanceKm: number; etaMinutes: number }>
+  >([]);
+  const demoRiders = useDemoRiders({
+    latitude,
+    longitude,
+    enabled: !activeRide && !activeDelivery && liveRiders.length === 0 && nearbyRiders.length === 0,
+    count: 6,
+  });
   const [savedPlaces, setSavedPlaces] = useState<SavedPlace[]>([]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [recentDestinations, setRecentDestinations] = useState<
     Array<{ address: string; latitude: number; longitude: number; label?: string }>
   >([]);
-  const [nearbyRiders, setNearbyRiders] = useState<
-    Array<{ id: string; latitude: number; longitude: number; distanceKm: number; etaMinutes: number }>
-  >([]);
   const [kycDismissed, setKycDismissed] = useState(false);
+  const [selectedRider, setSelectedRider] = useState<LiveMapRider | null>(null);
 
   /* ─── Check KYC Banner Dismissed State ────────────────────── */
   useEffect(() => {
@@ -191,19 +201,53 @@ export default function HomeScreen() {
 
   /* ─── Map Biker Markers ───────────────────────────────────── */
   const bikerMarkers = useMemo(() => {
-    const list = liveRiders.length > 0 ? liveRiders : nearbyRiders;
+    // Priority: live WebSocket riders > REST fallback > demo riders
+    let list: any[] = liveRiders.length > 0 ? liveRiders : nearbyRiders;
+    if (list.length === 0 && demoRiders.length > 0) {
+      list = demoRiders;
+    }
     return list.map((r) => ({
       id: r.id,
       latitude: r.latitude,
       longitude: r.longitude,
-      title: (r as any).name || "Okada",
-      pinColor: colors.primary,
+      title: r.name || "Okada",
+      pinColor: "#FF6A00",
       type: "rider" as const,
-      heading: (r as any).heading ?? 0,
-      speed: (r as any).speed ?? 0,
-      etaMinutes: (r as any).etaMinutes,
+      heading: r.heading ?? 0,
+      speed: r.speed ?? 0,
+      etaMinutes: r.etaMinutes,
+      isSelected: selectedRider?.id === r.id,
     }));
-  }, [liveRiders, nearbyRiders, colors.primary]);
+  }, [liveRiders, nearbyRiders, demoRiders, selectedRider]);
+
+  /* ─── Marker Tap Handler ──────────────────────────────────── */
+  const handleMarkerPress = useCallback(
+    (markerId: string) => {
+      // Find the rider from the merged list
+      const allRiders = [...liveRiders, ...nearbyRiders, ...demoRiders];
+      const rider = allRiders.find((r) => r.id === markerId);
+      if (rider) {
+        setSelectedRider(rider as LiveMapRider);
+      }
+    },
+    [liveRiders, nearbyRiders, demoRiders]
+  );
+
+  /* ─── Request Ride from Info Card ─────────────────────────── */
+  const handleRequestRide = useCallback(
+    (rider: LiveMapRider) => {
+      setSelectedRider(null);
+      router.push({
+        pathname: "/ride/book",
+        params: {
+          mode: "ride",
+          selectedRiderId: rider.id,
+          selectedRiderName: rider.name,
+        },
+      });
+    },
+    []
+  );
 
   /* ─── Saved Place Shortcuts ───────────────────────────────── */
   const homePlace = savedPlaces.find((p) => p.label?.toLowerCase().includes("home"));
@@ -649,6 +693,7 @@ export default function HomeScreen() {
         autoCenterOnLocation={hasFix}
         showCenterButton
         centerButtonInset={{ bottom: MAP_SHEET_CENTER_INSET + 80, right: 16 }}
+        onMarkerPress={handleMarkerPress}
       />
 
       {/* ─── Top Bar: Logo + Avatar ───────────────────────────── */}
@@ -709,10 +754,11 @@ export default function HomeScreen() {
       {!activeRide && !activeDelivery && (
         <View style={s.searchCard}>
           {/* Live Density Badge */}
-          {(liveRiders.length > 0 || nearbyRiders.length > 0) && (
+          {(liveRiders.length > 0 || nearbyRiders.length > 0 || demoRiders.length > 0) && (
             <View style={s.densityBadge}>
               <Text style={s.densityText}>
-                🏍️ {liveRiders.length > 0 ? liveRiders.length : nearbyRiders.length} Okadas nearby • ~{liveRiders[0]?.etaMinutes ?? nearbyRiders[0]?.etaMinutes ?? 2} min pickup
+                🏍️ {liveRiders.length > 0 ? liveRiders.length : nearbyRiders.length > 0 ? nearbyRiders.length : demoRiders.length} Okadas nearby • ~{liveRiders[0]?.etaMinutes ?? nearbyRiders[0]?.etaMinutes ?? 2} min pickup
+                {demoRiders.length > 0 && liveRiders.length === 0 && nearbyRiders.length === 0 ? " (Demo)" : ""}
               </Text>
             </View>
           )}
@@ -966,6 +1012,15 @@ export default function HomeScreen() {
         userLocation={hasFix && latitude && longitude ? { latitude, longitude } : undefined}
         recentDestinations={recentDestinations}
       />
+
+      {/* ─── Rider Info Card (on marker tap) ──────────────────── */}
+      {selectedRider && (
+        <RiderInfoCard
+          rider={selectedRider}
+          onRequestRide={handleRequestRide}
+          onDismiss={() => setSelectedRider(null)}
+        />
+      )}
     </View>
   );
 }
