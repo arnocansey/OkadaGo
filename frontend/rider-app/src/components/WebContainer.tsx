@@ -1,15 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Platform, View, Text, StyleSheet } from "react-native";
 import { Wifi, Signal, BatteryCharging } from "lucide-react-native";
 
-export function WebContainer({ children }: { children: React.ReactNode }) {
-  if (Platform.OS !== "web") {
-    return <>{children}</>;
-  }
+function WebFrame({ children }: { children: React.ReactNode }) {
+  const [isDesktop, setIsDesktop] = React.useState(false);
 
-  const [isDesktop, setIsDesktop] = useState(false);
-
-  useEffect(() => {
+  React.useEffect(() => {
     function checkSize() {
       if (typeof window !== "undefined") {
         setIsDesktop(window.innerWidth > 500);
@@ -38,6 +34,13 @@ export function WebContainer({ children }: { children: React.ReactNode }) {
       </View>
     </View>
   );
+}
+
+export function WebContainer({ children }: { children: React.ReactNode }) {
+  if (Platform.OS !== "web") {
+    return <>{children}</>;
+  }
+  return <WebFrame>{children}</WebFrame>;
 }
 
 const styles = StyleSheet.create({
